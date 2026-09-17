@@ -66,6 +66,24 @@ def validate_catalogs() -> None:
     levels = [int(item.get("unlock_level", 0)) for item in establishments]
     require(levels == sorted(levels) and levels[-1:] == [120], "carreira deve crescer e terminar no nível 120")
 
+    layouts = load_json("data/service_layouts.json").get("stages", [])
+    require(len(layouts) == 5, "esperados cinco layouts de serviço")
+    require([item.get("unlock_level") for item in layouts] == [1, 3, 5, 7, 10], "gates de salas inválidos")
+    for layout in layouts:
+        service = layout.get("service", "<sem serviço>")
+        require(len(layout.get("pet_position", [])) == 2, f"posição de pet inválida: {service}")
+        shelves = layout.get("shelf_y", [])
+        require(len(shelves) == 5 and shelves == sorted(shelves), f"prateleiras inválidas: {service}")
+        require((ROOT / "art/backgrounds" / layout.get("background", "")).exists(), f"fundo ausente: {service}")
+
+    for tool in ("soap", "clipper", "dryer", "perfume", "bow"):
+        path = ROOT / "art/props" / f"tool_{tool}.png"
+        require(path.exists(), f"arte de utensílio ausente: {tool}")
+        if path.exists():
+            raw = path.read_bytes()
+            require(len(raw) > 100_000, f"arte de utensílio simplificada demais: {tool}")
+            require(len(raw) > 25 and raw[25] == 6, f"utensílio sem canal alfa RGBA: {tool}")
+
     upgrades = load_json("data/upgrades.json").get("upgrades", [])
     for upgrade in upgrades:
         require(int(upgrade.get("levels", 0)) > 0, f"upgrade sem níveis: {upgrade.get('id')}")

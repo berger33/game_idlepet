@@ -2,12 +2,13 @@
 
 | Arquivo | Uso | Origem | Resolução | Revisão |
 |---|---|---|---:|---|
-| `backgrounds/petshop_quintal.png` | cenário de banho | ilustração gerada para este projeto e curada nesta sessão | 768×1376 | sem texto/personagens/marca; aprovada para slice |
-| `backgrounds/petshop_tosa.png` | cenário de tosa | variação coerente gerada a partir da direção do cenário de banho | 768×1376 | sem texto/personagens/marca; aprovada para slice |
-| `backgrounds/petshop_secagem.png` | sala de secagem | ilustração original gerada para este projeto | 768×1376 | estação e iluminação próprias; sem texto/marca |
-| `backgrounds/petshop_perfume.png` | spa de perfume e fundo dos menus | ilustração original gerada para este projeto | 768×1376 | botânicos e vanity; sem texto/marca |
-| `backgrounds/petshop_estilo.png` | ateliê de laços | ilustração original gerada para este projeto | 768×1376 | acessórios integrados; sem texto/marca |
-| pets e VFX | runtime | desenho vetorial procedural original em GDScript | escalável | Caramelo/Luna/Thor e estados molhado/feliz |
+| `backgrounds/petshop_quintal.png` | banho, banheira profunda + 5 prateleiras vazias | ilustração gerada e curada para este projeto | 768×1376 | suporte calibrado para pet (540,840); sem texto/personagem |
+| `backgrounds/petshop_tosa.png` | tosa, mesa elevada + 5 prateleiras vazias | ilustração gerada e curada para este projeto | 768×1376 | suporte calibrado para pet (540,810); sem texto/personagem |
+| `backgrounds/petshop_secagem.png` | secagem, mesa acolchoada + 5 prateleiras | ilustração original gerada e curada | 768×1376 | suporte calibrado (540,820); secador de parede contextual |
+| `backgrounds/petshop_perfume.png` | spa, pedestal acolchoado + 5 prateleiras | ilustração original gerada e curada | 768×1376 | suporte calibrado (540,1060); fundo também usado em menus |
+| `backgrounds/petshop_estilo.png` | estilo, pufe elevado + 5 prateleiras | ilustração original gerada e curada | 768×1376 | suporte calibrado (540,1065); sem pet/texto embutido |
+| `props/tool_*.png` (5) | sabonete, máquina, secador, perfume e laço | ilustrações originais geradas e recortadas/curadas para este projeto | 512×512 RGBA | transparência real, sombra, highlight, contorno; animação runtime |
+| pets e VFX | runtime | desenho vetorial procedural original em GDScript | escalável | 50 perfis, portes/orelhas/pelagens e estados de reação |
 | SFX/BGM | runtime | síntese procedural original | 22.050 Hz mono | sem arquivo/licença externa |
 
 ## Regras

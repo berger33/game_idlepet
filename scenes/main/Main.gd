@@ -217,7 +217,7 @@ func _on_primary_pressed() -> void:
 func _start_bath() -> void:
 	bath.start_service()
 	world.pet_wet = current_service == &"bath"
-	world.service_mode = current_service
+	world.set_service_layout(current_service)
 	instruction_label.text = (
 		"%s sobre o pet • o aro completa sozinho"
 		% String(SERVICE_LABELS[current_service]).capitalize()
@@ -344,7 +344,7 @@ func _dismiss_result() -> void:
 	var available_services: Array[StringName] = _available_services()
 	current_service = available_services[GameState.services_completed % available_services.size()]
 	_configure_current_service()
-	world.service_mode = current_service
+	world.set_service_layout(current_service)
 	order_card.hide()
 	instruction_label.text = "Novo cliente chegando..."
 	primary_button.hide()
@@ -404,7 +404,7 @@ func _configure_current_service() -> void:
 	)
 	bath.configure(duration, 0.86, 1.0, required_distance)
 	if is_instance_valid(world):
-		world.service_mode = current_service
+		world.set_service_layout(current_service)
 		world.player_level = GameState.player_level
 
 

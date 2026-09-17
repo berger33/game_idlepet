@@ -7,16 +7,32 @@ const GROOM_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_tosa.
 const DRY_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_secagem.png")
 const PERFUME_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
 const STYLE_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_estilo.png")
+const TOOL_TEXTURES: Dictionary = {
+	&"soap": preload("res://art/props/tool_soap.png"),
+	&"clipper": preload("res://art/props/tool_clipper.png"),
+	&"dryer": preload("res://art/props/tool_dryer.png"),
+	&"perfume": preload("res://art/props/tool_perfume.png"),
+	&"bow": preload("res://art/props/tool_bow.png"),
+}
 const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
-const TOOL_POSITIONS: Dictionary = {
-	&"soap": Vector2(910, 500),
-	&"clipper": Vector2(910, 650),
-	&"dryer": Vector2(910, 800),
-	&"perfume": Vector2(910, 950),
-	&"bow": Vector2(910, 1100),
+const SERVICE_PET_POSITIONS: Dictionary = {
+	# Centro calibrado para que a sombra em y+226 encontre a superfície de cada estação.
+	&"bath": Vector2(540, 840),
+	&"groom": Vector2(540, 810),
+	&"dry": Vector2(540, 820),
+	&"perfume": Vector2(540, 1060),
+	&"style": Vector2(540, 1065),
+}
+const TOOL_ORDER: Array[StringName] = [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]
+const SERVICE_TOOL_Y: Dictionary = {
+	&"bath": [235.0, 390.0, 545.0, 700.0, 855.0],
+	&"groom": [235.0, 390.0, 545.0, 700.0, 855.0],
+	&"dry": [330.0, 500.0, 670.0, 840.0, 1010.0],
+	&"perfume": [310.0, 500.0, 690.0, 880.0, 1070.0],
+	&"style": [290.0, 470.0, 650.0, 830.0, 1010.0],
 }
 
-var pet_position: Vector2 = Vector2(540, 930)
+var pet_position: Vector2 = Vector2(540, 840)
 var pet_happy: bool = false
 var pet_wet: bool = false
 var progress: float = 0.0
@@ -69,6 +85,13 @@ func _process(delta: float) -> void:
 	for index: int in range(bubbles.size() - 1, -1, -1):
 		if float(bubbles[index]["life"]) <= 0.0:
 			bubbles.remove_at(index)
+	queue_redraw()
+
+
+func set_service_layout(next_service: StringName) -> void:
+	service_mode = next_service
+	var next_position: Vector2 = SERVICE_PET_POSITIONS.get(next_service, Vector2(540, 840))
+	pet_position = next_position
 	queue_redraw()
 
 
@@ -145,11 +168,19 @@ func react_to_service(service_progress: float) -> void:
 	reaction_time = 0.22
 
 
+func _tool_position(tool: StringName) -> Vector2:
+	var index: int = TOOL_ORDER.find(tool)
+	var shelf_levels: Array = SERVICE_TOOL_Y.get(service_mode, SERVICE_TOOL_Y[&"bath"])
+	if index < 0 or index >= shelf_levels.size():
+		return Vector2(910, 545)
+	return Vector2(910, float(shelf_levels[index]))
+
+
 func tool_at(point: Vector2) -> StringName:
-	for tool: StringName in TOOL_POSITIONS:
+	for tool: StringName in TOOL_ORDER:
 		if (
 			player_level >= int(TOOL_LEVELS[tool])
-			and point.distance_to(TOOL_POSITIONS[tool]) < 72.0
+			and point.distance_to(_tool_position(tool)) < 72.0
 		):
 			return tool
 	return &""
@@ -223,10 +254,10 @@ func _draw() -> void:
 	)
 	draw_string(
 		ThemeDB.fallback_font,
-		Vector2(430, 225),
+		Vector2(330, 225),
 		room_title,
 		HORIZONTAL_ALIGNMENT_CENTER,
-		500,
+		430,
 		42,
 		Color.WHITE
 	)
@@ -306,7 +337,7 @@ func _draw() -> void:
 			Color("ff6f91", clampf(float(heart["life"]), 0.0, 1.0))
 		)
 	if tool_visible:
-		_draw_tool(active_tool, tool_position, 1.0)
+		_draw_tool(active_tool, tool_position, 1.0, true)
 		var ring_color: Color = Color("7ed957") if progress >= 0.72 else Color("ffffff")
 		draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * progress, 40, ring_color, 11.0)
 		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.22), 4.0)
@@ -496,17 +527,18 @@ func _box(color: Color, radius: float) -> StyleBoxFlat:
 
 func _draw_tool_shelf() -> void:
 	# As prateleiras pertencem à arte raster; aqui são desenhados somente utensílios interativos.
-	for tool: StringName in TOOL_POSITIONS:
+	for tool: StringName in TOOL_ORDER:
 		var unlocked: bool = player_level >= int(TOOL_LEVELS[tool])
 		var shelf_alpha: float = (
 			0.12 if tool_visible and tool == active_tool else (1.0 if unlocked else 0.28)
 		)
-		_draw_tool(tool, TOOL_POSITIONS[tool], shelf_alpha)
+		var shelf_position: Vector2 = _tool_position(tool)
+		_draw_tool(tool, shelf_position, shelf_alpha)
 		if not unlocked:
-			draw_circle(TOOL_POSITIONS[tool], 29, Color("263238", 0.76))
+			draw_circle(shelf_position, 29, Color("263238", 0.76))
 			draw_string(
 				ThemeDB.fallback_font,
-				TOOL_POSITIONS[tool] + Vector2(-28, 10),
+				shelf_position + Vector2(-28, 10),
 				"Nv.%d" % int(TOOL_LEVELS[tool]),
 				HORIZONTAL_ALIGNMENT_CENTER,
 				56,
@@ -515,69 +547,27 @@ func _draw_tool_shelf() -> void:
 			)
 
 
-func _draw_tool(tool: StringName, at: Vector2, alpha: float) -> void:
-	var pink: Color = Color("ff8fb1", alpha)
-	var blue: Color = Color("4fc3f7", alpha)
-	var dark: Color = Color("263238", alpha)
-	var white: Color = Color("f8ffff", alpha)
-	var shadow: Color = Color("263238", alpha * 0.24)
-	_draw_pet_ellipse(at + Vector2(7, 11), Vector2(52, 44), shadow)
-	if tool == &"soap":
-		_draw_pet_ellipse(at + Vector2(0, 5), Vector2(39, 47), dark)
-		_draw_pet_ellipse(at + Vector2(0, 4), Vector2(34, 42), pink)
-		draw_rect(Rect2(at + Vector2(-12, -55), Vector2(24, 18)), dark, true)
-		draw_line(at + Vector2(0, -55), at + Vector2(29, -55), dark, 8)
-		draw_circle(at + Vector2(-11, -8), 9, Color("ffffff", alpha * 0.7))
-		draw_arc(at + Vector2(0, 5), 27, 0, TAU, 24, white, 4)
-	elif tool == &"clipper":
-		draw_rect(Rect2(at + Vector2(-31, -49), Vector2(62, 90)), dark, true)
-		draw_rect(Rect2(at + Vector2(-27, -45), Vector2(54, 82)), blue, true)
-		draw_rect(Rect2(at + Vector2(-38, -58), Vector2(76, 18)), Color("b0bec5", alpha), true)
-		for tooth: int in 6:
-			draw_line(
-				at + Vector2(-32 + tooth * 13, -58), at + Vector2(-32 + tooth * 13, -73), dark, 4
-			)
-	elif tool == &"dryer":
-		draw_circle(at + Vector2(-10, -8), 43, dark)
-		draw_circle(at + Vector2(-10, -8), 38, pink)
-		draw_circle(at + Vector2(-18, -16), 11, Color("ffffff", alpha * 0.55))
-		draw_colored_polygon(
-			PackedVector2Array(
-				[
-					at + Vector2(14, -27),
-					at + Vector2(65, -16),
-					at + Vector2(65, 10),
-					at + Vector2(14, 14)
-				]
-			),
-			blue
-		)
-		draw_line(at + Vector2(-12, 20), at + Vector2(-30, 59), dark, 19)
-	elif tool == &"perfume":
-		_draw_pet_ellipse(at + Vector2(0, 17), Vector2(35, 40), dark)
-		_draw_pet_ellipse(at + Vector2(0, 16), Vector2(30, 35), Color("ce93d8", alpha))
-		draw_circle(at + Vector2(-10, 5), 8, Color("ffffff", alpha * 0.6))
-		draw_rect(Rect2(at + Vector2(-20, -46), Vector2(40, 33)), dark, true)
-		draw_rect(Rect2(at + Vector2(-16, -42), Vector2(32, 25)), Color("ffd54f", alpha), true)
-		draw_line(at + Vector2(0, -42), at + Vector2(45, -50), dark, 8)
-		for spray: int in 3:
-			draw_circle(at + Vector2(62 + spray * 15, -52 - spray * 5), 5, Color("e1f5fe", alpha))
-	else:
-		draw_colored_polygon(
-			PackedVector2Array([at, at + Vector2(-65, -44), at + Vector2(-62, 44)]), dark
-		)
-		draw_colored_polygon(
-			PackedVector2Array([at, at + Vector2(65, -44), at + Vector2(62, 44)]), dark
-		)
-		draw_colored_polygon(
-			PackedVector2Array([at, at + Vector2(-58, -38), at + Vector2(-55, 38)]), pink
-		)
-		draw_colored_polygon(
-			PackedVector2Array([at, at + Vector2(58, -38), at + Vector2(55, 38)]), pink
-		)
-		draw_circle(at, 25, dark)
-		draw_circle(at, 20, Color("ffd54f", alpha))
-		draw_circle(at + Vector2(-7, -7), 6, Color("ffffff", alpha * 0.65))
+func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = false) -> void:
+	if not TOOL_TEXTURES.has(tool):
+		return
+	var texture: Texture2D = TOOL_TEXTURES[tool]
+	var bob: float = (
+		sin(shake_phase * 2.4 + float(String(tool).hash() % 7)) * (4.0 if is_dragged else 2.0)
+	)
+	var rotation: float = sin(shake_phase * 4.8) * 0.055 if is_dragged else 0.0
+	var active_pulse: float = 1.0 + sin(shake_phase * 6.0) * 0.025 if is_dragged else 1.0
+	var draw_size: float = (138.0 if is_dragged else 116.0) * active_pulse
+	var item_modulate: Color = Color(1.0, 1.0, 1.0, alpha)
+	draw_set_transform(at + Vector2(0, bob), rotation)
+	draw_texture_rect(
+		texture,
+		Rect2(-draw_size * 0.5, -draw_size * 0.5, draw_size, draw_size),
+		false,
+		item_modulate
+	)
+	if is_dragged:
+		draw_arc(Vector2.ZERO, draw_size * 0.48, -2.7, -0.45, 20, Color("ffffff", 0.38), 4.0)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_heart(center: Vector2, radius: float, color: Color) -> void:

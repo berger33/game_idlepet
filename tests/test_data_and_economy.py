@@ -81,8 +81,31 @@ class FoundationTests(unittest.TestCase):
             self.assertIn(f'&"{tool}"', main)
             self.assertIn(f'&"{tool}"', canvas)
         self.assertNotIn('ProgressBar.new()', main)
+        tool_drawer = canvas.split('func _draw_tool(', 1)[1].split('func _draw_heart', 1)[0]
+        self.assertIn('draw_texture_rect(', tool_drawer)
+        self.assertIn('var texture: Texture2D = TOOL_TEXTURES[tool]', tool_drawer)
+        self.assertNotIn('draw_colored_polygon', tool_drawer)
         self.assertIn('buy_tool_upgrade', main)
         self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
+
+    def test_service_layouts_and_commercial_tool_art(self):
+        layouts = json.loads(Path('data/service_layouts.json').read_text(encoding='utf8'))
+        self.assertEqual([stage['unlock_level'] for stage in layouts['stages']], [1, 3, 5, 7, 10])
+        self.assertEqual({stage['workstation'] for stage in layouts['stages']}, {
+            'deep_bathtub', 'grooming_table', 'padded_drying_table',
+            'spa_pedestal', 'styling_ottoman'
+        })
+        for stage in layouts['stages']:
+            self.assertEqual(len(stage['shelf_y']), 5)
+            self.assertEqual(stage['shelf_y'], sorted(stage['shelf_y']))
+            self.assertTrue((Path('art/backgrounds') / stage['background']).exists())
+        for tool in ('soap', 'clipper', 'dryer', 'perfume', 'bow'):
+            path = Path('art/props') / f'tool_{tool}.png'
+            raw = path.read_bytes()
+            self.assertGreater(len(raw), 100_000)
+            self.assertEqual(raw[:8], b'\x89PNG\r\n\x1a\n')
+            self.assertEqual(raw[24], 8)  # 8-bit channels
+            self.assertEqual(raw[25], 6)  # RGBA, transparency is mandatory
 
     def test_godot_47_compatibility_regressions(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
