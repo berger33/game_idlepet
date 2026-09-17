@@ -1,0 +1,7 @@
+{"schema_version":1,"cosmetics":[
+{"id":"tub_pink","name":"Banheira Rosa Shampoo","slot":"bath","rarity":"common","price":{"coins":300}},
+{"id":"tub_ocean","name":"Banheira Oceano","slot":"bath","rarity":"rare","price":{"embers":20}},
+{"id":"bandana_blue","name":"Bandana Azul","slot":"pet_accessory","rarity":"common","price":{"coins":150}},
+{"id":"crown_bubbles","name":"Coroa de Bolhas","slot":"pet_accessory","rarity":"epic","source":"achievement"},
+{"id":"wall_junina","name":"Parede de Arraiá","slot":"wall","rarity":"seasonal","source":"festa_junina"}
+]}

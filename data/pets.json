@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "pets": [
+    {"id":"caramelo","name":"Caramelo","breed":"Vira-lata caramelo","rarity":"common","temperament":"happy","city":"vila_pacata","patience":42,"base_tip":1.0},
+    {"id":"luna_shih_tzu","name":"Luna","breed":"Shih-tzu","rarity":"common","temperament":"anxious","city":"vila_pacata","patience":38,"base_tip":1.1},
+    {"id":"thor_pinscher","name":"Thor","breed":"Pinscher","rarity":"common","temperament":"irritated","city":"vila_pacata","patience":27,"base_tip":1.2},
+    {"id":"mel_golden","name":"Mel","breed":"Golden Retriever","rarity":"uncommon","temperament":"happy","city":"suburbio","patience":50,"base_tip":1.25},
+    {"id":"fred_poodle","name":"Fred","breed":"Poodle","rarity":"uncommon","temperament":"anxious","city":"suburbio","patience":36,"base_tip":1.35},
+    {"id":"nina_yorkshire","name":"Nina","breed":"Yorkshire","rarity":"rare","temperament":"fearful","city":"centro","patience":31,"base_tip":1.55},
+    {"id":"bob_bulldog","name":"Bob","breed":"Bulldog francês","rarity":"rare","temperament":"happy","city":"centro","patience":45,"base_tip":1.5},
+    {"id":"sol_border","name":"Sol","breed":"Border Collie","rarity":"epic","temperament":"happy","city":"metropole","patience":48,"base_tip":1.9},
+    {"id":"jade_spitz","name":"Jade","breed":"Spitz Alemão","rarity":"epic","temperament":"anxious","city":"litoral","patience":34,"base_tip":2.1},
+    {"id":"tupa_mane_wolf","name":"Tupã","breed":"Lobo-guará guardião","rarity":"legendary","temperament":"calm","city":"amazonia","patience":60,"base_tip":3.5}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version":1,
+  "upgrades":[
+    {"id":"bath_income","name":"Shampoo cheiroso","system":"bath","levels":20,"base_cost":25,"growth":1.18,"effect":"income","effect_growth":1.15},
+    {"id":"bath_speed","name":"Ducha pressurizada","system":"bath","levels":10,"base_cost":80,"growth":1.22,"effect":"duration","effect_per_level":-0.025},
+    {"id":"queue_capacity","name":"Recepção confortável","system":"queue","levels":4,"base_cost":250,"growth":3.2,"effect":"capacity","values":[3,5,8,12,20]},
+    {"id":"patience","name":"Petiscos de espera","system":"queue","levels":15,"base_cost":110,"growth":1.25,"effect":"patience","effect_per_level":0.04},
+    {"id":"tip","name":"Pote da gorjeta","system":"economy","levels":20,"base_cost":150,"growth":1.23,"effect":"tip","effect_per_level":0.05},
+    {"id":"offline_cap","name":"Cofre reforçado","system":"offline","levels":22,"base_cost":500,"growth":1.35,"effect":"offline_hours","effect_per_level":1.0}
+  ]
+}
