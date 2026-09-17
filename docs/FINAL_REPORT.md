@@ -1,13 +1,13 @@
 # Relatório de Entrega — Fundação / Playable Core
 
 ## Entregue
-Documentação de auditoria, GDD, TDD, Art Bible, UX, economia+simulador+CSV, analytics, arquitetura de cenas, roadmap, SDK/privacy drafts; projeto Godot portrait; banho por gesto com timer/Perfect/Good/falha; petshop/pet/VFX procedural; moedas/combo/review/upgrade; áudio procedural/haptic; analytics offline; save ofuscado com hash, escrita atômica, 3 backups, migração e offline reward; dados iniciais.
+Documentação de auditoria, GDD, TDD, Art Bible, UX, economia+simulador+CSV, analytics, arquitetura de cenas, roadmap, SDK/privacy drafts e auditoria integral de prontidão; projeto Godot portrait; banho e tosa por gesto com timer/Perfect/Good/falha; petshop/pet/VFX procedural; moedas/combo/review/upgrade; coleção, conquistas iniciais, missões, login diário, evento semanal, mapa, acessibilidade, Bia/idle; áudio procedural/haptic; analytics offline; save v2 ofuscado com hash, escrita atômica, 3 backups, migração e offline reward; policies/adapters seguros de Ads/IAP/notificação; dados iniciais.
 
 ## Decisões
 Core usa arte vetorial procedural para coerência e velocidade de iteração, não asset packs. SDKs externos não foram falsamente alegados como integrados sem contas/aparelho. Botão Momento marca evento, mas informa que export MP4 é Vertical Slice. Package permanece placeholder para evitar decisão irreversível.
 
 ## Bugs/riscos conhecidos
-- Ambiente do agente não contém executável Godot; parse/runtime e FPS ainda requerem Godot 4.3+ e aparelho.
+- Ambiente do agente não contém executável Godot; os downloads oficiais falharam por conexão aos hosts de release. Todos os GDScripts passaram no parser/linter `gdtoolkit`, porém runtime e FPS ainda requerem Godot 4.3+ e aparelho.
 - Arte procedural recalcula geometria por frame; adequada para Core, precisa cache/atlas/profile no VS.
 - XOR é ofuscação local, não segurança contra fraude.
 - Offline rate atual é placeholder derivado do nível, até existir automação real.

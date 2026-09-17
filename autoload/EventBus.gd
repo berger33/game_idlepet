@@ -10,6 +10,6 @@ signal pet_arrived(pet_id: StringName)
 signal review_received(stars: int)
 signal combo_changed(value: int)
 signal upgrade_purchased(upgrade_id: StringName, level: int)
-signal save_completed()
+signal save_completed
 signal toast_requested(message: String, color: Color)
-signal settings_changed()
+signal settings_changed

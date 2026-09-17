@@ -16,6 +16,10 @@ GameState="*res://autoload/GameState.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 AudioManager="*res://autoload/AudioManager.gd"
 HapticsManager="*res://autoload/HapticsManager.gd"
+AdsManager="*res://autoload/AdsManager.gd"
+IAPManager="*res://autoload/IAPManager.gd"
+LiveOps="*res://autoload/LiveOps.gd"
+NotificationManager="*res://autoload/NotificationManager.gd"
 
 [display]
 window/size/viewport_width=1080
