@@ -11,7 +11,7 @@ class Config:
     service_seconds: float = 14.0
     cost_base: float = 25.0
     cost_growth: float = 1.18
-    income_growth: float = 1.15
+    income_growth: float = 1.075
 
 def quality_mult(rate: float) -> float:
     return rate * 1.5 + (1-rate) * 1.15

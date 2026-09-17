@@ -4,6 +4,17 @@ extends Control
 
 const BATH_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_quintal.png")
 const GROOM_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_tosa.png")
+const DRY_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_secagem.png")
+const PERFUME_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
+const STYLE_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_estilo.png")
+const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
+const TOOL_POSITIONS: Dictionary = {
+	&"soap": Vector2(910, 515),
+	&"clipper": Vector2(910, 675),
+	&"dryer": Vector2(910, 835),
+	&"perfume": Vector2(910, 995),
+	&"bow": Vector2(910, 1155),
+}
 
 var pet_position: Vector2 = Vector2(540, 930)
 var pet_happy: bool = false
@@ -20,11 +31,14 @@ var fur_color: Color = Color("c98b5b")
 var ear_color: Color = Color("9c623f")
 var muzzle_color: Color = Color("f1c49f")
 var species: StringName = &"dog"
+var breed_name: String = "Vira-lata caramelo"
 var temperament: StringName = &"happy"
 var rarity: StringName = &"common"
 var reaction_time: float = 0.0
 var reaction_kind: StringName = &"idle"
 var hearts: Array[Dictionary] = []
+var player_level: int = 1
+var active_tool: StringName = &""
 var tool_position: Vector2 = Vector2.ZERO
 var tool_visible: bool = false
 
@@ -85,6 +99,7 @@ func set_pet_profile(profile: Dictionary) -> void:
 		ear_color = Color(String(colors[1]))
 		muzzle_color = Color(String(colors[2]))
 	species = StringName(profile.get("species", "dog"))
+	breed_name = String(profile.get("breed", "Pet especial"))
 	temperament = StringName(profile.get("temperament", "happy"))
 	rarity = StringName(profile.get("rarity", "common"))
 
@@ -130,8 +145,30 @@ func react_to_service(service_progress: float) -> void:
 	reaction_time = 0.22
 
 
+func tool_at(point: Vector2) -> StringName:
+	for tool: StringName in TOOL_POSITIONS:
+		if (
+			player_level >= int(TOOL_LEVELS[tool])
+			and point.distance_to(TOOL_POSITIONS[tool]) < 72.0
+		):
+			return tool
+	return &""
+
+
+func grab_tool(tool: StringName, at: Vector2) -> void:
+	active_tool = tool
+	tool_position = at
+	tool_visible = true
+
+
+func move_tool(at: Vector2) -> void:
+	tool_position = at
+	tool_visible = true
+
+
 func release_tool() -> void:
 	tool_visible = false
+	active_tool = &""
 
 
 func react_to_failure() -> void:
@@ -158,7 +195,15 @@ func reset_pet() -> void:
 
 
 func _draw() -> void:
-	var background: Texture2D = GROOM_BACKGROUND if service_mode == &"groom" else BATH_BACKGROUND
+	var background: Texture2D = BATH_BACKGROUND
+	if service_mode == &"groom":
+		background = GROOM_BACKGROUND
+	elif service_mode == &"dry":
+		background = DRY_BACKGROUND
+	elif service_mode == &"perfume":
+		background = PERFUME_BACKGROUND
+	elif service_mode == &"style":
+		background = STYLE_BACKGROUND
 	var source_height: float = minf(981.0, background.get_height())
 	draw_texture_rect_region(
 		background,
@@ -166,7 +211,16 @@ func _draw() -> void:
 		Rect2(0.0, 0.0, float(background.get_width()), source_height)
 	)
 	# A placa da ilustração permanece sem texto; o título é localizado em runtime.
-	var room_title: String = "TOSA DO BAIRRO" if service_mode == &"groom" else "BANHO DO BAIRRO"
+	var room_title: String = (
+		{
+			&"bath": "BANHO DO BAIRRO",
+			&"groom": "TOSA DO BAIRRO",
+			&"dry": "SECAGEM ACONCHEGANTE",
+			&"perfume": "SPA PERFUMADO",
+			&"style": "ATELIÊ DE LAÇOS",
+		}
+		. get(service_mode, "PET SHOP DO BAIRRO")
+	)
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(430, 225),
@@ -176,6 +230,7 @@ func _draw() -> void:
 		42,
 		Color.WHITE
 	)
+	_draw_tool_shelf()
 	# O selo de estação é informativo; elementos que parecem botões não são desenhados no cenário.
 	if upgrade_level > 0:
 		draw_style_box(level_box, Rect2(70, 500, 250, 78))
@@ -209,24 +264,41 @@ func _draw() -> void:
 		if service_mode == &"bath":
 			draw_circle(effect_pos, 30 + (i % 3) * 6, Color("f8ffff", 0.95))
 			draw_arc(effect_pos, 25 + (i % 3) * 6, 0, TAU, 20, Color("b5ecfa"), 4)
-		else:
+		elif service_mode == &"groom":
 			draw_line(effect_pos - Vector2(14, 10), effect_pos + Vector2(14, 10), ear_color, 8)
 			draw_line(effect_pos + Vector2(-12, 12), effect_pos + Vector2(12, -12), fur_color, 6)
+		elif service_mode == &"dry":
+			draw_arc(effect_pos, 34, -0.8, 0.8, 12, Color("e1f5fe", 0.85), 7)
+		elif service_mode == &"perfume":
+			draw_circle(effect_pos, 14 + i % 3 * 4, Color("ce93d8", 0.62))
+		else:
+			_star(effect_pos, 16 + i % 3 * 3, Color("ffd54f", 0.9))
 	for particle: Dictionary in bubbles:
 		var particle_alpha: float = clampf(float(particle["life"]), 0.0, 0.75)
 		if service_mode == &"bath":
 			draw_circle(particle["p"], particle["r"], Color("e9fbff", particle_alpha))
 			draw_arc(particle["p"], particle["r"], 0, TAU, 18, Color("4fc3f7", 0.65), 3)
-		else:
+		elif service_mode == &"groom":
 			var tuft_size: float = float(particle["r"]) * 0.7
 			var tuft_color: Color = fur_color
 			tuft_color.a = particle_alpha
 			draw_line(
-				particle["p"] - Vector2(tuft_size, tuft_size * 0.5),
-				particle["p"] + Vector2(tuft_size, tuft_size * 0.5),
+				particle["p"] - Vector2(tuft_size, 8),
+				particle["p"] + Vector2(tuft_size, -8),
 				tuft_color,
-				6,
+				6
 			)
+		elif service_mode == &"dry":
+			draw_line(
+				particle["p"] - Vector2(42, 0),
+				particle["p"] + Vector2(24, 0),
+				Color("e1f5fe", particle_alpha),
+				6
+			)
+		elif service_mode == &"perfume":
+			draw_circle(particle["p"], float(particle["r"]) * 0.55, Color("ce93d8", particle_alpha))
+		else:
+			_star(particle["p"], float(particle["r"]), Color("ffd54f", particle_alpha))
 	for heart: Dictionary in hearts:
 		_draw_heart(
 			heart["p"],
@@ -234,7 +306,10 @@ func _draw() -> void:
 			Color("ff6f91", clampf(float(heart["life"]), 0.0, 1.0))
 		)
 	if tool_visible:
-		_draw_service_tool(tool_position)
+		_draw_tool(active_tool, tool_position, 1.0)
+		var ring_color: Color = Color("7ed957") if progress >= 0.72 else Color("ffffff")
+		draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * progress, 40, ring_color, 11.0)
+		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.22), 4.0)
 	if celebration > 0.0:
 		for i: int in 14:
 			var angle: float = TAU * float(i) / 14.0 + shake_phase
@@ -281,26 +356,64 @@ func _draw_pet(center: Vector2) -> void:
 		draw_arc(center + Vector2(-120, 58), 74, -0.4, 0.5, 12, Color("263238"), 4)
 		draw_arc(center + Vector2(120, 58), 74, PI - 0.5, PI + 0.4, 12, Color("263238"), 4)
 	else:
-		draw_colored_polygon(
-			PackedVector2Array(
-				[
-					center + Vector2(-105, -80),
-					center + Vector2(-190, -55 + ear_drop),
-					center + Vector2(-140, 85),
-				]
-			),
-			ear_color
+		var upright_ears: bool = _breed_contains_any(
+			["Husky", "Akita", "Corgi", "Spitz", "Doberman", "Pinscher"]
 		)
-		draw_colored_polygon(
-			PackedVector2Array(
-				[
-					center + Vector2(105, -80),
-					center + Vector2(190, -55 + ear_drop),
-					center + Vector2(140, 85),
-				]
-			),
-			ear_color
-		)
+		if upright_ears:
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(-125, -75),
+						center + Vector2(-100, -195 + ear_drop),
+						center + Vector2(-30, -120)
+					]
+				),
+				ear_color
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(125, -75),
+						center + Vector2(100, -195 + ear_drop),
+						center + Vector2(30, -120)
+					]
+				),
+				ear_color
+			)
+		else:
+			var ear_width: float = (
+				225.0 if _breed_contains_any(["Basset", "Beagle", "Dachshund"]) else 190.0
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(-105, -80),
+						center + Vector2(-ear_width, -55 + ear_drop),
+						center + Vector2(-140, 85)
+					]
+				),
+				ear_color
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(105, -80),
+						center + Vector2(ear_width, -55 + ear_drop),
+						center + Vector2(140, 85)
+					]
+				),
+				ear_color
+			)
+	if (
+		breed_name.contains("Poodle")
+		or breed_name.contains("Samoieda")
+		or breed_name.contains("Maine Coon")
+	):
+		for curl: int in 8:
+			var curl_angle: float = TAU * curl / 8.0
+			draw_circle(
+				center + Vector2(cos(curl_angle), sin(curl_angle)) * 140.0, 28, fur.lightened(0.08)
+			)
 	if reaction_kind == &"dizzy":
 		for eye_x: float in [-52.0, 52.0]:
 			draw_line(
@@ -343,6 +456,13 @@ func _draw_pet(center: Vector2) -> void:
 	draw_circle(center + Vector2(92, 28), 17, Color("ff8fb1", 0.42))
 
 
+func _breed_contains_any(labels: Array[String]) -> bool:
+	for label: String in labels:
+		if breed_name.contains(label):
+			return true
+	return false
+
+
 func _draw_pet_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
 	var points: PackedVector2Array = PackedVector2Array()
 	for i: int in 32:
@@ -361,21 +481,76 @@ func _box(color: Color, radius: float) -> StyleBoxFlat:
 	return box
 
 
-func _draw_service_tool(at: Vector2) -> void:
-	if service_mode == &"bath":
-		draw_rect(Rect2(at + Vector2(-34, -24), Vector2(68, 48)), Color("ff8fb1"))
-		draw_circle(at + Vector2(25, -18), 13, Color("f8ffff", 0.95))
-		draw_arc(at, 40, 0, TAU, 20, Color("ffffff", 0.8), 4)
-	else:
-		draw_rect(Rect2(at + Vector2(-25, -48), Vector2(50, 82)), Color("4fc3f7"))
-		draw_rect(Rect2(at + Vector2(-34, -60), Vector2(68, 18)), Color("b0bec5"))
-		for tooth: int in 5:
-			draw_line(
-				at + Vector2(-28 + tooth * 14, -60),
-				at + Vector2(-28 + tooth * 14, -72),
-				Color("263238"),
-				3,
+func _draw_tool_shelf() -> void:
+	# Prateleira integrada ao cenário: utensílios são objetos arrastáveis, não botões retangulares.
+	draw_rect(Rect2(825, 420, 170, 825), Color("6d4c41", 0.18), true)
+	for shelf_y: float in [585.0, 745.0, 905.0, 1065.0, 1225.0]:
+		draw_rect(Rect2(810, shelf_y, 200, 22), Color("855b4d"), true)
+		draw_line(Vector2(825, shelf_y + 22), Vector2(855, shelf_y + 52), Color("5d4037"), 10)
+		draw_line(Vector2(995, shelf_y + 22), Vector2(965, shelf_y + 52), Color("5d4037"), 10)
+	for tool: StringName in TOOL_POSITIONS:
+		var unlocked: bool = player_level >= int(TOOL_LEVELS[tool])
+		var shelf_alpha: float = (
+			0.12 if tool_visible and tool == active_tool else (1.0 if unlocked else 0.28)
+		)
+		_draw_tool(tool, TOOL_POSITIONS[tool], shelf_alpha)
+		if not unlocked:
+			draw_circle(TOOL_POSITIONS[tool], 29, Color("263238", 0.76))
+			draw_string(
+				ThemeDB.fallback_font,
+				TOOL_POSITIONS[tool] + Vector2(-28, 10),
+				"Nv.%d" % int(TOOL_LEVELS[tool]),
+				HORIZONTAL_ALIGNMENT_CENTER,
+				56,
+				20,
+				Color.WHITE,
 			)
+
+
+func _draw_tool(tool: StringName, at: Vector2, alpha: float) -> void:
+	var pink: Color = Color("ff8fb1", alpha)
+	var blue: Color = Color("4fc3f7", alpha)
+	var dark: Color = Color("263238", alpha)
+	var white: Color = Color("f8ffff", alpha)
+	if tool == &"soap":
+		draw_rect(Rect2(at + Vector2(-36, -35), Vector2(72, 70)), pink, true)
+		draw_circle(at + Vector2(28, -28), 15, white)
+		draw_arc(at, 43, 0, TAU, 24, white, 5)
+	elif tool == &"clipper":
+		draw_rect(Rect2(at + Vector2(-27, -45), Vector2(54, 82)), blue, true)
+		draw_rect(Rect2(at + Vector2(-38, -58), Vector2(76, 18)), Color("b0bec5", alpha), true)
+		for tooth: int in 6:
+			draw_line(
+				at + Vector2(-32 + tooth * 13, -58), at + Vector2(-32 + tooth * 13, -73), dark, 4
+			)
+	elif tool == &"dryer":
+		draw_circle(at + Vector2(-10, -8), 38, pink)
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					at + Vector2(14, -27),
+					at + Vector2(65, -16),
+					at + Vector2(65, 10),
+					at + Vector2(14, 14)
+				]
+			),
+			blue
+		)
+		draw_line(at + Vector2(-12, 20), at + Vector2(-30, 59), dark, 19)
+	elif tool == &"perfume":
+		draw_rect(Rect2(at + Vector2(-30, -15), Vector2(60, 65)), Color("ce93d8", alpha), true)
+		draw_rect(Rect2(at + Vector2(-18, -42), Vector2(36, 28)), Color("ffd54f", alpha), true)
+		draw_line(at + Vector2(0, -42), at + Vector2(45, -50), dark, 8)
+		for spray: int in 3:
+			draw_circle(at + Vector2(62 + spray * 15, -52 - spray * 5), 5, Color("e1f5fe", alpha))
+	else:
+		draw_colored_polygon(
+			PackedVector2Array([at, at + Vector2(-58, -38), at + Vector2(-55, 38)]), pink
+		)
+		draw_colored_polygon(
+			PackedVector2Array([at, at + Vector2(58, -38), at + Vector2(55, 38)]), pink
+		)
+		draw_circle(at, 22, Color("ffd54f", alpha))
 
 
 func _draw_heart(center: Vector2, radius: float, color: Color) -> void:

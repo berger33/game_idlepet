@@ -1,13 +1,14 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 5
+const SAVE_VERSION: int = 6
 const MAX_CAREER_LEVEL: int = 120
 var coins: float = 0.0
 var embers: int = 0
 var franchise_tokens: int = 0
 var total_coins: float = 0.0
 var bath_upgrade_level: int = 0
+var tool_upgrade_levels: Dictionary = {"soap": 0, "clipper": 0, "dryer": 0, "perfume": 0, "bow": 0}
 var combo: int = 0
 var best_combo: int = 0
 var services_completed: int = 0
@@ -94,6 +95,33 @@ func buy_bath_upgrade() -> bool:
 	return true
 
 
+func tool_upgrade_cost(tool_id: StringName) -> float:
+	var level: int = clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30)
+	var base_cost: float = (
+		{&"soap": 18.0, &"clipper": 35.0, &"dryer": 55.0, &"perfume": 80.0, &"bow": 120.0}
+		. get(tool_id, 25.0)
+	)
+	return ceil(base_cost * pow(1.24, level))
+
+
+func buy_tool_upgrade(tool_id: StringName) -> bool:
+	var key: String = String(tool_id)
+	var level: int = clampi(int(tool_upgrade_levels.get(key, 0)), 0, 30)
+	if level >= 30 or not spend_coins(tool_upgrade_cost(tool_id), &"tool_upgrade"):
+		return false
+	tool_upgrade_levels[key] = level + 1
+	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
+	EventBus.upgrade_purchased.emit(tool_id, level + 1)
+	Analytics.track(&"tool_upgrade", {"id": key, "level": level + 1})
+	_check_achievements()
+	SaveManager.request_save()
+	return true
+
+
+func tool_bonus(tool_id: StringName) -> float:
+	return 1.0 + clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30) * 0.04
+
+
 func register_review(stars: int) -> void:
 	var safe_stars: int = clampi(stars, 1, 5)
 	reviews_total += 1
@@ -115,6 +143,7 @@ func to_dictionary() -> Dictionary:
 		"franchise_tokens": franchise_tokens,
 		"total_coins": total_coins,
 		"bath_upgrade_level": bath_upgrade_level,
+		"tool_upgrade_levels": tool_upgrade_levels,
 		"combo": combo,
 		"best_combo": best_combo,
 		"services_completed": services_completed,
@@ -150,6 +179,7 @@ func apply_dictionary(data: Dictionary) -> void:
 	franchise_tokens = maxi(0, int(data.get("franchise_tokens", 0)))
 	total_coins = maxf(coins, float(data.get("total_coins", coins)))
 	bath_upgrade_level = clampi(int(data.get("bath_upgrade_level", 0)), 0, MAX_CAREER_LEVEL)
+	tool_upgrade_levels = _safe_tool_levels(data.get("tool_upgrade_levels", {}))
 	combo = clampi(int(data.get("combo", 0)), 0, 1000)
 	best_combo = maxi(combo, int(data.get("best_combo", combo)))
 	services_completed = maxi(0, int(data.get("services_completed", 0)))
@@ -217,6 +247,14 @@ func _valid_pet_array(value: Variant) -> Array[String]:
 	for id: String in _safe_string_array(value):
 		if ContentDB.has_pet(id):
 			result.append(id)
+	return result
+
+
+func _safe_tool_levels(value: Variant) -> Dictionary:
+	var source: Dictionary = value if value is Dictionary else {}
+	var result: Dictionary = {}
+	for tool_id: String in ["soap", "clipper", "dryer", "perfume", "bow"]:
+		result[tool_id] = clampi(int(source.get(tool_id, 0)), 0, 30)
 	return result
 
 
@@ -339,6 +377,18 @@ func _add_xp(amount: int) -> void:
 		EventBus.toast_requested.emit(
 			"Nível %d! +%d moedas" % [player_level, level_reward], Color("4fc3f7")
 		)
+		AudioManager.play(&"level_up")
+		HapticsManager.success()
+		var tool_unlocks: Dictionary = {
+			3: "Máquina de tosa + Sala de Tosa",
+			5: "Secador + Sala de Secagem",
+			7: "Perfume + Spa",
+			10: "Lacinho + Ateliê de Estilo",
+		}
+		if tool_unlocks.has(player_level):
+			EventBus.toast_requested.emit(
+				"NOVO! " + String(tool_unlocks[player_level]), Color("ff8fb1")
+			)
 		Analytics.track(&"level_up", {"level": player_level})
 		_reconcile_career_unlocks(true)
 

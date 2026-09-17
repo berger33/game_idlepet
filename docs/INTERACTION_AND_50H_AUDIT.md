@@ -29,7 +29,7 @@ Todos os `Button` são criados por uma única factory e ligados a `InteractionFX
 
 ## Catálogo e cadência
 
-O catálogo jogável passou de 10 para **30 pets**: 15 cães e 15 gatos, do nível 1 ao 120. Inclui vira-lata caramelo, Shih-tzu, Pinscher, Golden, Poodle, Yorkshire, Bulldog francês, Border Collie, Spitz, Beagle, Dachshund, Labrador, Samoieda; SRD branco, frajola, Siamês, tigrado, Angorá, Bombaim, Abissínio, Azul Russo, Maine Coon, Bobtail Japonês, Bengal, Ragdoll, Sphynx e Khao Manee. Cada entrada possui raça, espécie, raridade, temperamento, cidade, paciência, tip, serviço preferido e paleta.
+O catálogo jogável passou de 10 para **50 pets**: 25 cães e 25 gatos, do nível 1 ao 120. Inclui vira-lata caramelo, Shih-tzu, Pinscher, Golden, Poodle, Yorkshire, Bulldog francês, Border Collie, Spitz, Beagle, Dachshund, Labrador, Samoieda; SRD branco, frajola, Siamês, tigrado, Angorá, Bombaim, Abissínio, Azul Russo, Maine Coon, Bobtail Japonês, Bengal, Ragdoll, Sphynx e Khao Manee. Cada entrada possui raça, espécie, raridade, temperamento, cidade, paciência, tip, serviço preferido e paleta.
 
 Desbloqueios são distribuídos em níveis 1, 2, 4, 6 e depois a cada 3–8 níveis. Isso oferece novidade muito cedo sem despejar sistemas e mantém metas de coleção até o nível 120.
 
@@ -78,5 +78,5 @@ A duração é progressão modelada, não garantia de compulsão ou de retençã
 3. Arraste deve exibir ferramenta sob o dedo e escondê-la ao soltar/cancelar.
 4. Gato deve ser reconhecível sem texto em teste de cinco segundos.
 5. Modal aberto não pode acionar pet ou estação atrás dele.
-6. Nível/XP e desbloqueio devem sobreviver ao save v5 e migrações anteriores.
+6. Nível/XP e desbloqueio devem sobreviver ao save v6 e migrações anteriores.
 7. Medir p50 real de serviço e atualizar apenas as hipóteses do simulador, preservando piso de 50 horas com conteúdo, não grind vazio.

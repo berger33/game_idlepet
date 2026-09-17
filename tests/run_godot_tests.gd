@@ -57,7 +57,7 @@ func _test_economy_invariants() -> void:
 
 
 func _test_content_contract() -> void:
-	_expect(ContentDB.pets.size() == 30, "catálogo deve carregar 30 pets")
+	_expect(ContentDB.pets.size() == 50, "catálogo deve carregar 50 pets")
 	_expect(ContentDB.has_pet("caramelo"), "Caramelo deve existir")
 	_expect(ContentDB.establishment_for_level(120) == 10, "nível 120 deve abrir tier 10")
 

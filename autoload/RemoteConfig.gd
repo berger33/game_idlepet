@@ -8,7 +8,7 @@ const DEFAULTS: Dictionary = {
 	"bath_target_max": 0.96,
 	"upgrade_cost_base": 25.0,
 	"upgrade_cost_growth": 1.18,
-	"upgrade_income_growth": 1.15,
+	"upgrade_income_growth": 1.075,
 	"offline_rate": 0.5,
 	"offline_cap_hours": 2.0,
 	"autosave_seconds": 15.0,

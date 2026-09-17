@@ -3,11 +3,29 @@ extends Control
 
 const BathServiceScript: Script = preload("res://core/gameplay/BathService.gd")
 const PetShopCanvasScript: Script = preload("res://core/gameplay/PetShopCanvas.gd")
+const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
 const PINK: Color = Color("ff8fb1")
 const BLUE: Color = Color("4fc3f7")
 const GREEN: Color = Color("7ed957")
 const CREAM: Color = Color("fff3e0")
 const CHARCOAL: Color = Color("263238")
+const SERVICE_TOOLS: Dictionary = {
+	&"bath": &"soap",
+	&"groom": &"clipper",
+	&"dry": &"dryer",
+	&"perfume": &"perfume",
+	&"style": &"bow"
+}
+const SERVICE_UNLOCK_LEVELS: Dictionary = {
+	&"bath": 1, &"groom": 3, &"dry": 5, &"perfume": 7, &"style": 10
+}
+const SERVICE_LABELS: Dictionary = {
+	&"bath": "ensaboar",
+	&"groom": "tosar",
+	&"dry": "secar",
+	&"perfume": "perfumar",
+	&"style": "colocar lacinho"
+}
 
 var bath: BathService
 var world: PetShopCanvas
@@ -17,10 +35,9 @@ var review_label: Label
 var order_card: PanelContainer
 var order_label: Label
 var instruction_label: Label
-var progress_bar: ProgressBar
-var timer_label: Label
 var primary_button: Button
 var upgrade_button: Button
+var tool_upgrade_button: Button
 var result_panel: PanelContainer
 var result_title: Label
 var result_detail: Label
@@ -32,12 +49,13 @@ var current_service: StringName = &"bath"
 var current_pet_id: String = "caramelo"
 var current_pet_name: String = "Caramelo"
 var pet_touch_gate: float = 0.0
+var meta_backdrop: TextureRect
 var meta_panel: PanelContainer
 var meta_title: Label
 var meta_content: Label
 var meta_action_button: Button
-var perfect_zone: ColorRect
-var tutorial_pulse_time: float = 0.0
+var dragged_tool: StringName = &""
+var wrong_tool_gate: float = 0.0
 
 
 func _ready() -> void:
@@ -56,31 +74,15 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	tutorial_pulse_time += delta
-	if is_instance_valid(primary_button):
-		if GameState.services_completed == 0 and bath.state == BathService.State.WAITING:
-			var pulse: float = 0.9 + sin(tutorial_pulse_time * 4.0) * 0.1
-			primary_button.modulate = Color(1.0, 1.0, 1.0, pulse)
-		else:
-			primary_button.modulate = Color.WHITE
 	bubble_sound_gate = maxf(0.0, bubble_sound_gate - delta)
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
+	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
 	if bath.state == BathService.State.ACTIVE:
 		if bath.tick(delta):
 			_fail(&"timeout")
 			return
-		progress_bar.value = bath.progress * 100.0
-		timer_label.text = "%.1fs" % bath.time_left
-		world.progress = bath.progress
-		primary_button.disabled = bath.progress < 0.35
-		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
-			progress_bar.modulate = GREEN
-			instruction_label.text = "PERFEITO! Finalize agora!"
-		elif bath.progress > bath.target_maximum:
-			progress_bar.modulate = Color("ef5350")
-			instruction_label.text = "Espuma demais! Finalize!"
-		else:
-			progress_bar.modulate = Color.WHITE
+		# O único progresso visual é o aro que acompanha o utensílio arrastado.
+		world.progress = clampf(bath.progress / bath.target_minimum, 0.0, 1.0)
 	elif next_client_timer > 0.0:
 		next_client_timer -= delta
 		if next_client_timer <= 0.0:
@@ -93,34 +95,61 @@ func _input(event: InputEvent) -> void:
 		or (is_instance_valid(result_panel) and result_panel.visible)
 	):
 		return
-	if bath.state != BathService.State.ACTIVE:
-		if event is InputEventScreenTouch:
-			var idle_touch: InputEventScreenTouch = event
-			if idle_touch.pressed and _pet_hit(idle_touch.position):
-				_react_to_pet_touch()
-		elif event is InputEventMouseButton:
-			var idle_mouse: InputEventMouseButton = event
-			if idle_mouse.pressed and idle_mouse.button_index == MOUSE_BUTTON_LEFT:
-				if _pet_hit(idle_mouse.position):
-					_react_to_pet_touch()
-		return
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
-		dragging = touch.pressed and _pet_hit(touch.position)
-		if not touch.pressed:
-			bath.release_pointer()
-			world.release_tool()
-	elif event is InputEventScreenDrag and dragging:
-		_rub((event as InputEventScreenDrag).position)
+		if touch.pressed:
+			_begin_pointer(touch.position)
+		else:
+			_end_pointer()
+	elif event is InputEventScreenDrag:
+		_move_pointer((event as InputEventScreenDrag).position)
 	elif event is InputEventMouseButton:
 		var mouse_button: InputEventMouseButton = event
 		if mouse_button.button_index == MOUSE_BUTTON_LEFT:
-			dragging = mouse_button.pressed and _pet_hit(mouse_button.position)
-			if not mouse_button.pressed:
-				bath.release_pointer()
-				world.release_tool()
-	elif event is InputEventMouseMotion and dragging:
-		_rub((event as InputEventMouseMotion).position)
+			if mouse_button.pressed:
+				_begin_pointer(mouse_button.position)
+			else:
+				_end_pointer()
+	elif event is InputEventMouseMotion:
+		_move_pointer((event as InputEventMouseMotion).position)
+
+
+func _begin_pointer(point: Vector2) -> void:
+	dragged_tool = world.tool_at(point)
+	if not dragged_tool.is_empty():
+		dragging = true
+		world.grab_tool(dragged_tool, point)
+		AudioManager.play(&"tool_pickup")
+		HapticsManager.light()
+	elif bath.state == BathService.State.WAITING and _pet_hit(point):
+		_react_to_pet_touch()
+
+
+func _move_pointer(point: Vector2) -> void:
+	if not dragging or dragged_tool.is_empty():
+		return
+	world.move_tool(point)
+	if not _pet_hit(point):
+		bath.release_pointer()
+		return
+	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
+	if dragged_tool != required_tool:
+		if wrong_tool_gate <= 0.0:
+			wrong_tool_gate = 0.8
+			_show_toast("Use %s neste pedido" % _tool_display_name(required_tool), Color("ffd54f"))
+			AudioManager.play(&"error_soft")
+		return
+	if bath.state == BathService.State.WAITING:
+		_start_bath()
+	if bath.state == BathService.State.ACTIVE:
+		_rub(point)
+
+
+func _end_pointer() -> void:
+	dragging = false
+	dragged_tool = &""
+	bath.release_pointer()
+	world.release_tool()
 
 
 func _pet_hit(point: Vector2) -> bool:
@@ -137,7 +166,7 @@ func _react_to_pet_touch() -> void:
 	HapticsManager.light()
 	_show_toast("%s  •  carinho %d/50" % [message, affection], PINK)
 	if GameState.services_completed == 0 and affection >= 3:
-		instruction_label.text = "Caramelo está pronto! Toque em SERVIR para começar o banho."
+		instruction_label.text = "Caramelo está pronto! Arraste o sabonete até ele."
 	Analytics.track(&"pet_interacted", {"pet_id": current_pet_id, "kind": "pet"})
 
 
@@ -146,17 +175,41 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		AudioManager.play(&"bubble" if current_service == &"bath" else &"clipper")
-		bubble_sound_gate = 0.12
+		AudioManager.play(_service_sound())
+		bubble_sound_gate = 0.11
 	EventBus.service_progress.emit(bath.progress)
+	if bath.progress >= bath.target_minimum:
+		_finish_bath()
+
+
+func _service_sound() -> StringName:
+	return (
+		{
+			&"bath": &"bubble",
+			&"groom": &"clipper",
+			&"dry": &"dryer",
+			&"perfume": &"spray",
+			&"style": &"bow",
+		}
+		. get(current_service, &"bubble")
+	)
+
+
+func _tool_display_name(tool: StringName) -> String:
+	return (
+		{
+			&"soap": "o sabonete",
+			&"clipper": "a máquina de tosa",
+			&"dryer": "o secador",
+			&"perfume": "o perfume",
+			&"bow": "o lacinho",
+		}
+		. get(tool, "o utensílio")
+	)
 
 
 func _on_primary_pressed() -> void:
-	if bath.state == BathService.State.WAITING:
-		_start_bath()
-	elif bath.state == BathService.State.ACTIVE:
-		_finish_bath()
-	elif bath.state == BathService.State.COMPLETE or bath.state == BathService.State.FAILED:
+	if bath.state == BathService.State.COMPLETE or bath.state == BathService.State.FAILED:
 		_dismiss_result()
 
 
@@ -165,31 +218,43 @@ func _start_bath() -> void:
 	world.pet_wet = current_service == &"bath"
 	world.service_mode = current_service
 	instruction_label.text = (
-		"Esfregue em círculos e pare na faixa verde"
-		if current_service == &"bath"
-		else "Deslize a máquina pelo pelo e pare na faixa verde"
+		"%s sobre o pet • o aro completa sozinho"
+		% String(SERVICE_LABELS[current_service]).capitalize()
 	)
-	primary_button.text = "FINALIZAR BANHO" if current_service == &"bath" else "FINALIZAR TOSA"
-	primary_button.disabled = true
-	progress_bar.value = 0
-	progress_bar.show()
-	timer_label.show()
 	order_card.hide()
+	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
 	EventBus.service_started.emit(current_service)
 
 
 func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
+	_end_pointer()
 	if quality == &"perfect" or quality == &"good":
 		var base_reward: float = (
-			RemoteConfig.get_float("bath_base_reward") if current_service == &"bath" else 20.0
+			{
+				&"bath": RemoteConfig.get_float("bath_base_reward"),
+				&"groom": 20.0,
+				&"dry": 24.0,
+				&"perfume": 30.0,
+				&"style": 38.0,
+			}
+			. get(current_service, 12.0)
 		)
 		var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
 		var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
 		var reward: float = (
-			Economy.service_reward(
-				base_reward, quality, GameState.bath_upgrade_level, GameState.combo
+			(
+				Economy
+				. service_reward(
+					base_reward,
+					quality,
+					GameState.bath_upgrade_level,
+					GameState.combo,
+					int(
+						GameState.tool_upgrade_levels.get(String(SERVICE_TOOLS[current_service]), 0)
+					),
+				)
 			)
 			* LiveOps.multiplier_for(current_service)
 			* affection_multiplier
@@ -218,7 +283,14 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
 	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
 	var outcome: String = (
-		"saiu limpinho!" if current_service == &"bath" else "ganhou um visual novo!"
+		{
+			&"bath": "saiu limpinho!",
+			&"groom": "ganhou um corte novo!",
+			&"dry": "ficou sequinho e fofo!",
+			&"perfume": "ficou muito cheiroso!",
+			&"style": "amou o novo lacinho!",
+		}
+		. get(current_service, "recebeu cuidado especial!")
 	)
 	var xp_reward: int = 15 if quality == &"perfect" else 10
 	result_detail.text = (
@@ -226,16 +298,16 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		% ["★".repeat(stars), int(reward), xp_reward, current_pet_name, outcome]
 	)
 	_pop_panel(result_panel)
-	primary_button.text = "PRÓXIMO CLIENTE"
+	primary_button.text = "✓  PRÓXIMO CLIENTE"
 	primary_button.disabled = false
-	progress_bar.hide()
-	timer_label.hide()
+	primary_button.show()
 	_refresh_economy()
 
 
 func _fail(reason: StringName) -> void:
 	bath.state = BathService.State.FAILED
 	dragging = false
+	dragged_tool = &""
 	EventBus.service_failed.emit(current_service, reason)
 	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason)})
 	world.react_to_failure()
@@ -243,7 +315,7 @@ func _fail(reason: StringName) -> void:
 	HapticsManager.error()
 	result_title.text = "QUASE LÁ!"
 	result_title.modulate = Color("ef5350")
-	var action_name: String = "espuma" if current_service == &"bath" else "tosa"
+	var action_name: String = String(SERVICE_LABELS.get(current_service, "cuidado"))
 	var hint: String
 	if reason == &"timeout":
 		hint = "O tempo acabou. Faça o movimento com mais ritmo!"
@@ -253,10 +325,9 @@ func _fail(reason: StringName) -> void:
 		hint = "Leve a %s até a faixa verde antes de finalizar." % action_name
 	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
 	_pop_panel(result_panel)
-	primary_button.text = "TENTAR NOVAMENTE"
+	primary_button.text = "↻  TENTAR NOVAMENTE"
 	primary_button.disabled = false
-	progress_bar.hide()
-	timer_label.hide()
+	primary_button.show()
 
 
 func _dismiss_result() -> void:
@@ -269,21 +340,28 @@ func _dismiss_result() -> void:
 	current_pet_id = available_pets[GameState.services_completed % available_pets.size()]
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	current_pet_name = String(profile.get("name", "Caramelo"))
-	current_service = StringName(profile.get("preferred_service", "bath"))
-	if GameState.services_completed % 5 == 4:
-		current_service = &"groom"
+	var available_services: Array[StringName] = _available_services()
+	current_service = available_services[GameState.services_completed % available_services.size()]
 	_configure_current_service()
 	world.service_mode = current_service
 	order_card.hide()
 	instruction_label.text = "Novo cliente chegando..."
-	primary_button.text = "SERVIR %s" % current_pet_name
-	primary_button.disabled = true
+	primary_button.hide()
 	next_client_timer = 1.1
 
 
 func _new_client() -> void:
 	order_card.show()
-	var service_name: String = "Banho simples" if current_service == &"bath" else "Tosa higiênica"
+	var service_name: String = (
+		{
+			&"bath": "Banho com espuma",
+			&"groom": "Tosa higiênica",
+			&"dry": "Secagem macia",
+			&"perfume": "Perfume delicado",
+			&"style": "Laço especial",
+		}
+		. get(current_service, "Cuidado especial")
+	)
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	order_label.text = (
 		"%s\n%s • %s\n%d+ moedas"
@@ -291,17 +369,21 @@ func _new_client() -> void:
 			current_pet_name.to_upper(),
 			profile.get("breed", "Pet especial"),
 			service_name,
-			12 if current_service == &"bath" else 20,
+			int(
+				{&"bath": 12, &"groom": 20, &"dry": 24, &"perfume": 30, &"style": 38}.get(
+					current_service, 12
+				)
+			),
 		]
 	)
-	primary_button.text = "SERVIR %s" % current_pet_name.to_upper()
-	primary_button.disabled = false
+	primary_button.hide()
+	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 	instruction_label.text = (
-		"Faça carinho em %s ou toque em SERVIR para %s."
-		% [current_pet_name, "dar banho" if current_service == &"bath" else "tosar"]
+		"Arraste %s da prateleira até %s" % [_tool_display_name(required_tool), current_pet_name]
 	)
 	world.set_pet_profile(profile)
 	world.arrive()
+	_refresh_economy()
 	var arrival_params: Dictionary = {
 		"rarity": profile.get("rarity", "common"),
 		"pet_id": current_pet_id,
@@ -311,24 +393,32 @@ func _new_client() -> void:
 
 
 func _configure_current_service() -> void:
-	if current_service == &"groom":
-		bath.configure(7.0, 0.78, 0.93, 1650.0)
-	else:
-		bath.configure(
-			RemoteConfig.get_float("bath_duration"),
-			RemoteConfig.get_float("bath_target_min"),
-			RemoteConfig.get_float("bath_target_max"),
-			1450.0
-		)
-	if is_instance_valid(perfect_zone):
-		perfect_zone.anchor_left = bath.target_minimum
-		perfect_zone.anchor_right = bath.target_maximum
+	var duration: float = (
+		{&"bath": 10.0, &"groom": 11.0, &"dry": 9.0, &"perfume": 8.0, &"style": 8.0}
+		. get(current_service, 10.0)
+	)
+	var required_distance: float = (
+		{&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}
+		. get(current_service, 1350.0)
+	)
+	bath.configure(duration, 0.86, 1.0, required_distance)
+	if is_instance_valid(world):
+		world.service_mode = current_service
+		world.player_level = GameState.player_level
+
+
+func _available_services() -> Array[StringName]:
+	var result: Array[StringName] = []
+	for service: StringName in SERVICE_UNLOCK_LEVELS:
+		if GameState.player_level >= int(SERVICE_UNLOCK_LEVELS[service]):
+			result.append(service)
+	return result if not result.is_empty() else [&"bath"]
 
 
 func _on_upgrade_pressed() -> void:
 	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
 	if GameState.buy_bath_upgrade():
-		AudioManager.play(&"coin")
+		AudioManager.play(&"upgrade")
 		HapticsManager.success()
 		EventBus.toast_requested.emit(
 			"Estação nível %d! Recompensa maior." % GameState.bath_upgrade_level, GREEN
@@ -337,6 +427,18 @@ func _on_upgrade_pressed() -> void:
 		EventBus.toast_requested.emit(
 			"Faltam %d moedas" % int(cost - GameState.coins), Color("ef5350")
 		)
+	_refresh_economy()
+
+
+func _on_tool_upgrade_pressed() -> void:
+	var tool_id: StringName = StringName(SERVICE_TOOLS[current_service])
+	var cost: float = GameState.tool_upgrade_cost(tool_id)
+	if GameState.buy_tool_upgrade(tool_id):
+		AudioManager.play(&"upgrade")
+		HapticsManager.success()
+		_show_toast("%s melhorado! +4%% de bônus" % _tool_display_name(tool_id).capitalize(), GREEN)
+	else:
+		_show_toast("Faltam %d moedas" % maxi(0, int(cost - GameState.coins)), Color("ef5350"))
 	_refresh_economy()
 
 
@@ -349,15 +451,28 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 	review_label.text = "★ %.1f" % GameState.review_average()
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
+		world.player_level = GameState.player_level
 	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
+	var station_bonus: float = (
+		(Economy.income_multiplier(GameState.bath_upgrade_level) - 1.0) * 100.0
+	)
 	if GameState.bath_upgrade_level >= GameState.MAX_CAREER_LEVEL:
-		upgrade_button.text = "ESTAÇÃO NO NÍVEL MÁXIMO"
+		upgrade_button.text = "ESTAÇÃO MÁXIMA\n+%.0f%%" % station_bonus
 		upgrade_button.disabled = true
 	else:
 		upgrade_button.disabled = false
 		upgrade_button.text = (
-			"MELHORAR ESTAÇÃO  Nv.%d\n%d moedas" % [GameState.bath_upgrade_level, int(cost)]
+			"ESTAÇÃO Nv.%d  +%.1f%%\n⬆ +7,5%% • %d moedas"
+			% [GameState.bath_upgrade_level, station_bonus, int(cost)]
 		)
+	var tool_id: StringName = StringName(SERVICE_TOOLS[current_service])
+	var tool_level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
+	var tool_cost: float = GameState.tool_upgrade_cost(tool_id)
+	tool_upgrade_button.text = (
+		"%s Nv.%d  +%d%%\n⬆ +4%% • %d moedas"
+		% [_tool_display_name(tool_id).capitalize(), tool_level, tool_level * 4, int(tool_cost)]
+	)
+	tool_upgrade_button.disabled = tool_level >= 30
 
 
 func _show_pending_offline_reward() -> void:
@@ -410,14 +525,6 @@ func _build_interface() -> void:
 	coin_label = _pill(top_bar, "0", Color("ffd54f"), 280)
 	review_label = _pill(top_bar, "★ 5.0", PINK, 235)
 	combo_label = _pill(top_bar, "COMBO ×1", GREEN, 300)
-	var record: Button = _button("● MOMENTO", Color("ef5350"), 155, 74)
-	record.tooltip_text = "Exportação de clipe entra no Vertical Slice"
-	record.pressed.connect(
-		func() -> void:
-			_show_toast("Momento marcado! Export no Vertical Slice.", PINK)
-			Analytics.track(&"clip_marker", {"type": "bath"})
-	)
-	top_bar.add_child(record)
 
 	order_card = PanelContainer.new()
 	order_card.position = Vector2(65, 310)
@@ -434,8 +541,8 @@ func _build_interface() -> void:
 
 	var bottom: PanelContainer = PanelContainer.new()
 	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	# Bottom sheet alto o suficiente para o CTA aparecer também no player embutido do editor.
-	bottom.offset_top = -850.0
+	# Sheet abaixo da prateleira: o cenário e todos os utensílios continuam arrastáveis.
+	bottom.offset_top = -680.0
 	bottom.offset_bottom = 0.0
 	bottom.add_theme_stylebox_override("panel", _style(Color("fffaf3"), 54, 42, Color("e6cbb5"), 4))
 	add_child(bottom)
@@ -443,55 +550,29 @@ func _build_interface() -> void:
 	column.add_theme_constant_override("separation", 18)
 	bottom.add_child(column)
 	instruction_label = Label.new()
-	instruction_label.text = "Faça carinho no Caramelo ou toque em SERVIR."
+	instruction_label.text = "Arraste o sabonete da prateleira até Caramelo"
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.add_theme_font_size_override("font_size", 34)
 	instruction_label.add_theme_color_override("font_color", CHARCOAL)
 	instruction_label.custom_minimum_size.y = 52
 	column.add_child(instruction_label)
-	var progress_row: HBoxContainer = HBoxContainer.new()
-	progress_row.add_theme_constant_override("separation", 20)
-	column.add_child(progress_row)
-	progress_bar = ProgressBar.new()
-	progress_bar.min_value = 0
-	progress_bar.max_value = 100
-	progress_bar.show_percentage = false
-	progress_bar.custom_minimum_size = Vector2(790, 55)
-	progress_bar.add_theme_stylebox_override("background", _style(Color("dbe6e8"), 25, 0))
-	progress_bar.add_theme_stylebox_override("fill", _style(BLUE, 25, 0))
-	perfect_zone = ColorRect.new()
-	perfect_zone.color = Color("7ed957", 0.42)
-	perfect_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	perfect_zone.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	perfect_zone.anchor_left = 0.82
-	perfect_zone.anchor_right = 0.96
-	perfect_zone.offset_left = 0.0
-	perfect_zone.offset_right = 0.0
-	progress_bar.add_child(perfect_zone)
-	progress_row.add_child(progress_bar)
-	timer_label = Label.new()
-	timer_label.text = "6.0s"
-	timer_label.add_theme_font_size_override("font_size", 34)
-	timer_label.add_theme_color_override("font_color", CHARCOAL)
-	timer_label.custom_minimum_size = Vector2(110, 55)
-	progress_row.add_child(timer_label)
-	progress_bar.hide()
-	timer_label.hide()
-	primary_button = _button("1. SERVIR CARAMELO", PINK, 0, 105)
-	primary_button.pressed.connect(_on_primary_pressed)
-	column.add_child(primary_button)
-	column.move_child(primary_button, 0)
-	upgrade_button = _button("MELHORAR BANHEIRA", BLUE, 0, 98)
+	var upgrades_row: HBoxContainer = HBoxContainer.new()
+	upgrades_row.add_theme_constant_override("separation", 16)
+	column.add_child(upgrades_row)
+	upgrade_button = _button("ESTAÇÃO", BLUE, 480, 106)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
-	column.add_child(upgrade_button)
+	upgrades_row.add_child(upgrade_button)
+	tool_upgrade_button = _button("UTENSÍLIO", Color("ce93d8"), 480, 106)
+	tool_upgrade_button.pressed.connect(_on_tool_upgrade_pressed)
+	upgrades_row.add_child(tool_upgrade_button)
 	var nav: HBoxContainer = HBoxContainer.new()
 	nav.add_theme_constant_override("separation", 12)
 	column.add_child(nav)
 	for item: Dictionary in [
-		{"id": "missions", "label": "MISSÕES"},
-		{"id": "collection", "label": "COLEÇÃO"},
-		{"id": "map", "label": "MAPA"},
-		{"id": "settings", "label": "AJUSTES"}
+		{"id": "missions", "label": "★ MISSÕES"},
+		{"id": "collection", "label": "♥ PETS"},
+		{"id": "map", "label": "⌂ MAPA"},
+		{"id": "settings", "label": "⚙ AJUSTES"}
 	]:
 		var nav_button: Button = _button(String(item["label"]), CHARCOAL, 220, 66)
 		nav_button.add_theme_font_size_override("font_size", 24)
@@ -520,6 +601,9 @@ func _build_interface() -> void:
 	result_detail.add_theme_font_size_override("font_size", 39)
 	result_detail.add_theme_color_override("font_color", Color.WHITE)
 	result_column.add_child(result_detail)
+	primary_button = _button("✓  PRÓXIMO CLIENTE", GREEN, 0, 105)
+	primary_button.pressed.connect(_on_primary_pressed)
+	result_column.add_child(primary_button)
 	result_panel.hide()
 
 	toast_layer = Control.new()
@@ -529,6 +613,14 @@ func _build_interface() -> void:
 
 
 func _build_meta_panel() -> void:
+	meta_backdrop = TextureRect.new()
+	meta_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	meta_backdrop.texture = MENU_BACKGROUND
+	meta_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	meta_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	meta_backdrop.modulate = Color(0.42, 0.35, 0.48, 0.92)
+	meta_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(meta_backdrop)
 	meta_panel = PanelContainer.new()
 	meta_panel.position = Vector2(80, 290)
 	meta_panel.size = Vector2(920, 950)
@@ -551,14 +643,28 @@ func _build_meta_panel() -> void:
 	meta_action_button = _button("COLETAR RECOMPENSAS", GREEN, 0, 90)
 	meta_action_button.pressed.connect(_claim_available_rewards)
 	column.add_child(meta_action_button)
-	var close: Button = _button("VOLTAR AO PETSHOP", PINK, 0, 90)
-	close.pressed.connect(func() -> void: meta_panel.hide())
+	var close: Button = _button("↙  VOLTAR AO PETSHOP", PINK, 0, 90)
+	close.pressed.connect(_close_meta)
 	column.add_child(close)
 	meta_panel.hide()
+	meta_backdrop.hide()
+
+
+func _close_meta() -> void:
+	meta_panel.hide()
+	meta_backdrop.hide()
+	AudioManager.play(&"tap")
 
 
 func _open_meta(section: StringName) -> void:
+	meta_backdrop.show()
+	meta_backdrop.pivot_offset = meta_backdrop.size * 0.5
+	meta_backdrop.scale = Vector2(1.035, 1.035)
+	meta_backdrop.create_tween().tween_property(meta_backdrop, "scale", Vector2.ONE, 3.5).set_trans(
+		Tween.TRANS_SINE
+	)
 	_pop_panel(meta_panel)
+	AudioManager.play(&"panel_open")
 	meta_action_button.show()
 	meta_action_button.text = "COLETAR RECOMPENSAS"
 	if section == &"missions":
@@ -755,4 +861,8 @@ func _style(
 	style.border_width_right = border_width
 	style.border_width_top = border_width
 	style.border_width_bottom = border_width
+	if radius >= 20:
+		style.shadow_color = Color("263238", 0.16)
+		style.shadow_size = 8
+		style.shadow_offset = Vector2(0, 6)
 	return style

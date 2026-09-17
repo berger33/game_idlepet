@@ -30,10 +30,11 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 5', state)
+        self.assertIn('const SAVE_VERSION: int = 6', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
-        self.assertIn('if version == 4:', migration)
-        self.assertIn('data["version"] = 5', migration)
+        self.assertIn('if version == 5:', migration)
+        self.assertIn('data["version"] = 6', migration)
+        self.assertIn('tool_upgrade_levels', state)
 
     def test_career_has_at_least_fifty_active_hours(self):
         rows = simulate_career()
@@ -44,9 +45,9 @@ class FoundationTests(unittest.TestCase):
 
     def test_pet_catalog_has_dogs_cats_and_long_term_unlocks(self):
         pets = json.loads(Path('data/pets.json').read_text(encoding='utf8'))['pets']
-        self.assertEqual(len(pets), 30)
-        self.assertEqual(sum(pet['species'] == 'dog' for pet in pets), 15)
-        self.assertEqual(sum(pet['species'] == 'cat' for pet in pets), 15)
+        self.assertEqual(len(pets), 50)
+        self.assertEqual(sum(pet['species'] == 'dog' for pet in pets), 25)
+        self.assertEqual(sum(pet['species'] == 'cat' for pet in pets), 25)
         levels = sorted(pet['unlock_level'] for pet in pets)
         self.assertEqual(max(levels), 120)
         self.assertLessEqual(max(b - a for a, b in zip(levels, levels[1:])), 8)
@@ -70,6 +71,19 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(set(active), {'daily_bath_5', 'daily_perfect_3', 'daily_upgrade_1'})
         self.assertTrue(all(mission['reward'] == {'coins': 75} for mission in active.values()))
 
+    def test_drag_tools_and_individual_upgrades_are_complete(self):
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        upgrades = json.loads(Path('data/upgrades.json').read_text(encoding='utf8'))['upgrades']
+        systems = {entry['system'] for entry in upgrades}
+        self.assertTrue({'soap', 'clipper', 'dryer', 'perfume', 'bow'} <= systems)
+        for tool in ('soap', 'clipper', 'dryer', 'perfume', 'bow'):
+            self.assertIn(f'&"{tool}"', main)
+            self.assertIn(f'&"{tool}"', canvas)
+        self.assertNotIn('ProgressBar.new()', main)
+        self.assertIn('buy_tool_upgrade', main)
+        self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
+
     def test_godot_47_compatibility_regressions(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
@@ -77,14 +91,19 @@ class FoundationTests(unittest.TestCase):
         self.assertNotIn('func draw_ellipse(', canvas)
         self.assertIn('func _draw_pet_ellipse(', canvas)
         self.assertNotIn('FILA  2', canvas)
-        self.assertIn('bottom.offset_top = -850.0', main)
-        self.assertIn('column.move_child(primary_button, 0)', main)
+        self.assertIn('bottom.offset_top = -680.0', main)
+        self.assertNotIn('ProgressBar.new()', main)
+        self.assertIn('world.tool_at(point)', main)
+        self.assertIn('draw_arc(tool_position, 66.0', canvas)
         self.assertIn('include_filter=""', presets)
         self.assertIn('exclude_filter=', presets)
         self.assertNotIn('platform="Android"', presets)
 
     def test_professional_backgrounds_exist_and_are_reasonable(self):
-        for name in ('petshop_quintal.png', 'petshop_tosa.png'):
+        for name in (
+            'petshop_quintal.png', 'petshop_tosa.png', 'petshop_secagem.png',
+            'petshop_perfume.png', 'petshop_estilo.png'
+        ):
             path = Path('art/backgrounds') / name
             self.assertTrue(path.exists(), name)
             self.assertGreater(path.stat().st_size, 100_000)

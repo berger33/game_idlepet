@@ -1,12 +1,12 @@
 # PetShop Tycoon: Do Banho à Rede
 
-Vertical slice em **Godot 4.x**, portrait e offline-first. Atenda cães e gatos em banho ou tosa, controle o gesto na faixa Perfect, faça carinho, construa afeto, receba reviews/XP/moedas, complete missões e evolua por uma carreira modelada em 61,85 horas ativas. O slice possui 30 pets, 120 níveis, feedback universal de clique, cenários ilustrados próprios, pets/VFX vetoriais e áudio procedural.
+Vertical slice em **Godot 4.x**, portrait e offline-first. Pegue sabonete, máquina, secador, perfume e laço diretamente na prateleira e arraste sobre cães e gatos; o aro ao redor do item comunica o progresso sem HUD intrusivo. Faça carinho, construa afeto, receba reviews/XP/moedas, melhore estação e utensílios e evolua por uma carreira modelada em 61,85 horas ativas. O slice possui 50 pets, 120 níveis, cinco salas ilustradas, feedback universal, VFX vetoriais e áudio procedural por ação.
 
 ## Rodar
 1. Instale Godot 4.3+ com renderer Compatibility.
 2. Importe `project.godot` e execute F6/F5; a cena inicial é `scenes/main/Main.tscn`.
-3. Clique no botão rosa **1. SERVIR CARAMELO**; depois segure e esfregue sobre o pet até a barra entrar na faixa verde.
-4. Finalize o serviço, receba moedas/XP e use **PRÓXIMO CLIENTE**. Missões, Coleção, Mapa e Ajustes ficam no bottom sheet.
+3. Clique/segure o sabonete na prateleira direita, arraste-o até o pet e esfregue até completar o aro ao redor do item.
+4. O atendimento finaliza automaticamente. Receba moedas/XP e use **PRÓXIMO CLIENTE**. Novos utensílios e salas entram no ciclo nos níveis 3, 5, 7 e 10.
 5. Save fica em `user://save.dat`, com três backups e migração sequencial até v5.
 
 No Godot 4.7, se o player embutido estiver muito baixo, use os três pontos acima da prévia, desative **Embed Game/Incorporar jogo** e execute novamente em janela separada. O CTA principal também foi elevado para continuar visível no modo embutido.

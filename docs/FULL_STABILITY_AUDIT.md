@@ -20,7 +20,7 @@ A auditoria encontrou inconsistências funcionais e pontos de crash defensivo qu
 ### MEDIUM
 
 7. **Três de dez conquistas funcionavam.** Todas as dez são avaliadas: primeiro banho, Perfect 1/10, combo 5/20, 500 moedas, upgrade 5, dez reviews 5 estrelas, cinco pets e uma hora offline. Recompensas agora coincidem com o catálogo.
-8. **Estatísticas cumulativas ausentes.** Save v5 adiciona Perfects totais, reviews 5 estrelas e segundos offline coletados, com migração v4→v5.
+8. **Estatísticas cumulativas ausentes.** Save v6 adiciona Perfects totais, reviews 5 estrelas e segundos offline coletados, com migração v4→v5.
 9. **Missões divergiam do HUD.** O HUD prometia 75 moedas para três missões, mas JSON declarava Brasas/60 moedas e “banho” contava tosa. As três missões ativas agora usam métricas coerentes e 75 moedas.
 10. **Rollback permitia repetir daily.** Datas iguais/anteriores à última coleta são recusadas e registradas como sinal de clock rollback.
 11. **Tela de daily anunciava o próximo dia após coletar.** Agora mostra o dia efetivamente coletado e estado “Coletado hoje”.
@@ -52,7 +52,7 @@ A auditoria encontrou inconsistências funcionais e pontos de crash defensivo qu
 | `python3 tools/validate_project.py` | 0 erros, 0 warnings |
 | `python3 -m unittest discover -s tests -v` | aprovado |
 | JSON parse de todos os catálogos | aprovado |
-| IDs únicos, 15 cães/15 gatos | aprovado |
+| IDs únicos, 25 cães/25 gatos | aprovado |
 | Carreira média ≥60 h e expert ≥50 h | aprovado |
 | Simulação econômica 120 níveis | finita/monotônica |
 | `gdformat --check` | aprovado |
@@ -71,7 +71,7 @@ godot --headless --path . --script tests/run_godot_tests.gd
 godot --path .
 ```
 
-O segundo comando testa no próprio engine: 61%/70%/90%/97% do banho, 121 níveis de custo, offline negativo, prestígio, 30 pets, tier 10 e sanitização de save adversarial.
+O segundo comando testa no próprio engine: 61%/70%/90%/97% do banho, 121 níveis de custo, offline negativo, prestígio, 50 pets, tier 10 e sanitização de save adversarial.
 
 ## Riscos externos ainda não elimináveis neste ambiente
 

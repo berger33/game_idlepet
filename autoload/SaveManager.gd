@@ -122,6 +122,10 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["total_perfect_services"] = int(data.get("best_combo", 0))
 		data["offline_seconds_collected"] = 0.0
 		data["unlocked_cosmetics"] = []
+		version = 5
+	if version == 5:
+		data["version"] = 6
+		data["tool_upgrade_levels"] = {"soap": 0, "clipper": 0, "dryer": 0, "perfume": 0, "bow": 0}
 	return data
 
 

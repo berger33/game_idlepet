@@ -44,11 +44,11 @@ def validate_resource_paths() -> None:
 
 def validate_catalogs() -> None:
     pets = load_json("data/pets.json").get("pets", [])
-    require(len(pets) == 30, "catálogo deve conter exatamente 30 pets nesta versão")
+    require(len(pets) == 50, "catálogo deve conter exatamente 50 pets nesta versão")
     ids = [pet.get("id") for pet in pets]
     require(len(ids) == len(set(ids)), "IDs duplicados em pets")
-    require(sum(pet.get("species") == "dog" for pet in pets) == 15, "esperados 15 cães")
-    require(sum(pet.get("species") == "cat" for pet in pets) == 15, "esperados 15 gatos")
+    require(sum(pet.get("species") == "dog" for pet in pets) == 25, "esperados 25 cães")
+    require(sum(pet.get("species") == "cat" for pet in pets) == 25, "esperados 25 gatos")
     allowed_rarities = {"common", "uncommon", "rare", "epic", "legendary"}
     for pet in pets:
         pet_id = pet.get("id", "<sem id>")
@@ -82,7 +82,7 @@ def validate_project_contract() -> None:
     require(main.count("Button.new()") == 1, "Button criado fora da factory universal")
     require("InteractionFX.bind_button(button)" in main, "feedback universal não ligado")
     state = (ROOT / "autoload/GameState.gd").read_text(encoding="utf-8")
-    require("const SAVE_VERSION: int = 5" in state, "versão de save inesperada")
+    require("const SAVE_VERSION: int = 6" in state, "versão de save inesperada")
 
 
 def validate_repository_hygiene() -> None:

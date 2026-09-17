@@ -16,7 +16,7 @@ func income_multiplier(level: int) -> float:
 
 
 func service_reward(
-	base_reward: float, quality: StringName, upgrade_level: int, combo: int
+	base_reward: float, quality: StringName, upgrade_level: int, combo: int, tool_level: int = 0
 ) -> float:
 	var quality_multiplier: float = 1.0
 	if quality == &"perfect":
@@ -24,8 +24,15 @@ func service_reward(
 	elif quality == &"good":
 		quality_multiplier = 1.15
 	var combo_multiplier: float = 1.0 + minf(float(combo), 20.0) * 0.025
+	var tool_multiplier: float = 1.0 + clampi(tool_level, 0, 30) * 0.04
 	return floor(
-		base_reward * income_multiplier(upgrade_level) * quality_multiplier * combo_multiplier
+		(
+			base_reward
+			* income_multiplier(upgrade_level)
+			* tool_multiplier
+			* quality_multiplier
+			* combo_multiplier
+		)
 	)
 
 

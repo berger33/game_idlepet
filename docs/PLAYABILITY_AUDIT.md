@@ -26,7 +26,7 @@ Também havia um chip `FILA 2` puramente ilustrativo. Ele sugeria um sistema int
 - Primeiro upgrade: normalmente disponível após o primeiro atendimento graças à conquista inicial.
 - Nível 2: Luna; nível 4: primeiro gato; nível 8: estabelecimento de bairro.
 - Oitavo serviço: Bia e produção automática.
-- 30 pets, afeto individual, dez conquistas, três dailies, login, eventos e 120 níveis.
+- 50 pets, afeto individual, dez conquistas, três dailies, login, eventos e 120 níveis.
 - Mapa, coleção, missões e ajustes acessíveis pelo sheet.
 
 ## Teste manual esperado

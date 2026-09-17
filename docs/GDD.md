@@ -152,7 +152,7 @@ Primeiro Perfect deve ocorrer até segunda tentativa; primeiro upgrade até 3 se
 
 ## 26. Conteúdo MVP
 
-2 estabelecimentos, 30 pets no slice atual (meta original: 10), 8 arquétipos de cliente, banho+tosa, 120 níveis do upgrade principal, 30 conquistas, 3 daily, 1 weekly, save/settings/tutorial, pt-BR, analytics/config/crash adapter, rewarded/interstitial controlado, Starter/No Ads. Conteúdo tem Definition of Done funcional+visual+áudio+analytics+teste+doc.
+2 estabelecimentos, 50 pets no slice atual (meta original: 10), 8 arquétipos de cliente, banho+tosa, 120 níveis do upgrade principal, 30 conquistas, 3 daily, 1 weekly, save/settings/tutorial, pt-BR, analytics/config/crash adapter, rewarded/interstitial controlado, Starter/No Ads. Conteúdo tem Definition of Done funcional+visual+áudio+analytics+teste+doc.
 
 ## 27. Soft launch
 

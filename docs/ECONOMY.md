@@ -4,9 +4,10 @@
 Upgrade cedo em 2–3 serviços, escolha em 20–40 s, sink com efeito visível, offline generoso mas inferior à interação, e progressão sem vender exclusividade. Números são hipótese e mudam apenas por experimento/cohort documentado.
 
 ## Fórmulas implementadas
-- Bath reward: `floor(12 × 1.15^level × quality × (1 + min(combo,20)×0.025))`.
+- Serviço: `floor(base × 1.075^estação × (1 + utensílio×0.04) × qualidade × combo)`.
+- O crescimento da estação foi reduzido de 15% para **7,5% por nível**; metade do bônus anterior.
 - Quality: Good 1,15; Perfect 1,5.
-- Bath upgrade: `ceil(25 × 1.18^level)`.
+- Estação: `ceil(25 × 1.18^level)`; utensílios: `ceil(base_item × 1.24^level)`, 30 níveis cada.
 - Offline: `floor(rate/s × elapsed_clamped × 0.5 × (1 + prestige×0.05))`.
 - Cap: `min(24h, 2h + prestige_level×1h)`.
 - Prestige token: `floor(sqrt(total_coins / 1.000.000))`.
