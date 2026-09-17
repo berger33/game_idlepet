@@ -1,7 +1,7 @@
 {
   "schema_version":1,
   "upgrades":[
-    {"id":"bath_income","name":"Shampoo cheiroso","system":"bath","levels":20,"base_cost":25,"growth":1.18,"effect":"income","effect_growth":1.15},
+    {"id":"bath_income","name":"Shampoo cheiroso","system":"bath","levels":120,"base_cost":25,"growth":1.18,"effect":"income","effect_growth":1.15,"visual_milestones":[1,5,10,20,35,50,70,90,120]},
     {"id":"bath_speed","name":"Ducha pressurizada","system":"bath","levels":10,"base_cost":80,"growth":1.22,"effect":"duration","effect_per_level":-0.025},
     {"id":"queue_capacity","name":"Recepção confortável","system":"queue","levels":4,"base_cost":250,"growth":3.2,"effect":"capacity","values":[3,5,8,12,20]},
     {"id":"patience","name":"Petiscos de espera","system":"queue","levels":15,"base_cost":110,"growth":1.25,"effect":"patience","effect_per_level":0.04},

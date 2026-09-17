@@ -28,7 +28,9 @@ var next_client_timer: float = 0.0
 var bubble_sound_gate: float = 0.0
 var toast_layer: Control
 var current_service: StringName = &"bath"
+var current_pet_id: String = "caramelo"
 var current_pet_name: String = "Caramelo"
+var pet_touch_gate: float = 0.0
 var meta_panel: PanelContainer
 var meta_title: Label
 var meta_content: Label
@@ -40,6 +42,8 @@ func _ready() -> void:
 	bath = BathServiceScript.new()
 	_configure_current_service()
 	_build_interface()
+	world.set_pet_profile(ContentDB.pet(current_pet_id))
+	world.arrive()
 	_connect_events()
 	_refresh_economy()
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
@@ -49,6 +53,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	bubble_sound_gate = maxf(0.0, bubble_sound_gate - delta)
+	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	if bath.state == BathService.State.ACTIVE:
 		if bath.tick(delta):
 			_fail(&"timeout")
@@ -71,13 +76,28 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if (
+		(is_instance_valid(meta_panel) and meta_panel.visible)
+		or (is_instance_valid(result_panel) and result_panel.visible)
+	):
+		return
 	if bath.state != BathService.State.ACTIVE:
+		if event is InputEventScreenTouch:
+			var idle_touch: InputEventScreenTouch = event
+			if idle_touch.pressed and _pet_hit(idle_touch.position):
+				_react_to_pet_touch()
+		elif event is InputEventMouseButton:
+			var idle_mouse: InputEventMouseButton = event
+			if idle_mouse.pressed and idle_mouse.button_index == MOUSE_BUTTON_LEFT:
+				if _pet_hit(idle_mouse.position):
+					_react_to_pet_touch()
 		return
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
 		dragging = touch.pressed and _pet_hit(touch.position)
 		if not touch.pressed:
 			bath.release_pointer()
+			world.release_tool()
 	elif event is InputEventScreenDrag and dragging:
 		_rub((event as InputEventScreenDrag).position)
 	elif event is InputEventMouseButton:
@@ -86,6 +106,7 @@ func _input(event: InputEvent) -> void:
 			dragging = mouse_button.pressed and _pet_hit(mouse_button.position)
 			if not mouse_button.pressed:
 				bath.release_pointer()
+				world.release_tool()
 	elif event is InputEventMouseMotion and dragging:
 		_rub((event as InputEventMouseMotion).position)
 
@@ -94,8 +115,21 @@ func _pet_hit(point: Vector2) -> bool:
 	return point.distance_to(world.pet_position) < 245.0
 
 
+func _react_to_pet_touch() -> void:
+	if pet_touch_gate > 0.0:
+		return
+	pet_touch_gate = 0.35
+	var message: String = world.react_to_touch()
+	var affection: int = GameState.register_pet_interaction(current_pet_id)
+	AudioManager.play(&"pet_happy")
+	HapticsManager.light()
+	_show_toast("%s  •  carinho %d" % [message, affection], PINK)
+	Analytics.track(&"pet_interacted", {"pet_id": current_pet_id, "kind": "pet"})
+
+
 func _rub(point: Vector2) -> void:
 	bath.rub(point)
+	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
 		AudioManager.play(&"bubble")
@@ -104,8 +138,6 @@ func _rub(point: Vector2) -> void:
 
 
 func _on_primary_pressed() -> void:
-	AudioManager.play(&"tap")
-	HapticsManager.light()
 	if bath.state == BathService.State.WAITING:
 		_start_bath()
 	elif bath.state == BathService.State.ACTIVE:
@@ -139,11 +171,14 @@ func _finish_bath() -> void:
 		var base_reward: float = (
 			RemoteConfig.get_float("bath_base_reward") if current_service == &"bath" else 20.0
 		)
+		var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
+		var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
 		var reward: float = (
 			Economy.service_reward(
 				base_reward, quality, GameState.bath_upgrade_level, GameState.combo
 			)
 			* LiveOps.multiplier_for(current_service)
+			* affection_multiplier
 		)
 		var stars: int = 5 if quality == &"perfect" else 4
 		GameState.register_review(stars)
@@ -175,7 +210,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		"%s\n+%d moedas  •  %d estrelas\n%s %s"
 		% ["★".repeat(stars), int(reward), stars, current_pet_name, outcome]
 	)
-	result_panel.show()
+	_pop_panel(result_panel)
 	primary_button.text = "PRÓXIMO CLIENTE"
 	primary_button.disabled = false
 	progress_bar.hide()
@@ -188,6 +223,7 @@ func _fail(reason: StringName) -> void:
 	dragging = false
 	EventBus.service_failed.emit(current_service, reason)
 	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason)})
+	world.react_to_failure()
 	AudioManager.play(&"error")
 	HapticsManager.error()
 	result_title.text = "QUASE LÁ!"
@@ -198,7 +234,7 @@ func _fail(reason: StringName) -> void:
 		else "Mire a espuma na faixa verde."
 	)
 	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
-	result_panel.show()
+	_pop_panel(result_panel)
 	primary_button.text = "TENTAR NOVAMENTE"
 	primary_button.disabled = false
 	progress_bar.hide()
@@ -209,12 +245,13 @@ func _dismiss_result() -> void:
 	result_panel.hide()
 	world.reset_pet()
 	bath = BathServiceScript.new()
-	current_service = &"groom" if GameState.services_completed % 3 == 2 else &"bath"
-	current_pet_name = (
-		"Luna"
-		if current_service == &"groom"
-		else ("Thor" if GameState.services_completed % 4 == 3 else "Caramelo")
-	)
+	var available_pets: Array[String] = GameState.unlocked_pets
+	current_pet_id = available_pets[GameState.services_completed % available_pets.size()]
+	var profile: Dictionary = ContentDB.pet(current_pet_id)
+	current_pet_name = String(profile.get("name", "Caramelo"))
+	current_service = StringName(profile.get("preferred_service", "bath"))
+	if GameState.services_completed % 5 == 4:
+		current_service = &"groom"
 	_configure_current_service()
 	world.service_mode = current_service
 	order_card.hide()
@@ -228,19 +265,30 @@ func _new_client() -> void:
 	order_card.show()
 	var order_label: Label = order_card.get_child(0) as Label
 	var service_name: String = "Banho simples" if current_service == &"bath" else "Tosa higiênica"
+	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	order_label.text = (
-		"%s\n%s  •  %d+ moedas"
-		% [current_pet_name.to_upper(), service_name, 12 if current_service == &"bath" else 20]
+		"%s\n%s • %s\n%d+ moedas"
+		% [
+			current_pet_name.to_upper(),
+			profile.get("breed", "Pet especial"),
+			service_name,
+			12 if current_service == &"bath" else 20,
+		]
 	)
 	primary_button.text = "SERVIR %s" % current_pet_name.to_upper()
 	primary_button.disabled = false
 	instruction_label.text = (
-		"%s quer %s. Toque em SERVIR."
-		% [current_pet_name, "um banho" if current_service == &"bath" else "uma tosa"]
+		"Faça carinho em %s ou toque em SERVIR para %s."
+		% [current_pet_name, "dar banho" if current_service == &"bath" else "tosar"]
 	)
-	world.set_pet_identity(current_pet_name)
+	world.set_pet_profile(profile)
 	world.arrive()
-	Analytics.track(&"pet_arrived", {"rarity": "common", "pet_id": current_pet_name.to_lower()})
+	var arrival_params: Dictionary = {
+		"rarity": profile.get("rarity", "common"),
+		"pet_id": current_pet_id,
+		"species": profile.get("species", "dog"),
+	}
+	Analytics.track(&"pet_arrived", arrival_params)
 
 
 func _configure_current_service() -> void:
@@ -275,14 +323,22 @@ func _on_upgrade_pressed() -> void:
 
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%d" % int(GameState.coins)
-	combo_label.text = "NV.%d  •  ×%d" % [GameState.player_level, maxi(1, GameState.combo)]
+	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
+	combo_label.text = (
+		"NV.%d %d%% • ×%d" % [GameState.player_level, xp_percent, maxi(1, GameState.combo)]
+	)
 	review_label.text = "★ %.1f" % GameState.review_average()
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
-	upgrade_button.text = (
-		"MELHORAR BANHEIRA  Nv.%d\n%d moedas" % [GameState.bath_upgrade_level, int(cost)]
-	)
+	if GameState.bath_upgrade_level >= GameState.MAX_CAREER_LEVEL:
+		upgrade_button.text = "ESTAÇÃO NO NÍVEL MÁXIMO"
+		upgrade_button.disabled = true
+	else:
+		upgrade_button.disabled = false
+		upgrade_button.text = (
+			"MELHORAR ESTAÇÃO  Nv.%d\n%d moedas" % [GameState.bath_upgrade_level, int(cost)]
+		)
 
 
 func _show_toast(message: String, color: Color) -> void:
@@ -341,7 +397,7 @@ func _build_interface() -> void:
 	add_child(order_card)
 	var order_text: Label = Label.new()
 	order_text.text = "CARAMELO\nBanho simples  •  12+ moedas"
-	order_text.add_theme_font_size_override("font_size", 38)
+	order_text.add_theme_font_size_override("font_size", 32)
 	order_text.add_theme_color_override("font_color", CHARCOAL)
 	order_card.add_child(order_text)
 
@@ -355,7 +411,7 @@ func _build_interface() -> void:
 	column.add_theme_constant_override("separation", 18)
 	bottom.add_child(column)
 	instruction_label = Label.new()
-	instruction_label.text = "Caramelo quer um banho. Toque em SERVIR."
+	instruction_label.text = "Faça carinho no Caramelo ou toque em SERVIR."
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.add_theme_font_size_override("font_size", 34)
 	instruction_label.add_theme_color_override("font_color", CHARCOAL)
@@ -469,40 +525,31 @@ func _build_meta_panel() -> void:
 
 
 func _open_meta(section: StringName) -> void:
-	AudioManager.play(&"tap")
-	meta_panel.show()
+	_pop_panel(meta_panel)
 	if section == &"missions":
 		meta_title.text = "MISSÕES DO DIA"
 		meta_content.text = _mission_text()
 	elif section == &"collection":
 		meta_title.text = "COLEÇÃO"
 		meta_content.text = (
-			"PETS  %d / 10\n%s\n\nEQUIPE  %d / 6\n%s\n\nCONQUISTAS  %d / 10\n%s"
+			(
+				"PETS  %d / %d\n%s\n\nEQUIPE  %d / 6\n%s\n\n"
+				+ "CONQUISTAS  %d / 10\n%s\n\nBRASAS  %d"
+			)
 			% [
 				GameState.unlocked_pets.size(),
-				_list_text(GameState.unlocked_pets),
+				ContentDB.pets.size(),
+				_pet_names(),
 				GameState.hired_staff.size(),
 				_list_text(GameState.hired_staff),
 				GameState.achievement_ids.size(),
-				_list_text(GameState.achievement_ids)
+				_list_text(GameState.achievement_ids),
+				GameState.embers,
 			]
 		)
 	elif section == &"map":
 		meta_title.text = "DO BALDE AO IMPÉRIO"
-		meta_content.text = (
-			(
-				"EVENTO DE HOJE: %s\n\n✓ 1. Banheiro de Quintal\n"
-				+ "%s 2. Pet Shop de Bairro — 500 moedas\n□ 3. Clínica Pequena — 5.000\n"
-				+ "□ 4. Clínica Moderna — 50.000\n□ 5. Centro Veterinário — 500.000\n"
-				+ "□ 6. Hospital Animal — 5M\n□ 7. Rede Regional — 50M\n"
-				+ "□ 8. Rede Nacional — 500M\n\nPróximo marco: %s"
-			)
-			% [
-				LiveOps.current_event_name(),
-				"✓" if GameState.establishment_tier >= 2 else "□",
-				"Tosa e Bia" if GameState.establishment_tier < 2 else "Clínica Pequena"
-			]
-		)
+		meta_content.text = _career_text()
 	else:
 		meta_title.text = "AJUSTES E ACESSIBILIDADE"
 		meta_content.text = (
@@ -523,11 +570,47 @@ func _open_meta(section: StringName) -> void:
 	meta_panel.set_meta("settings_mode", false)
 
 
+func _pop_panel(panel: Control) -> void:
+	panel.show()
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(0.9, 0.9)
+	panel.modulate.a = 0.0
+	var tween: Tween = panel.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(panel, "scale", Vector2.ONE, 0.22)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.16)
+
+
 func _list_text(values: Array[String]) -> String:
 	var result: String = ""
 	for value: String in values:
 		result += ("" if result.is_empty() else ", ") + value
 	return result
+
+
+func _pet_names() -> String:
+	var result: String = ""
+	for pet_id: String in GameState.unlocked_pets:
+		var pet_name: String = String(ContentDB.pet(pet_id).get("name", pet_id))
+		result += ("" if result.is_empty() else ", ") + pet_name
+	return result
+
+
+func _career_text() -> String:
+	var text: String = (
+		"EVENTO: %s\nCARREIRA: nível %d/120 • %.1fh ativas\n\n"
+		% [
+			LiveOps.current_event_name(),
+			GameState.player_level,
+			GameState.active_play_seconds / 3600.0,
+		]
+	)
+	for entry: Dictionary in ContentDB.career.get("establishments", []):
+		var unlock_level: int = int(entry.get("unlock_level", 1))
+		var marker: String = "✓" if GameState.player_level >= unlock_level else "□"
+		text += "%s %s — nível %d\n" % [marker, entry.get("name", "Petshop"), unlock_level]
+	return text + "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
 
 
 func _mission_text() -> String:
@@ -601,6 +684,7 @@ func _button(text: String, color: Color, width: float, height: float) -> Button:
 	button.add_theme_stylebox_override("hover", _style(color.lightened(0.08), 34, 14))
 	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.12), 30, 18))
 	button.add_theme_stylebox_override("disabled", _style(Color("b0bec5"), 34, 14))
+	InteractionFX.bind_button(button)
 	return button
 
 

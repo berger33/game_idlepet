@@ -18,11 +18,12 @@ O repositório agora contém um **jogo offline jogável em formato de early vert
 - [x] Evento semanal local com multiplicador de banho/tosa.
 - [x] Mapa de progressão e primeiro estabelecimento desbloqueável.
 - [x] Menu de missões, coleção, mapa e acessibilidade/economia.
-- [x] Save v3, migração sequencial v0→v3, autosave, integridade e três backups.
+- [x] Save v4, migração sequencial v0→v4, autosave, integridade e três backups.
 - [x] Cofre offline com cap e proteção contra rollback.
 - [x] Analytics offline e taxonomia; Remote Config defaults.
 - [x] Policies éticas de ads, catálogo/ledger IAP e adapters no-op seguros.
-- [x] Catálogos de 10 pets, 6 funcionários, upgrades, eventos, pesquisas, conquistas, missões e cosméticos.
+- [x] Catálogo jogável de 30 pets (15 cães/15 gatos), 6 funcionários, upgrades, eventos, pesquisas, conquistas, missões e cosméticos.
+- [x] Carreira data-driven de 120 níveis simulada em 61,85 horas ativas até o endgame.
 - [x] Simulador econômico e testes de schema, IDs e pacing.
 
 ## Faltas para Vertical Slice final

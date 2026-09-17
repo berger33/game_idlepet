@@ -17,6 +17,8 @@ func _ready() -> void:
 	cache[&"perfect"] = _chime([660.0, 880.0, 1320.0], 0.12)
 	cache[&"error"] = _chime([220.0, 165.0], 0.13)
 	cache[&"review"] = _chime([740.0, 988.0], 0.1)
+	cache[&"pet_happy"] = _chime([520.0, 690.0, 780.0], 0.07)
+	cache[&"pet_surprise"] = _chime([430.0, 620.0], 0.08)
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Master"
 	music_player.stream = _ambient_loop()

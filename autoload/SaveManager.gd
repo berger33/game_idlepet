@@ -102,6 +102,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["version"] = 3
 		data["player_level"] = 1 + int(data.get("services_completed", 0)) / 5
 		data["player_xp"] = 0
+		version = 3
+	if version == 3:
+		data["version"] = 4
+		data["active_play_seconds"] = 0.0
+		data["pet_affection"] = {}
 	return data
 
 

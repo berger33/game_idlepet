@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "target_active_hours": 61.85,
+  "expert_active_hours": 53.60,
+  "max_career_level": 120,
+  "xp_formula": "50 + (level - 1) * 25",
+  "assumptions": {"average_xp_per_service":13.0,"average_service_seconds":14.5,"management_overhead":0.10},
+  "establishments": [
+    {"tier":1,"id":"quintal","name":"Banheiro de Quintal","unlock_level":1,"feature":"banho"},
+    {"tier":2,"id":"bairro","name":"Pet Shop de Bairro","unlock_level":8,"feature":"tosa"},
+    {"tier":3,"id":"clinica_pequena","name":"Clínica Pequena","unlock_level":18,"feature":"vacinação"},
+    {"tier":4,"id":"clinica_moderna","name":"Clínica Moderna","unlock_level":30,"feature":"consulta"},
+    {"tier":5,"id":"centro_vet","name":"Centro Veterinário","unlock_level":45,"feature":"pesquisa"},
+    {"tier":6,"id":"hospital","name":"Hospital Animal","unlock_level":62,"feature":"especialistas"},
+    {"tier":7,"id":"rede_regional","name":"Rede Regional","unlock_level":80,"feature":"franquias"},
+    {"tier":8,"id":"rede_nacional","name":"Rede Nacional","unlock_level":98,"feature":"rede"},
+    {"tier":9,"id":"instituto","name":"Instituto de Pesquisa","unlock_level":110,"feature":"vacinas"},
+    {"tier":10,"id":"imperio","name":"Império Pet Brasil","unlock_level":120,"feature":"endgame"}
+  ],
+  "engagement_gates": [
+    {"level":2,"reward":"Luna + coleção"},{"level":4,"reward":"primeiro gato"},{"level":8,"reward":"Pet Shop de Bairro + Mel"},
+    {"level":18,"reward":"Clínica Pequena"},{"level":30,"reward":"Clínica Moderna"},{"level":45,"reward":"pesquisa"},
+    {"level":62,"reward":"Hospital Animal"},{"level":80,"reward":"Rede Regional"},{"level":98,"reward":"Rede Nacional"},
+    {"level":110,"reward":"Instituto"},{"level":120,"reward":"Império + Estrela"}
+  ]
+}
