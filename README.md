@@ -24,9 +24,11 @@ python3 tools/career_sim.py
 ```
 
 ## Android
-Instale export templates e Android SDK/JDK suportados pela sua versão Godot. Em `export_presets.cfg`, substitua `com.seunome.petshoptycoon` **somente após definir publisher/package definitivo**. Configure keystore fora do Git e use Play App Signing. Exporte AAB pelo editor. Target 36 está configurado, mas confirme exigência vigente da loja.
+O preset Android ativo foi removido para que o projeto abra sem erros em computadores que ainda não possuem Android SDK. O template está preservado em `docs/export_presets.android.template.cfg`.
 
-Ads, Billing e Firebase exigem contas/configuração do publisher e aparelho; veja `docs/SDK_INTEGRATIONS.md`. Nunca coloque keystore, senha ou IDs de produção hardcoded. O preset é estrutura, não alegação de AAB assinado.
+Quando for exportar: instale os export templates e o Android SDK/JDK suportado pelo seu Godot, configure **Editor Settings → Export → Android**, copie o template para `export_presets.cfg` e substitua `com.seunome.petshoptycoon` somente após definir o package definitivo. Configure a keystore fora do Git e use Play App Signing. O template usa target 36; confirme a exigência vigente da loja.
+
+Ads, Billing e Firebase exigem contas/configuração do publisher e aparelho; veja `docs/SDK_INTEGRATIONS.md`. Nunca coloque keystore, senha ou IDs de produção hardcoded.
 
 ## Estrutura
 - `autoload/`: estado, economia, save, analytics, áudio, config, tempo, haptics.

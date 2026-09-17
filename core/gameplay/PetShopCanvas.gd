@@ -266,7 +266,7 @@ func _draw_pet(center: Vector2) -> void:
 	else:
 		draw_arc(center + Vector2(125, 100), 82, -1.2 + wag, 0.7 + wag, 16, fur, 30)
 	# Corpo, cabeça e orelhas.
-	draw_ellipse(center + Vector2(0, 105), Vector2(150, 125), fur)
+	_draw_pet_ellipse(center + Vector2(0, 105), Vector2(150, 125), fur)
 	draw_circle(center, 145, fur)
 	var ear_drop: float = 35.0 if pet_wet else 0.0
 	if species == &"cat":
@@ -335,7 +335,7 @@ func _draw_pet(center: Vector2) -> void:
 		draw_circle(center + Vector2(52, -22), 17, Color("263238"))
 		draw_circle(center + Vector2(-46, -29), 5, Color.WHITE)
 		draw_circle(center + Vector2(58, -29), 5, Color.WHITE)
-	draw_ellipse(center + Vector2(0, 38), Vector2(67, 55), muzzle_color)
+	_draw_pet_ellipse(center + Vector2(0, 38), Vector2(67, 55), muzzle_color)
 	if species == &"cat":
 		for side: float in [-1.0, 1.0]:
 			for row: int in 3:
@@ -355,7 +355,7 @@ func _draw_pet(center: Vector2) -> void:
 	draw_circle(center + Vector2(92, 28), 17, Color("ff8fb1", 0.42))
 
 
-func draw_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
+func _draw_pet_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
 	var points: PackedVector2Array = PackedVector2Array()
 	for i: int in 32:
 		var angle: float = TAU * float(i) / 32.0
