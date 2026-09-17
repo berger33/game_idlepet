@@ -97,6 +97,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["last_daily_claim"] = ""
 		data["daily_streak"] = 0
 		data["establishment_tier"] = 1
+		version = 2
+	if version == 2:
+		data["version"] = 3
+		data["player_level"] = 1 + int(data.get("services_completed", 0)) / 5
+		data["player_xp"] = 0
 	return data
 
 

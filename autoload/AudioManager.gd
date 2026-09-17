@@ -3,6 +3,7 @@ extends Node
 
 const SAMPLE_RATE: int = 22050
 var player: AudioStreamPlayer
+var music_player: AudioStreamPlayer
 var cache: Dictionary = {}
 
 
@@ -16,6 +17,12 @@ func _ready() -> void:
 	cache[&"perfect"] = _chime([660.0, 880.0, 1320.0], 0.12)
 	cache[&"error"] = _chime([220.0, 165.0], 0.13)
 	cache[&"review"] = _chime([740.0, 988.0], 0.1)
+	music_player = AudioStreamPlayer.new()
+	music_player.bus = &"Master"
+	music_player.stream = _ambient_loop()
+	music_player.volume_db = linear_to_db(float(GameState.settings.get("music", 0.7)) * 0.22)
+	add_child(music_player)
+	music_player.play()
 
 
 func play(sfx: StringName) -> void:
@@ -51,6 +58,35 @@ func _chime(frequencies: Array, note_duration: float) -> AudioStreamWAV:
 			)
 			bytes.encode_s16((note * frames_per_note + i) * 2, sample)
 	return _wav(bytes)
+
+
+func _ambient_loop() -> AudioStreamWAV:
+	var duration: float = 8.0
+	var frames: int = int(SAMPLE_RATE * duration)
+	var bytes: PackedByteArray = PackedByteArray()
+	bytes.resize(frames * 2)
+	var chords: Array = [
+		[261.63, 329.63, 392.00],
+		[220.00, 261.63, 329.63],
+		[174.61, 220.00, 261.63],
+		[196.00, 246.94, 293.66],
+	]
+	for i: int in frames:
+		var time: float = float(i) / SAMPLE_RATE
+		var chord: Array = chords[int(time / 2.0) % chords.size()]
+		var sample_value: float = 0.0
+		for frequency: float in chord:
+			sample_value += sin(TAU * frequency * time) * 0.06
+		var beat_phase: float = fmod(time, 0.5) / 0.5
+		var melody_frequency: float = chord[int(time * 2.0) % chord.size()] * 2.0
+		sample_value += sin(TAU * melody_frequency * time) * 0.04 * (1.0 - beat_phase)
+		var sample: int = int(clampf(sample_value, -0.3, 0.3) * 32767.0)
+		bytes.encode_s16(i * 2, sample)
+	var stream: AudioStreamWAV = _wav(bytes)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = frames
+	return stream
 
 
 func _wav(bytes: PackedByteArray) -> AudioStreamWAV:

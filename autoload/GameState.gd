@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 2
+const SAVE_VERSION: int = 3
 var coins: float = 0.0
 var embers: int = 0
 var franchise_tokens: int = 0
@@ -10,6 +10,8 @@ var bath_upgrade_level: int = 0
 var combo: int = 0
 var best_combo: int = 0
 var services_completed: int = 0
+var player_level: int = 1
+var player_xp: int = 0
 var reviews_total: int = 0
 var reviews_sum: int = 0
 var prestige_level: int = 0
@@ -101,6 +103,8 @@ func to_dictionary() -> Dictionary:
 		"combo": combo,
 		"best_combo": best_combo,
 		"services_completed": services_completed,
+		"player_level": player_level,
+		"player_xp": player_xp,
 		"reviews_total": reviews_total,
 		"reviews_sum": reviews_sum,
 		"prestige_level": prestige_level,
@@ -128,6 +132,8 @@ func apply_dictionary(data: Dictionary) -> void:
 	combo = int(data.get("combo", 0))
 	best_combo = int(data.get("best_combo", combo))
 	services_completed = int(data.get("services_completed", 0))
+	player_level = int(data.get("player_level", 1))
+	player_xp = int(data.get("player_xp", 0))
 	reviews_total = int(data.get("reviews_total", 0))
 	reviews_sum = int(data.get("reviews_sum", 0))
 	prestige_level = int(data.get("prestige_level", 0))
@@ -212,9 +218,28 @@ func _on_service_completed(_service_id: StringName, quality: StringName, reward:
 	if total_coins + reward >= 500.0:
 		establishment_tier = maxi(establishment_tier, 2)
 	_check_achievements(quality)
+	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
 	EventBus.combo_changed.emit(combo)
 	SaveManager.request_save()
+
+
+func xp_to_next_level() -> int:
+	return 40 + (player_level - 1) * 20
+
+
+func _add_xp(amount: int) -> void:
+	player_xp += amount
+	while player_xp >= xp_to_next_level():
+		player_xp -= xp_to_next_level()
+		player_level += 1
+		var level_reward: int = 20 + player_level * 5
+		coins += level_reward
+		total_coins += level_reward
+		EventBus.toast_requested.emit(
+			"Nível %d! +%d moedas" % [player_level, level_reward], Color("4fc3f7")
+		)
+		Analytics.track(&"level_up", {"level": player_level})
 
 
 func _check_achievements(quality: StringName) -> void:

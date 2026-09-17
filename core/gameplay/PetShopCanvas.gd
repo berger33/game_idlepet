@@ -1,6 +1,9 @@
 class_name PetShopCanvas
 extends Control
-## Arte vetorial procedural coesa; substituível por atlas sem mudar gameplay.
+## Cenário ilustrado + personagens/VFX vetoriais em runtime.
+
+const BATH_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_quintal.png")
+const GROOM_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_tosa.png")
 
 var pet_position: Vector2 = Vector2(540, 930)
 var pet_happy: bool = false
@@ -10,15 +13,25 @@ var bubbles: Array[Dictionary] = []
 var celebration: float = 0.0
 var shake_phase: float = 0.0
 var service_mode: StringName = &"bath"
+var upgrade_level: int = 0
+var arrival_time: float = 1.0
+var queue_box: StyleBoxFlat
+var level_box: StyleBoxFlat
+var fur_color: Color = Color("c98b5b")
+var ear_color: Color = Color("9c623f")
+var muzzle_color: Color = Color("f1c49f")
 
 
 func _ready() -> void:
+	queue_box = _box(Color("ffffff", 0.92), 28)
+	level_box = _box(Color("ffd54f", 0.94), 28)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
 
 
 func _process(delta: float) -> void:
 	shake_phase += delta
+	arrival_time = minf(1.0, arrival_time + delta * 2.8)
 	celebration = maxf(0.0, celebration - delta)
 	for bubble: Dictionary in bubbles:
 		bubble["p"] = bubble["p"] + Vector2(0, -float(bubble["speed"]) * delta)
@@ -47,6 +60,26 @@ func celebrate() -> void:
 	celebration = 1.8
 
 
+func set_pet_identity(pet_name: String) -> void:
+	if pet_name == "Luna":
+		fur_color = Color("f2dfcf")
+		ear_color = Color("c9a58d")
+		muzzle_color = Color("fff3e0")
+	elif pet_name == "Thor":
+		fur_color = Color("8d5a3b")
+		ear_color = Color("5d4037")
+		muzzle_color = Color("d8b08c")
+	else:
+		fur_color = Color("c98b5b")
+		ear_color = Color("9c623f")
+		muzzle_color = Color("f1c49f")
+
+
+func arrive() -> void:
+	arrival_time = 0.0
+	pet_happy = false
+
+
 func reset_pet() -> void:
 	pet_happy = false
 	pet_wet = false
@@ -54,44 +87,51 @@ func reset_pet() -> void:
 
 
 func _draw() -> void:
-	# Parede ensolarada e piso pseudo-isométrico.
-	draw_rect(Rect2(0, 0, size.x, size.y), Color("fff3e0"))
-	draw_circle(Vector2(130, 130), 210, Color("ffe0a3"))
-	draw_rect(Rect2(0, 670, size.x, size.y - 670), Color("d9b89c"))
-	for y: int in range(690, int(size.y), 120):
-		draw_line(Vector2(0, y), Vector2(size.x, y), Color("c79e82"), 5)
-	for x: int in range(-200, int(size.x) + 200, 220):
-		draw_line(Vector2(x, 670), Vector2(x + 240, size.y), Color("c79e82", 0.5), 3)
-	# Janela e plantas.
-	_rounded(Rect2(75, 125, 300, 340), Color("4fc3f7"), 32)
-	draw_circle(Vector2(165, 245), 65, Color("fff3bf", 0.85))
-	draw_line(Vector2(225, 125), Vector2(225, 465), Color.WHITE, 18)
-	draw_line(Vector2(75, 295), Vector2(375, 295), Color.WHITE, 18)
-	_rounded(Rect2(735, 380, 230, 210), Color("8d6e63"), 28)
-	draw_circle(Vector2(850, 370), 105, Color("7ed957"))
-	draw_circle(Vector2(780, 410), 75, Color("63c947"))
-	# Placa.
-	_rounded(Rect2(410, 105, 560, 175), Color("ff8fb1"), 52)
+	var background: Texture2D = GROOM_BACKGROUND if service_mode == &"groom" else BATH_BACKGROUND
+	var source_height: float = minf(981.0, background.get_height())
+	draw_texture_rect_region(
+		background,
+		Rect2(Vector2.ZERO, size),
+		Rect2(0.0, 0.0, float(background.get_width()), source_height)
+	)
+	# A placa da ilustração permanece sem texto; o título é localizado em runtime.
+	var room_title: String = "TOSA DO BAIRRO" if service_mode == &"groom" else "BANHO DO BAIRRO"
 	draw_string(
 		ThemeDB.fallback_font,
-		Vector2(475, 210),
-		"BANHO DO BAIRRO",
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1,
-		54,
+		Vector2(430, 225),
+		room_title,
+		HORIZONTAL_ALIGNMENT_CENTER,
+		500,
+		42,
 		Color.WHITE
 	)
-	# Banheira.
-	draw_set_transform(Vector2.ZERO)
-	_rounded(Rect2(260, 780, 560, 390), Color("e8fbff"), 85)
-	_rounded(Rect2(230, 760, 620, 115), Color("4fc3f7"), 50)
-	draw_rect(Rect2(300, 1130, 70, 95), Color("8d6e63"))
-	draw_rect(Rect2(710, 1130, 70, 95), Color("8d6e63"))
-	draw_line(Vector2(750, 755), Vector2(750, 650), Color("90a4ae"), 26)
-	draw_arc(Vector2(700, 650), 50, PI, TAU, 20, Color("90a4ae"), 25)
-	# Pet.
+	# Progressão visual e fila mantêm decisões visíveis sem abrir menus.
+	draw_style_box(queue_box, Rect2(805, 315, 220, 92))
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(830, 374),
+		"FILA  2  ••",
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1,
+		30,
+		Color("263238")
+	)
+	if upgrade_level > 0:
+		draw_style_box(level_box, Rect2(70, 500, 250, 78))
+		draw_string(
+			ThemeDB.fallback_font,
+			Vector2(95, 552),
+			"ESTAÇÃO  Nv.%d" % upgrade_level,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			28,
+			Color("263238")
+		)
+	# Pet entra com antecipação lateral e passa a reagir no centro da estação.
 	var bounce: float = sin(shake_phase * 5.0) * (7.0 if pet_happy else 2.0)
-	_draw_pet(pet_position + Vector2(0, bounce))
+	var eased_arrival: float = 1.0 - pow(1.0 - arrival_time, 3.0)
+	var pet_center: Vector2 = pet_position + Vector2((1.0 - eased_arrival) * -430.0, bounce)
+	_draw_pet(pet_center)
 	# Espuma ou tufos respondem à mecânica ativa.
 	var effect_count: int = int(progress * 18.0)
 	for i: int in effect_count:
@@ -126,7 +166,7 @@ func _draw() -> void:
 
 
 func _draw_pet(center: Vector2) -> void:
-	var fur: Color = Color("c98b5b") if not pet_wet else Color("986849")
+	var fur: Color = fur_color if not pet_wet else fur_color.darkened(0.24)
 	# Corpo, cabeça e orelhas de vira-lata caramelo.
 	draw_ellipse(center + Vector2(0, 105), Vector2(150, 125), fur)
 	draw_circle(center, 145, fur)
@@ -139,7 +179,7 @@ func _draw_pet(center: Vector2) -> void:
 				center + Vector2(-140, 85)
 			]
 		),
-		Color("9c623f")
+		ear_color
 	)
 	draw_colored_polygon(
 		PackedVector2Array(
@@ -149,13 +189,13 @@ func _draw_pet(center: Vector2) -> void:
 				center + Vector2(140, 85)
 			]
 		),
-		Color("9c623f")
+		ear_color
 	)
 	draw_circle(center + Vector2(-52, -22), 17, Color("263238"))
 	draw_circle(center + Vector2(52, -22), 17, Color("263238"))
 	draw_circle(center + Vector2(-46, -29), 5, Color.WHITE)
 	draw_circle(center + Vector2(58, -29), 5, Color.WHITE)
-	draw_ellipse(center + Vector2(0, 38), Vector2(67, 55), Color("f1c49f"))
+	draw_ellipse(center + Vector2(0, 38), Vector2(67, 55), muzzle_color)
 	draw_circle(center + Vector2(0, 20), 20, Color("263238"))
 	if pet_happy:
 		draw_arc(center + Vector2(0, 52), 38, 0.12, PI - 0.12, 22, Color("263238"), 8)
@@ -172,10 +212,6 @@ func draw_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
 		var angle: float = TAU * float(i) / 32.0
 		points.append(center + Vector2(cos(angle) * radii.x, sin(angle) * radii.y))
 	draw_colored_polygon(points, color)
-
-
-func _rounded(rect: Rect2, color: Color, radius: float) -> void:
-	draw_style_box(_box(color, radius), rect)
 
 
 func _box(color: Color, radius: float) -> StyleBoxFlat:

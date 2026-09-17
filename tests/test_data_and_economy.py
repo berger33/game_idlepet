@@ -26,4 +26,18 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual([r[1] for r in rows],sorted(r[1] for r in rows))
         self.assertEqual([r[2] for r in rows],sorted(r[2] for r in rows))
 
+    def test_save_schema_and_migration_are_current(self):
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
+        self.assertIn('const SAVE_VERSION: int = 3', state)
+        self.assertIn('if version == 2:', migration)
+        self.assertIn('data["version"] = 3', migration)
+
+    def test_professional_backgrounds_exist_and_are_reasonable(self):
+        for name in ('petshop_quintal.png', 'petshop_tosa.png'):
+            path = Path('art/backgrounds') / name
+            self.assertTrue(path.exists(), name)
+            self.assertGreater(path.stat().st_size, 100_000)
+            self.assertLess(path.stat().st_size, 5_000_000)
+
 if __name__=='__main__': unittest.main()

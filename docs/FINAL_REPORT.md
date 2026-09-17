@@ -1,7 +1,7 @@
 # Relatório de Entrega — Fundação / Playable Core
 
 ## Entregue
-Documentação de auditoria, GDD, TDD, Art Bible, UX, economia+simulador+CSV, analytics, arquitetura de cenas, roadmap, SDK/privacy drafts e auditoria integral de prontidão; projeto Godot portrait; banho e tosa por gesto com timer/Perfect/Good/falha; petshop/pet/VFX procedural; moedas/combo/review/upgrade; coleção, conquistas iniciais, missões, login diário, evento semanal, mapa, acessibilidade, Bia/idle; áudio procedural/haptic; analytics offline; save v2 ofuscado com hash, escrita atômica, 3 backups, migração e offline reward; policies/adapters seguros de Ads/IAP/notificação; dados iniciais.
+Documentação de auditoria, GDD, TDD, Art Bible, UX, economia+simulador+CSV, analytics, arquitetura de cenas, roadmap, SDK/privacy drafts e auditoria integral de prontidão; projeto Godot portrait; banho e tosa por gesto com timer/Perfect/Good/falha; petshop/pet/VFX procedural; moedas/combo/review/upgrade; coleção, conquistas iniciais, missões, login diário, evento semanal, mapa, acessibilidade, Bia/idle; áudio procedural/haptic; analytics offline; save v3 ofuscado com hash, escrita atômica, 3 backups, migração e offline reward; policies/adapters seguros de Ads/IAP/notificação; dados iniciais.
 
 ## Decisões
 Core usa arte vetorial procedural para coerência e velocidade de iteração, não asset packs. SDKs externos não foram falsamente alegados como integrados sem contas/aparelho. Botão Momento marca evento, mas informa que export MP4 é Vertical Slice. Package permanece placeholder para evitar decisão irreversível.

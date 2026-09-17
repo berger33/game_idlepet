@@ -164,6 +164,9 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
 	HapticsManager.success()
 	result_title.text = "PERFEITO!" if quality == &"perfect" else "MUITO BOM!"
+	if GameState.combo >= 5:
+		result_title.text = "BANHO QUENTE ×%d" % GameState.combo
+		Analytics.track(&"combo_reached", {"level": GameState.combo})
 	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
 	var outcome: String = (
 		"saiu limpinho!" if current_service == &"bath" else "ganhou um visual novo!"
@@ -235,7 +238,8 @@ func _new_client() -> void:
 		"%s quer %s. Toque em SERVIR."
 		% [current_pet_name, "um banho" if current_service == &"bath" else "uma tosa"]
 	)
-	world.pet_happy = false
+	world.set_pet_identity(current_pet_name)
+	world.arrive()
 	Analytics.track(&"pet_arrived", {"rarity": "common", "pet_id": current_pet_name.to_lower()})
 
 
@@ -271,8 +275,10 @@ func _on_upgrade_pressed() -> void:
 
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%d" % int(GameState.coins)
-	combo_label.text = "COMBO ×%d" % maxi(1, GameState.combo)
+	combo_label.text = "NV.%d  •  ×%d" % [GameState.player_level, maxi(1, GameState.combo)]
 	review_label.text = "★ %.1f" % GameState.review_average()
+	if is_instance_valid(world):
+		world.upgrade_level = GameState.bath_upgrade_level
 	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
 	upgrade_button.text = (
 		"MELHORAR BANHEIRA  Nv.%d\n%d moedas" % [GameState.bath_upgrade_level, int(cost)]

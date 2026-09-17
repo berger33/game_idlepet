@@ -1,13 +1,13 @@
 # PetShop Tycoon: Do Banho à Rede
 
-Early vertical slice em **Godot 4.x**, portrait e offline-first. Atenda pets em banho ou tosa, controle o gesto na faixa Perfect, receba reviews/moedas, faça upgrades, complete missões, amplie coleção e desbloqueie produção idle. Toda arte e SFX atuais são procedurais e sem dependência externa.
+Early vertical slice em **Godot 4.x**, portrait e offline-first. Atenda pets em banho ou tosa, controle o gesto na faixa Perfect, receba reviews/XP/moedas, faça upgrades, complete missões, amplie a coleção e desbloqueie produção idle. O slice usa cenários ilustrados próprios, pets/VFX vetoriais e áudio procedural sem dependência de pacote externo.
 
 ## Rodar
 1. Instale Godot 4.3+ com renderer Compatibility.
 2. Importe `project.godot` e execute F6/F5; a cena inicial é `scenes/main/Main.tscn`.
 3. Mouse: segure e esfregue sobre o pet. Touch: arraste sobre o pet.
 4. Use MISSÕES, COLEÇÃO, MAPA e AJUSTES no rodapé; tosa surge no ciclo de clientes.
-5. Save fica em `user://save.dat`, com três backups e migração v1→v2.
+5. Save fica em `user://save.dat`, com três backups e migração sequencial até v3.
 
 CLI quando Godot estiver disponível:
 ```bash
