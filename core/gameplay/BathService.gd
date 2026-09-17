@@ -64,7 +64,7 @@ func finish() -> StringName:
 	if progress >= target_minimum and progress <= target_maximum:
 		state = State.COMPLETE
 		return &"perfect"
-	if progress >= 0.62 and progress < 1.0:
+	if progress >= 0.62 and progress < target_minimum:
 		state = State.COMPLETE
 		return &"good"
 	state = State.FAILED

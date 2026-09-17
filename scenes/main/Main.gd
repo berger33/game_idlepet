@@ -15,6 +15,7 @@ var coin_label: Label
 var combo_label: Label
 var review_label: Label
 var order_card: PanelContainer
+var order_label: Label
 var instruction_label: Label
 var progress_bar: ProgressBar
 var timer_label: Label
@@ -34,6 +35,7 @@ var pet_touch_gate: float = 0.0
 var meta_panel: PanelContainer
 var meta_title: Label
 var meta_content: Label
+var meta_action_button: Button
 var perfect_zone: ColorRect
 
 
@@ -46,6 +48,7 @@ func _ready() -> void:
 	world.arrive()
 	_connect_events()
 	_refresh_economy()
+	_show_pending_offline_reward()
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
 	Analytics.track(&"pet_arrived", {"rarity": "common", "pet_id": "caramelo"})
 	EventBus.pet_arrived.emit(&"caramelo")
@@ -57,6 +60,7 @@ func _process(delta: float) -> void:
 	if bath.state == BathService.State.ACTIVE:
 		if bath.tick(delta):
 			_fail(&"timeout")
+			return
 		progress_bar.value = bath.progress * 100.0
 		timer_label.text = "%.1fs" % bath.time_left
 		world.progress = bath.progress
@@ -132,7 +136,7 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		AudioManager.play(&"bubble")
+		AudioManager.play(&"bubble" if current_service == &"bath" else &"clipper")
 		bubble_sound_gate = 0.12
 	EventBus.service_progress.emit(bath.progress)
 
@@ -200,7 +204,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	HapticsManager.success()
 	result_title.text = "PERFEITO!" if quality == &"perfect" else "MUITO BOM!"
 	if GameState.combo >= 5:
-		result_title.text = "BANHO QUENTE ×%d" % GameState.combo
+		result_title.text = "RITMO PERFEITO ×%d" % GameState.combo
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
 	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
 	var outcome: String = (
@@ -228,11 +232,14 @@ func _fail(reason: StringName) -> void:
 	HapticsManager.error()
 	result_title.text = "QUASE LÁ!"
 	result_title.modulate = Color("ef5350")
-	var hint: String = (
-		"O tempo acabou. Esfregue mais rápido!"
-		if reason == &"timeout"
-		else "Mire a espuma na faixa verde."
-	)
+	var action_name: String = "espuma" if current_service == &"bath" else "tosa"
+	var hint: String
+	if reason == &"timeout":
+		hint = "O tempo acabou. Faça o movimento com mais ritmo!"
+	elif reason == &"overwashed":
+		hint = "%s demais. Pare assim que entrar na faixa verde." % action_name.capitalize()
+	else:
+		hint = "Leve a %s até a faixa verde antes de finalizar." % action_name
 	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
 	_pop_panel(result_panel)
 	primary_button.text = "TENTAR NOVAMENTE"
@@ -246,6 +253,8 @@ func _dismiss_result() -> void:
 	world.reset_pet()
 	bath = BathServiceScript.new()
 	var available_pets: Array[String] = GameState.unlocked_pets
+	if available_pets.is_empty():
+		available_pets = ["caramelo"]
 	current_pet_id = available_pets[GameState.services_completed % available_pets.size()]
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	current_pet_name = String(profile.get("name", "Caramelo"))
@@ -263,7 +272,6 @@ func _dismiss_result() -> void:
 
 func _new_client() -> void:
 	order_card.show()
-	var order_label: Label = order_card.get_child(0) as Label
 	var service_name: String = "Banho simples" if current_service == &"bath" else "Tosa higiênica"
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	order_label.text = (
@@ -312,7 +320,7 @@ func _on_upgrade_pressed() -> void:
 		AudioManager.play(&"coin")
 		HapticsManager.success()
 		EventBus.toast_requested.emit(
-			"Banheira nível %d! Recompensa maior." % GameState.bath_upgrade_level, GREEN
+			"Estação nível %d! Recompensa maior." % GameState.bath_upgrade_level, GREEN
 		)
 	else:
 		EventBus.toast_requested.emit(
@@ -339,6 +347,18 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		upgrade_button.text = (
 			"MELHORAR ESTAÇÃO  Nv.%d\n%d moedas" % [GameState.bath_upgrade_level, int(cost)]
 		)
+
+
+func _show_pending_offline_reward() -> void:
+	var offline: Dictionary = SaveManager.consume_pending_offline_reward()
+	if offline.is_empty():
+		return
+	var minutes: int = int(float(offline["seconds"]) / 60.0)
+	_show_toast(
+		"Cofre offline (%d min): +%d moedas" % [minutes, int(offline["reward"])],
+		Color("ffd54f"),
+	)
+	AudioManager.play(&"coin")
 
 
 func _show_toast(message: String, color: Color) -> void:
@@ -395,11 +415,11 @@ func _build_interface() -> void:
 		"panel", _style(Color("ffffff", 0.94), 36, 24, Color("ff8fb1"), 6)
 	)
 	add_child(order_card)
-	var order_text: Label = Label.new()
-	order_text.text = "CARAMELO\nBanho simples  •  12+ moedas"
-	order_text.add_theme_font_size_override("font_size", 32)
-	order_text.add_theme_color_override("font_color", CHARCOAL)
-	order_card.add_child(order_text)
+	order_label = Label.new()
+	order_label.text = "CARAMELO\nVira-lata caramelo • Banho simples\n12+ moedas"
+	order_label.add_theme_font_size_override("font_size", 32)
+	order_label.add_theme_color_override("font_color", CHARCOAL)
+	order_card.add_child(order_label)
 
 	var bottom: PanelContainer = PanelContainer.new()
 	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -515,9 +535,9 @@ func _build_meta_panel() -> void:
 	meta_content.add_theme_color_override("font_color", CHARCOAL)
 	meta_content.custom_minimum_size = Vector2(820, 610)
 	column.add_child(meta_content)
-	var claim: Button = _button("COLETAR RECOMPENSAS", GREEN, 0, 90)
-	claim.pressed.connect(_claim_available_rewards)
-	column.add_child(claim)
+	meta_action_button = _button("COLETAR RECOMPENSAS", GREEN, 0, 90)
+	meta_action_button.pressed.connect(_claim_available_rewards)
+	column.add_child(meta_action_button)
 	var close: Button = _button("VOLTAR AO PETSHOP", PINK, 0, 90)
 	close.pressed.connect(func() -> void: meta_panel.hide())
 	column.add_child(close)
@@ -526,15 +546,18 @@ func _build_meta_panel() -> void:
 
 func _open_meta(section: StringName) -> void:
 	_pop_panel(meta_panel)
+	meta_action_button.show()
+	meta_action_button.text = "COLETAR RECOMPENSAS"
 	if section == &"missions":
 		meta_title.text = "MISSÕES DO DIA"
 		meta_content.text = _mission_text()
 	elif section == &"collection":
+		meta_action_button.hide()
 		meta_title.text = "COLEÇÃO"
 		meta_content.text = (
 			(
 				"PETS  %d / %d\n%s\n\nEQUIPE  %d / 6\n%s\n\n"
-				+ "CONQUISTAS  %d / 10\n%s\n\nBRASAS  %d"
+				+ "CONQUISTAS  %d / 10\n%s\n\nCOSMÉTICOS  %d\nBRASAS  %d"
 			)
 			% [
 				GameState.unlocked_pets.size(),
@@ -544,18 +567,21 @@ func _open_meta(section: StringName) -> void:
 				_list_text(GameState.hired_staff),
 				GameState.achievement_ids.size(),
 				_list_text(GameState.achievement_ids),
+				GameState.unlocked_cosmetics.size(),
 				GameState.embers,
 			]
 		)
 	elif section == &"map":
+		meta_action_button.hide()
 		meta_title.text = "DO BALDE AO IMPÉRIO"
 		meta_content.text = _career_text()
 	else:
+		meta_action_button.text = "ALTERNAR MODO ECONÔMICO"
 		meta_title.text = "AJUSTES E ACESSIBILIDADE"
 		meta_content.text = (
 			(
 				"Som: %s\nVibração: %s\nPartículas reduzidas: %s\nModo econômico: %s\n\n"
-				+ "Toque em COLETAR para alternar o modo econômico e reduzir partículas. "
+				+ "Use o botão abaixo para alternar o modo econômico e reduzir partículas. "
 				+ "O gameplay permanece idêntico."
 			)
 			% [
@@ -614,20 +640,26 @@ func _career_text() -> String:
 
 
 func _mission_text() -> String:
+	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var service_count: int = int(GameState.mission_progress.get("services", 0))
 	var perfect_count: int = int(GameState.mission_progress.get("perfect", 0))
 	var upgrade_count: int = int(GameState.mission_progress.get("upgrades", 0))
+	var next_day: int = GameState.daily_streak % 7 + 1
+	var display_day: int = GameState.daily_streak if claimed_today else next_day
+	var daily_status: String = (
+		"Coletado hoje" if claimed_today else "%d moedas disponíveis" % (25 * next_day)
+	)
 	return (
 		(
-			"LOGIN DIÁRIO  Dia %d/7\nRecompensa de hoje: %d moedas\n\n"
+			"LOGIN DIÁRIO  Dia %d/7\n%s\n\n"
 			+ "BANHOS E TOSAS  %d/5\nFaça 5 serviços • 75 moedas\n\n"
 			+ "NA MEDIDA  %d/3\nConsiga 3 Perfect • 75 moedas\n\n"
 			+ "TUDO NOVINHO  %d/1\nCompre 1 upgrade • 75 moedas\n\n"
 			+ "Missões nunca exigem anúncio ou compra."
 		)
 		% [
-			GameState.daily_streak + 1,
-			25 * (GameState.daily_streak % 7 + 1),
+			display_day,
+			daily_status,
 			mini(service_count, 5),
 			mini(perfect_count, 3),
 			mini(upgrade_count, 1)

@@ -7,15 +7,20 @@ Vertical slice em **Godot 4.x**, portrait e offline-first. Atenda cães e gatos 
 2. Importe `project.godot` e execute F6/F5; a cena inicial é `scenes/main/Main.tscn`.
 3. Mouse: segure e esfregue sobre o pet. Touch: arraste sobre o pet.
 4. Use MISSÕES, COLEÇÃO, MAPA e AJUSTES no rodapé; tosa surge no ciclo de clientes.
-5. Save fica em `user://save.dat`, com três backups e migração sequencial até v4.
+5. Save fica em `user://save.dat`, com três backups e migração sequencial até v5.
 
 CLI quando Godot estiver disponível:
 ```bash
 godot --path . --editor
 # valida import/parse
 godot --headless --path . --editor --quit
-# simulador
+# validação estrutural e dados
+python3 tools/validate_project.py
+# testes de domínio no próprio Godot
+godot --headless --path . --script tests/run_godot_tests.gd
+# simuladores
 python3 tools/economy_sim.py --csv docs/balance_initial.csv
+python3 tools/career_sim.py
 ```
 
 ## Android

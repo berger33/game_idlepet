@@ -32,7 +32,7 @@ Pontos fortes: ação imediatamente compreensível, Perfect por habilidade, feed
 
 ### Progressão
 
-- Save v4 com migração sequencial v0→v1→v2→v3→v4 e afeto individual por pet.
+- Save v5 com migração sequencial v0→v1→v2→v3→v4→v5, afeto e estatísticas cumulativas para conquistas.
 - Nível de jogador e XP: Good concede 10 XP, Perfect 15 XP.
 - Próximo nível: `50 + (nível−1)×25`; level-up concede `20 + nível×5` moedas. A carreira de 120 níveis oferece 61,85 h médias e 53,60 h no cenário especialista modelado.
 - Marcos continuam espaçados: primeiro upgrade em 2–3 serviços, Luna no nível 2, primeiro gato no nível 4, Bia após 8 serviços e Pet Shop de Bairro no nível 8.

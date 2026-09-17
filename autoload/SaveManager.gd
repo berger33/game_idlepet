@@ -7,6 +7,8 @@ const BACKUP_COUNT: int = 3
 const KEY: String = "petshop-local-v1"
 var elapsed: float = 0.0
 var save_requested: bool = false
+var pending_offline_reward: float = 0.0
+var pending_offline_seconds: float = 0.0
 
 
 func _ready() -> void:
@@ -73,7 +75,13 @@ func _read_save(path: String) -> Dictionary:
 	if String(envelope.get("hash", "")) != _sha256(payload_json + KEY):
 		return {}
 	var payload: Variant = JSON.parse_string(payload_json)
-	return payload if payload is Dictionary else {}
+	if not payload is Dictionary:
+		return {}
+	var payload_dict: Dictionary = payload
+	var version: int = int(payload_dict.get("version", 0))
+	if version < 0 or version > GameState.SAVE_VERSION:
+		return {}
+	return payload_dict
 
 
 func _migrate(data: Dictionary) -> Dictionary:
@@ -107,6 +115,13 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["version"] = 4
 		data["active_play_seconds"] = 0.0
 		data["pet_affection"] = {}
+		version = 4
+	if version == 4:
+		data["version"] = 5
+		data["five_star_reviews"] = 0
+		data["total_perfect_services"] = int(data.get("best_combo", 0))
+		data["offline_seconds_collected"] = 0.0
+		data["unlocked_cosmetics"] = []
 	return data
 
 
@@ -116,8 +131,22 @@ func _grant_offline_reward() -> void:
 	var reward: float = Economy.offline_earnings(rate, elapsed_seconds, GameState.prestige_level)
 	if reward > 0.0:
 		GameState.add_coins(reward, &"offline")
-		EventBus.toast_requested.emit("Cofre offline: +%d moedas" % int(reward), Color("ffd54f"))
+		GameState.register_offline_collection(elapsed_seconds)
+		pending_offline_reward = reward
+		pending_offline_seconds = elapsed_seconds
 		Analytics.track(&"offline_reward", {"seconds": elapsed_seconds, "amount": reward})
+
+
+func consume_pending_offline_reward() -> Dictionary:
+	if pending_offline_reward <= 0.0:
+		return {}
+	var result: Dictionary = {
+		"reward": pending_offline_reward,
+		"seconds": pending_offline_seconds,
+	}
+	pending_offline_reward = 0.0
+	pending_offline_seconds = 0.0
+	return result
 
 
 func _rotate_backups() -> void:

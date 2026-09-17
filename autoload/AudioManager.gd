@@ -13,6 +13,7 @@ func _ready() -> void:
 	add_child(player)
 	cache[&"tap"] = _tone(520.0, 0.05, 0.22)
 	cache[&"bubble"] = _tone(760.0, 0.07, 0.18)
+	cache[&"clipper"] = _chime([145.0, 175.0], 0.035)
 	cache[&"coin"] = _chime([880.0, 1174.0], 0.09)
 	cache[&"perfect"] = _chime([660.0, 880.0, 1320.0], 0.12)
 	cache[&"error"] = _chime([220.0, 165.0], 0.13)
@@ -22,7 +23,8 @@ func _ready() -> void:
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Master"
 	music_player.stream = _ambient_loop()
-	music_player.volume_db = linear_to_db(float(GameState.settings.get("music", 0.7)) * 0.22)
+	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
+	music_player.volume_db = linear_to_db(music_volume * 0.22)
 	add_child(music_player)
 	music_player.play()
 
@@ -30,7 +32,8 @@ func _ready() -> void:
 func play(sfx: StringName) -> void:
 	if not cache.has(sfx):
 		return
-	player.volume_db = linear_to_db(float(GameState.settings.get("sfx", 0.9)))
+	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
+	player.volume_db = linear_to_db(sfx_volume)
 	player.stream = cache[sfx]
 	player.play()
 

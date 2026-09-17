@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 4
+const SAVE_VERSION: int = 5
 const MAX_CAREER_LEVEL: int = 120
 var coins: float = 0.0
 var embers: int = 0
@@ -15,12 +15,16 @@ var player_level: int = 1
 var player_xp: int = 0
 var reviews_total: int = 0
 var reviews_sum: int = 0
+var five_star_reviews: int = 0
+var total_perfect_services: int = 0
+var offline_seconds_collected: float = 0.0
 var prestige_level: int = 0
 var last_seen_unix: int = 0
 var tutorial_complete: bool = false
 var unlocked_pets: Array[String] = ["caramelo"]
 var hired_staff: Array[String] = ["player"]
 var achievement_ids: Array[String] = []
+var unlocked_cosmetics: Array[String] = []
 var mission_progress: Dictionary = {"services": 0, "perfect": 0, "upgrades": 0}
 var claimed_missions: Array[String] = []
 var missions_date: String = ""
@@ -75,6 +79,7 @@ func spend_coins(amount: float, sink: StringName) -> bool:
 
 
 func buy_bath_upgrade() -> bool:
+	_refresh_daily_missions()
 	if bath_upgrade_level >= MAX_CAREER_LEVEL:
 		return false
 	var cost: float = Economy.upgrade_cost(bath_upgrade_level)
@@ -84,14 +89,18 @@ func buy_bath_upgrade() -> bool:
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
 	EventBus.upgrade_purchased.emit(&"bath", bath_upgrade_level)
 	Analytics.track(&"establishment_upgrade", {"id": "bath", "level": bath_upgrade_level})
+	_check_achievements()
 	SaveManager.request_save()
 	return true
 
 
 func register_review(stars: int) -> void:
+	var safe_stars: int = clampi(stars, 1, 5)
 	reviews_total += 1
-	reviews_sum += clampi(stars, 1, 5)
-	EventBus.review_received.emit(stars)
+	reviews_sum += safe_stars
+	if safe_stars == 5:
+		five_star_reviews += 1
+	EventBus.review_received.emit(safe_stars)
 
 
 func review_average() -> float:
@@ -113,12 +122,16 @@ func to_dictionary() -> Dictionary:
 		"player_xp": player_xp,
 		"reviews_total": reviews_total,
 		"reviews_sum": reviews_sum,
+		"five_star_reviews": five_star_reviews,
+		"total_perfect_services": total_perfect_services,
+		"offline_seconds_collected": offline_seconds_collected,
 		"prestige_level": prestige_level,
 		"last_seen_unix": Time.get_unix_time_from_system(),
 		"tutorial_complete": tutorial_complete,
 		"unlocked_pets": unlocked_pets,
 		"hired_staff": hired_staff,
 		"achievement_ids": achievement_ids,
+		"unlocked_cosmetics": unlocked_cosmetics,
 		"mission_progress": mission_progress,
 		"claimed_missions": claimed_missions,
 		"missions_date": missions_date,
@@ -132,36 +145,104 @@ func to_dictionary() -> Dictionary:
 
 
 func apply_dictionary(data: Dictionary) -> void:
-	coins = float(data.get("coins", 0.0))
-	embers = int(data.get("embers", 0))
-	franchise_tokens = int(data.get("franchise_tokens", 0))
-	total_coins = float(data.get("total_coins", coins))
-	bath_upgrade_level = int(data.get("bath_upgrade_level", 0))
-	combo = int(data.get("combo", 0))
-	best_combo = int(data.get("best_combo", combo))
-	services_completed = int(data.get("services_completed", 0))
-	player_level = int(data.get("player_level", 1))
-	player_xp = int(data.get("player_xp", 0))
-	reviews_total = int(data.get("reviews_total", 0))
-	reviews_sum = int(data.get("reviews_sum", 0))
-	prestige_level = int(data.get("prestige_level", 0))
-	last_seen_unix = int(data.get("last_seen_unix", 0))
+	coins = maxf(0.0, float(data.get("coins", 0.0)))
+	embers = maxi(0, int(data.get("embers", 0)))
+	franchise_tokens = maxi(0, int(data.get("franchise_tokens", 0)))
+	total_coins = maxf(coins, float(data.get("total_coins", coins)))
+	bath_upgrade_level = clampi(int(data.get("bath_upgrade_level", 0)), 0, MAX_CAREER_LEVEL)
+	combo = clampi(int(data.get("combo", 0)), 0, 1000)
+	best_combo = maxi(combo, int(data.get("best_combo", combo)))
+	services_completed = maxi(0, int(data.get("services_completed", 0)))
+	player_level = clampi(int(data.get("player_level", 1)), 1, MAX_CAREER_LEVEL)
+	player_xp = maxi(0, int(data.get("player_xp", 0)))
+	if player_level < MAX_CAREER_LEVEL:
+		player_xp = mini(player_xp, xp_to_next_level() - 1)
+	else:
+		player_xp = 0
+	reviews_total = maxi(0, int(data.get("reviews_total", 0)))
+	reviews_sum = clampi(int(data.get("reviews_sum", 0)), 0, reviews_total * 5)
+	five_star_reviews = clampi(int(data.get("five_star_reviews", 0)), 0, reviews_total)
+	total_perfect_services = clampi(
+		int(data.get("total_perfect_services", 0)), 0, services_completed
+	)
+	offline_seconds_collected = maxf(0.0, float(data.get("offline_seconds_collected", 0.0)))
+	prestige_level = clampi(int(data.get("prestige_level", 0)), 0, 100)
+	last_seen_unix = maxi(0, int(data.get("last_seen_unix", 0)))
 	tutorial_complete = bool(data.get("tutorial_complete", false))
-	unlocked_pets.assign(data.get("unlocked_pets", ["caramelo"]))
-	hired_staff.assign(data.get("hired_staff", ["player"]))
-	achievement_ids.assign(data.get("achievement_ids", []))
-	mission_progress = data.get("mission_progress", {"services": 0, "perfect": 0, "upgrades": 0})
-	claimed_missions.assign(data.get("claimed_missions", []))
+	unlocked_pets = _valid_pet_array(data.get("unlocked_pets", []))
+	if unlocked_pets.is_empty():
+		unlocked_pets = ["caramelo"]
+	hired_staff = _safe_string_array(data.get("hired_staff", ["player"]))
+	if not hired_staff.has("player"):
+		hired_staff.push_front("player")
+	achievement_ids = _safe_string_array(data.get("achievement_ids", []))
+	unlocked_cosmetics = _safe_string_array(data.get("unlocked_cosmetics", []))
+	mission_progress = _safe_dictionary(
+		data.get("mission_progress", {}), {"services": 0, "perfect": 0, "upgrades": 0}
+	)
+	for metric: String in ["services", "perfect", "upgrades"]:
+		mission_progress[metric] = maxi(0, int(mission_progress.get(metric, 0)))
+	claimed_missions = _safe_string_array(data.get("claimed_missions", []))
 	missions_date = String(data.get("missions_date", ""))
 	_refresh_daily_missions()
 	last_daily_claim = String(data.get("last_daily_claim", ""))
-	daily_streak = int(data.get("daily_streak", 0))
-	establishment_tier = int(data.get("establishment_tier", 1))
-	active_play_seconds = float(data.get("active_play_seconds", 0.0))
-	pet_affection = data.get("pet_affection", {})
+	daily_streak = clampi(int(data.get("daily_streak", 0)), 0, 7)
+	establishment_tier = clampi(int(data.get("establishment_tier", 1)), 1, 10)
+	active_play_seconds = maxf(0.0, float(data.get("active_play_seconds", 0.0)))
+	pet_affection = _safe_dictionary(data.get("pet_affection", {}), {})
+	_sanitize_affection()
 	_reconcile_career_unlocks(false)
-	settings.merge(data.get("settings", {}), true)
+	var saved_settings: Variant = data.get("settings", {})
+	if saved_settings is Dictionary:
+		settings.merge(saved_settings, true)
+	_sanitize_settings()
+	_check_achievements()
 	EventBus.currency_changed.emit(&"coins", coins)
+
+
+func _safe_string_array(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if not value is Array:
+		return result
+	for item: Variant in value:
+		if item is String:
+			var text: String = String(item)
+			if not text.is_empty() and not result.has(text):
+				result.append(text)
+	return result
+
+
+func _valid_pet_array(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	for id: String in _safe_string_array(value):
+		if ContentDB.has_pet(id):
+			result.append(id)
+	return result
+
+
+func _safe_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
+	if value is Dictionary:
+		var safe_value: Dictionary = value
+		return safe_value.duplicate(true)
+	return fallback.duplicate(true)
+
+
+func _sanitize_affection() -> void:
+	var clean: Dictionary = {}
+	for id: Variant in pet_affection:
+		if id is String:
+			var pet_id: String = String(id)
+			if ContentDB.has_pet(pet_id):
+				clean[pet_id] = clampi(int(pet_affection[id]), 0, 50)
+	pet_affection = clean
+
+
+func _sanitize_settings() -> void:
+	settings["music"] = clampf(float(settings.get("music", 0.7)), 0.0, 1.0)
+	settings["sfx"] = clampf(float(settings.get("sfx", 0.9)), 0.0, 1.0)
+	settings["haptics"] = bool(settings.get("haptics", true))
+	settings["reduced_particles"] = bool(settings.get("reduced_particles", false))
+	settings["eco_mode"] = bool(settings.get("eco_mode", false))
 
 
 func _refresh_daily_missions() -> void:
@@ -173,6 +254,11 @@ func _refresh_daily_missions() -> void:
 	mission_progress = {"services": 0, "perfect": 0, "upgrades": 0}
 
 
+func is_daily_claimed_today() -> bool:
+	_refresh_daily_missions()
+	return last_daily_claim == Time.get_date_string_from_system()
+
+
 func claim_daily_reward() -> int:
 	var today: String = Time.get_date_string_from_system()
 	if last_daily_claim == today:
@@ -182,6 +268,9 @@ func claim_daily_reward() -> int:
 			Time.get_unix_time_from_datetime_string(last_daily_claim + "T00:00:00")
 		)
 		var today_unix: int = int(Time.get_unix_time_from_datetime_string(today + "T00:00:00"))
+		if today_unix <= last_day_unix:
+			Analytics.track(&"churn_risk_signal", {"reason": "daily_clock_rollback"})
+			return 0
 		if today_unix - last_day_unix > 36 * 3600:
 			daily_streak = 0
 	daily_streak = daily_streak % 7 + 1
@@ -196,6 +285,7 @@ func claim_daily_reward() -> int:
 
 
 func claim_mission(mission_id: StringName) -> bool:
+	_refresh_daily_missions()
 	var id: String = String(mission_id)
 	if claimed_missions.has(id):
 		return false
@@ -214,18 +304,20 @@ func claim_mission(mission_id: StringName) -> bool:
 
 
 func _on_service_completed(_service_id: StringName, quality: StringName, reward: float) -> void:
+	_refresh_daily_missions()
 	services_completed += 1
 	mission_progress["services"] = int(mission_progress.get("services", 0)) + 1
 	if quality == &"perfect":
 		mission_progress["perfect"] = int(mission_progress.get("perfect", 0)) + 1
+		total_perfect_services += 1
 	combo = combo + 1 if quality == &"perfect" else 0
 	best_combo = maxi(best_combo, combo)
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
 		EventBus.toast_requested.emit("Bia foi contratada! +5% banho", Color("7ed957"))
-	_check_achievements(quality)
 	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
+	_check_achievements()
 	EventBus.combo_changed.emit(combo)
 	SaveManager.request_save()
 
@@ -252,11 +344,13 @@ func _add_xp(amount: int) -> void:
 
 
 func register_pet_interaction(pet_id: String) -> int:
-	var touches: int = int(pet_affection.get(pet_id, 0)) + 1
+	var previous_touches: int = clampi(int(pet_affection.get(pet_id, 0)), 0, 50)
+	var touches: int = mini(50, previous_touches + 1)
 	pet_affection[pet_id] = touches
-	if touches in [1, 5, 20, 50]:
+	var reached_new_milestone: bool = touches != previous_touches and touches in [1, 5, 20, 50]
+	if reached_new_milestone:
 		Analytics.track(&"pet_affection_reached", {"pet_id": pet_id, "level": touches})
-	if touches in [5, 20, 50]:
+	if reached_new_milestone and touches in [5, 20, 50]:
 		var ember_reward: int = 1 if touches == 5 else (2 if touches == 20 else 3)
 		embers += ember_reward
 		EventBus.toast_requested.emit("Laço de amizade! +%d Brasas" % ember_reward, Color("ff8fb1"))
@@ -288,23 +382,51 @@ func _reconcile_career_unlocks(show_feedback: bool) -> void:
 	establishment_tier = new_tier
 
 
-func _check_achievements(quality: StringName) -> void:
+func _check_achievements() -> void:
 	if services_completed >= 1:
 		_unlock_achievement("first_bath", 25)
-	if quality == &"perfect":
-		_unlock_achievement("perfect_1", 20)
+	if total_perfect_services >= 1:
+		_unlock_achievement("perfect_1", 0, 2)
+	if total_perfect_services >= 10:
+		_unlock_achievement("perfect_10", 150)
 	if best_combo >= 5:
-		_unlock_achievement("combo_5", 50)
+		_unlock_achievement("combo_5", 0, 3)
+	if best_combo >= 20:
+		_unlock_achievement("combo_20")
+		if not unlocked_cosmetics.has("crown_bubbles"):
+			unlocked_cosmetics.append("crown_bubbles")
+	if total_coins >= 500.0:
+		_unlock_achievement("earn_500", 50)
+	if bath_upgrade_level >= 5:
+		_unlock_achievement("upgrade_5", 0, 2)
+	if five_star_reviews >= 10:
+		_unlock_achievement("reviews_10", 120)
+	if unlocked_pets.size() >= 5:
+		_unlock_achievement("collect_5", 0, 4)
+	if offline_seconds_collected >= 3600.0:
+		_unlock_achievement("offline_1h", 100)
 
 
-func _unlock_achievement(id: String, reward: int) -> void:
+func register_offline_collection(seconds: float) -> void:
+	offline_seconds_collected += maxf(0.0, seconds)
+	_check_achievements()
+
+
+func _unlock_achievement(id: String, coins_reward: int = 0, embers_reward: int = 0) -> void:
 	if achievement_ids.has(id):
 		return
 	achievement_ids.append(id)
-	coins += reward
-	total_coins += reward
+	if coins_reward > 0:
+		add_coins(coins_reward, &"achievement")
+	if embers_reward > 0:
+		embers += embers_reward
 	Analytics.track(&"collection_unlock", {"id": id, "category": "achievement"})
-	EventBus.toast_requested.emit("Conquista desbloqueada! +%d" % reward, Color("ffd54f"))
+	var reward_text: String = ""
+	if coins_reward > 0:
+		reward_text = " +%d moedas" % coins_reward
+	elif embers_reward > 0:
+		reward_text = " +%d Brasas" % embers_reward
+	EventBus.toast_requested.emit("Conquista desbloqueada!" + reward_text, Color("ffd54f"))
 
 
 func _on_service_failed(_service_id: StringName, _reason: StringName) -> void:

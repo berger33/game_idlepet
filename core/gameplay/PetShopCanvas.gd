@@ -152,6 +152,11 @@ func reset_pet() -> void:
 	pet_happy = false
 	pet_wet = false
 	progress = 0.0
+	tool_visible = false
+	reaction_time = 0.0
+	reaction_kind = &"idle"
+	bubbles.clear()
+	hearts.clear()
 
 
 func _draw() -> void:
@@ -219,11 +224,21 @@ func _draw() -> void:
 		else:
 			draw_line(effect_pos - Vector2(14, 10), effect_pos + Vector2(14, 10), ear_color, 8)
 			draw_line(effect_pos + Vector2(-12, 12), effect_pos + Vector2(12, -12), fur_color, 6)
-	for bubble: Dictionary in bubbles:
-		draw_circle(
-			bubble["p"], bubble["r"], Color("e9fbff", clampf(float(bubble["life"]), 0.0, 0.75))
-		)
-		draw_arc(bubble["p"], bubble["r"], 0, TAU, 18, Color("4fc3f7", 0.65), 3)
+	for particle: Dictionary in bubbles:
+		var particle_alpha: float = clampf(float(particle["life"]), 0.0, 0.75)
+		if service_mode == &"bath":
+			draw_circle(particle["p"], particle["r"], Color("e9fbff", particle_alpha))
+			draw_arc(particle["p"], particle["r"], 0, TAU, 18, Color("4fc3f7", 0.65), 3)
+		else:
+			var tuft_size: float = float(particle["r"]) * 0.7
+			var tuft_color: Color = fur_color
+			tuft_color.a = particle_alpha
+			draw_line(
+				particle["p"] - Vector2(tuft_size, tuft_size * 0.5),
+				particle["p"] + Vector2(tuft_size, tuft_size * 0.5),
+				tuft_color,
+				6,
+			)
 	for heart: Dictionary in hearts:
 		_draw_heart(
 			heart["p"],

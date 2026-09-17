@@ -18,7 +18,7 @@ O repositório agora contém um **jogo offline jogável em formato de early vert
 - [x] Evento semanal local com multiplicador de banho/tosa.
 - [x] Mapa de progressão e primeiro estabelecimento desbloqueável.
 - [x] Menu de missões, coleção, mapa e acessibilidade/economia.
-- [x] Save v4, migração sequencial v0→v4, autosave, integridade e três backups.
+- [x] Save v5, migração sequencial v0→v5, autosave, integridade e três backups.
 - [x] Cofre offline com cap e proteção contra rollback.
 - [x] Analytics offline e taxonomia; Remote Config defaults.
 - [x] Policies éticas de ads, catálogo/ledger IAP e adapters no-op seguros.

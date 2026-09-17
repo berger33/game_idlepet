@@ -18,6 +18,10 @@ func _ready() -> void:
 	career = _load_dictionary(CAREER_PATH)
 
 
+func has_pet(id: String) -> bool:
+	return pets_by_id.has(id)
+
+
 func pet(id: String) -> Dictionary:
 	return pets_by_id.get(id, pets_by_id.get("caramelo", {}))
 
@@ -50,7 +54,8 @@ func _load_array(path: String, key: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for item: Variant in payload.get(key, []):
 		if item is Dictionary:
-			result.append(item)
+			var entry: Dictionary = item
+			result.append(entry)
 	return result
 
 

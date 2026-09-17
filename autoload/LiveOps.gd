@@ -14,7 +14,8 @@ const NAMES: PackedStringArray = [
 
 func current_event_name() -> String:
 	var date: Dictionary = Time.get_datetime_dict_from_system()
-	return NAMES[int(date.get("weekday", 0))]
+	var weekday: int = clampi(int(date.get("weekday", 0)), 0, NAMES.size() - 1)
+	return NAMES[weekday]
 
 
 func multiplier_for(service_id: StringName) -> float:

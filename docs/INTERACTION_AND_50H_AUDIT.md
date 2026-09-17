@@ -78,5 +78,5 @@ A duração é progressão modelada, não garantia de compulsão ou de retençã
 3. Arraste deve exibir ferramenta sob o dedo e escondê-la ao soltar/cancelar.
 4. Gato deve ser reconhecível sem texto em teste de cinco segundos.
 5. Modal aberto não pode acionar pet ou estação atrás dele.
-6. Nível/XP e desbloqueio devem sobreviver ao save v4 e migrações anteriores.
+6. Nível/XP e desbloqueio devem sobreviver ao save v5 e migrações anteriores.
 7. Medir p50 real de serviço e atualizar apenas as hipóteses do simulador, preservando piso de 50 horas com conteúdo, não grind vazio.

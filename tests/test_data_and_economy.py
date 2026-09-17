@@ -30,9 +30,10 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 4', state)
-        self.assertIn('if version == 3:', migration)
-        self.assertIn('data["version"] = 4', migration)
+        self.assertIn('const SAVE_VERSION: int = 5', state)
+        self.assertIn('return 50 + (player_level - 1) * 25', state)
+        self.assertIn('if version == 4:', migration)
+        self.assertIn('data["version"] = 5', migration)
 
     def test_career_has_at_least_fifty_active_hours(self):
         rows = simulate_career()
@@ -55,6 +56,19 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(main.count('Button.new()'), 1)
         self.assertIn('InteractionFX.bind_button(button)', main)
         self.assertIn('react_to_touch()', main)
+
+    def test_every_catalogued_achievement_is_evaluated(self):
+        catalog = json.loads(Path('data/achievements.json').read_text(encoding='utf8'))
+        source = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for achievement in catalog['achievements']:
+            self.assertIn(f'_unlock_achievement("{achievement["id"]}"', source)
+        self.assertIn('unlocked_cosmetics.append("crown_bubbles")', source)
+
+    def test_daily_mission_rewards_match_the_hud_contract(self):
+        catalog = json.loads(Path('data/daily_missions.json').read_text(encoding='utf8'))
+        active = {mission['id']: mission for mission in catalog['missions'][:3]}
+        self.assertEqual(set(active), {'daily_bath_5', 'daily_perfect_3', 'daily_upgrade_1'})
+        self.assertTrue(all(mission['reward'] == {'coins': 75} for mission in active.values()))
 
     def test_professional_backgrounds_exist_and_are_reasonable(self):
         for name in ('petshop_quintal.png', 'petshop_tosa.png'):
