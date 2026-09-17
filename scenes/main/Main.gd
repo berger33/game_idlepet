@@ -36,6 +36,7 @@ var order_card: PanelContainer
 var order_label: Label
 var instruction_label: Label
 var primary_button: Button
+var double_reward_button: Button
 var upgrade_button: Button
 var tool_upgrade_button: Button
 var result_panel: PanelContainer
@@ -298,7 +299,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		% ["★".repeat(stars), int(reward), xp_reward, current_pet_name, outcome]
 	)
 	_pop_panel(result_panel)
-	primary_button.text = "✓  PRÓXIMO CLIENTE"
+	primary_button.text = "✓  CONTINUAR"
 	primary_button.disabled = false
 	primary_button.show()
 	_refresh_economy()
@@ -514,7 +515,6 @@ func _connect_events() -> void:
 func _build_interface() -> void:
 	world = PetShopCanvasScript.new()
 	world.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	world.offset_bottom = -540
 	add_child(world)
 
 	var top_bar: HBoxContainer = HBoxContainer.new()
@@ -539,51 +539,59 @@ func _build_interface() -> void:
 	order_label.add_theme_color_override("font_color", CHARCOAL)
 	order_card.add_child(order_label)
 
-	var bottom: PanelContainer = PanelContainer.new()
-	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	# Sheet abaixo da prateleira: o cenário e todos os utensílios continuam arrastáveis.
-	bottom.offset_top = -680.0
-	bottom.offset_bottom = 0.0
-	bottom.add_theme_stylebox_override("panel", _style(Color("fffaf3"), 54, 42, Color("e6cbb5"), 4))
-	add_child(bottom)
-	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", 18)
-	bottom.add_child(column)
+	# Navegação superior compacta: ícones flutuantes preservam o cenário e a área de trabalho.
+	var nav: HBoxContainer = HBoxContainer.new()
+	nav.position = Vector2(45, 155)
+	nav.add_theme_constant_override("separation", 14)
+	add_child(nav)
+	for item: Dictionary in [
+		{"id": "missions", "icon": "★", "tip": "Missões"},
+		{"id": "collection", "icon": "♥", "tip": "Pets"},
+		{"id": "map", "icon": "⌂", "tip": "Mapa"},
+		{"id": "settings", "icon": "⚙", "tip": "Ajustes"}
+	]:
+		var nav_button: Button = _button(String(item["icon"]), CHARCOAL, 82, 82)
+		nav_button.tooltip_text = String(item["tip"])
+		nav_button.add_theme_font_size_override("font_size", 38)
+		nav_button.add_theme_stylebox_override(
+			"normal", _style(Color("263238", 0.88), 41, 8, Color("ffffff", 0.72), 3)
+		)
+		nav_button.add_theme_stylebox_override("hover", _style(PINK, 41, 8, Color.WHITE, 3))
+		nav_button.pressed.connect(_open_meta.bind(StringName(item["id"])))
+		nav.add_child(nav_button)
+
+	# HUD flutuante sem rodapé sólido: cenário continua visível até a borda inferior.
+	var action_hud: VBoxContainer = VBoxContainer.new()
+	action_hud.position = Vector2(45, 1350)
+	action_hud.size = Vector2(990, 260)
+	action_hud.add_theme_constant_override("separation", 16)
+	add_child(action_hud)
 	instruction_label = Label.new()
 	instruction_label.text = "Arraste o sabonete da prateleira até Caramelo"
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	instruction_label.add_theme_font_size_override("font_size", 34)
-	instruction_label.add_theme_color_override("font_color", CHARCOAL)
-	instruction_label.custom_minimum_size.y = 52
-	column.add_child(instruction_label)
+	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	instruction_label.add_theme_font_size_override("font_size", 33)
+	instruction_label.add_theme_color_override("font_color", Color.WHITE)
+	instruction_label.add_theme_stylebox_override(
+		"normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2)
+	)
+	instruction_label.custom_minimum_size = Vector2(990, 72)
+	action_hud.add_child(instruction_label)
 	var upgrades_row: HBoxContainer = HBoxContainer.new()
 	upgrades_row.add_theme_constant_override("separation", 16)
-	column.add_child(upgrades_row)
-	upgrade_button = _button("ESTAÇÃO", BLUE, 480, 106)
+	action_hud.add_child(upgrades_row)
+	upgrade_button = _button("ESTAÇÃO", Color("29b6d8", 0.94), 487, 112)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	upgrades_row.add_child(upgrade_button)
-	tool_upgrade_button = _button("UTENSÍLIO", Color("ce93d8"), 480, 106)
+	tool_upgrade_button = _button("UTENSÍLIO", Color("b86ad1", 0.94), 487, 112)
 	tool_upgrade_button.pressed.connect(_on_tool_upgrade_pressed)
 	upgrades_row.add_child(tool_upgrade_button)
-	var nav: HBoxContainer = HBoxContainer.new()
-	nav.add_theme_constant_override("separation", 12)
-	column.add_child(nav)
-	for item: Dictionary in [
-		{"id": "missions", "label": "★ MISSÕES"},
-		{"id": "collection", "label": "♥ PETS"},
-		{"id": "map", "label": "⌂ MAPA"},
-		{"id": "settings", "label": "⚙ AJUSTES"}
-	]:
-		var nav_button: Button = _button(String(item["label"]), CHARCOAL, 220, 66)
-		nav_button.add_theme_font_size_override("font_size", 24)
-		nav_button.pressed.connect(_open_meta.bind(StringName(item["id"])))
-		nav.add_child(nav_button)
 
 	_build_meta_panel()
 
 	result_panel = PanelContainer.new()
-	result_panel.position = Vector2(130, 505)
-	result_panel.size = Vector2(820, 510)
+	result_panel.position = Vector2(110, 430)
+	result_panel.size = Vector2(860, 720)
 	result_panel.add_theme_stylebox_override(
 		"panel", _style(Color("263238", 0.96), 52, 42, PINK, 7)
 	)
@@ -601,9 +609,18 @@ func _build_interface() -> void:
 	result_detail.add_theme_font_size_override("font_size", 39)
 	result_detail.add_theme_color_override("font_color", Color.WHITE)
 	result_column.add_child(result_detail)
-	primary_button = _button("✓  PRÓXIMO CLIENTE", GREEN, 0, 105)
+	var result_actions: VBoxContainer = VBoxContainer.new()
+	result_actions.add_theme_constant_override("separation", 16)
+	result_column.add_child(result_actions)
+	primary_button = _button("✓  CONTINUAR", GREEN, 0, 105)
 	primary_button.pressed.connect(_on_primary_pressed)
-	result_column.add_child(primary_button)
+	result_actions.add_child(primary_button)
+	double_reward_button = _button("▶  DOBRAR PONTUAÇÃO • EM BREVE", Color("7f8c8d"), 0, 88)
+	double_reward_button.tooltip_text = (
+		"Vídeo recompensado será ativado " + "após integração do provedor de anúncios."
+	)
+	double_reward_button.disabled = true
+	result_actions.add_child(double_reward_button)
 	result_panel.hide()
 
 	toast_layer = Control.new()

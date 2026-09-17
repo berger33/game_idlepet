@@ -9,11 +9,11 @@ const PERFUME_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_per
 const STYLE_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_estilo.png")
 const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
 const TOOL_POSITIONS: Dictionary = {
-	&"soap": Vector2(910, 515),
-	&"clipper": Vector2(910, 675),
-	&"dryer": Vector2(910, 835),
-	&"perfume": Vector2(910, 995),
-	&"bow": Vector2(910, 1155),
+	&"soap": Vector2(910, 500),
+	&"clipper": Vector2(910, 650),
+	&"dryer": Vector2(910, 800),
+	&"perfume": Vector2(910, 950),
+	&"bow": Vector2(910, 1100),
 }
 
 var pet_position: Vector2 = Vector2(540, 930)
@@ -204,7 +204,7 @@ func _draw() -> void:
 		background = PERFUME_BACKGROUND
 	elif service_mode == &"style":
 		background = STYLE_BACKGROUND
-	var source_height: float = minf(981.0, background.get_height())
+	var source_height: float = float(background.get_height())
 	draw_texture_rect_region(
 		background,
 		Rect2(Vector2.ZERO, size),
@@ -328,9 +328,22 @@ func _draw_pet(center: Vector2) -> void:
 		draw_arc(center + Vector2(125, 105), 105, -1.4 + wag, 1.1 + wag, 20, fur, 24)
 	else:
 		draw_arc(center + Vector2(125, 100), 82, -1.2 + wag, 0.7 + wag, 16, fur, 30)
-	# Corpo, cabeça e orelhas.
-	_draw_pet_ellipse(center + Vector2(0, 105), Vector2(150, 125), fur)
+	# Corpo, cabeça e contorno com peso compatível com a ilustração do ambiente.
+	var small_breed: bool = _breed_contains_any(
+		["Pinscher", "Yorkshire", "Pug", "Maltês", "Munchkin"]
+	)
+	var large_breed: bool = _breed_contains_any(
+		["Golden", "Labrador", "Samoieda", "Bernês", "Maine Coon"]
+	)
+	var body_scale: float = 0.84 if small_breed else (1.12 if large_breed else 1.0)
+	_draw_pet_ellipse(center + Vector2(8, 226), Vector2(154 * body_scale, 38), Color("263238", 0.2))
+	_draw_pet_ellipse(
+		center + Vector2(0, 105), Vector2(158 * body_scale, 133 * body_scale), fur.darkened(0.55)
+	)
+	_draw_pet_ellipse(center + Vector2(0, 105), Vector2(150 * body_scale, 125 * body_scale), fur)
+	draw_circle(center, 153, fur.darkened(0.55))
 	draw_circle(center, 145, fur)
+	draw_arc(center + Vector2(-25, -35), 92, 3.65, 5.05, 18, fur.lightened(0.16), 13)
 	var ear_drop: float = 35.0 if pet_wet else 0.0
 	if species == &"cat":
 		draw_colored_polygon(
@@ -482,12 +495,7 @@ func _box(color: Color, radius: float) -> StyleBoxFlat:
 
 
 func _draw_tool_shelf() -> void:
-	# Prateleira integrada ao cenário: utensílios são objetos arrastáveis, não botões retangulares.
-	draw_rect(Rect2(825, 420, 170, 825), Color("6d4c41", 0.18), true)
-	for shelf_y: float in [585.0, 745.0, 905.0, 1065.0, 1225.0]:
-		draw_rect(Rect2(810, shelf_y, 200, 22), Color("855b4d"), true)
-		draw_line(Vector2(825, shelf_y + 22), Vector2(855, shelf_y + 52), Color("5d4037"), 10)
-		draw_line(Vector2(995, shelf_y + 22), Vector2(965, shelf_y + 52), Color("5d4037"), 10)
+	# As prateleiras pertencem à arte raster; aqui são desenhados somente utensílios interativos.
 	for tool: StringName in TOOL_POSITIONS:
 		var unlocked: bool = player_level >= int(TOOL_LEVELS[tool])
 		var shelf_alpha: float = (
@@ -512,11 +520,17 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float) -> void:
 	var blue: Color = Color("4fc3f7", alpha)
 	var dark: Color = Color("263238", alpha)
 	var white: Color = Color("f8ffff", alpha)
+	var shadow: Color = Color("263238", alpha * 0.24)
+	_draw_pet_ellipse(at + Vector2(7, 11), Vector2(52, 44), shadow)
 	if tool == &"soap":
-		draw_rect(Rect2(at + Vector2(-36, -35), Vector2(72, 70)), pink, true)
-		draw_circle(at + Vector2(28, -28), 15, white)
-		draw_arc(at, 43, 0, TAU, 24, white, 5)
+		_draw_pet_ellipse(at + Vector2(0, 5), Vector2(39, 47), dark)
+		_draw_pet_ellipse(at + Vector2(0, 4), Vector2(34, 42), pink)
+		draw_rect(Rect2(at + Vector2(-12, -55), Vector2(24, 18)), dark, true)
+		draw_line(at + Vector2(0, -55), at + Vector2(29, -55), dark, 8)
+		draw_circle(at + Vector2(-11, -8), 9, Color("ffffff", alpha * 0.7))
+		draw_arc(at + Vector2(0, 5), 27, 0, TAU, 24, white, 4)
 	elif tool == &"clipper":
+		draw_rect(Rect2(at + Vector2(-31, -49), Vector2(62, 90)), dark, true)
 		draw_rect(Rect2(at + Vector2(-27, -45), Vector2(54, 82)), blue, true)
 		draw_rect(Rect2(at + Vector2(-38, -58), Vector2(76, 18)), Color("b0bec5", alpha), true)
 		for tooth: int in 6:
@@ -524,7 +538,9 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float) -> void:
 				at + Vector2(-32 + tooth * 13, -58), at + Vector2(-32 + tooth * 13, -73), dark, 4
 			)
 	elif tool == &"dryer":
+		draw_circle(at + Vector2(-10, -8), 43, dark)
 		draw_circle(at + Vector2(-10, -8), 38, pink)
+		draw_circle(at + Vector2(-18, -16), 11, Color("ffffff", alpha * 0.55))
 		draw_colored_polygon(
 			PackedVector2Array(
 				[
@@ -538,19 +554,30 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float) -> void:
 		)
 		draw_line(at + Vector2(-12, 20), at + Vector2(-30, 59), dark, 19)
 	elif tool == &"perfume":
-		draw_rect(Rect2(at + Vector2(-30, -15), Vector2(60, 65)), Color("ce93d8", alpha), true)
-		draw_rect(Rect2(at + Vector2(-18, -42), Vector2(36, 28)), Color("ffd54f", alpha), true)
+		_draw_pet_ellipse(at + Vector2(0, 17), Vector2(35, 40), dark)
+		_draw_pet_ellipse(at + Vector2(0, 16), Vector2(30, 35), Color("ce93d8", alpha))
+		draw_circle(at + Vector2(-10, 5), 8, Color("ffffff", alpha * 0.6))
+		draw_rect(Rect2(at + Vector2(-20, -46), Vector2(40, 33)), dark, true)
+		draw_rect(Rect2(at + Vector2(-16, -42), Vector2(32, 25)), Color("ffd54f", alpha), true)
 		draw_line(at + Vector2(0, -42), at + Vector2(45, -50), dark, 8)
 		for spray: int in 3:
 			draw_circle(at + Vector2(62 + spray * 15, -52 - spray * 5), 5, Color("e1f5fe", alpha))
 	else:
+		draw_colored_polygon(
+			PackedVector2Array([at, at + Vector2(-65, -44), at + Vector2(-62, 44)]), dark
+		)
+		draw_colored_polygon(
+			PackedVector2Array([at, at + Vector2(65, -44), at + Vector2(62, 44)]), dark
+		)
 		draw_colored_polygon(
 			PackedVector2Array([at, at + Vector2(-58, -38), at + Vector2(-55, 38)]), pink
 		)
 		draw_colored_polygon(
 			PackedVector2Array([at, at + Vector2(58, -38), at + Vector2(55, 38)]), pink
 		)
-		draw_circle(at, 22, Color("ffd54f", alpha))
+		draw_circle(at, 25, dark)
+		draw_circle(at, 20, Color("ffd54f", alpha))
+		draw_circle(at + Vector2(-7, -7), 6, Color("ffffff", alpha * 0.65))
 
 
 func _draw_heart(center: Vector2, radius: float, color: Color) -> void:
