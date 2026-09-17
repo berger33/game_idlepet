@@ -5,9 +5,11 @@ Vertical slice em **Godot 4.x**, portrait e offline-first. Atenda cães e gatos 
 ## Rodar
 1. Instale Godot 4.3+ com renderer Compatibility.
 2. Importe `project.godot` e execute F6/F5; a cena inicial é `scenes/main/Main.tscn`.
-3. Mouse: segure e esfregue sobre o pet. Touch: arraste sobre o pet.
-4. Use MISSÕES, COLEÇÃO, MAPA e AJUSTES no rodapé; tosa surge no ciclo de clientes.
+3. Clique no botão rosa **1. SERVIR CARAMELO**; depois segure e esfregue sobre o pet até a barra entrar na faixa verde.
+4. Finalize o serviço, receba moedas/XP e use **PRÓXIMO CLIENTE**. Missões, Coleção, Mapa e Ajustes ficam no bottom sheet.
 5. Save fica em `user://save.dat`, com três backups e migração sequencial até v5.
+
+No Godot 4.7, se o player embutido estiver muito baixo, use os três pontos acima da prévia, desative **Embed Game/Incorporar jogo** e execute novamente em janela separada. O CTA principal também foi elevado para continuar visível no modo embutido.
 
 CLI quando Godot estiver disponível:
 ```bash

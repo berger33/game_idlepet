@@ -37,6 +37,7 @@ var meta_title: Label
 var meta_content: Label
 var meta_action_button: Button
 var perfect_zone: ColorRect
+var tutorial_pulse_time: float = 0.0
 
 
 func _ready() -> void:
@@ -55,6 +56,13 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	tutorial_pulse_time += delta
+	if is_instance_valid(primary_button):
+		if GameState.services_completed == 0 and bath.state == BathService.State.WAITING:
+			var pulse: float = 0.9 + sin(tutorial_pulse_time * 4.0) * 0.1
+			primary_button.modulate = Color(1.0, 1.0, 1.0, pulse)
+		else:
+			primary_button.modulate = Color.WHITE
 	bubble_sound_gate = maxf(0.0, bubble_sound_gate - delta)
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	if bath.state == BathService.State.ACTIVE:
@@ -127,7 +135,9 @@ func _react_to_pet_touch() -> void:
 	var affection: int = GameState.register_pet_interaction(current_pet_id)
 	AudioManager.play(&"pet_happy")
 	HapticsManager.light()
-	_show_toast("%s  •  carinho %d" % [message, affection], PINK)
+	_show_toast("%s  •  carinho %d/50" % [message, affection], PINK)
+	if GameState.services_completed == 0 and affection >= 3:
+		instruction_label.text = "Caramelo está pronto! Toque em SERVIR para começar o banho."
 	Analytics.track(&"pet_interacted", {"pet_id": current_pet_id, "kind": "pet"})
 
 
@@ -210,9 +220,10 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	var outcome: String = (
 		"saiu limpinho!" if current_service == &"bath" else "ganhou um visual novo!"
 	)
+	var xp_reward: int = 15 if quality == &"perfect" else 10
 	result_detail.text = (
-		"%s\n+%d moedas  •  %d estrelas\n%s %s"
-		% ["★".repeat(stars), int(reward), stars, current_pet_name, outcome]
+		"%s\n+%d moedas  •  +%d XP\n%s %s"
+		% ["★".repeat(stars), int(reward), xp_reward, current_pet_name, outcome]
 	)
 	_pop_panel(result_panel)
 	primary_button.text = "PRÓXIMO CLIENTE"
@@ -423,8 +434,9 @@ func _build_interface() -> void:
 
 	var bottom: PanelContainer = PanelContainer.new()
 	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.size.y = 570
-	bottom.position.y = 1350
+	# Bottom sheet alto o suficiente para o CTA aparecer também no player embutido do editor.
+	bottom.offset_top = -850.0
+	bottom.offset_bottom = 0.0
 	bottom.add_theme_stylebox_override("panel", _style(Color("fffaf3"), 54, 42, Color("e6cbb5"), 4))
 	add_child(bottom)
 	var column: VBoxContainer = VBoxContainer.new()
@@ -465,9 +477,10 @@ func _build_interface() -> void:
 	progress_row.add_child(timer_label)
 	progress_bar.hide()
 	timer_label.hide()
-	primary_button = _button("SERVIR CARAMELO", PINK, 0, 105)
+	primary_button = _button("1. SERVIR CARAMELO", PINK, 0, 105)
 	primary_button.pressed.connect(_on_primary_pressed)
 	column.add_child(primary_button)
+	column.move_child(primary_button, 0)
 	upgrade_button = _button("MELHORAR BANHEIRA", BLUE, 0, 98)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	column.add_child(upgrade_button)

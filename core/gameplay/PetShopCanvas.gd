@@ -15,7 +15,6 @@ var shake_phase: float = 0.0
 var service_mode: StringName = &"bath"
 var upgrade_level: int = 0
 var arrival_time: float = 1.0
-var queue_box: StyleBoxFlat
 var level_box: StyleBoxFlat
 var fur_color: Color = Color("c98b5b")
 var ear_color: Color = Color("9c623f")
@@ -31,7 +30,6 @@ var tool_visible: bool = false
 
 
 func _ready() -> void:
-	queue_box = _box(Color("ffffff", 0.92), 28)
 	level_box = _box(Color("ffd54f", 0.94), 28)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
@@ -178,17 +176,7 @@ func _draw() -> void:
 		42,
 		Color.WHITE
 	)
-	# Progressão visual e fila mantêm decisões visíveis sem abrir menus.
-	draw_style_box(queue_box, Rect2(805, 315, 220, 92))
-	draw_string(
-		ThemeDB.fallback_font,
-		Vector2(830, 374),
-		"FILA  2  ••",
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1,
-		30,
-		Color("263238")
-	)
+	# O selo de estação é informativo; elementos que parecem botões não são desenhados no cenário.
 	if upgrade_level > 0:
 		draw_style_box(level_box, Rect2(70, 500, 250, 78))
 		draw_string(

@@ -72,9 +72,13 @@ class FoundationTests(unittest.TestCase):
 
     def test_godot_47_compatibility_regressions(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
         presets = Path('export_presets.cfg').read_text(encoding='utf8')
         self.assertNotIn('func draw_ellipse(', canvas)
         self.assertIn('func _draw_pet_ellipse(', canvas)
+        self.assertNotIn('FILA  2', canvas)
+        self.assertIn('bottom.offset_top = -850.0', main)
+        self.assertIn('column.move_child(primary_button, 0)', main)
         self.assertIn('include_filter=""', presets)
         self.assertIn('exclude_filter=', presets)
         self.assertNotIn('platform="Android"', presets)
