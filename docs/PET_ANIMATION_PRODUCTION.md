@@ -79,6 +79,10 @@ Para cada lote:
 
 Concluídos, aprovados visualmente e integrados os 10 estados. O conjunto mantém a paleta e a leitura do vira-lata caramelo; `messy` aumenta a silhueta, `wet` achata e escurece o pelo, e as expressões são distintas sem VFX indevido. O carregamento possui fallback seguro: pets cujos lotes ainda estejam na fila continuam usando a base comercial e a deformação runtime sem quebrar o jogo.
 
+### Lote 02 — Luna Shih-tzu
+
+Nove estados foram aprovados, normalizados e preservados. `tilt_right` foi rejeitado na revisão porque a geração transformou uma orelha em uma ponta ereta incompatível com a silhueta do Shih-tzu. O arquivo rejeitado não entrou no produto. O tracker registra a tentativa e bloqueia corretamente geração completa, QA e integração até uma nova geração desse único estado. O limite de 10 imagens desta rodada impediu a correção imediata; ela é a primeira ação do próximo lote de geração.
+
 ## Backlog
 
 ### CRITICAL

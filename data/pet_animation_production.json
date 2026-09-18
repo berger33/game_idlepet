@@ -32,9 +32,10 @@
     "pets_total": 50,
     "pets_generated": 1,
     "images_expected": 500,
-    "images_generated": 10,
-    "images_qa_passed": 10,
-    "pets_integrated": 1
+    "images_generated": 19,
+    "images_qa_passed": 19,
+    "pets_integrated": 1,
+    "generation_attempts": 20
   },
   "pets": [
     {
@@ -102,50 +103,51 @@
       "reference": "art/pets/luna_shih_tzu.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "rejected_needs_regeneration",
           "path": "art/pet_animations/luna_shih_tzu/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "generation_status": "blocked_one_rejected",
+      "normalization_status": "complete",
+      "visual_qa_status": "failed_tilt_right",
+      "integration_status": "pending",
+      "qa_notes": "tilt_right rejected: one upright pointed ear breaks the Shih-tzu floppy-ear silhouette; regenerate before integration"
     },
     {
       "sequence": 3,
