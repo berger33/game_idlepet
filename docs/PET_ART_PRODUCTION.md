@@ -31,7 +31,7 @@ Cada sprite foi recortado por segmentação, normalizado para 512×512, converti
 
 ## Animação runtime
 
-Embora cada imagem-base seja estática, o renderer adiciona respiração, inclinação, squash/stretch emocional, vibração de tontura, tint molhado, escurecimento triste, entrada com antecipação, bounce feliz, coração, espuma, pelos, perfume e estrelas. Porte pequeno/grande continua derivado da raça.
+A coleção-base alimenta uma arquitetura híbrida de estados autorais, interpolação e VFX. O renderer atual já possui reações básicas, mas a produção completa e os gatilhos estritos são acompanhados em [PET_ANIMATION_PRODUCTION.md](PET_ANIMATION_PRODUCTION.md) e `data/pet_animation_production.json`. Essa documentação é a fonte de verdade para o que está concluído, pendente de integração e ainda na fila; não se considera cobertura final antes dos respectivos marcos de QA.
 
 ## Lote 2 concluído
 

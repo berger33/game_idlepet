@@ -104,6 +104,34 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('if is_instance_valid(pet_texture):', canvas)
         self.assertIn('_draw_illustrated_pet(center)', canvas)
 
+    def test_pet_animation_production_tracker_and_first_batch(self):
+        tracker = json.loads(Path('data/pet_animation_production.json').read_text(encoding='utf8'))
+        catalog = json.loads(Path('data/pets.json').read_text(encoding='utf8'))['pets']
+        states = {
+            'dirty', 'wet', 'messy', 'tilt_left', 'tilt_right',
+            'happy_squash', 'happy_air', 'dizzy', 'sad', 'blink'
+        }
+        self.assertEqual(tracker['generated_image_limit_per_batch'], 10)
+        self.assertEqual(set(tracker['authored_states']), states)
+        self.assertEqual([entry['pet_id'] for entry in tracker['pets']], [pet['id'] for pet in catalog])
+        self.assertEqual(len({entry['batch_id'] for entry in tracker['pets']}), 50)
+        self.assertTrue(all(set(entry['states']) == states for entry in tracker['pets']))
+        self.assertEqual(tracker['summary']['images_expected'], 500)
+        self.assertEqual(tracker['summary']['images_generated'], 10)
+        first = tracker['pets'][0]
+        self.assertEqual(first['pet_id'], 'caramelo')
+        self.assertEqual(first['visual_qa_status'], 'passed')
+        self.assertEqual(first['integration_status'], 'pending')
+        for state, record in first['states'].items():
+            path = Path(record['path'])
+            raw = path.read_bytes()
+            self.assertEqual(record['status'], 'qa_passed', state)
+            self.assertEqual(raw[:8], b'\x89PNG\r\n\x1a\n')
+            self.assertEqual(int.from_bytes(raw[16:20], 'big'), 512)
+            self.assertEqual(int.from_bytes(raw[20:24], 'big'), 512)
+            self.assertEqual(raw[24], 8)
+            self.assertEqual(raw[25], 6)
+
     def test_service_layouts_and_commercial_tool_art(self):
         layouts = json.loads(Path('data/service_layouts.json').read_text(encoding='utf8'))
         self.assertEqual([stage['unlock_level'] for stage in layouts['stages']], [1, 3, 5, 7, 10])
