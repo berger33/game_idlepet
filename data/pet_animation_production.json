@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 3,
     "images_expected": 500,
-    "images_generated": 37,
-    "images_qa_passed": 37,
+    "images_generated": 39,
+    "images_qa_passed": 39,
     "pets_integrated": 3,
-    "generation_attempts": 40
+    "generation_attempts": 50
   },
   "pets": [
     {
@@ -205,8 +205,8 @@
       "normalization_status": "complete",
       "visual_qa_status": "passed",
       "integration_status": "integrated",
-      "qa_notes": "All states passed. Replacement blink uses a solid-key background and replacement wet has reduced volume/downward waterlogged strands. Right tilt is a lossless mirror of the approved left key for guaranteed opposite motion.",
-      "generation_attempts": 11
+      "qa_notes": "All states passed. Replacement blink uses a solid-key background and replacement wet has reduced volume/downward waterlogged strands. Right tilt is a lossless mirror of the approved left key for guaranteed opposite motion. Four later alternatives were reviewed but not selected because the committed set retained stronger identity/style consistency.",
+      "generation_attempts": 15
     },
     {
       "sequence": 4,
@@ -230,11 +230,11 @@
           "path": "art/pet_animations/thor_pinscher/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "rejected_no_visible_tilt",
           "path": "art/pet_animations/thor_pinscher/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/tilt_right.png"
         },
         "happy_squash": {
@@ -254,16 +254,16 @@
           "path": "art/pet_animations/thor_pinscher/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/blink.png"
         }
       },
-      "generation_status": "partial_three_queued",
-      "normalization_status": "partial_seven_accepted",
-      "visual_qa_status": "passed_generated_states",
+      "generation_status": "partial_one_rejected",
+      "normalization_status": "partial_nine_accepted",
+      "visual_qa_status": "blocked_tilt_left",
       "integration_status": "pending",
-      "generation_attempts": 7,
-      "qa_notes": "Seven generated states passed after mint-key removal; residual generated floor shadows under dizzy/squash were removed during alpha QA. Blink and tilt pair remain queued due turn cap."
+      "generation_attempts": 13,
+      "qa_notes": "Nine states passed. New blink and tilt_right merged with the seven previously approved states. tilt_left rejected because the head remained centered. Three alternative dirty/messy/wet renders were reviewed but the committed versions retained stronger consistency."
     },
     {
       "sequence": 5,

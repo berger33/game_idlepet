@@ -85,11 +85,11 @@ Os 10 estados foram aprovados, normalizados e integrados. A primeira correção 
 
 ### Lote 03 — Mingau SRD branco
 
-Os 10 estados foram aprovados, normalizados e integrados. As substituições resolveram os dois bloqueios: `blink` foi gerado sobre fundo sólido e ficou sem resíduos; `wet` ganhou volume reduzido, mechas encharcadas para baixo, cauda fina e leitura fria de pelo molhado. `tilt_left` foi aprovado e `tilt_right` deriva de espelhamento lossless para garantir oposição geométrica. O tracker preserva as 11 tentativas totais e as causas das rejeições anteriores.
+Os 10 estados foram aprovados, normalizados e integrados. As substituições resolveram os dois bloqueios: `blink` foi gerado sobre fundo sólido e ficou sem resíduos; `wet` ganhou volume reduzido, mechas encharcadas para baixo, cauda fina e leitura fria de pelo molhado. `tilt_left` foi aprovado e `tilt_right` deriva de espelhamento lossless para garantir oposição geométrica. Quatro alternativas posteriores foram revisadas, mas não selecionadas porque o conjunto já integrado preserva melhor a identidade e a uniformidade de estilo; o tracker contabiliza as 15 tentativas.
 
 ### Lote 04 — Thor Pinscher (parcial)
 
-Sete estados foram aprovados e normalizados: `dirty`, `wet`, `messy`, `happy_squash`, `happy_air`, `dizzy` e `sad`. O molhado mantém pelo curto, liso e escuro; o messy usa tufos irregulares sem perder marcações pretas e castanhas; as orelhas reagem emocionalmente sem esconder a leitura do Pinscher. Sombras de chão verdes geradas em `dizzy` e `happy_squash` foram detectadas no contact sheet e removidas do alfa. `blink` e o par de inclinações permanecem na fila por causa do limite de geração.
+Nove estados foram aprovados e normalizados: `dirty`, `wet`, `messy`, `happy_squash`, `happy_air`, `dizzy`, `sad`, `blink` e `tilt_right`. O molhado mantém pelo curto, liso e escuro; o messy usa tufos irregulares sem perder marcações pretas e castanhas; as orelhas reagem emocionalmente sem esconder a leitura do Pinscher. Sombras de chão verdes geradas em `dizzy` e `happy_squash` foram detectadas no contact sheet e removidas do alfa. `tilt_left` foi rejeitado porque permaneceu central, sem inclinação legível. Três alternativas de condição foram revisadas, mas as versões já aprovadas mantiveram maior consistência. Apenas a correção de `tilt_left` bloqueia a integração.
 
 ## Backlog
 

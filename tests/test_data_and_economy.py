@@ -164,11 +164,15 @@ class FoundationTests(unittest.TestCase):
         self.assertTrue(all(record['status'] == 'qa_passed' for record in mingau['states'].values()))
         self.assertEqual(tracker['summary']['pets_integrated'], 3)
         thor = tracker['pets'][3]
-        self.assertEqual(thor['generation_status'], 'partial_three_queued')
+        self.assertEqual(thor['generation_status'], 'partial_one_rejected')
         self.assertEqual(
             {state for state, record in thor['states'].items() if record['status'] == 'qa_passed'},
-            {'dirty', 'wet', 'messy', 'happy_squash', 'happy_air', 'dizzy', 'sad'}
+            {
+                'dirty', 'wet', 'messy', 'tilt_right', 'happy_squash',
+                'happy_air', 'dizzy', 'sad', 'blink'
+            }
         )
+        self.assertEqual(thor['states']['tilt_left']['status'], 'rejected_no_visible_tilt')
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
