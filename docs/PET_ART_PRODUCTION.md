@@ -59,11 +59,23 @@ Embora cada imagem-base seja estática, o renderer adiciona respiração, inclin
 29. Rio — Savannah.
 30. Estrela — Khao Manee.
 
+## Lote 4 concluído
+
+31. Pipoca — Welsh Corgi.
+32. Zeca — Schnauzer miniatura.
+33. Belinha — Maltês.
+34. Duke — Husky Siberiano.
+35. Lola — Boxer.
+36. Nico — Pastor Australiano.
+37. Maya — Akita Inu.
+38. Otto — Basset Hound.
+39. Kiara — Doberman.
+40. Apolo — Boiadeiro Bernês.
+
 ## Fila restante
 
-A ferramenta de geração disponível limita cada turno a dez imagens. Restam 20 sprites em dois lotes, sem redução de escopo:
+A ferramenta de geração disponível limita cada turno a dez imagens. Resta o lote final, sem redução de escopo:
 
-- Lote 4: Pipoca, Zeca, Belinha, Duke, Lola, Nico, Maya, Otto, Kiara, Apolo.
 - Lote 5: Mimi, Yuki, Olívia, Simba, Lilo, Zara, Cosmo, Íris, Odin, Cléo.
 
 Cada lote deve repetir recorte, validação RGBA, revisão de raça, teste de carregamento, documentação e commit.

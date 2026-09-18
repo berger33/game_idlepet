@@ -96,7 +96,10 @@ class FoundationTests(unittest.TestCase):
             'pitanga_abissinio', 'bento_beagle', 'azul_russian', 'paçoca_dachshund',
             'lua_maine_coon', 'kiko_pug', 'sushi_japanese', 'cacau_labrador',
             'onca_bengal', 'tupa_mane_wolf', 'aurora_ragdoll', 'gaia_samoyed',
-            'nox_sphynx', 'rio_savannah', 'estrela_khao'
+            'nox_sphynx', 'rio_savannah', 'estrela_khao', 'pipoca_corgi',
+            'zeca_schnauzer', 'belinha_maltes', 'duke_husky', 'lola_boxer',
+            'nico_aussie', 'maya_akita', 'otto_basset', 'kiara_doberman',
+            'apolo_bernese'
         }
         files = {path.stem for path in Path('art/pets').glob('*.png')}
         self.assertEqual(files, expected)
