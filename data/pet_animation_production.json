@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 1,
+    "pets_generated": 2,
     "images_expected": 500,
-    "images_generated": 19,
-    "images_qa_passed": 19,
-    "pets_integrated": 1,
-    "generation_attempts": 20
+    "images_generated": 20,
+    "images_qa_passed": 20,
+    "pets_integrated": 2,
+    "generation_attempts": 22
   },
   "pets": [
     {
@@ -119,7 +119,7 @@
           "path": "art/pet_animations/luna_shih_tzu/tilt_left.png"
         },
         "tilt_right": {
-          "status": "rejected_needs_regeneration",
+          "status": "qa_passed",
           "path": "art/pet_animations/luna_shih_tzu/tilt_right.png"
         },
         "happy_squash": {
@@ -143,11 +143,11 @@
           "path": "art/pet_animations/luna_shih_tzu/blink.png"
         }
       },
-      "generation_status": "blocked_one_rejected",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "failed_tilt_right",
-      "integration_status": "pending",
-      "qa_notes": "tilt_right rejected: one upright pointed ear breaks the Shih-tzu floppy-ear silhouette; regenerate before integration"
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "qa_notes": "All states passed. Two generated tilt-right corrections were rejected for wrong ear/direction; final right key is a lossless mirror of the approved left key, guaranteeing opposite inclination and preserving breed anatomy."
     },
     {
       "sequence": 3,

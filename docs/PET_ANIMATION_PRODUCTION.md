@@ -81,7 +81,7 @@ Concluídos, aprovados visualmente e integrados os 10 estados. O conjunto manté
 
 ### Lote 02 — Luna Shih-tzu
 
-Nove estados foram aprovados, normalizados e preservados. `tilt_right` foi rejeitado na revisão porque a geração transformou uma orelha em uma ponta ereta incompatível com a silhueta do Shih-tzu. O arquivo rejeitado não entrou no produto. O tracker registra a tentativa e bloqueia corretamente geração completa, QA e integração até uma nova geração desse único estado. O limite de 10 imagens desta rodada impediu a correção imediata; ela é a primeira ação do próximo lote de geração.
+Os 10 estados foram aprovados, normalizados e integrados. A primeira correção de `tilt_right` resolveu a orelha pontuda, mas repetiu a mesma direção de `tilt_left`; uma segunda tentativa também repetiu o ângulo. Ambas foram rejeitadas e não entraram no produto. A solução selecionada foi um espelhamento lossless do keyframe esquerdo já aprovado, garantindo inclinações realmente opostas, orelhas caídas e identidade consistente sem nova deriva generativa. O tracker contabiliza as 12 tentativas e registra a decisão de QA.
 
 ## Backlog
 

@@ -117,13 +117,12 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(len({entry['batch_id'] for entry in tracker['pets']}), 50)
         self.assertTrue(all(set(entry['states']) == states for entry in tracker['pets']))
         self.assertEqual(tracker['summary']['images_expected'], 500)
-        self.assertEqual(tracker['summary']['images_generated'], 19)
-        self.assertEqual(tracker['summary']['generation_attempts'], 20)
+        self.assertEqual(tracker['summary']['images_generated'], 20)
+        self.assertEqual(tracker['summary']['generation_attempts'], 22)
         first = tracker['pets'][0]
         self.assertEqual(first['pet_id'], 'caramelo')
         self.assertEqual(first['visual_qa_status'], 'passed')
         self.assertEqual(first['integration_status'], 'integrated')
-        self.assertEqual(tracker['summary']['pets_integrated'], 1)
         for state, record in first['states'].items():
             path = Path(record['path'])
             raw = path.read_bytes()
@@ -134,13 +133,13 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(raw[24], 8)
             self.assertEqual(raw[25], 6)
         luna = tracker['pets'][1]
-        self.assertEqual(luna['generation_status'], 'blocked_one_rejected')
-        self.assertEqual(luna['states']['tilt_right']['status'], 'rejected_needs_regeneration')
-        self.assertFalse(Path(luna['states']['tilt_right']['path']).exists())
+        self.assertEqual(luna['generation_status'], 'complete')
+        self.assertEqual(luna['visual_qa_status'], 'passed')
+        self.assertEqual(luna['integration_status'], 'integrated')
+        self.assertEqual(tracker['summary']['pets_integrated'], 2)
         for state, record in luna['states'].items():
-            if state != 'tilt_right':
-                self.assertEqual(record['status'], 'qa_passed')
-                self.assertTrue(Path(record['path']).exists(), state)
+            self.assertEqual(record['status'], 'qa_passed')
+            self.assertTrue(Path(record['path']).exists(), state)
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
