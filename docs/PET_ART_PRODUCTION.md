@@ -46,11 +46,23 @@ Embora cada imagem-base seja estática, o renderer adiciona respiração, inclin
 19. Paçoca — Dachshund.
 20. Lua — Maine Coon.
 
+## Lote 3 concluído
+
+21. Kiko — Pug.
+22. Sushi — Bobtail Japonês.
+23. Cacau — Labrador chocolate.
+24. Juma — Bengal.
+25. Tupã — Lobo-guará guardião.
+26. Aurora — Ragdoll.
+27. Gaia — Samoieda.
+28. Nox — Sphynx.
+29. Rio — Savannah.
+30. Estrela — Khao Manee.
+
 ## Fila restante
 
-A ferramenta de geração disponível limita cada turno a dez imagens. Restam 30 sprites, organizados em três lotes de dez, sem redução de escopo:
+A ferramenta de geração disponível limita cada turno a dez imagens. Restam 20 sprites em dois lotes, sem redução de escopo:
 
-- Lote 3: Kiko, Sushi, Cacau, Juma, Tupã, Aurora, Gaia, Nox, Rio, Estrela.
 - Lote 4: Pipoca, Zeca, Belinha, Duke, Lola, Nico, Maya, Otto, Kiara, Apolo.
 - Lote 5: Mimi, Yuki, Olívia, Simba, Lilo, Zara, Cosmo, Íris, Odin, Cléo.
 
