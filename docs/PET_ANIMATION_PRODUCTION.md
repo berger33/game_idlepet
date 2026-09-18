@@ -127,6 +127,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. A faixa branca central, peito/patas claros, ponta branca da cauda e heterocromia azul/castanha permanecem legíveis. `wet` estreita e escurece a pelagem em mechas pesadas; uma poça gerada junto aos pés foi identificada e removida durante o QA de alfa, preservando apenas o pet e gotas corporais. `messy`, dizzy, sad e o arco squash/air mantêm anatomia atlética e leitura emocional clara.
 
+### Lote 14 — Café Bombay
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas após uma resposta vazia do modelo ser repetida; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem quase preta com reflexos chocolate, olhos âmbar, face arredondada e cauda longa permanecem legíveis. `wet` aprofunda o preto, reduz volume e adiciona mechas pesadas/gotas; `messy` cria tufos irregulares; dizzy usa espirais sem estrelas, e squash/air têm silhuetas de antecipação e salto distintas.
+
 ## Backlog
 
 ### CRITICAL

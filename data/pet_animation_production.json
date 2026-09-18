@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 13,
+    "pets_generated": 14,
     "images_expected": 500,
-    "images_generated": 130,
-    "images_qa_passed": 130,
-    "pets_integrated": 13,
-    "generation_attempts": 141
+    "images_generated": 140,
+    "images_qa_passed": 140,
+    "pets_integrated": 14,
+    "generation_attempts": 151
   },
   "pets": [
     {
@@ -788,51 +788,52 @@
       "reference": "art/pets/cafe_bombay.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cafe_bombay/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "Nine generated states passed after one empty image-model response was retried. tilt_right is a lossless mirror of approved tilt_left. Near-black coat and amber eyes remain readable; wet is sleek/deep-black with droplets and messy expands irregular tufts."
     },
     {
       "sequence": 15,
