@@ -95,6 +95,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Duas tentativas gerada
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` deriva de espelhamento lossless do `tilt_left` aprovado para garantir oposição sem deriva. `dirty` preserva dourado sob poeira e lama, `wet` reduz volume e direciona mechas para baixo, `messy` amplia a pelagem irregular, e o par squash/air comunica antecipação e salto. A elevação momentânea de uma orelha em `happy_air` foi aprovada como movimento secundário exclusivo do salto, não como anatomia idle.
 
+### Lote 06 — Frajola
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo aprovado. A máscara preta e branca, faixa branca central, peito/patas claros, olhos verdes e nariz rosa permanecem legíveis em todos os estados. `wet` escurece e achata a silhueta com gotas, `messy` expande pelos irregulares, `dirty` acinzenta áreas claras, e as emoções possuem poses imediatamente distinguíveis sem estrelas indevidas.
+
 ## Backlog
 
 ### CRITICAL
