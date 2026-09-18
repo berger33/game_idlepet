@@ -24,6 +24,26 @@ const SERVICE_PET_POSITIONS: Dictionary = {
 	&"style": Vector2(540, 1065),
 }
 const TOOL_ORDER: Array[StringName] = [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]
+const SERVICE_TOOLS: Dictionary = {
+	&"bath": &"soap",
+	&"groom": &"clipper",
+	&"dry": &"dryer",
+	&"perfume": &"perfume",
+	&"style": &"bow"
+}
+const PET_STATE_NAMES: Array[StringName] = [
+	&"dirty",
+	&"wet",
+	&"messy",
+	&"tilt_left",
+	&"tilt_right",
+	&"happy_squash",
+	&"happy_air",
+	&"dizzy",
+	&"sad",
+	&"blink"
+]
+const PET_TEXTURE_BASELINE: float = 479.0 / 512.0
 const SERVICE_TOOL_Y: Dictionary = {
 	&"bath": [235.0, 390.0, 545.0, 700.0, 855.0],
 	&"groom": [235.0, 390.0, 545.0, 700.0, 855.0],
@@ -49,6 +69,7 @@ var muzzle_color: Color = Color("f1c49f")
 var species: StringName = &"dog"
 var pet_id: String = "caramelo"
 var pet_texture: Texture2D
+var pet_state_textures: Dictionary = {}
 var breed_name: String = "Vira-lata caramelo"
 var temperament: StringName = &"happy"
 var rarity: StringName = &"common"
@@ -59,6 +80,12 @@ var player_level: int = 1
 var active_tool: StringName = &""
 var tool_position: Vector2 = Vector2.ZERO
 var tool_visible: bool = false
+var tool_contact_valid: bool = false
+var service_active: bool = false
+var service_condition_complete: bool = false
+var condition_release: float = 0.0
+var special_reward_active: bool = false
+var departure_time: float = -1.0
 
 
 func _ready() -> void:
@@ -70,7 +97,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	shake_phase += delta
 	arrival_time = minf(1.0, arrival_time + delta * 2.8)
+	if departure_time >= 0.0:
+		departure_time = minf(1.0, departure_time + delta * 2.4)
 	celebration = maxf(0.0, celebration - delta)
+	condition_release = maxf(0.0, condition_release - delta * 1.6)
+	if celebration <= 0.0:
+		special_reward_active = false
 	reaction_time = maxf(0.0, reaction_time - delta)
 	if reaction_time <= 0.0 and celebration <= 0.0:
 		reaction_kind = &"idle"
@@ -92,9 +124,28 @@ func _process(delta: float) -> void:
 
 func set_service_layout(next_service: StringName) -> void:
 	service_mode = next_service
+	service_active = false
+	tool_contact_valid = false
+	service_condition_complete = false
+	condition_release = 0.0
 	var next_position: Vector2 = SERVICE_PET_POSITIONS.get(next_service, Vector2(540, 840))
 	pet_position = next_position
 	queue_redraw()
+
+
+func begin_service() -> void:
+	service_active = true
+	progress = 0.0
+	pet_wet = service_mode == &"bath" or service_mode == &"dry"
+
+
+func complete_service() -> void:
+	service_active = false
+	bubbles.clear()
+	service_condition_complete = true
+	condition_release = 1.0 if service_mode == &"bath" else 0.0
+	pet_wet = false
+	progress = 1.0
 
 
 func spawn_bubble(at: Vector2) -> void:
@@ -112,17 +163,23 @@ func spawn_bubble(at: Vector2) -> void:
 	)
 
 
-func celebrate() -> void:
+func celebrate(is_special_reward: bool = false) -> void:
 	pet_happy = true
 	celebration = 1.8
+	special_reward_active = is_special_reward
 
 
 func set_pet_profile(profile: Dictionary) -> void:
 	pet_id = String(profile.get("id", "caramelo"))
 	var texture_path: String = "res://art/pets/%s.png" % pet_id
 	pet_texture = null
+	pet_state_textures.clear()
 	if ResourceLoader.exists(texture_path):
 		pet_texture = load(texture_path) as Texture2D
+	for state_name: StringName in PET_STATE_NAMES:
+		var state_path: String = "res://art/pet_animations/%s/%s.png" % [pet_id, state_name]
+		if ResourceLoader.exists(state_path):
+			pet_state_textures[state_name] = load(state_path) as Texture2D
 	var colors: Array = profile.get("colors", ["c98b5b", "9c623f", "f1c49f"])
 	if colors.size() >= 3:
 		fur_color = Color(String(colors[0]))
@@ -163,16 +220,29 @@ func react_to_touch() -> String:
 
 
 func react_to_service(service_progress: float) -> void:
-	if service_progress > 0.96:
-		reaction_kind = &"dizzy"
-		pet_happy = false
-	elif service_progress > 0.78:
+	if service_progress > 0.78:
 		reaction_kind = &"excited"
 		pet_happy = true
 	else:
 		reaction_kind = &"blink" if int(service_progress * 20.0) % 5 == 0 else &"focused"
 		pet_happy = false
 	reaction_time = 0.22
+
+
+func react_to_dizziness() -> void:
+	# Reserved for explicit overload/stun; normal service completion never causes dizziness.
+	reaction_kind = &"dizzy"
+	reaction_time = 1.0
+	pet_happy = false
+
+
+func _service_effect_active() -> bool:
+	return (
+		service_active
+		and tool_visible
+		and tool_contact_valid
+		and active_tool == StringName(SERVICE_TOOLS.get(service_mode, &""))
+	)
 
 
 func _tool_position(tool: StringName) -> Vector2:
@@ -204,13 +274,21 @@ func move_tool(at: Vector2) -> void:
 	tool_visible = true
 
 
+func set_tool_contact(is_valid: bool) -> void:
+	tool_contact_valid = is_valid
+
+
 func release_tool() -> void:
 	tool_visible = false
+	tool_contact_valid = false
 	active_tool = &""
 
 
 func react_to_failure() -> void:
 	tool_visible = false
+	tool_contact_valid = false
+	service_active = false
+	bubbles.clear()
 	reaction_kind = &"sad"
 	reaction_time = 1.5
 	pet_happy = false
@@ -218,14 +296,27 @@ func react_to_failure() -> void:
 
 func arrive() -> void:
 	arrival_time = 0.0
+	departure_time = -1.0
 	pet_happy = false
+
+
+func depart() -> void:
+	service_active = false
+	tool_visible = false
+	tool_contact_valid = false
+	departure_time = 0.0
 
 
 func reset_pet() -> void:
 	pet_happy = false
 	pet_wet = false
+	service_active = false
+	service_condition_complete = false
+	condition_release = 0.0
+	special_reward_active = false
 	progress = 0.0
 	tool_visible = false
+	tool_contact_valid = false
 	reaction_time = 0.0
 	reaction_kind = &"idle"
 	bubbles.clear()
@@ -281,18 +372,23 @@ func _draw() -> void:
 			28,
 			Color("263238")
 		)
-	# Pet entra com antecipação lateral e passa a reagir no centro da estação.
-	var bounce: float = sin(shake_phase * 5.0) * (7.0 if pet_happy else 2.0)
+	# Entrada e saída usam easing independente; movimento emocional acontece sobre o pivô dos pés.
+	var idle_bob: float = sin(shake_phase * 5.0) * (3.0 if pet_happy else 1.2)
 	var eased_arrival: float = 1.0 - pow(1.0 - arrival_time, 3.0)
-	var pet_center: Vector2 = pet_position + Vector2((1.0 - eased_arrival) * -430.0, bounce)
+	var exit_offset: float = 0.0
+	if departure_time >= 0.0:
+		exit_offset = (departure_time * departure_time) * 480.0
+	var pet_center: Vector2 = (
+		pet_position + Vector2((1.0 - eased_arrival) * -430.0 + exit_offset, idle_bob)
+	)
 	if rarity == &"legendary":
 		draw_circle(pet_center, 205.0 + sin(shake_phase * 3.0) * 8.0, Color("ffd54f", 0.22))
 		draw_arc(pet_center, 190.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
 	elif rarity == &"epic":
 		draw_circle(pet_center, 185.0, Color("ce93d8", 0.16))
 	_draw_pet(pet_center)
-	# Espuma ou tufos respondem à mecânica ativa.
-	var effect_count: int = int(progress * 18.0)
+	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
+	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:
 		var angle: float = float(i) * 2.4
 		var radius: float = 70.0 + float(i % 5) * 23.0
@@ -310,7 +406,9 @@ func _draw() -> void:
 		elif service_mode == &"perfume":
 			draw_circle(effect_pos, 14 + i % 3 * 4, Color("ce93d8", 0.62))
 		else:
-			_star(effect_pos, 16 + i % 3 * 3, Color("ffd54f", 0.9))
+			# Styling uses soft ribbon glints; stars remain exclusive to special rewards.
+			draw_circle(effect_pos, 8 + i % 3 * 3, Color("ff8fb1", 0.78))
+			draw_arc(effect_pos, 18 + i % 3 * 2, -0.7, 0.7, 8, Color("ffffff", 0.8), 3)
 	for particle: Dictionary in bubbles:
 		var particle_alpha: float = clampf(float(particle["life"]), 0.0, 0.75)
 		if service_mode == &"bath":
@@ -336,7 +434,7 @@ func _draw() -> void:
 		elif service_mode == &"perfume":
 			draw_circle(particle["p"], float(particle["r"]) * 0.55, Color("ce93d8", particle_alpha))
 		else:
-			_star(particle["p"], float(particle["r"]), Color("ffd54f", particle_alpha))
+			draw_circle(particle["p"], float(particle["r"]) * 0.45, Color("ff8fb1", particle_alpha))
 	for heart: Dictionary in hearts:
 		_draw_heart(
 			heart["p"],
@@ -348,7 +446,7 @@ func _draw() -> void:
 		var ring_color: Color = Color("7ed957") if progress >= 0.72 else Color("ffffff")
 		draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * progress, 40, ring_color, 11.0)
 		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.22), 4.0)
-	if celebration > 0.0:
+	if celebration > 0.0 and special_reward_active:
 		for i: int in 14:
 			var angle: float = TAU * float(i) / 14.0 + shake_phase
 			var star_pos: Vector2 = (
@@ -522,28 +620,119 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		sprite_size = 330.0
 	elif large_breed:
 		sprite_size = 445.0
-	var breathe: float = 1.0 + sin(shake_phase * 2.2) * 0.012
-	var reaction_scale: Vector2 = Vector2(breathe, breathe)
-	if reaction_kind == &"love" or reaction_kind == &"excited":
-		reaction_scale += Vector2(0.035, -0.02)
+
+	# The visual center remains calibrated to every workstation, but deformation pivots at the feet.
+	var foot_from_center: float = sprite_size * (PET_TEXTURE_BASELINE - 0.5)
+	var foot_anchor: Vector2 = center + Vector2(0.0, foot_from_center)
+	var breathe_x: float = 1.0 - sin(shake_phase * 2.2) * 0.004
+	var breathe_y: float = 1.0 + sin(shake_phase * 2.2) * 0.012
+	var reaction_scale: Vector2 = Vector2(breathe_x, breathe_y)
+	var rotation: float = 0.0
+	var jump_height: float = 0.0
+	var overlay_state: StringName = &""
+	var overlay_alpha: float = 0.0
+	var second_state: StringName = &""
+	var second_alpha: float = 0.0
+
+	if celebration > 0.0:
+		var celebration_phase: float = 1.0 - celebration / 1.8
+		if celebration_phase < 0.2:
+			overlay_state = &"happy_squash"
+			overlay_alpha = smoothstep(0.0, 0.08, celebration_phase)
+		elif celebration_phase < 0.72:
+			overlay_state = &"happy_air"
+			overlay_alpha = 1.0 - smoothstep(0.62, 0.72, celebration_phase)
+			jump_height = sin(PI * (celebration_phase - 0.2) / 0.52) * 72.0
+		else:
+			overlay_state = &"happy_squash"
+			overlay_alpha = 1.0 - smoothstep(0.72, 0.9, celebration_phase)
 	elif reaction_kind == &"sad":
-		reaction_scale += Vector2(0.02, -0.045)
-	var tilt: float = 0.0
-	if reaction_kind == &"dizzy":
-		tilt = sin(shake_phase * 18.0) * 0.055
-	elif pet_happy:
-		tilt = sin(shake_phase * 7.0) * 0.018
-	var tint: Color = Color("d5edf4") if pet_wet else Color.WHITE
+		overlay_state = &"sad"
+		overlay_alpha = minf(1.0, reaction_time * 3.0)
+		reaction_scale += Vector2(0.018, -0.035)
+	elif reaction_kind == &"dizzy":
+		overlay_state = &"dizzy"
+		overlay_alpha = minf(1.0, reaction_time * 4.0)
+		foot_anchor.x += sin(shake_phase * 32.0) * 7.0
+		rotation = sin(shake_phase * 18.0) * 0.025
+	elif reaction_kind == &"blink":
+		overlay_state = &"blink"
+		overlay_alpha = minf(1.0, reaction_time * 7.0)
+	elif reaction_kind == &"love" or reaction_kind == &"excited":
+		overlay_state = &"happy_squash"
+		overlay_alpha = minf(0.88, reaction_time * 4.0)
+		jump_height = abs(sin(shake_phase * 8.0)) * 18.0
+	elif service_active:
+		if service_mode == &"bath":
+			overlay_state = &"dirty"
+			overlay_alpha = 1.0 - smoothstep(0.05, 0.36, progress)
+			second_state = &"wet"
+			second_alpha = smoothstep(0.12, 0.38, progress)
+		elif service_mode == &"groom":
+			overlay_state = &"messy"
+			overlay_alpha = 1.0 - smoothstep(0.08, 0.92, progress)
+		elif service_mode == &"dry":
+			overlay_state = &"wet"
+			overlay_alpha = 1.0 - smoothstep(0.08, 0.95, progress)
+	elif condition_release > 0.0:
+		overlay_state = &"wet"
+		overlay_alpha = condition_release
+	elif not service_condition_complete and service_mode == &"bath":
+		overlay_state = &"dirty"
+		overlay_alpha = 1.0
+	elif not service_condition_complete and service_mode == &"groom":
+		overlay_state = &"messy"
+		overlay_alpha = 1.0
+	elif not service_condition_complete and service_mode == &"dry":
+		overlay_state = &"wet"
+		overlay_alpha = 1.0
+	else:
+		var idle_phase: float = fmod(shake_phase, 8.0)
+		if idle_phase >= 1.2 and idle_phase < 2.8:
+			overlay_state = &"tilt_left"
+			overlay_alpha = sin(PI * (idle_phase - 1.2) / 1.6) * 0.82
+		elif idle_phase >= 4.6 and idle_phase < 6.2:
+			overlay_state = &"tilt_right"
+			overlay_alpha = sin(PI * (idle_phase - 4.6) / 1.6) * 0.82
+		elif fmod(shake_phase, 4.7) < 0.13:
+			overlay_state = &"blink"
+			overlay_alpha = sin(PI * fmod(shake_phase, 4.7) / 0.13)
+
+	var tint: Color = Color.WHITE
+	if pet_wet or overlay_state == &"wet" or second_state == &"wet":
+		tint = Color("d5edf4")
 	if reaction_kind == &"sad":
-		tint = tint.darkened(0.16)
-	draw_set_transform(center, tilt, reaction_scale)
+		tint = tint.darkened(0.18 * minf(1.0, reaction_time * 2.0))
+
+	foot_anchor.y -= jump_height
+	draw_set_transform(foot_anchor, rotation, reaction_scale)
+	_draw_pet_texture_layer(pet_texture, sprite_size, tint)
+	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
+	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_pet_texture_layer(
+	texture: Texture2D, sprite_size: float, tint: Color = Color.WHITE
+) -> void:
+	if not is_instance_valid(texture) or tint.a <= 0.0:
+		return
 	draw_texture_rect(
-		pet_texture,
-		Rect2(-sprite_size * 0.5, -sprite_size * 0.5, sprite_size, sprite_size),
+		texture,
+		Rect2(-sprite_size * 0.5, -sprite_size * PET_TEXTURE_BASELINE, sprite_size, sprite_size),
 		false,
 		tint,
 	)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_pet_state_layer(
+	state_name: StringName, alpha: float, sprite_size: float, tint: Color = Color.WHITE
+) -> void:
+	if state_name.is_empty() or alpha <= 0.0 or not pet_state_textures.has(state_name):
+		return
+	var layer_tint: Color = tint
+	layer_tint.a *= clampf(alpha, 0.0, 1.0)
+	_draw_pet_texture_layer(pet_state_textures[state_name] as Texture2D, sprite_size, layer_tint)
 
 
 func _breed_contains_any(labels: Array[String]) -> bool:

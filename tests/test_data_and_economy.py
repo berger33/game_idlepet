@@ -121,7 +121,8 @@ class FoundationTests(unittest.TestCase):
         first = tracker['pets'][0]
         self.assertEqual(first['pet_id'], 'caramelo')
         self.assertEqual(first['visual_qa_status'], 'passed')
-        self.assertEqual(first['integration_status'], 'pending')
+        self.assertEqual(first['integration_status'], 'integrated')
+        self.assertEqual(tracker['summary']['pets_integrated'], 1)
         for state, record in first['states'].items():
             path = Path(record['path'])
             raw = path.read_bytes()
@@ -131,6 +132,25 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(int.from_bytes(raw[20:24], 'big'), 512)
             self.assertEqual(raw[24], 8)
             self.assertEqual(raw[25], 6)
+
+    def test_pet_animation_runtime_uses_strict_context_triggers(self):
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('PET_TEXTURE_BASELINE', canvas)
+        self.assertIn('art/pet_animations/%s/%s.png', canvas)
+        self.assertIn('func begin_service()', canvas)
+        self.assertIn('func complete_service()', canvas)
+        self.assertIn('func depart()', canvas)
+        self.assertIn('func _service_effect_active()', canvas)
+        self.assertIn('celebration > 0.0 and special_reward_active', canvas)
+        self.assertNotIn('if service_progress > 0.96:', canvas)
+        self.assertIn('world.begin_service()', main)
+        self.assertIn('world.complete_service()', main)
+        self.assertIn('world.depart()', main)
+        self.assertIn('world.celebrate(quality == &"perfect" or GameState.combo >= 5)', main)
+        touch = canvas.split('func react_to_touch()', 1)[1].split('func react_to_service', 1)[0]
+        self.assertIn('reaction_kind = &"love"', touch)
+        self.assertIn('hearts', touch)
 
     def test_service_layouts_and_commercial_tool_art(self):
         layouts = json.loads(Path('data/service_layouts.json').read_text(encoding='utf8'))

@@ -34,7 +34,7 @@
     "images_expected": 500,
     "images_generated": 10,
     "images_qa_passed": 10,
-    "pets_integrated": 0
+    "pets_integrated": 1
   },
   "pets": [
     {
@@ -90,7 +90,7 @@
       "generation_status": "complete",
       "normalization_status": "complete",
       "visual_qa_status": "passed",
-      "integration_status": "pending"
+      "integration_status": "integrated"
     },
     {
       "sequence": 2,

@@ -131,15 +131,18 @@ func _move_pointer(point: Vector2) -> void:
 		return
 	world.move_tool(point)
 	if not _pet_hit(point):
+		world.set_tool_contact(false)
 		bath.release_pointer()
 		return
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 	if dragged_tool != required_tool:
+		world.set_tool_contact(false)
 		if wrong_tool_gate <= 0.0:
 			wrong_tool_gate = 0.8
 			_show_toast("Use %s neste pedido" % _tool_display_name(required_tool), Color("ffd54f"))
 			AudioManager.play(&"error_soft")
 		return
+	world.set_tool_contact(true)
 	if bath.state == BathService.State.WAITING:
 		_start_bath()
 	if bath.state == BathService.State.ACTIVE:
@@ -216,8 +219,7 @@ func _on_primary_pressed() -> void:
 
 func _start_bath() -> void:
 	bath.start_service()
-	world.pet_wet = current_service == &"bath"
-	world.set_service_layout(current_service)
+	world.begin_service()
 	instruction_label.text = (
 		"%s sobre o pet • o aro completa sozinho"
 		% String(SERVICE_LABELS[current_service]).capitalize()
@@ -232,6 +234,7 @@ func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
 	_end_pointer()
 	if quality == &"perfect" or quality == &"good":
+		world.complete_service()
 		var base_reward: float = (
 			{
 				&"bath": RemoteConfig.get_float("bath_base_reward"),
@@ -275,7 +278,8 @@ func _finish_bath() -> void:
 
 
 func _show_success(quality: StringName, reward: float, stars: int) -> void:
-	world.celebrate()
+	# Perfect and long-combo outcomes are genuinely special; ordinary good service has no stars VFX.
+	world.celebrate(quality == &"perfect" or GameState.combo >= 5)
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
 	HapticsManager.success()
 	result_title.text = "PERFEITO!" if quality == &"perfect" else "MUITO BOM!"
@@ -334,6 +338,7 @@ func _fail(reason: StringName) -> void:
 func _dismiss_result() -> void:
 	result_panel.hide()
 	world.reset_pet()
+	world.depart()
 	bath = BathServiceScript.new()
 	var available_pets: Array[String] = GameState.unlocked_pets
 	if available_pets.is_empty():

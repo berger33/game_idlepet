@@ -77,21 +77,27 @@ Para cada lote:
 
 ### Lote 01 — Caramelo
 
-Concluídos e aprovados visualmente os 10 estados. O conjunto mantém a paleta e a leitura do vira-lata caramelo; `messy` aumenta a silhueta, `wet` achata e escurece o pelo, e as expressões são distintas sem VFX indevido. Integração runtime permanece pendente e está explicitamente marcada no tracker.
+Concluídos, aprovados visualmente e integrados os 10 estados. O conjunto mantém a paleta e a leitura do vira-lata caramelo; `messy` aumenta a silhueta, `wet` achata e escurece o pelo, e as expressões são distintas sem VFX indevido. O carregamento possui fallback seguro: pets cujos lotes ainda estejam na fila continuam usando a base comercial e a deformação runtime sem quebrar o jogo.
 
 ## Backlog
 
 ### CRITICAL
 
-- Integrar carregamento seguro de estados e fallback por pet.
-- Implementar pivot inferior, blends e máquina determinística sem quebrar serviços.
-- Corrigir VFX atual para que estrelas não apareçam no serviço de estilo nem em toda conclusão comum.
+- Validar no Godot 4.7.2 para Windows o parser, os pivôs e todas as transições em movimento; o executável não está disponível neste ambiente.
 
 ### HIGH
 
-- Implementar dirty→clean, messy→clean e wet→clean de acordo com progresso válido da ferramenta.
-- Implementar entrada e saída completas, bounce com squash/stretch e recuperação de falha.
-- Adicionar testes de gatilhos exclusivos para corações, espuma, pelo, perfume e estrelas.
+- Integrar e revisar cada novo lote sem alterar o fallback dos pets ainda pendentes.
+- Adicionar testes de cena/runtime para os gatilhos exclusivos quando o runner Godot estiver disponível.
+
+### Concluído nesta fundação
+
+- Carregamento seguro de estados com fallback por pet.
+- Pivô inferior, blends de condição e máquina determinística sem quebrar serviços.
+- Dirty→wet→clean, messy→clean e wet→clean ligados ao progresso válido.
+- Entrada, saída, bounce com squash/stretch e recuperação de falha.
+- Corações exclusivos do carinho; partículas exclusivas da ferramenta correta.
+- Estrelas removidas do styling e da conclusão comum; reservadas a Perfect/combo especial.
 
 ### MEDIUM
 
