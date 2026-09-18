@@ -103,6 +103,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. O estado `wet` reduz radicalmente o volume dos cachos em mechas escuras, pesadas e direcionadas para baixo, enquanto `messy` expande cachos assimétricos e embaraçados. `dizzy` usa olhos espiralados sem estrelas, e squash/air formam um arco de salto legível mantendo orelhas e pompom da cauda.
 
+### Lote 08 — Amora Siamês
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Máscara, orelhas, patas e cauda seal, corpo creme e olhos azuis permanecem reconhecíveis em todos os estados. `wet` reduz a silhueta e transforma cauda/pelagem em mechas pesadas com gotas; `messy` expande intencionalmente o pelo pré-tosa sem perder os points siameses; dizzy, sad e blink têm leituras distintas e sem VFX indevido.
+
 ## Backlog
 
 ### CRITICAL
