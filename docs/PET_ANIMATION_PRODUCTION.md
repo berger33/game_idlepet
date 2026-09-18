@@ -111,6 +111,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. A pelagem sedosa cinza-aço e dourada permanece legível em todos os estados. `wet` estreita e escurece a silhueta com fios longos para baixo, `messy` cobre parcialmente a face com fios irregulares, e squash/air comunicam antecipação e salto. A queda de uma orelha em `dizzy` foi aprovada como instabilidade contextual, sem alterar a anatomia idle. Nove alternativas posteriores foram auditadas, mas não selecionadas porque o conjunto integrado manteve melhor squash, identidade molhada e uniformidade visual; todas as 18 tentativas permanecem contabilizadas.
 
+### Lote 10 — Tigrinho Tabby
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. O M frontal e as listras da face, corpo, patas e cauda permanecem legíveis, junto ao peito claro e olhos oliva-dourados. `wet` estreita e escurece a pelagem em mechas com gotas, `messy` cria tufos irregulares, e dizzy/sad/squash/air possuem silhuetas emocionais distintas sem VFX indevido.
+
 ## Backlog
 
 ### CRITICAL
