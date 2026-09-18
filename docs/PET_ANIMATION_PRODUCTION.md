@@ -119,6 +119,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem azul-cinza, focinho/peito creme, máscara, olhos castanhos e grandes orelhas de morcego permanecem reconhecíveis. `wet` cola e escurece o pelo curto com gotas, `messy` usa somente tufos curtos compatíveis com a raça, `dizzy` combina espirais e desequilíbrio sem estrelas, e squash/air comunicam peso compacto e salto.
 
+### Lote 12 — Neve Angorá
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Olhos azuis, pelagem branca longa, orelhas pontudas e cauda-pluma gigante permanecem reconhecíveis. `wet` reduz radicalmente o volume em fios cinza, estreitos e pesados com gotas; `messy` adiciona tufos e comprimentos irregulares; dirty, sad, dizzy, blink e o arco squash/air têm leitura imediata sem VFX indevido.
+
 ## Backlog
 
 ### CRITICAL
