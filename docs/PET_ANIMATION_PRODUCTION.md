@@ -87,9 +87,13 @@ Os 10 estados foram aprovados, normalizados e integrados. A primeira correção 
 
 Os 10 estados foram aprovados, normalizados e integrados. As substituições resolveram os dois bloqueios: `blink` foi gerado sobre fundo sólido e ficou sem resíduos; `wet` ganhou volume reduzido, mechas encharcadas para baixo, cauda fina e leitura fria de pelo molhado. `tilt_left` foi aprovado e `tilt_right` deriva de espelhamento lossless para garantir oposição geométrica. Quatro alternativas posteriores foram revisadas, mas não selecionadas porque o conjunto já integrado preserva melhor a identidade e a uniformidade de estilo; o tracker contabiliza as 15 tentativas.
 
-### Lote 04 — Thor Pinscher (parcial)
+### Lote 04 — Thor Pinscher
 
-Nove estados foram aprovados e normalizados: `dirty`, `wet`, `messy`, `happy_squash`, `happy_air`, `dizzy`, `sad`, `blink` e `tilt_right`. O molhado mantém pelo curto, liso e escuro; o messy usa tufos irregulares sem perder marcações pretas e castanhas; as orelhas reagem emocionalmente sem esconder a leitura do Pinscher. Sombras de chão verdes geradas em `dizzy` e `happy_squash` foram detectadas no contact sheet e removidas do alfa. `tilt_left` foi rejeitado porque permaneceu central, sem inclinação legível. Três alternativas de condição foram revisadas, mas as versões já aprovadas mantiveram maior consistência. Apenas a correção de `tilt_left` bloqueia a integração.
+Os 10 estados foram aprovados, normalizados e integrados. Duas tentativas geradas de `tilt_left` permaneceram centralizadas e foram rejeitadas; a versão final é o espelhamento lossless do `tilt_right` aprovado, garantindo oposição geométrica e preservando as orelhas grandes características. O molhado mantém pelo curto, liso e escuro; o messy usa tufos irregulares sem perder marcações pretas e castanhas. Sombras de chão geradas anteriormente foram removidas no QA de alfa. O tracker contabiliza 14 tentativas.
+
+### Lote 05 — Mel Golden Retriever
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` deriva de espelhamento lossless do `tilt_left` aprovado para garantir oposição sem deriva. `dirty` preserva dourado sob poeira e lama, `wet` reduz volume e direciona mechas para baixo, `messy` amplia a pelagem irregular, e o par squash/air comunica antecipação e salto. A elevação momentânea de uma orelha em `happy_air` foi aprovada como movimento secundário exclusivo do salto, não como anatomia idle.
 
 ## Backlog
 
