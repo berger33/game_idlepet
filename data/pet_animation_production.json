@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 3,
     "images_expected": 500,
-    "images_generated": 30,
-    "images_qa_passed": 30,
+    "images_generated": 37,
+    "images_qa_passed": 37,
     "pets_integrated": 3,
-    "generation_attempts": 33
+    "generation_attempts": 40
   },
   "pets": [
     {
@@ -218,15 +218,15 @@
       "reference": "art/pets/thor_pinscher.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/messy.png"
         },
         "tilt_left": {
@@ -238,19 +238,19 @@
           "path": "art/pet_animations/thor_pinscher/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/thor_pinscher/sad.png"
         },
         "blink": {
@@ -258,11 +258,12 @@
           "path": "art/pet_animations/thor_pinscher/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
+      "generation_status": "partial_three_queued",
+      "normalization_status": "partial_seven_accepted",
+      "visual_qa_status": "passed_generated_states",
       "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_attempts": 7,
+      "qa_notes": "Seven generated states passed after mint-key removal; residual generated floor shadows under dizzy/squash were removed during alpha QA. Blink and tilt pair remain queued due turn cap."
     },
     {
       "sequence": 5,
