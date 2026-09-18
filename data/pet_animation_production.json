@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 2,
+    "pets_generated": 3,
     "images_expected": 500,
-    "images_generated": 26,
-    "images_qa_passed": 26,
-    "pets_integrated": 2,
-    "generation_attempts": 30
+    "images_generated": 30,
+    "images_qa_passed": 30,
+    "pets_integrated": 3,
+    "generation_attempts": 33
   },
   "pets": [
     {
@@ -165,7 +165,7 @@
           "path": "art/pet_animations/mingau_srd/dirty.png"
         },
         "wet": {
-          "status": "rejected_fur_not_flattened",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/wet.png"
         },
         "messy": {
@@ -173,11 +173,11 @@
           "path": "art/pet_animations/mingau_srd/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/tilt_right.png"
         },
         "happy_squash": {
@@ -197,16 +197,16 @@
           "path": "art/pet_animations/mingau_srd/sad.png"
         },
         "blink": {
-          "status": "rejected_alpha_artifacts",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/blink.png"
         }
       },
-      "generation_status": "partial_two_rejected_two_queued",
-      "normalization_status": "partial_six_accepted",
-      "visual_qa_status": "blocked_blink_wet_and_tilts",
-      "integration_status": "pending",
-      "qa_notes": "Accepted dirty, dizzy, happy_air, happy_squash, messy, sad. Blink rejected for painted checker artifacts; wet rejected because fur remained fluffy/spiky instead of fallen and smooth. Tilt pair not generated due 10-image turn cap.",
-      "generation_attempts": 8
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "qa_notes": "All states passed. Replacement blink uses a solid-key background and replacement wet has reduced volume/downward waterlogged strands. Right tilt is a lossless mirror of the approved left key for guaranteed opposite motion.",
+      "generation_attempts": 11
     },
     {
       "sequence": 4,

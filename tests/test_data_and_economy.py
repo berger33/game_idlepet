@@ -154,16 +154,15 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(luna['generation_status'], 'complete')
         self.assertEqual(luna['visual_qa_status'], 'passed')
         self.assertEqual(luna['integration_status'], 'integrated')
-        self.assertEqual(tracker['summary']['pets_integrated'], 2)
         for state, record in luna['states'].items():
             self.assertEqual(record['status'], 'qa_passed')
             self.assertTrue(Path(record['path']).exists(), state)
         mingau = tracker['pets'][2]
-        self.assertEqual(mingau['generation_status'], 'partial_two_rejected_two_queued')
-        self.assertEqual(
-            {state for state, record in mingau['states'].items() if record['status'] == 'qa_passed'},
-            {'dirty', 'dizzy', 'happy_air', 'happy_squash', 'messy', 'sad'}
-        )
+        self.assertEqual(mingau['generation_status'], 'complete')
+        self.assertEqual(mingau['visual_qa_status'], 'passed')
+        self.assertEqual(mingau['integration_status'], 'integrated')
+        self.assertTrue(all(record['status'] == 'qa_passed' for record in mingau['states'].values()))
+        self.assertEqual(tracker['summary']['pets_integrated'], 3)
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
