@@ -117,8 +117,26 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(len({entry['batch_id'] for entry in tracker['pets']}), 50)
         self.assertTrue(all(set(entry['states']) == states for entry in tracker['pets']))
         self.assertEqual(tracker['summary']['images_expected'], 500)
-        self.assertEqual(tracker['summary']['images_generated'], 20)
-        self.assertEqual(tracker['summary']['generation_attempts'], 22)
+        accepted = sum(
+            record['status'] == 'qa_passed'
+            for entry in tracker['pets'] for record in entry['states'].values()
+        )
+        self.assertEqual(tracker['summary']['images_generated'], accepted)
+        self.assertEqual(tracker['summary']['images_qa_passed'], accepted)
+        self.assertEqual(
+            tracker['summary']['generation_attempts'],
+            sum(entry['generation_attempts'] for entry in tracker['pets'])
+        )
+        for entry in tracker['pets']:
+            for record in entry['states'].values():
+                path = Path(record['path'])
+                if record['status'] == 'qa_passed':
+                    raw = path.read_bytes()
+                    self.assertEqual(int.from_bytes(raw[16:20], 'big'), 512)
+                    self.assertEqual(int.from_bytes(raw[20:24], 'big'), 512)
+                    self.assertEqual(raw[25], 6)
+                elif record['status'].startswith('rejected'):
+                    self.assertFalse(path.exists())
         first = tracker['pets'][0]
         self.assertEqual(first['pet_id'], 'caramelo')
         self.assertEqual(first['visual_qa_status'], 'passed')
@@ -140,6 +158,12 @@ class FoundationTests(unittest.TestCase):
         for state, record in luna['states'].items():
             self.assertEqual(record['status'], 'qa_passed')
             self.assertTrue(Path(record['path']).exists(), state)
+        mingau = tracker['pets'][2]
+        self.assertEqual(mingau['generation_status'], 'partial_two_rejected_two_queued')
+        self.assertEqual(
+            {state for state, record in mingau['states'].items() if record['status'] == 'qa_passed'},
+            {'dirty', 'dizzy', 'happy_air', 'happy_squash', 'messy', 'sad'}
+        )
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')

@@ -83,6 +83,10 @@ Concluídos, aprovados visualmente e integrados os 10 estados. O conjunto manté
 
 Os 10 estados foram aprovados, normalizados e integrados. A primeira correção de `tilt_right` resolveu a orelha pontuda, mas repetiu a mesma direção de `tilt_left`; uma segunda tentativa também repetiu o ângulo. Ambas foram rejeitadas e não entraram no produto. A solução selecionada foi um espelhamento lossless do keyframe esquerdo já aprovado, garantindo inclinações realmente opostas, orelhas caídas e identidade consistente sem nova deriva generativa. O tracker contabiliza as 12 tentativas e registra a decisão de QA.
 
+### Lote 03 — Mingau SRD branco (parcial)
+
+Seis estados foram aprovados e preservados: `dirty`, `dizzy`, `happy_air`, `happy_squash`, `messy` e `sad`. `blink` foi rejeitado por resíduos visíveis do checkerboard pintado junto ao contorno; `wet` foi rejeitado porque a pelagem continuou fofa/arrepiada em vez de lisa e caída. Os dois arquivos rejeitados não entraram no produto. `tilt_left` e `tilt_right` não foram gerados porque as duas correções direcionais da Luna consumiram o restante do limite de 10 imagens. O tracker mantém separadamente tentativas, aprovados, rejeitados e estados ainda na fila.
+
 ## Backlog
 
 ### CRITICAL

@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 2,
     "images_expected": 500,
-    "images_generated": 20,
-    "images_qa_passed": 20,
+    "images_generated": 26,
+    "images_qa_passed": 26,
     "pets_integrated": 2,
-    "generation_attempts": 22
+    "generation_attempts": 30
   },
   "pets": [
     {
@@ -91,7 +91,8 @@
       "generation_status": "complete",
       "normalization_status": "complete",
       "visual_qa_status": "passed",
-      "integration_status": "integrated"
+      "integration_status": "integrated",
+      "generation_attempts": 10
     },
     {
       "sequence": 2,
@@ -147,7 +148,8 @@
       "normalization_status": "complete",
       "visual_qa_status": "passed",
       "integration_status": "integrated",
-      "qa_notes": "All states passed. Two generated tilt-right corrections were rejected for wrong ear/direction; final right key is a lossless mirror of the approved left key, guaranteeing opposite inclination and preserving breed anatomy."
+      "qa_notes": "All states passed. Two generated tilt-right corrections were rejected for wrong ear/direction; final right key is a lossless mirror of the approved left key, guaranteeing opposite inclination and preserving breed anatomy.",
+      "generation_attempts": 12
     },
     {
       "sequence": 3,
@@ -159,15 +161,15 @@
       "reference": "art/pets/mingau_srd.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "rejected_fur_not_flattened",
           "path": "art/pet_animations/mingau_srd/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/messy.png"
         },
         "tilt_left": {
@@ -179,30 +181,32 @@
           "path": "art/pet_animations/mingau_srd/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mingau_srd/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "rejected_alpha_artifacts",
           "path": "art/pet_animations/mingau_srd/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "generation_status": "partial_two_rejected_two_queued",
+      "normalization_status": "partial_six_accepted",
+      "visual_qa_status": "blocked_blink_wet_and_tilts",
+      "integration_status": "pending",
+      "qa_notes": "Accepted dirty, dizzy, happy_air, happy_squash, messy, sad. Blink rejected for painted checker artifacts; wet rejected because fur remained fluffy/spiky instead of fallen and smooth. Tilt pair not generated due 10-image turn cap.",
+      "generation_attempts": 8
     },
     {
       "sequence": 4,
@@ -257,7 +261,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 5,
@@ -312,7 +317,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 6,
@@ -367,7 +373,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 7,
@@ -422,7 +429,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 8,
@@ -477,7 +485,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 9,
@@ -532,7 +541,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 10,
@@ -587,7 +597,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 11,
@@ -642,7 +653,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 12,
@@ -697,7 +709,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 13,
@@ -752,7 +765,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 14,
@@ -807,7 +821,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 15,
@@ -862,7 +877,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 16,
@@ -917,7 +933,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 17,
@@ -972,7 +989,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 18,
@@ -1027,7 +1045,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 19,
@@ -1082,7 +1101,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 20,
@@ -1137,7 +1157,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 21,
@@ -1192,7 +1213,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 22,
@@ -1247,7 +1269,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 23,
@@ -1302,7 +1325,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 24,
@@ -1357,7 +1381,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 25,
@@ -1412,7 +1437,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 26,
@@ -1467,7 +1493,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 27,
@@ -1522,7 +1549,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 28,
@@ -1577,7 +1605,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 29,
@@ -1632,7 +1661,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 30,
@@ -1687,7 +1717,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 31,
@@ -1742,7 +1773,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 32,
@@ -1797,7 +1829,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 33,
@@ -1852,7 +1885,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 34,
@@ -1907,7 +1941,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 35,
@@ -1962,7 +1997,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 36,
@@ -2017,7 +2053,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 37,
@@ -2072,7 +2109,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 38,
@@ -2127,7 +2165,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 39,
@@ -2182,7 +2221,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 40,
@@ -2237,7 +2277,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 41,
@@ -2292,7 +2333,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 42,
@@ -2347,7 +2389,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 43,
@@ -2402,7 +2445,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 44,
@@ -2457,7 +2501,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 45,
@@ -2512,7 +2557,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 46,
@@ -2567,7 +2613,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 47,
@@ -2622,7 +2669,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 48,
@@ -2677,7 +2725,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 49,
@@ -2732,7 +2781,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     },
     {
       "sequence": 50,
@@ -2787,7 +2837,8 @@
       "generation_status": "queued",
       "normalization_status": "queued",
       "visual_qa_status": "queued",
-      "integration_status": "pending"
+      "integration_status": "pending",
+      "generation_attempts": 0
     }
   ]
 }

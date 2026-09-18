@@ -698,6 +698,12 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 			overlay_state = &"blink"
 			overlay_alpha = sin(PI * fmod(shake_phase, 4.7) / 0.13)
 
+	# Authored expressions receive a small runtime deformation so weight reads between keyframes.
+	if overlay_state == &"happy_squash":
+		reaction_scale = reaction_scale * Vector2(1.045, 0.94)
+	elif overlay_state == &"happy_air":
+		reaction_scale = reaction_scale * Vector2(0.97, 1.035)
+
 	var tint: Color = Color.WHITE
 	if pet_wet or overlay_state == &"wet" or second_state == &"wet":
 		tint = Color("d5edf4")
