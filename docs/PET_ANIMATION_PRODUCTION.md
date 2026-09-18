@@ -135,6 +135,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem dupla creme-branca, face de raposa, orelhas triangulares e cauda-pluma gigante permanecem reconhecíveis. `wet` colapsa radicalmente o volume em fios cinza-bege pesados e descendentes; `messy` amplia nós e comprimentos irregulares; dirty, sad, dizzy, blink e o arco squash/air mantêm leitura imediata e nenhum VFX indevido.
 
+### Lote 16 — Pitanga Abissínio
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem ruddy/canela com ticking, olhos verdes, face em cunha, orelhas grandes, corpo esguio e cauda longa permanecem legíveis. `wet` cria superfície cobre escura, lisa e encharcada com gotas; `messy` usa tufos curtos compatíveis com a raça; dizzy, sad, blink e o arco squash/air mantêm silhuetas emocionais distintas sem VFX externo.
+
 ## Backlog
 
 ### CRITICAL

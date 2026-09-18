@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 15,
+    "pets_generated": 16,
     "images_expected": 500,
-    "images_generated": 150,
-    "images_qa_passed": 150,
-    "pets_integrated": 15,
-    "generation_attempts": 160
+    "images_generated": 160,
+    "images_qa_passed": 160,
+    "pets_integrated": 16,
+    "generation_attempts": 169
   },
   "pets": [
     {
@@ -902,51 +902,52 @@
       "reference": "art/pets/pitanga_abissinio.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pitanga_abissinio/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Ruddy-cinnamon ticked coat, green eyes, wedge face, giant ears and slender silhouette remain readable; wet is sleek/waterlogged and messy stays breed-correct."
     },
     {
       "sequence": 17,
