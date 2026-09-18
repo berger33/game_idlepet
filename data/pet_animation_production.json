@@ -35,7 +35,7 @@
     "images_generated": 90,
     "images_qa_passed": 90,
     "pets_integrated": 9,
-    "generation_attempts": 96
+    "generation_attempts": 105
   },
   "pets": [
     {
@@ -547,8 +547,8 @@
       "normalization_status": "complete",
       "visual_qa_status": "passed",
       "integration_status": "integrated",
-      "generation_attempts": 9,
-      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Steel-gray and golden-tan silky coat remains readable; wet is narrow/dark/downward, messy is overgrown, and one ear droop in dizzy is contextual instability."
+      "generation_attempts": 18,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Steel-gray and golden-tan silky coat remains readable; wet is narrow/dark/downward, messy is overgrown, and one ear droop in dizzy is contextual instability. Nine later alternatives were reviewed but not selected because the committed set retained stronger squash, wet-fur identity and overall consistency."
     },
     {
       "sequence": 10,
