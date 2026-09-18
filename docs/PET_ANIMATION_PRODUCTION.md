@@ -99,6 +99,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo aprovado. A máscara preta e branca, faixa branca central, peito/patas claros, olhos verdes e nariz rosa permanecem legíveis em todos os estados. `wet` escurece e achata a silhueta com gotas, `messy` expande pelos irregulares, `dirty` acinzenta áreas claras, e as emoções possuem poses imediatamente distinguíveis sem estrelas indevidas.
 
+### Lote 07 — Fred Poodle
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. O estado `wet` reduz radicalmente o volume dos cachos em mechas escuras, pesadas e direcionadas para baixo, enquanto `messy` expande cachos assimétricos e embaraçados. `dizzy` usa olhos espiralados sem estrelas, e squash/air formam um arco de salto legível mantendo orelhas e pompom da cauda.
+
 ## Backlog
 
 ### CRITICAL

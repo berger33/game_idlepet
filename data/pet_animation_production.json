@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 6,
+    "pets_generated": 7,
     "images_expected": 500,
-    "images_generated": 60,
-    "images_qa_passed": 60,
-    "pets_integrated": 6,
-    "generation_attempts": 69
+    "images_generated": 70,
+    "images_qa_passed": 70,
+    "pets_integrated": 7,
+    "generation_attempts": 78
   },
   "pets": [
     {
@@ -389,51 +389,52 @@
       "reference": "art/pets/fred_poodle.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/fred_poodle/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Wet state dramatically collapses curl volume into dark heavy downward ringlets; messy state expands uneven tangled curls while preserving Poodle anatomy."
     },
     {
       "sequence": 8,
