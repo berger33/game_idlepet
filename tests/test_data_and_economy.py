@@ -88,10 +88,13 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('buy_tool_upgrade', main)
         self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
 
-    def test_first_commercial_pet_art_batch_and_safe_fallback(self):
+    def test_commercial_pet_art_batches_and_safe_fallback(self):
         expected = {
             'caramelo', 'luna_shih_tzu', 'mingau_srd', 'thor_pinscher', 'mel_golden',
-            'frajola', 'fred_poodle', 'amora_siames', 'nina_yorkshire', 'tigrinho_tabby'
+            'frajola', 'fred_poodle', 'amora_siames', 'nina_yorkshire', 'tigrinho_tabby',
+            'bob_bulldog', 'neve_angora', 'sol_border', 'cafe_bombay', 'jade_spitz',
+            'pitanga_abissinio', 'bento_beagle', 'azul_russian', 'paçoca_dachshund',
+            'lua_maine_coon'
         }
         files = {path.stem for path in Path('art/pets').glob('*.png')}
         self.assertEqual(files, expected)
