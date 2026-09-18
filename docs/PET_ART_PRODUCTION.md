@@ -27,7 +27,7 @@ Contrato de produção:
 9. Nina — Yorkshire.
 10. Tigrinho — tabby/tigrado.
 
-Cada sprite foi recortado por segmentação, normalizado para 512×512, convertido para RGBA e auditado para canal alfa. O renderer carrega automaticamente `art/pets/<id>.png`; pets ainda sem sprite permanecem no fallback vetorial, portanto o build não quebra durante a produção incremental.
+Cada sprite foi recortado por segmentação, normalizado para 512×512, convertido para RGBA e auditado para canal alfa. O renderer carrega automaticamente `art/pets/<id>.png`. Durante a produção incremental, o fallback vetorial evitou quebra do build; com os cinco lotes concluídos, ele atua somente como defesa de integridade.
 
 ## Animação runtime
 
@@ -72,10 +72,19 @@ Embora cada imagem-base seja estática, o renderer adiciona respiração, inclin
 39. Kiara — Doberman.
 40. Apolo — Boiadeiro Bernês.
 
-## Fila restante
+## Lote 5 concluído
 
-A ferramenta de geração disponível limita cada turno a dez imagens. Resta o lote final, sem redução de escopo:
+41. Mimi — Persa.
+42. Yuki — Scottish Fold.
+43. Olívia — Calico.
+44. Simba — Norueguês da Floresta.
+45. Lilo — Munchkin.
+46. Zara — Oriental Shorthair.
+47. Cosmo — Sagrado da Birmânia.
+48. Íris — Cornish Rex.
+49. Odin — Nebelung.
+50. Cléo — Mau Egípcio.
 
-- Lote 5: Mimi, Yuki, Olívia, Simba, Lilo, Zara, Cosmo, Íris, Odin, Cléo.
+## Coleção concluída
 
-Cada lote deve repetir recorte, validação RGBA, revisão de raça, teste de carregamento, documentação e commit.
+Os cinco lotes passaram por geração original, recorte, normalização 512×512, conversão RGBA, revisão visual de raça, teste de carregamento, validação e documentação. Os 50 IDs do catálogo agora possuem arte comercial própria. O fallback vetorial permanece apenas como defesa caso um recurso futuro esteja ausente ou corrompido.

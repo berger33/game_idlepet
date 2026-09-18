@@ -88,20 +88,11 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('buy_tool_upgrade', main)
         self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
 
-    def test_commercial_pet_art_batches_and_safe_fallback(self):
-        expected = {
-            'caramelo', 'luna_shih_tzu', 'mingau_srd', 'thor_pinscher', 'mel_golden',
-            'frajola', 'fred_poodle', 'amora_siames', 'nina_yorkshire', 'tigrinho_tabby',
-            'bob_bulldog', 'neve_angora', 'sol_border', 'cafe_bombay', 'jade_spitz',
-            'pitanga_abissinio', 'bento_beagle', 'azul_russian', 'paçoca_dachshund',
-            'lua_maine_coon', 'kiko_pug', 'sushi_japanese', 'cacau_labrador',
-            'onca_bengal', 'tupa_mane_wolf', 'aurora_ragdoll', 'gaia_samoyed',
-            'nox_sphynx', 'rio_savannah', 'estrela_khao', 'pipoca_corgi',
-            'zeca_schnauzer', 'belinha_maltes', 'duke_husky', 'lola_boxer',
-            'nico_aussie', 'maya_akita', 'otto_basset', 'kiara_doberman',
-            'apolo_bernese'
-        }
+    def test_all_catalogued_pets_have_commercial_art_and_safe_fallback(self):
+        catalog = json.loads(Path('data/pets.json').read_text(encoding='utf8'))['pets']
+        expected = {pet['id'] for pet in catalog}
         files = {path.stem for path in Path('art/pets').glob('*.png')}
+        self.assertEqual(len(files), 50)
         self.assertEqual(files, expected)
         for pet_id in expected:
             raw = (Path('art/pets') / f'{pet_id}.png').read_bytes()

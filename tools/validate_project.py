@@ -79,7 +79,7 @@ def validate_catalogs() -> None:
         require((ROOT / "art/backgrounds" / layout.get("background", "")).exists(), f"fundo ausente: {service}")
 
     pet_art = list((ROOT / "art/pets").glob("*.png"))
-    require(len(pet_art) >= 40, "quatro lotes de arte dos pets devem conter quarenta sprites")
+    require(len(pet_art) == 50, "todos os cinquenta pets devem possuir sprite comercial")
     valid_pet_ids = {pet.get("id") for pet in pets}
     for path in pet_art:
         raw = path.read_bytes()
