@@ -88,6 +88,23 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('buy_tool_upgrade', main)
         self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
 
+    def test_first_commercial_pet_art_batch_and_safe_fallback(self):
+        expected = {
+            'caramelo', 'luna_shih_tzu', 'mingau_srd', 'thor_pinscher', 'mel_golden',
+            'frajola', 'fred_poodle', 'amora_siames', 'nina_yorkshire', 'tigrinho_tabby'
+        }
+        files = {path.stem for path in Path('art/pets').glob('*.png')}
+        self.assertEqual(files, expected)
+        for pet_id in expected:
+            raw = (Path('art/pets') / f'{pet_id}.png').read_bytes()
+            self.assertGreater(len(raw), 150_000)
+            self.assertEqual(raw[24], 8)
+            self.assertEqual(raw[25], 6)
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        self.assertIn('ResourceLoader.exists(texture_path)', canvas)
+        self.assertIn('if is_instance_valid(pet_texture):', canvas)
+        self.assertIn('_draw_illustrated_pet(center)', canvas)
+
     def test_service_layouts_and_commercial_tool_art(self):
         layouts = json.loads(Path('data/service_layouts.json').read_text(encoding='utf8'))
         self.assertEqual([stage['unlock_level'] for stage in layouts['stages']], [1, 3, 5, 7, 10])

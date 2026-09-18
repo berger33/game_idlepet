@@ -47,6 +47,8 @@ var fur_color: Color = Color("c98b5b")
 var ear_color: Color = Color("9c623f")
 var muzzle_color: Color = Color("f1c49f")
 var species: StringName = &"dog"
+var pet_id: String = "caramelo"
+var pet_texture: Texture2D
 var breed_name: String = "Vira-lata caramelo"
 var temperament: StringName = &"happy"
 var rarity: StringName = &"common"
@@ -116,6 +118,11 @@ func celebrate() -> void:
 
 
 func set_pet_profile(profile: Dictionary) -> void:
+	pet_id = String(profile.get("id", "caramelo"))
+	var texture_path: String = "res://art/pets/%s.png" % pet_id
+	pet_texture = null
+	if ResourceLoader.exists(texture_path):
+		pet_texture = load(texture_path) as Texture2D
 	var colors: Array = profile.get("colors", ["c98b5b", "9c623f", "f1c49f"])
 	if colors.size() >= 3:
 		fur_color = Color(String(colors[0]))
@@ -352,6 +359,9 @@ func _draw() -> void:
 
 
 func _draw_pet(center: Vector2) -> void:
+	if is_instance_valid(pet_texture):
+		_draw_illustrated_pet(center)
+		return
 	var fur: Color = fur_color if not pet_wet else fur_color.darkened(0.24)
 	# Cauda reage continuamente e torna cães/gatos legíveis pela silhueta.
 	var wag: float = sin(shake_phase * (9.0 if pet_happy else 3.0)) * 0.35
@@ -498,6 +508,42 @@ func _draw_pet(center: Vector2) -> void:
 		draw_arc(center + Vector2(0, 68), 28, PI + 0.2, TAU - 0.2, 18, Color("263238"), 7)
 	draw_circle(center + Vector2(-92, 28), 17, Color("ff8fb1", 0.42))
 	draw_circle(center + Vector2(92, 28), 17, Color("ff8fb1", 0.42))
+
+
+func _draw_illustrated_pet(center: Vector2) -> void:
+	var small_breed: bool = _breed_contains_any(
+		["Pinscher", "Yorkshire", "Pug", "Maltês", "Munchkin", "Shih-tzu"]
+	)
+	var large_breed: bool = _breed_contains_any(
+		["Golden", "Labrador", "Samoieda", "Bernês", "Maine Coon"]
+	)
+	var sprite_size: float = 390.0
+	if small_breed:
+		sprite_size = 330.0
+	elif large_breed:
+		sprite_size = 445.0
+	var breathe: float = 1.0 + sin(shake_phase * 2.2) * 0.012
+	var reaction_scale: Vector2 = Vector2(breathe, breathe)
+	if reaction_kind == &"love" or reaction_kind == &"excited":
+		reaction_scale += Vector2(0.035, -0.02)
+	elif reaction_kind == &"sad":
+		reaction_scale += Vector2(0.02, -0.045)
+	var tilt: float = 0.0
+	if reaction_kind == &"dizzy":
+		tilt = sin(shake_phase * 18.0) * 0.055
+	elif pet_happy:
+		tilt = sin(shake_phase * 7.0) * 0.018
+	var tint: Color = Color("d5edf4") if pet_wet else Color.WHITE
+	if reaction_kind == &"sad":
+		tint = tint.darkened(0.16)
+	draw_set_transform(center, tilt, reaction_scale)
+	draw_texture_rect(
+		pet_texture,
+		Rect2(-sprite_size * 0.5, -sprite_size * 0.5, sprite_size, sprite_size),
+		false,
+		tint,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _breed_contains_any(labels: Array[String]) -> bool:

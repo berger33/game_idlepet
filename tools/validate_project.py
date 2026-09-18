@@ -39,6 +39,8 @@ def validate_resource_paths() -> None:
         text = path.read_text(encoding="utf-8")
         for match in re.finditer(r'res://([^"\n]+)', text):
             resource = match.group(1)
+            if "%" in resource or "{" in resource:
+                continue  # caminho dinâmico validado pelo catálogo específico
             require((ROOT / resource).exists(), f"recurso quebrado em {path.relative_to(ROOT)}: {resource}")
 
 
@@ -75,6 +77,15 @@ def validate_catalogs() -> None:
         shelves = layout.get("shelf_y", [])
         require(len(shelves) == 5 and shelves == sorted(shelves), f"prateleiras inválidas: {service}")
         require((ROOT / "art/backgrounds" / layout.get("background", "")).exists(), f"fundo ausente: {service}")
+
+    pet_art = list((ROOT / "art/pets").glob("*.png"))
+    require(len(pet_art) >= 10, "primeiro lote de arte dos pets deve conter dez sprites")
+    valid_pet_ids = {pet.get("id") for pet in pets}
+    for path in pet_art:
+        raw = path.read_bytes()
+        require(path.stem in valid_pet_ids, f"sprite sem entrada no catálogo: {path.stem}")
+        require(len(raw) > 150_000, f"sprite de pet simplificado demais: {path.stem}")
+        require(len(raw) > 25 and raw[25] == 6, f"sprite de pet sem canal alfa: {path.stem}")
 
     for tool in ("soap", "clipper", "dryer", "perfume", "bow"):
         path = ROOT / "art/props" / f"tool_{tool}.png"
