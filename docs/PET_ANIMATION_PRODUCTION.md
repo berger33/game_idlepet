@@ -115,6 +115,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. O M frontal e as listras da face, corpo, patas e cauda permanecem legíveis, junto ao peito claro e olhos oliva-dourados. `wet` estreita e escurece a pelagem em mechas com gotas, `messy` cria tufos irregulares, e dizzy/sad/squash/air possuem silhuetas emocionais distintas sem VFX indevido.
 
+### Lote 11 — Bob Bulldog Francês
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem azul-cinza, focinho/peito creme, máscara, olhos castanhos e grandes orelhas de morcego permanecem reconhecíveis. `wet` cola e escurece o pelo curto com gotas, `messy` usa somente tufos curtos compatíveis com a raça, `dizzy` combina espirais e desequilíbrio sem estrelas, e squash/air comunicam peso compacto e salto.
+
 ## Backlog
 
 ### CRITICAL

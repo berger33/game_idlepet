@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 10,
+    "pets_generated": 11,
     "images_expected": 500,
-    "images_generated": 100,
-    "images_qa_passed": 100,
-    "pets_integrated": 10,
-    "generation_attempts": 114
+    "images_generated": 110,
+    "images_qa_passed": 110,
+    "pets_integrated": 11,
+    "generation_attempts": 123
   },
   "pets": [
     {
@@ -617,51 +617,52 @@
       "reference": "art/pets/bob_bulldog.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/bob_bulldog/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Blue-gray coat, cream markings, broad muzzle and bat ears remain readable; wet is smooth/dark with droplets and messy uses short breed-correct tufts."
     },
     {
       "sequence": 12,
