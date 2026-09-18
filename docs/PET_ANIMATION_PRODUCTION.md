@@ -123,6 +123,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Olhos azuis, pelagem branca longa, orelhas pontudas e cauda-pluma gigante permanecem reconhecíveis. `wet` reduz radicalmente o volume em fios cinza, estreitos e pesados com gotas; `messy` adiciona tufos e comprimentos irregulares; dirty, sad, dizzy, blink e o arco squash/air têm leitura imediata sem VFX indevido.
 
+### Lote 13 — Sol Border Collie
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. A faixa branca central, peito/patas claros, ponta branca da cauda e heterocromia azul/castanha permanecem legíveis. `wet` estreita e escurece a pelagem em mechas pesadas; uma poça gerada junto aos pés foi identificada e removida durante o QA de alfa, preservando apenas o pet e gotas corporais. `messy`, dizzy, sad e o arco squash/air mantêm anatomia atlética e leitura emocional clara.
+
 ## Backlog
 
 ### CRITICAL
