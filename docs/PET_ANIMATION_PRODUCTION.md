@@ -139,6 +139,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem ruddy/canela com ticking, olhos verdes, face em cunha, orelhas grandes, corpo esguio e cauda longa permanecem legíveis. `wet` cria superfície cobre escura, lisa e encharcada com gotas; `messy` usa tufos curtos compatíveis com a raça; dizzy, sad, blink e o arco squash/air mantêm silhuetas emocionais distintas sem VFX externo.
 
+### Lote 17 — Bento Beagle
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Sela preta, face/pernas castanhas, faixa branca, focinho/peito/patas/ponta da cauda claros, olhos avelã e orelhas longas permanecem reconhecíveis. `wet` cola e escurece o pelo curto com gotas; `messy` usa tufos breves compatíveis com a raça; dizzy, sad, blink e squash/air comunicam emoções diferentes sem VFX externo.
+
 ## Backlog
 
 ### CRITICAL
