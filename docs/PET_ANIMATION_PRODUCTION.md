@@ -107,6 +107,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Máscara, orelhas, patas e cauda seal, corpo creme e olhos azuis permanecem reconhecíveis em todos os estados. `wet` reduz a silhueta e transforma cauda/pelagem em mechas pesadas com gotas; `messy` expande intencionalmente o pelo pré-tosa sem perder os points siameses; dizzy, sad e blink têm leituras distintas e sem VFX indevido.
 
+### Lote 09 — Nina Yorkshire
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. A pelagem sedosa cinza-aço e dourada permanece legível em todos os estados. `wet` estreita e escurece a silhueta com fios longos para baixo, `messy` cobre parcialmente a face com fios irregulares, e squash/air comunicam antecipação e salto. A queda de uma orelha em `dizzy` foi aprovada como instabilidade contextual, sem alterar a anatomia idle.
+
 ## Backlog
 
 ### CRITICAL
