@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 14,
+    "pets_generated": 15,
     "images_expected": 500,
-    "images_generated": 140,
-    "images_qa_passed": 140,
-    "pets_integrated": 14,
-    "generation_attempts": 151
+    "images_generated": 150,
+    "images_qa_passed": 150,
+    "pets_integrated": 15,
+    "generation_attempts": 160
   },
   "pets": [
     {
@@ -845,51 +845,52 @@
       "reference": "art/pets/jade_spitz.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/jade_spitz/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Cream-white double coat, foxlike face, pointed ears and giant plume tail remain readable; wet radically collapses volume and messy expands irregular tangles."
     },
     {
       "sequence": 16,

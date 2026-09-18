@@ -131,6 +131,10 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas após uma resposta vazia do modelo ser repetida; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem quase preta com reflexos chocolate, olhos âmbar, face arredondada e cauda longa permanecem legíveis. `wet` aprofunda o preto, reduz volume e adiciona mechas pesadas/gotas; `messy` cria tufos irregulares; dizzy usa espirais sem estrelas, e squash/air têm silhuetas de antecipação e salto distintas.
 
+### Lote 15 — Jade Spitz Alemão
+
+Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Pelagem dupla creme-branca, face de raposa, orelhas triangulares e cauda-pluma gigante permanecem reconhecíveis. `wet` colapsa radicalmente o volume em fios cinza-bege pesados e descendentes; `messy` amplia nós e comprimentos irregulares; dirty, sad, dizzy, blink e o arco squash/air mantêm leitura imediata e nenhum VFX indevido.
+
 ## Backlog
 
 ### CRITICAL
