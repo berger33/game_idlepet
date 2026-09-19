@@ -297,7 +297,7 @@ class FoundationTests(unittest.TestCase):
                 all(record['status'] == 'qa_passed' for record in entry['states'].values()),
                 entry['pet_id']
             )
-        self.assertEqual(tracker['summary']['pets_integrated'], 28)
+        self.assertEqual(tracker['summary']['pets_integrated'], 29)
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')

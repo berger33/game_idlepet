@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 28,
+    "pets_generated": 29,
     "images_expected": 500,
-    "images_generated": 287,
-    "images_qa_passed": 287,
-    "pets_integrated": 28,
-    "generation_attempts": 300
+    "images_generated": 297,
+    "images_qa_passed": 297,
+    "pets_integrated": 29,
+    "generation_attempts": 310
   },
   "pets": [
     {
@@ -1671,24 +1671,24 @@
           "path": "art/pet_animations/rio_savannah/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 7,
-      "qa_notes": "7/10 states approved on the first batch: dirty (mud + leaf over spotted golden coat), wet (slicked darker fur, drooped spread ears, dripping ringed tail), messy (ruffled tufts, disheveled tail), tilt_left/tilt_right with strong opposite diagonal leans (mask IoU tl-vs-tr 0.277, tl-vs-flip(tr) 0.395), happy_squash and happy_air. happy_squash shipped with baked-in sparkle stars removed during alpha QA as undue VFX (stars reserved for Perfect/special combo; detached 77-359px islands excised, same precedent as lote 13 puddle removal) and re-verified on contract. dizzy/sad/blink queued for next turn. Savannah identity preserved (spotted golden coat, cream chest, huge tall ears, green eyes, ringed tail)."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 on the first batch; dizzy (spiral eyes, orbiting stars, wobbly ears), sad (drooped ears, single tear, ringed tail wrapped low) and blink (closed curved eyes) approved next turn closing the lote 10/10. Savannah identity preserved (spotted golden coat, cream chest, huge tall ears, green eyes, ringed tail). All states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 30,
@@ -1700,31 +1700,31 @@
       "reference": "art/pets/estrela_khao.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/happy_air.png"
         },
         "dizzy": {
@@ -1740,11 +1740,12 @@
           "path": "art/pet_animations/estrela_khao/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 7,
+      "qa_notes": "7/10 states approved on the first batch with the new --flood backdrop recovery: GrabCut left holes in the white coat over the light gradient backdrop, so normalize_pet_state.py gained a flood-fill path (border flood stopped by the sticker outline; ground-shadow/pocket/debris filters) selected per source, with the default GrabCut path regression-verified at worst IoU 0.989 against the committed Rio/Nox frames. Odd eyes (viewer-left blue, viewer-right amber) preserved in every state; dirty mud+leaf, wet gray slicked with droplets, messy tufts, strong opposite tilts (mask IoU tl-vs-tr 0.089), squash without sparkles, clean mid-air jump. dizzy/sad/blink queued for next turn. Contract OK on all 7 (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 31,
