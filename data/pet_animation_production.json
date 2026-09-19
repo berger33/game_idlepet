@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 47,
+    "pets_generated": 48,
     "images_expected": 500,
-    "images_generated": 474,
-    "images_qa_passed": 474,
-    "pets_integrated": 47,
-    "generation_attempts": 489
+    "images_generated": 480,
+    "images_qa_passed": 480,
+    "pets_integrated": 48,
+    "generation_attempts": 498
   },
   "pets": [
     {
@@ -2742,36 +2742,36 @@
           "path": "art/pet_animations/iris_cornish/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/iris_cornish/blink.png"
         }
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 4,
-      "qa_notes": "Oitavo gato. Cornish Rex laranja-avermelhada c/ pelo ondulado (marcel) e ORELHAS GIGANTES (34 spikes no topo — assinatura da raca, validar preservacao). A BASE MAIS ESGUIA do catalogo: 247x446, cov 0.232 (supera Zara 0.239). Oficiais BGR 105,123,199 / 75,81,158 / 138,162,227 / 40,31,89, tol 20 (base 30594 px). Hue-corr 0.844-0.974. Lote PARCIAL 4/10: turno consumido c/ fechamento do Cosmo (6) + 4 daqui. Faltam tilt_right, squash, air, dizzy, sad, blink (6 = proximo turno exato, sobra margem p/ retake do tr). lean base +52.8 (padrao Lilo/Zara: cabeca a direita) — tl veio FORTE em 1a tentativa (rel -59.7); tr tera risco de sprawl (playbook Zara: se vier sprawl, EDIT-DIRETO-DO-SAD). Registro padrao bottom 478. messy +191% (2o maior do catalogo, apos Olivia +214%). wet: V 183->186 (leve clareamento, pelo rex curto — como Zara) c/ cov 0.232->0.204 + 6 gotas (7 comps, flood). Contrato 4/4 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/tilt, flood em wet/messy."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 13,
+      "qa_notes": "Oitavo gato. Cornish Rex laranja-avermelhada c/ pelo ondulado (marcel) e ORELHAS GIGANTES (34 spikes no topo — assinatura da raca, validar preservacao). A BASE MAIS ESGUIA do catalogo: 247x446, cov 0.232 (supera Zara 0.239). Oficiais BGR 105,123,199 / 75,81,158 / 138,162,227 / 40,31,89, tol 20 (base 30594 px). Hue-corr 0.844-0.974. Lote COMPLETO 10/10 (fechado no turno seguinte, +9 geracoes c/ 3 rejeicoes). lean base +52.8 (padrao Lilo/Zara). TILT: tl forte em 1a (rel -59.7); tr = 3 tentativas: v1 coruja = ereto esguio mas cabeca a ESQUERDA da base (rel -19.2, rejeitado); v2 EDIT-DO-DIZZY (geometria perfeita do dizzy 310x446 rel +14.3) = pose preservada IoU 0.969 mas cabeca puxou 4px (rel +10.6, rejeitado); v3 EDIT-DO-SAD_V2 = APROVADO rel +13.5 (no piso exato; 273x446 ar 1.63 o mais esguio, IoU base 0.791). PAR: tl rel -59.7 / tr rel +13.5 — assimetria extrema documentada (base c/ cabeca a direita: muito espaco a esquerda, quase nenhum a direita). SAD: v1 REJEITADO POR ESCALA (cov 0.458 = DOBRO da base 0.232, 120k vs 60k px — salto visual grande p/ crossfade; NOVO GATE de escala cov<0.40 adicionado a bateria) -> v2 aprovado: esguio 311x446, cov 0.304, rel +15.5. happy_air: OVERRIDE p/ flood (7o seguido) — corpo 41px no ar + 7 rastros abaixo. blink: IoU 0.932, hue 0.996, diff concentrado na banda facial (2149+1234+850 px). dizzy 10764px (espirais), sad 12444px (cabeca caida). happy_squash 446x360. messy +191% (2o do catalogo). 13 tentativas totais.Registro padrao bottom 478. messy +191% (2o maior do catalogo, apos Olivia +214%). wet: V 183->186 (leve clareamento, pelo rex curto — como Zara) c/ cov 0.232->0.204 + 6 gotas (7 comps, flood). Contrato 4/4 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/tilt, flood em wet/messy."
     },
     {
       "sequence": 49,
