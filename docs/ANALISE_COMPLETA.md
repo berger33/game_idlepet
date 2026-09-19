@@ -306,3 +306,32 @@ O MetaPanel vira controlador que instancia as cenas. A loja ganha a linha de
 **rewarded ads** via `AdsManager.request_rewarded` (fachada honesta offline; o adapter
 real só chama o callback de recompensa em conclusão verificada) e o catálogo IAP
 exibido como indisponível offline.
+
+## 18. Fase 3 — Retenção (implementada)
+
+Cinco sistemas de retenção fechados, todos com fachada honesta offline:
+
+1. **Streak com freeze ganhável** — `streak_freezes` (começa com 1); gap de 36–60h
+   consome 1 freeze em vez de zerar a sequência; marcos 3/5/7 dias rendem +1 freeze.
+2. **Passe de 28 dias** — `data/pass.json` (moedas crescentes; brasas nos dias
+   7/14/21; freeze no 28). Um dia destrava por ciclo diário completo (3 missões
+   resgatadas); resgate individual na tela de missões. Pista premium fica para o
+   IAP real — nada de moeda falsa.
+3. **Comeback** — ausência ≥ 48h rende moedas (200 + 25×nível, teto 700) + 1 freeze,
+   com toasts de boas-vindas e analítica `return_bonus`.
+4. **Push com deep link** — `NotificationManager.deep_link_section()` já funciona no
+   desktop (`godot -- --section=missions`); os lembretes agendados carregam o mesmo
+   parâmetro para o adapter Android abrir a tela certa. Agendamento considera horas
+   de ausência.
+5. **Eventos 7/7 com kill switch** — cada dia da semana tem efeito real (domingo
+   tudo +25%; seg–sex serviço em destaque ×2; sábado Perfect +50%).
+   `RemoteConfig`: `events_enabled` (0 desliga tudo) e `event_boost_scale` (0..1
+   dosifica) — ambos validados por faixa, como o restante do config remoto.
+6. **Compartilhamento antes/depois** — `ShareManager` captura o viewport no início
+   e no fim do serviço, compõe lado a lado e salva PNG em `user://shares/`; o toast
+   diz exatamente isso (adapter móvel abrirá a folha de compartilhamento). Botão no
+   painel de resultado, só visível em sucesso.
+
+Save v7 (migração 6→7), 66 chaves × 3 idiomas com paridade testada, e dois testes
+novos no contrato: `test_retention_systems_are_wired` e
+`test_localization_parity_across_languages`.

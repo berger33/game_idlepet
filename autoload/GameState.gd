@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 6
+const SAVE_VERSION: int = 7
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 var coins: float = 0.0
@@ -32,6 +32,11 @@ var claimed_missions: Array[String] = []
 var missions_date: String = ""
 var last_daily_claim: String = ""
 var daily_streak: int = 0
+var streak_freezes: int = 1
+var pass_day_unlocked: int = 0
+var pass_day_claimed: int = 0
+var pass_advance_day: String = ""
+var last_return_day: String = ""
 var establishment_tier: int = 1
 var passive_accumulator: float = 0.0
 var active_play_seconds: float = 0.0
@@ -220,6 +225,11 @@ func to_dictionary() -> Dictionary:
 		"missions_date": missions_date,
 		"last_daily_claim": last_daily_claim,
 		"daily_streak": daily_streak,
+		"streak_freezes": streak_freezes,
+		"pass_day_unlocked": pass_day_unlocked,
+		"pass_day_claimed": pass_day_claimed,
+		"pass_advance_day": pass_advance_day,
+		"last_return_day": last_return_day,
 		"establishment_tier": establishment_tier,
 		"active_play_seconds": active_play_seconds,
 		"pet_affection": pet_affection,
@@ -271,6 +281,13 @@ func apply_dictionary(data: Dictionary) -> void:
 	_refresh_daily_missions()
 	last_daily_claim = String(data.get("last_daily_claim", ""))
 	daily_streak = clampi(int(data.get("daily_streak", 0)), 0, 7)
+	streak_freezes = clampi(int(data.get("streak_freezes", 1)), 0, 99)
+	pass_day_unlocked = clampi(int(data.get("pass_day_unlocked", 0)), 0, 28)
+	pass_day_claimed = clampi(
+		int(data.get("pass_day_claimed", 0)), 0, pass_day_unlocked
+	)
+	pass_advance_day = String(data.get("pass_advance_day", ""))
+	last_return_day = String(data.get("last_return_day", ""))
 	establishment_tier = clampi(int(data.get("establishment_tier", 1)), 1, 10)
 	active_play_seconds = maxf(0.0, float(data.get("active_play_seconds", 0.0)))
 	pet_affection = _safe_dictionary(data.get("pet_affection", {}), {})
@@ -364,12 +381,21 @@ func claim_daily_reward() -> int:
 			Analytics.track(&"churn_risk_signal", {"reason": "daily_clock_rollback"})
 			return 0
 		if today_unix - last_day_unix > 36 * 3600:
-			daily_streak = 0
+			var gap_hours: int = (today_unix - last_day_unix) / 3600
+			if streak_freezes > 0 and gap_hours <= 60:
+				streak_freezes -= 1
+				EventBus.toast_requested.emit(Loc.t("FREEZE_USED"), Color("4fc3f7"))
+				Analytics.track(&"streak_freeze_used", {"gap_hours": gap_hours})
+			else:
+				daily_streak = 0
 	daily_streak = daily_streak % 7 + 1
 	last_daily_claim = today
 	var reward: int = 25 * daily_streak
 	if daily_streak == 7 and not unlocked_pets.has("mel_golden"):
 		unlocked_pets.append("mel_golden")
+	if daily_streak in [3, 5, 7]:
+		streak_freezes += 1
+		EventBus.toast_requested.emit(Loc.t("FREEZE_EARNED"), Color("7ed957"))
 	add_coins(reward, &"daily_login")
 	Analytics.track(&"daily_reward", {"day": daily_streak})
 	SaveManager.request_save()
@@ -391,6 +417,54 @@ func claim_mission(mission_id: StringName) -> bool:
 	claimed_missions.append(id)
 	add_coins(75, &"daily_mission")
 	Analytics.track(&"daily_mission_complete", {"id": id})
+	if claimed_missions.size() >= 3:
+		_advance_pass()
+	SaveManager.request_save()
+	return true
+
+
+## Pass de 28 dias: um dia destravado por ciclo diário completo (3 missões).
+func _advance_pass() -> void:
+	var today: String = Time.get_date_string_from_system()
+	if pass_advance_day == today or pass_day_unlocked >= 28:
+		return
+	pass_advance_day = today
+	pass_day_unlocked = mini(28, pass_day_unlocked + 1)
+	EventBus.toast_requested.emit(
+		"%s %d/28" % [Loc.t("PASS_UNLOCKED"), pass_day_unlocked], Color("4fc3f7")
+	)
+	Analytics.track(&"pass_unlocked", {"day": pass_day_unlocked})
+
+
+func claim_pass_day() -> bool:
+	if pass_day_claimed >= pass_day_unlocked:
+		return false
+	var reward: Dictionary = ContentDB.pass_day(pass_day_claimed + 1)
+	pass_day_claimed += 1
+	if reward.has("coins"):
+		add_coins(float(reward["coins"]), &"pass")
+	if reward.has("embers"):
+		embers += int(reward["embers"])
+		EventBus.currency_changed.emit(&"coins", coins)
+	if reward.has("freeze"):
+		streak_freezes += int(reward["freeze"])
+	Analytics.track(&"pass_claim", {"day": pass_day_claimed})
+	SaveManager.request_save()
+	return true
+
+
+## Bônus de retorno: ausência >= 48h rende presente (moedas + 1 freeze).
+func check_return_bonus() -> bool:
+	var today: String = Time.get_date_string_from_system()
+	if last_return_day == today or last_seen_unix <= 0:
+		return false
+	var absent_hours: float = (Time.get_unix_time_from_system() - last_seen_unix) / 3600.0
+	if absent_hours < 48.0:
+		return false
+	last_return_day = today
+	streak_freezes += 1
+	add_coins(float(200 + 25 * mini(player_level, 20)), &"return_bonus")
+	Analytics.track(&"return_bonus", {"absent_hours": absent_hours})
 	SaveManager.request_save()
 	return true
 

@@ -1,27 +1,55 @@
 extends Node
-## Agenda semanal local previsível; configuração remota futura só complementa.
+## Agenda semanal local previsível, 7/7 com efeito real de gameplay.
+## Kill switch remoto: events_enabled = 0 desliga tudo; event_boost_scale
+## (0..1) dosifica a intensidade sem quebrar a economia.
 
 const NAMES: PackedStringArray = [
 	"Domingo da Família",
 	"Segunda do Banho",
 	"Terça da Tosa",
-	"Quarta da Vacina",
-	"Quinta do Pet Raro",
+	"Quarta da Secagem",
+	"Quinta do Laço",
 	"Sexta do VIP",
 	"Sábado do Combo"
 ]
+## Serviço em destaque de cada dia (0 = domingo: todos ganham bônus família).
+const DAY_SERVICE: Array[StringName] = [
+	&"", &"bath", &"groom", &"dry", &"style", &"perfume", &""
+]
+
+
+func events_on() -> bool:
+	return RemoteConfig.get_float(&"events_enabled") > 0.5
+
+
+func boost_scale() -> float:
+	return clampf(RemoteConfig.get_float(&"event_boost_scale"), 0.0, 1.0)
+
+
+func weekday() -> int:
+	return clampi(int(Time.get_datetime_dict_from_system().get("weekday", 0)), 0, 6)
 
 
 func current_event_name() -> String:
-	var date: Dictionary = Time.get_datetime_dict_from_system()
-	var weekday: int = clampi(int(date.get("weekday", 0)), 0, NAMES.size() - 1)
-	return NAMES[weekday]
+	if not events_on():
+		return Loc.t("EVENTS_OFF")
+	return NAMES[weekday()]
 
 
 func multiplier_for(service_id: StringName) -> float:
-	var weekday: int = int(Time.get_datetime_dict_from_system().get("weekday", 0))
-	if weekday == 1 and service_id == &"bath":
-		return 2.0
-	if weekday == 2 and service_id == &"groom":
-		return 2.0
-	return 1.0
+	if not events_on():
+		return 1.0
+	var day: int = weekday()
+	var bonus: float = 0.0
+	if day == 0:
+		bonus = 0.25  # Família: tudo rende um pouco mais.
+	elif DAY_SERVICE[day] == service_id:
+		bonus = 1.0  # Dia temático: serviço em destaque dobra.
+	return 1.0 + bonus * boost_scale()
+
+
+## Sábado do Combo: Perfect vale +50% (dosificado pelo mesmo kill switch).
+func bonus_for_quality(quality: StringName) -> float:
+	if not events_on() or quality != &"perfect" or weekday() != 6:
+		return 1.0
+	return 1.0 + 0.5 * boost_scale()

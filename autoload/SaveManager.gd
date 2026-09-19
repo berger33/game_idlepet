@@ -126,6 +126,13 @@ func _migrate(data: Dictionary) -> Dictionary:
 	if version == 5:
 		data["version"] = 6
 		data["tool_upgrade_levels"] = {"soap": 0, "clipper": 0, "dryer": 0, "perfume": 0, "bow": 0}
+		version = 6
+	if version == 6:
+		data["version"] = 7
+		data["streak_freezes"] = int(data.get("streak_freezes", 1))
+		data["pass_day_unlocked"] = int(data.get("pass_day_unlocked", 0))
+		data["pass_day_claimed"] = int(data.get("pass_day_claimed", 0))
+		version = 7
 	return data
 
 

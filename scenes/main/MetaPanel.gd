@@ -142,6 +142,23 @@ func _build_missions() -> void:
 				GameState.claim_mission(mission_id)
 				AudioManager.play(&"coin")
 		)
+	_note(
+		Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes],
+		26,
+		CHARCOAL
+	)
+	var pass_ready: bool = GameState.pass_day_claimed < GameState.pass_day_unlocked
+	var pass_reward: Dictionary = ContentDB.pass_day(GameState.pass_day_claimed + 1)
+	_info_row(
+		Loc.t("PASS_TITLE") + " %d/28" % (GameState.pass_day_claimed + 1),
+		Loc.t("PASS_DESC") if not pass_reward.is_empty() else Loc.t("PASS_DONE"),
+		Loc.t("CLAIM") if pass_ready else "%d/28" % GameState.pass_day_unlocked,
+		GREEN if pass_ready else Color("b0bec5"),
+		pass_ready,
+		func() -> void:
+			if GameState.claim_pass_day():
+				AudioManager.play(&"coin")
+	)
 	_note("Missões nunca exigem anúncio ou compra.")
 
 

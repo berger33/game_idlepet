@@ -6,6 +6,7 @@ const CAREER_PATH: String = "res://data/career_track.json"
 const STAFF_PATH: String = "res://data/staff.json"
 const ACHIEVEMENTS_PATH: String = "res://data/achievements.json"
 const COSMETICS_PATH: String = "res://data/cosmetics.json"
+const PASS_PATH: String = "res://data/pass.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -16,6 +17,7 @@ var achievements: Array[Dictionary] = []
 var achievements_by_id: Dictionary = {}
 var cosmetics: Array[Dictionary] = []
 var cosmetics_by_id: Dictionary = {}
+var pass_days: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -40,10 +42,18 @@ func _ready() -> void:
 		var look_id: String = String(look.get("id", ""))
 		if not look_id.is_empty() and not cosmetics_by_id.has(look_id):
 			cosmetics_by_id[look_id] = look
+	pass_days = _load_array(PASS_PATH, "pass")
 
 
 func cosmetic(id: String) -> Dictionary:
 	return cosmetics_by_id.get(id, {})
+
+
+## Recompensa do dia N do pass (1..28); retorna {} fora do intervalo.
+func pass_day(day: int) -> Dictionary:
+	if day < 1 or day > pass_days.size():
+		return {}
+	return pass_days[day - 1]
 
 
 func staff_name(id: String) -> String:

@@ -59,6 +59,7 @@ var combo_label: Label
 var review_label: Label
 var instruction_label: Label
 var primary_button: Button
+var share_button: Button
 var upgrade_button: Button
 var tool_upgrade_button: Button
 var result_panel: PanelContainer
@@ -102,6 +103,12 @@ func _ready() -> void:
 	_connect_events()
 	_refresh_economy()
 	_show_pending_offline_reward()
+	_show_comeback()
+	NotificationManager.schedule_return_reminders(GameState.last_seen_unix)
+	if GameState.tutorial_complete:
+		var deep_section: StringName = NotificationManager.deep_link_section()
+		if deep_section != &"":
+			meta.open(deep_section)
 	_setup_tutorial()
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
 
@@ -254,6 +261,7 @@ func _on_primary_pressed() -> void:
 func _start_bath() -> void:
 	bath.start_service()
 	world.begin_service()
+	ShareManager.begin_snapshot(get_viewport())
 	instruction_label.text = _gesture_hint()
 	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
@@ -297,6 +305,7 @@ func _finish_bath() -> void:
 				)
 			)
 			* LiveOps.multiplier_for(current_service)
+			* LiveOps.bonus_for_quality(quality)
 			* affection_multiplier
 			* tip_multiplier
 			* vip_multiplier
@@ -352,6 +361,8 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		"%s\n+%d moedas  •  +%d XP\n%s\n%s %s"
 		% ["★".repeat(stars), int(reward), xp_reward, tip_line, current_pet_name, outcome]
 	)
+	ShareManager.finish_snapshot(get_viewport(), String(current_service))
+	share_button.visible = true
 	_pop_panel(result_panel)
 	primary_button.text = "✓  CONTINUAR"
 	primary_button.disabled = false
@@ -382,6 +393,7 @@ func _fail(reason: StringName) -> void:
 	else:
 		hint = "Leve a %s até a faixa verde antes de finalizar." % action_name
 	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
+	share_button.visible = false
 	_pop_panel(result_panel)
 	primary_button.text = "↻  TENTAR NOVAMENTE"
 	primary_button.disabled = false
@@ -864,6 +876,9 @@ func _build_interface() -> void:
 	primary_button = _button("✓  CONTINUAR", GREEN, 0, 105)
 	primary_button.pressed.connect(_on_primary_pressed)
 	result_actions.add_child(primary_button)
+	share_button = _button(Loc.t("SHARE_BUTTON"), BLUE, 0, 88)
+	share_button.pressed.connect(_on_share_pressed)
+	result_actions.add_child(share_button)
 	result_panel.hide()
 
 	toast_layer = Control.new()

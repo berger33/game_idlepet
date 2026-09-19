@@ -30,11 +30,46 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 6', state)
+        self.assertIn('const SAVE_VERSION: int = 7', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
-        self.assertIn('data["version"] = 6', migration)
+        self.assertIn('if version == 6:', migration)
+        self.assertIn('data["version"] = 7', migration)
         self.assertIn('tool_upgrade_levels', state)
+
+    def test_retention_systems_are_wired(self):
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('streak_freezes', state)
+        self.assertIn('claim_pass_day', state)
+        self.assertIn('check_return_bonus', state)
+        pass_data = json.loads(Path('data/pass.json').read_text(encoding='utf8'))
+        days = pass_data['pass']
+        self.assertEqual(len(days), 28)
+        self.assertEqual([d['day'] for d in days], list(range(1, 29)))
+        self.assertTrue(all(d['coins'] > 0 for d in days))
+        self.assertTrue(any('embers' in d for d in days))
+        self.assertTrue(any('freeze' in d for d in days))
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        self.assertIn('events_enabled', liveops)
+        self.assertIn('event_boost_scale', liveops)
+        notif = Path('autoload/NotificationManager.gd').read_text(encoding='utf8')
+        self.assertIn('deep_link_section', notif)
+        self.assertIn('--section=', notif)
+        share = Path('autoload/ShareManager.gd').read_text(encoding='utf8')
+        self.assertIn('finish_snapshot', share)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertEqual(main.count('Button.new()'), 1)
+        self.assertIn('ShareManager.begin_snapshot', main)
+        self.assertIn('_show_comeback()', main)
+
+    def test_localization_parity_across_languages(self):
+        import csv
+        sets = {}
+        for lang in ('pt_BR', 'en_US', 'es_ES'):
+            with open(f'data/localization/{lang}.csv', encoding='utf-8') as f:
+                sets[lang] = {r[0] for r in csv.reader(f) if r and r[0] != 'key'}
+        self.assertEqual(sets['pt_BR'], sets['en_US'])
+        self.assertEqual(sets['pt_BR'], sets['es_ES'])
 
     def test_career_has_at_least_fifty_active_hours(self):
         rows = simulate_career()

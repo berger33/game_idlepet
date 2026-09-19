@@ -22,6 +22,7 @@ InteractionFX="*res://autoload/InteractionFX.gd"
 AdsManager="*res://autoload/AdsManager.gd"
 IAPManager="*res://autoload/IAPManager.gd"
 LiveOps="*res://autoload/LiveOps.gd"
+ShareManager="*res://autoload/ShareManager.gd"
 NotificationManager="*res://autoload/NotificationManager.gd"
 
 [display]

@@ -14,7 +14,9 @@ const DEFAULTS: Dictionary = {
 	"autosave_seconds": 15.0,
 	"rewarded_daily_cap": 8,
 	"rewarded_cooldown_seconds": 180,
-	"interstitial_min_session_seconds": 1200
+	"interstitial_min_session_seconds": 1200,
+	"events_enabled": 1.0,
+	"event_boost_scale": 1.0
 }
 const RANGES: Dictionary = {
 	"bath_base_reward": Vector2(1.0, 1000.0),
@@ -30,6 +32,8 @@ const RANGES: Dictionary = {
 	"rewarded_daily_cap": Vector2(0.0, 8.0),
 	"rewarded_cooldown_seconds": Vector2(180.0, 86400.0),
 	"interstitial_min_session_seconds": Vector2(1200.0, 86400.0),
+	"events_enabled": Vector2(0.0, 1.0),
+	"event_boost_scale": Vector2(0.0, 1.0),
 }
 
 var values: Dictionary = DEFAULTS.duplicate(true)
