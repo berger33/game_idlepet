@@ -1,0 +1,1 @@
+{"schema_version":1,"currencies":["coins","embers","franchise_tokens"],"defaults":{"base_income":1.0,"upgrade_income_growth":1.075,"upgrade_cost_base":10,"upgrade_cost_growth":1.18,"offline_rate":0.5,"offline_cap_hours":2,"offline_cap_max_hours":24},"quality":{"fail":0,"good":1.15,"perfect":1.5},"combo":{"per_stack":0.025,"reward_cap":20}}

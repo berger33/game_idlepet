@@ -1,0 +1,10 @@
+{
+  "schema_version":1,
+  "nodes":[
+    {"id":"clean_water","name":"Água Purificada","tier":1,"cost":1,"currency":"franchise_token","requires":[],"effect":{"bath_income":0.1}},
+    {"id":"gentle_formula","name":"Fórmula Suave","tier":1,"cost":1,"currency":"franchise_token","requires":[],"effect":{"satisfaction":0.05}},
+    {"id":"fast_dryer","name":"Secagem Eficiente","tier":2,"cost":2,"currency":"franchise_token","requires":["clean_water"],"effect":{"service_speed":0.06}},
+    {"id":"calm_pets","name":"Comportamento Animal","tier":2,"cost":2,"currency":"franchise_token","requires":["gentle_formula"],"effect":{"patience":0.08}},
+    {"id":"mobile_clinic","name":"Clínica Móvel","tier":3,"cost":4,"currency":"franchise_token","requires":["fast_dryer","calm_pets"],"effect":{"offline_rate":0.05}}
+  ]
+}

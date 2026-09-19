@@ -1,0 +1,12 @@
+{"schema_version":1,"achievements":[
+{"id":"first_bath","name":"Primeiro Mergulho","metric":"services_bath","target":1,"reward":{"coins":25}},
+{"id":"perfect_1","name":"Mão de Groomer","metric":"perfect_services","target":1,"reward":{"embers":2}},
+{"id":"perfect_10","name":"Espuma na Medida","metric":"perfect_services","target":10,"reward":{"coins":150}},
+{"id":"combo_5","name":"Banho Quente","metric":"best_combo","target":5,"reward":{"embers":3}},
+{"id":"combo_20","name":"Lenda do Petshop","metric":"best_combo","target":20,"reward":{"cosmetic":"crown_bubbles"}},
+{"id":"earn_500","name":"Pote Cheio","metric":"total_coins","target":500,"reward":{"coins":50}},
+{"id":"upgrade_5","name":"Ducha Poderosa","metric":"bath_upgrade_level","target":5,"reward":{"embers":2}},
+{"id":"reviews_10","name":"Queridinho do Bairro","metric":"five_star_reviews","target":10,"reward":{"coins":120}},
+{"id":"collect_5","name":"Amigo dos Pets","metric":"unique_pets","target":5,"reward":{"embers":4}},
+{"id":"offline_1h","name":"O Negócio Não Para","metric":"offline_seconds_collected","target":3600,"reward":{"coins":100}}
+]}
