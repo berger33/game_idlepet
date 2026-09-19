@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 44,
+    "pets_generated": 45,
     "images_expected": 500,
-    "images_generated": 447,
-    "images_qa_passed": 447,
-    "pets_integrated": 44,
-    "generation_attempts": 459
+    "images_generated": 450,
+    "images_qa_passed": 450,
+    "pets_integrated": 45,
+    "generation_attempts": 463
   },
   "pets": [
     {
@@ -2571,7 +2571,7 @@
           "path": "art/pet_animations/lilo_munchkin/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lilo_munchkin/tilt_right.png"
         },
         "happy_squash": {
@@ -2583,11 +2583,11 @@
           "path": "art/pet_animations/lilo_munchkin/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lilo_munchkin/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lilo_munchkin/sad.png"
         },
         "blink": {
@@ -2597,10 +2597,10 @@
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 7,
-      "qa_notes": "Quinto gato. Munchkin laranja-creme tabby (oficiais BGR 113,163,215 / 139,194,238 / 187,223,243 / 80,121,181, tol 20; base ~63k px). Laranja dominante 0.778, S 115 -> hue-corr FORTE (0.937-1.000). Lote PARCIAL 7/10: faltam dizzy, sad e TILT_RIGHT (gerado, nao espelhado — ver abaixo). REGISTRO PROPRIO bottom 465 (como Apolo): aterrados em 462-467; squash 435->465 (+30); happy_air aereo 438. TILT — CASO NOVO (base c/ cabeca a DIREITA, lean +50.5, oposto de Olivia/Simba): tl veio naturalmente em 1 tentativa: +23.9 (rel -26.6) = crossfade base->tl move a cabeca 27px a ESQUERDA (direcao correta; convencao REL, precedente Kiara/Maya/Nico p/ bases diagonais; figura ereta 421x446 c/ pescoco estendido, IoU 0.792). ESPELHAR NAO SERVE p/ tr desta vez: o mirror de +23.9 e -23.9 = tambem a ESQUERDA da base (swing de 73px na mesma direcao do tl — tr seria direcao errada). tilt_right deve ser GERADO (cabeca a direita da base, lean alvo > +60) no proximo turno, junto c/ dizzy e sad = exatamente 10 attempts no lote. happy_air: OVERRIDE p/ flood (4o seguido — grab comeu as motion lines de novo: 2 comps vs 19 do flood near-pet, areas ate 526px along 1.8). messy roughness 13.58 vs base 7.14 = +90%. wet: V 211->172 (grande queda em pelo claro) + cov 0.470->0.494 (unica do catalogo que SOBE: pelo molhado espalha/afunda na base curta) + 6 gotas (7 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos olhos (316,185) 2101px / (406,180) 1246px, dx=90; IoU 0.970 (pose mais estatica do lote), hue 0.999. Contrato 7/7 (512x512x4, ext<=446, alpha borda <8, registro 462-467 + aereo 438). PROXIMO TURNO: gerar tilt_right (prompt: cabeca dobra a DIREITA a partir da base — modelo tende a posicionar a cabeca a direita nesta base, deve vir facil), dizzy e sad; validar tr por lean rel >= +13.5 (alvo > +60 abs); fechar 10/10, pin 44->45."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "Quinto gato. Munchkin laranja-creme tabby (oficiais BGR 113,163,215 / 139,194,238 / 187,223,243 / 80,121,181, tol 20; base ~63k px). Laranja dominante 0.778, S 115 -> hue-corr FORTE (0.937-1.000). Lote COMPLETO 10/10 (fechado no turno seguinte, +4 geracoes c/ 1 retake do tr). REGISTRO PROPRIO bottom 465 (como Apolo): aterrados em 462-467; squash 435->465 (+30); happy_air aereo 438. TILT — CASO NOVO (base c/ cabeca a DIREITA, lean +50.5, oposto de Olivia/Simba): tl veio naturalmente em 1 tentativa: +23.9 (rel -26.6) = crossfade base->tl move a cabeca 27px a ESQUERDA (direcao correta; convencao REL, precedente Kiara/Maya/Nico p/ bases diagonais; figura ereta 421x446 c/ pescoco estendido, IoU 0.792). ESPELHAR NAO SERVE p/ tr desta vez: o mirror de +23.9 e -23.9 = tambem a ESQUERDA da base (swing de 73px na mesma direcao do tl — tr seria direcao errada). tilt_right deve ser GERADO (cabeca a direita da base, lean alvo > +60) no proximo turno, junto c/ dizzy e sad = exatamente 10 attempts no lote. happy_air: OVERRIDE p/ flood (4o seguido — grab comeu as motion lines de novo: 2 comps vs 19 do flood near-pet, areas ate 526px along 1.8). messy roughness 13.58 vs base 7.14 = +90%. wet: V 211->172 (grande queda em pelo claro) + cov 0.470->0.494 (unica do catalogo que SOBE: pelo molhado espalha/afunda na base curta) + 6 gotas (7 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos olhos (316,185) 2101px / (406,180) 1246px, dx=90; IoU 0.970 (pose mais estatica do lote), hue 0.999. Contrato 7/7 (512x512x4, ext<=446, alpha borda <8, registro 462-467 + aereo 438). FECHAMENTO: TILT PAR 100% GERADO (primeiro do catalogo sem espelho): tr_v1 rejeitado (lean +42.1, rel -8.4 = cabeca a ESQUERDA da base, direcao errada) -> retake c/ ancora espacial forte (cabeca o mais a direita possivel, tipo coruja) = tr_v2 +97.4 (rel +46.9, ereto 446x400, IoU 0.767). PAR FINAL: tl +23.9 (rel -26.6) / tr +97.4 (rel +46.9) — CONVENCAO REL COMPLETA em torno da base +50.5: crossfades movem a cabeca 27px esq / 47px dir. Assimetria de magnitude documentada. sad (+86.8) serviu de prova de que a cabeca podia ir alem da base (referencia mental do brief). dizzy: 10 diff-clusters nas zonas dos olhos (300,86)+(320,184)+(406,180)+(412,89) = espirais; IoU 0.970 (pose quase estatica — le pelo rosto). sad: cluster 9945px na cabeca caida + 2269 no olho; lean +86.8 (cabeca muito a direita e baixa). 11 tentativas, 1 retake."
     },
     {
       "sequence": 46,
