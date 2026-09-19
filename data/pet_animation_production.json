@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 42,
     "images_expected": 500,
-    "images_generated": 420,
-    "images_qa_passed": 420,
+    "images_generated": 428,
+    "images_qa_passed": 428,
     "pets_integrated": 42,
-    "generation_attempts": 429
+    "generation_attempts": 439
   },
   "pets": [
     {
@@ -2441,19 +2441,19 @@
       "reference": "art/pets/olivia_calico.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "rejected_pose",
           "path": "art/pet_animations/olivia_calico/tilt_left.png"
         },
         "tilt_right": {
@@ -2461,31 +2461,32 @@
           "path": "art/pet_animations/olivia_calico/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "partial",
       "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_attempts": 10,
+      "qa_notes": "Terceiro gato. Calico tricolor: branco 0.281 / laranja 0.414 / preto 0.184 (bandas V>150&S<60 / r>150&r-b>60 / V<90). Lote PARCIAL 8/10: tilt rejeitado 2x, fecha no proximo turno (limite de 10 geracoes/turno atingido). SELECAO INVERTIDA vs Yuki: flood venceu em 8 estados (recupera mais pelo branco, fracoes tricolor melhores); happy_air override p/ flood tambem — grab FUNDIU as motion lines no corpo (1 comp tocando y=471, quebra a leitura aerea); flood: corpo aereo bottom 448 + 8 comps near-pet alongados (elong ate 6.9). Registro padrao 477: aterrados em 477-478; happy_air aereo bottom 475 (motion line tail). Identidade tricolor presence gate (branco>0.10, laranja>0.15, preto>0.10) PASS em todos; drift documentado: dirty/blink/dizzy c/ mais laranja (0.51 vs 0.41) e menos branco (0.14-0.17 vs 0.28); messy c/ laranja 0.24 / preto 0.32 (tufts escuros inflam preto) — rank order muda no messy, aceito c/ nota. Contrato 8/8 (512x512x4, ext<=446, alpha borda <8). messy roughness 17.52 vs base 5.58 = +214% (RECORDE ABSOLUTO do catalogo, superou Duke +185%). wet: V 184->174, cov 0.489->0.405, 6 comps (5 gotas). blink VALIDADO POR DIFF-CLUSTERING (nova tecnica p/ olhos cobre sobre mancha laranja — dark-pupil inutil: manchas pretas da cabeca dominam a banda facial, 10846px base vs 10484 blink = -3% so): diff base<->blink (>25) clusteriza em PAR SIMETRICO nos olhos (2176/2117 px, dx=105, dy=5) = cobre aberto -> palpebra fechada; dizzy = par + cluster extra 3062px (espirais); sad = face inteira (19430px). Pose blink IoU 0.891. sad: eye_diff 67.7 + face toda mudada (cabeca caida). TILT (rejeitacoes): v1 = pose horizontal esticada (bbox 446x331, altura -113px vs base 444, head zone espalhada por 444px de largura, IoU 0.439, lean rel -69.5 MUITO forte mas corpo errado — sprawl, nao sitting tilt); v2 (retake c/ brief anti-horizontal) = pose ereta correta (423x446, IoU 0.776) MAS sem tilt (lean rel +8.0, head_x 216.5 vs base 216.1, top_x +5 direita — modelo reproduziu a base e ignorou a inclinacao). PROXIMO TURNO: regenerar tilt c/ dupla referencia + enfase simultanea em corpo ereto E cabeca deslocada (v1 acertou a cabeca mas errou o corpo; v2 acertou o corpo mas ignorou a cabeca — combinar os dois requisitos no brief, considerar 2 tentativas se necessario). Espelhar p/ tilt_right apos aprovacao (mirror nao conta attempt). 8 aprovados integrados em art/pet_animations/olivia_calico/ (runtime carrega oportunisticamente, conjunto parcial seguro)."
     },
     {
       "sequence": 44,
