@@ -143,6 +143,35 @@ Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações o
 
 Os 10 estados foram aprovados, normalizados e integrados. Nove são gerações originais curadas; `tilt_right` é o espelhamento lossless do keyframe esquerdo. Sela preta, face/pernas castanhas, faixa branca, focinho/peito/patas/ponta da cauda claros, olhos avelã e orelhas longas permanecem reconhecíveis. `wet` cola e escurece o pelo curto com gotas; `messy` usa tufos breves compatíveis com a raça; dizzy, sad, blink e squash/air comunicam emoções diferentes sem VFX externo.
 
+### Lotes 18–37 — atualização consolidada
+
+O tracker `data/pet_animation_production.json` continua sendo a fonte auditável; o resumo abaixo acompanha a produção acelerada. O padrão consolidado é: 9 gerações originais + `tilt_right` como espelhamento lossless do keyframe esquerdo aprovado; `messy` com brief espinhoso/dentado (gate de rugosidade de contorno ≥ +63% vs base, respeitando pelo curto em raças de pelo curto); `wet` validado por paleta/brilho quando a pelagem neutra engana a correlação de matiz; chroma-key cirúrgico de franja com anel de borda e fundo medido por imagem, preservando sombreamento frio interior; caminho flood quando o GrabCut remove pelagem clara (Belinha) ou linhas de movimento (happy_air da Maya).
+
+| Lote | Pet | Tent. | Observações-chave de QA |
+|---|---|---:|---|
+| 18 | Azul (Azul Russo) | 10 | 1º happy_air com painel bege embutido rejeitado; chroma key + hole filling |
+| 19 | Paçoca (Dachshund) | 10 | Primeiro lote 100% aprovado na primeira leva |
+| 20 | Lua (Maine Coon) | 10 | tilt_right regenerado (caption embutido); dizzy com tint menta intencional |
+| 21 | Kiko (Pug) | 10 | sad desenrola a cauda como linguagem corporal |
+| 22 | Sushi (Bobtail Jap.) | 11 | sad regenerado por perder as manchas gengibre |
+| 23 | Cacau (Labrador) | 10 | happy_air concluído no turno seguinte ao limite por turno |
+| 24 | Juma (Bengal) | 10 | blink regenerado preservando rosetas e cauda anelada |
+| 25 | Tupã (Lobo-guará) | 10 | happy_squash regenerado (orelhas enormes caídas + juba) |
+| 26 | Aurora (Ragdoll) | 10 | sad regenerado (orelhas caídas, lágrima, cauda envolta) |
+| 27 | Gaia (Samoieda) | 10 | sad regenerado (cauda desenrolada e caída) |
+| 28 | Nox (Sphynx) | 12 | tilts regenerados com lean forte (IoU tl-vs-tr 0.335) |
+| 29 | Rio (Savannah) | 10 | dizzy/sad/blink aprovados no turno seguinte |
+| 30 | Estrela (Khao Manee) | 10 | flood path; olhos ímpares preservados em todos os estados |
+| 31 | Pipoca (Corgi) | 10 | sad reancorado lossless na baseline 478; chroma-key do fundo |
+| 32 | Zeca (Schnauzer) | 10 | messy retake (+23% largura, IoU 0.600); chroma-key preserva pelagem prata |
+| 33 | Belinha (Maltês) | 11 | flood path preserva o sombreamento cfd8dc oficial; messy retake +91% |
+| 34 | Duke (Husky) | 10 | tilt retake (lean −47.3); wet aprovado por paleta; olhos azul-gelo |
+| 35 | Lola (Boxer) | 10 | tilt retake (±40.6); brief de pelo curto no messy (+75%) |
+| 36 | Nico (Aussie merle) | 9 | Lote limpo, sem retakes; identidade merle por bandas de cinza |
+| 37 | Maya (Akita) | 10 | tilt com dupla referência; urajiro preservado; sad flagged p/ art lead |
+
+Itens abertos de revisão humana: `sad` da Maya (leitura contida, cauda permaneceu enrolada) e a métrica de lean do tilt da Maya (inflada pela cauda enrolada) — ambos registrados nas `qa_notes` do tracker.
+
 ## Backlog
 
 ### CRITICAL
