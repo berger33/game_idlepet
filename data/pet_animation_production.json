@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 45,
     "images_expected": 500,
-    "images_generated": 450,
-    "images_qa_passed": 450,
+    "images_generated": 455,
+    "images_qa_passed": 455,
     "pets_integrated": 45,
-    "generation_attempts": 463
+    "generation_attempts": 469
   },
   "pets": [
     {
@@ -2612,27 +2612,27 @@
       "reference": "art/pets/zara_oriental.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zara_oriental/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zara_oriental/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zara_oriental/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zara_oriental/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "rejected_pose",
           "path": "art/pet_animations/zara_oriental/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zara_oriental/happy_squash.png"
         },
         "happy_air": {
@@ -2652,11 +2652,12 @@
           "path": "art/pet_animations/zara_oriental/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "partial",
       "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_attempts": 6,
+      "qa_notes": "Sexto gato. Oriental Shorthair lilac-point: corpo marfim + pontos lilas (oficiais BGR 136,141,175 / 104,102,139 / 166,174,203 / 48,37,72 / 221,225,238, tol 20; base 40061 px). HUE-CORR FRACA (0.636-0.882 — pontos lilas deslocam o hue): identidade por paleta oficial (precedente merle/Yuki). A MAIS ESGUIA do catalogo: base 309x449, cov 0.239 (minima), ar 1.45; registro proprio bottom 481 (o mais fundo). Lote PARCIAL 5/10: limite de 10 geracoes/TURNO (4 do fechamento do Lilo + 6 daqui; a 7a chamada foi bloqueada pelo limiter). Faltam tilt_right, happy_air, dizzy, sad, blink. TILT: base A MAIS DIAGONAL do catalogo (lean +63.8, cabeca no extremo direito) — tl veio naturalmente esguio (233x446, ar 1.91, cabeca 22px a esquerda da base, rel -64.3, convencao REL). TILT_RIGHT rejeitado 1x: brief coruja (funcionou no Lilo) falhou aqui — veio SPRAWL 446x385 largo (ar 0.86) c/ cabeca 11px a ESQUERDA da base (rel -10.8): a base extrema puxa tudo para a esquerda. PROXIMO TURNO: retake c/ DUPLA REFERENCIA usando o tilt_right APROVADO do Lilo (+97.4) como ref de pose (nova tatica — nunca usada para tr; tl sempre usou a Lola); + happy_air, dizzy, sad, blink (5 geracoes, sobra margem p/ retake). happy_squash: h 407 w 445 (base h 449 — squash em gato alto le por largura; head_x 254 = cabeca centrada). messy: +87% (flood, 8 comps vs 11 do grab). WET ANOMALIA DOCUMENTADA: V 164->183 (CLAREIA — unico do catalogo): pelo marfim curto + brilho especular da agua; colapso de cov 0.239->0.233 leve (pelo curto nao colapsa muito) + 10 gotas (11 comps). Registro: aterrados 478-481 (481+-3). Contrato 5/5 (512x512x4, ext<=446, alpha borda <8). Identidade dos aprovados: oficiais 17913-42495 (base 40061); tilt_left 17913 e o mais baixo (pose esguia expoe menos corpo)."
     },
     {
       "sequence": 47,
