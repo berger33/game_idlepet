@@ -1,0 +1,13 @@
+{"schema_version":1,"cosmetics":[
+{"id":"tub_pink","name":"Banheira Rosa Shampoo","slot":"bath","rarity":"common","price":{"coins":300}},
+{"id":"tub_ocean","name":"Banheira Oceano","slot":"bath","rarity":"rare","price":{"embers":20}},
+{"id":"bandana_blue","name":"Bandana Azul","slot":"pet_accessory","rarity":"common","price":{"coins":150}},
+{"id":"crown_bubbles","name":"Coroa de Bolhas","slot":"pet_accessory","rarity":"epic","source":"achievement"},
+{"id":"wall_junina","name":"Parede de Arraiá","slot":"wall","rarity":"seasonal","source":"festa_junina"},
+{"id":"tub_mint","name":"Banheira Menta","slot":"bath","rarity":"common","price":{"coins":400}},
+{"id":"tub_lavender","name":"Banheira Lavanda","slot":"bath","rarity":"rare","price":{"embers":40}},
+{"id":"bandana_red","name":"Bandana Vermelha","slot":"pet_accessory","rarity":"common","price":{"coins":250}},
+{"id":"scarf_caramel","name":"Cachecol Caramelo","slot":"pet_accessory","rarity":"rare","price":{"embers":35}},
+{"id":"crown_gold","name":"Coroa Real","slot":"pet_accessory","rarity":"epic","price":{"embers":60}},
+{"id":"wall_beach","name":"Parede Praiana","slot":"wall","rarity":"rare","price":{"embers":30}}
+]}

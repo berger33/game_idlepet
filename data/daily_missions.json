@@ -1,0 +1,8 @@
+{"schema_version":1,"missions":[
+{"id":"daily_bath_5","name":"Atendimentos Felizes","metric":"services","target":5,"weight":10,"reward":{"coins":75},"min_tier":1},
+{"id":"daily_perfect_3","name":"Na Medida","metric":"perfect","target":3,"weight":8,"reward":{"coins":75},"min_tier":1},
+{"id":"daily_upgrade_1","name":"Tudo Novinho","metric":"upgrades","target":1,"weight":6,"reward":{"coins":75},"min_tier":1},
+{"id":"daily_reviews_4","name":"Cinco Estrelas","metric":"four_plus_reviews","target":4,"weight":7,"reward":{"coins":80},"min_tier":1},
+{"id":"daily_combo_5","name":"Ritmo do Banho","metric":"combo_reached","target":5,"weight":5,"reward":{"embers":2},"min_tier":1},
+{"id":"epic_perfect_12","name":"Dia Perfeito","metric":"perfect_services","target":12,"weight":2,"epic":true,"reward":{"embers":5},"min_tier":1}
+]}

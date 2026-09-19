@@ -1,0 +1,137 @@
+{
+  "schema_version": 2,
+  "upgrades": [
+    {
+      "id": "bath_income",
+      "name": "Shampoo cheiroso",
+      "system": "bath",
+      "levels": 120,
+      "base_cost": 25,
+      "growth": 1.18,
+      "effect": "income",
+      "effect_growth": 1.075,
+      "visual_milestones": [
+        1,
+        5,
+        10,
+        20,
+        35,
+        50,
+        70,
+        90,
+        120
+      ]
+    },
+    {
+      "id": "bath_speed",
+      "name": "Ducha pressurizada",
+      "system": "bath",
+      "levels": 10,
+      "base_cost": 80,
+      "growth": 1.22,
+      "effect": "duration",
+      "effect_per_level": -0.025
+    },
+    {
+      "id": "queue_capacity",
+      "name": "Recepção confortável",
+      "system": "queue",
+      "levels": 4,
+      "base_cost": 250,
+      "growth": 3.2,
+      "effect": "capacity",
+      "values": [
+        3,
+        5,
+        8,
+        12,
+        20
+      ]
+    },
+    {
+      "id": "patience",
+      "name": "Petiscos de espera",
+      "system": "queue",
+      "levels": 15,
+      "base_cost": 110,
+      "growth": 1.25,
+      "effect": "patience",
+      "effect_per_level": 0.04
+    },
+    {
+      "id": "tip",
+      "name": "Pote da gorjeta",
+      "system": "economy",
+      "levels": 20,
+      "base_cost": 150,
+      "growth": 1.23,
+      "effect": "tip",
+      "effect_per_level": 0.05
+    },
+    {
+      "id": "offline_cap",
+      "name": "Cofre reforçado",
+      "system": "offline",
+      "levels": 22,
+      "base_cost": 500,
+      "growth": 1.35,
+      "effect": "offline_hours",
+      "effect_per_level": 1.0
+    },
+    {
+      "id": "soap_power",
+      "name": "Sabonete cremoso",
+      "system": "soap",
+      "levels": 30,
+      "base_cost": 18,
+      "growth": 1.24,
+      "effect": "income",
+      "effect_per_level": 0.04,
+      "unlock_level": 1
+    },
+    {
+      "id": "clipper_power",
+      "name": "Lâminas de precisão",
+      "system": "clipper",
+      "levels": 30,
+      "base_cost": 35,
+      "growth": 1.24,
+      "effect": "income",
+      "effect_per_level": 0.04,
+      "unlock_level": 3
+    },
+    {
+      "id": "dryer_power",
+      "name": "Secador silencioso",
+      "system": "dryer",
+      "levels": 30,
+      "base_cost": 55,
+      "growth": 1.24,
+      "effect": "income",
+      "effect_per_level": 0.04,
+      "unlock_level": 5
+    },
+    {
+      "id": "perfume_power",
+      "name": "Essência premium",
+      "system": "perfume",
+      "levels": 30,
+      "base_cost": 80,
+      "growth": 1.24,
+      "effect": "income",
+      "effect_per_level": 0.04,
+      "unlock_level": 7
+    },
+    {
+      "id": "bow_power",
+      "name": "Laços artesanais",
+      "system": "bow",
+      "levels": 30,
+      "base_cost": 120,
+      "growth": 1.24,
+      "effect": "income",
+      "effect_per_level": 0.04,
+      "unlock_level": 10
+    }
+  ]
+}

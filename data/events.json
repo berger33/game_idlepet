@@ -1,0 +1,17 @@
+{
+  "schema_version":1,
+  "weekly":[
+    {"id":"monday_bath","weekday":1,"name":"Segunda do Banho","modifier":"bath_income","multiplier":2.0},
+    {"id":"tuesday_groom","weekday":2,"name":"Terça da Tosa","modifier":"groom_income","multiplier":2.0},
+    {"id":"wednesday_vaccine","weekday":3,"name":"Quarta da Vacina","modifier":"veterinary_xp","multiplier":2.0},
+    {"id":"thursday_rare","weekday":4,"name":"Quinta do Pet Raro","modifier":"rare_chance","multiplier":1.5},
+    {"id":"friday_vip","weekday":5,"name":"Sexta do VIP","modifier":"vip_frequency","multiplier":2.0},
+    {"id":"saturday_combo","weekday":6,"name":"Sábado do Combo","modifier":"combo_gain","multiplier":2.0},
+    {"id":"sunday_family","weekday":0,"name":"Domingo da Família","modifier":"family_frequency","multiplier":2.0}
+  ],
+  "seasonal":[
+    {"id":"carnaval","months":[2,3],"cosmetic_set":"confete","exclusive_pet":"vira_lata_folioes"},
+    {"id":"festa_junina","months":[6],"cosmetic_set":"arraia","exclusive_pet":"salsicha_caipira"},
+    {"id":"natal","months":[12],"cosmetic_set":"natal_tropical","exclusive_pet":"spitz_neve"}
+  ]
+}
