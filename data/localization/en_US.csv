@@ -91,3 +91,12 @@ WMISSION_TIPS,%d/10 tips
 WMISSION_STYLE,%d/12 bows
 WMISSION_VIP,%d/3 VIP clients
 WMISSION_SPEND,%d/600 invested
+FAVORITE_HINT,"Tap to make your favorite — it visits more"
+FAVORITE_SET,"Favorite pet set!"
+VOCATION_GROOMER,"Groomer"
+VOCATION_BATHER,"Bather"
+VOCATION_STYLIST,"Stylist"
+VOCATION_VETERINARY,"Veterinarian"
+VOCATION_MASSEUSE,"Massage"
+VOCATION_PERFECTIONIST,"Perfectionist"
+MISSION_NOTE,"Staff vocations: Bather speeds up baths, Groomer speeds everything, Stylist improves grooming, Veterinarian soothes faster, Massage calms the client and Perfectionist widens the perfect window."

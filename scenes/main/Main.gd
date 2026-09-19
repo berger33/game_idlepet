@@ -430,6 +430,10 @@ func _make_client() -> Dictionary:
 	if unlocked.is_empty():
 		unlocked = ["caramelo"]
 	var pet_id: String = unlocked[randi() % unlocked.size()]
+	# O pet preferido (buddy) visita com prioridade: 40% de chance de vir.
+	if pet_id != GameState.favorite_pet and randf() < 0.4:
+		pet_id = GameState.favorite_pet
+		Analytics.track(&"buddy_spawned", {"pet_id": pet_id})
 	var services: Array[StringName] = _available_services()
 	var service: StringName = services[randi() % services.size()]
 	var vip: bool = randf() < Economy.VIP_CHANCE

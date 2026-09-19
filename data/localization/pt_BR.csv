@@ -91,3 +91,12 @@ WMISSION_TIPS,%d/10 gorjetas
 WMISSION_STYLE,%d/12 laços
 WMISSION_VIP,%d/3 clientes VIP
 WMISSION_SPEND,%d/600 investidos
+FAVORITE_HINT,"Toque para tornar seu preferido — ele visita mais"
+FAVORITE_SET,"Pet preferido definido!"
+VOCATION_GROOMER,"Tosador"
+VOCATION_BATHER,"Banhista"
+VOCATION_STYLIST,"Estilista"
+VOCATION_VETERINARY,"Veterinário"
+VOCATION_MASSEUSE,"Massagem"
+VOCATION_PERFECTIONIST,"Perfeccionista"
+MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tudo, Estilista melhora a tosa, Veterinário cura mais rápido, Massagem acalma o cliente e Perfeccionista alarga a janela do perfeito."

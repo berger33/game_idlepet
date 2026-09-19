@@ -4,6 +4,16 @@ extends Node
 const SAVE_VERSION: int = 8
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
+## Glossário da equipe: o que cada passivo faz em uma palavra (a UI explica a
+## vocação sem exigir decisão prévia do jogador).
+const STAFF_VOCATION: Dictionary = {
+	"speed": "VOCATION_GROOMER",
+	"bath_speed": "VOCATION_BATHER",
+	"groom_quality": "VOCATION_STYLIST",
+	"veterinary_xp": "VOCATION_VETERINARY",
+	"patience": "VOCATION_MASSEUSE",
+	"perfect_window": "VOCATION_PERFECTIONIST",
+}
 var coins: float = 0.0
 var embers: int = 0
 var franchise_tokens: int = 0
@@ -49,6 +59,8 @@ var establishment_tier: int = 1
 var passive_accumulator: float = 0.0
 var active_play_seconds: float = 0.0
 var pet_affection: Dictionary = {}
+## Pet preferido (buddy): entra na fila com prioridade e lidera a coleção.
+var favorite_pet: String = "caramelo"
 var settings: Dictionary = {
 	"music": 0.7, "sfx": 0.9, "haptics": true, "reduced_particles": false, "eco_mode": false
 }
@@ -303,6 +315,7 @@ func to_dictionary() -> Dictionary:
 		"establishment_tier": establishment_tier,
 		"active_play_seconds": active_play_seconds,
 		"pet_affection": pet_affection,
+		"favorite_pet": favorite_pet,
 		"settings": settings
 	}
 
@@ -370,6 +383,9 @@ func apply_dictionary(data: Dictionary) -> void:
 	establishment_tier = clampi(int(data.get("establishment_tier", 1)), 1, 10)
 	active_play_seconds = maxf(0.0, float(data.get("active_play_seconds", 0.0)))
 	pet_affection = _safe_dictionary(data.get("pet_affection", {}), {})
+	favorite_pet = String(data.get("favorite_pet", "caramelo"))
+	if not unlocked_pets.has(favorite_pet):
+		favorite_pet = "caramelo"
 	_sanitize_affection()
 	_reconcile_career_unlocks(false)
 	var saved_settings: Variant = data.get("settings", {})
@@ -659,6 +675,22 @@ func _add_xp(amount: int) -> void:
 			)
 		Analytics.track(&"level_up", {"level": player_level})
 		_reconcile_career_unlocks(true)
+
+
+## Define o pet preferido (buddy); precisa estar desbloqueado.
+func set_favorite_pet(pet_id: String) -> bool:
+	if not unlocked_pets.has(pet_id) or favorite_pet == pet_id:
+		return false
+	favorite_pet = pet_id
+	Analytics.track(&"favorite_pet_set", {"pet_id": pet_id})
+	SaveManager.request_save()
+	EventBus.settings_changed.emit()
+	return true
+
+
+func staff_vocation(staff_id: String) -> String:
+	var member: Dictionary = ContentDB.staff(staff_id)
+	return String(STAFF_VOCATION.get(String(member.get("passive", {}).get("type", "speed")), ""))
 
 
 func register_pet_interaction(pet_id: String) -> int:

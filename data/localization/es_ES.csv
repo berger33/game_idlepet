@@ -91,3 +91,12 @@ WMISSION_TIPS,%d/10 propinas
 WMISSION_STYLE,%d/12 lazos
 WMISSION_VIP,%d/3 clientes VIP
 WMISSION_SPEND,%d/600 invertido
+FAVORITE_HINT,"Toca para hacer tu favorito — te visita más"
+FAVORITE_SET,"¡Mascota favorita definida!"
+VOCATION_GROOMER,"Peluquero"
+VOCATION_BATHER,"Bañador"
+VOCATION_STYLIST,"Estilista"
+VOCATION_VETERINARY,"Veterinario"
+VOCATION_MASSEUSE,"Masaje"
+VOCATION_PERFECTIONIST,"Perfeccionista"
+MISSION_NOTE,"Vocaciones del equipo: Bañador acelera el baño, Peluquero acelera todo, Estilista mejora el arreglo, Veterinario calma más rápido, Masaje tranquiliza al cliente y Perfeccionista ensancha la ventana perfecta."

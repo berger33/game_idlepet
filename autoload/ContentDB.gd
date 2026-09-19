@@ -73,6 +73,10 @@ func staff_name(id: String) -> String:
 	return String(entry.get("name", id))
 
 
+func staff(id: String) -> Dictionary:
+	return staff_by_id.get(id, {})
+
+
 func achievement_name(id: String) -> String:
 	var entry: Dictionary = achievements_by_id.get(id, {})
 	return String(entry.get("name", id))

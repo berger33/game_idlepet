@@ -104,6 +104,23 @@ class FoundationTests(unittest.TestCase):
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
         self.assertIn('if version == 7:', migration)
 
+    def test_fase6_buddy_priority_and_staff_vocations(self):
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for token in ('func set_favorite_pet', 'func staff_vocation', 'STAFF_VOCATION',
+                      'var favorite_pet'):
+            self.assertIn(token, state)
+        for voc in ('VOCATION_BATHER', 'VOCATION_STYLIST', 'VOCATION_VETERINARY',
+                    'VOCATION_PERFECTIONIST', 'VOCATION_GROOMER', 'VOCATION_MASSEUSE'):
+            self.assertIn(f'"{voc}"', state)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('GameState.favorite_pet', main)
+        self.assertIn('buddy_spawned', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('FAVORITE_SET', panel)
+        self.assertIn('MISSION_NOTE', panel)
+        content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
+        self.assertIn('func staff(', content)
+
     def test_fase5_weekly_missions_and_cosmetic_catalog(self):
         weekly = json.loads(Path('data/weekly_missions.json').read_text(encoding='utf8'))
         missions = weekly['missions']

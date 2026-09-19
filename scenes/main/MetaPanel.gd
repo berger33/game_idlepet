@@ -190,6 +190,7 @@ func _build_missions() -> void:
 					_rebuild(_current_section())
 	)
 	_note(Loc.t("WEEKLY_NOTE"))
+	_note(Loc.t("MISSION_NOTE"))
 
 
 func _build_collection() -> void:
@@ -221,12 +222,25 @@ func _build_collection() -> void:
 		name_label.add_theme_color_override("font_color", CHARCOAL)
 		var sub: Label = card.get_node("VBox/Sub")
 		sub.text = (
-			"♥ %d/50" % int(GameState.pet_affection.get(pet_id, 0))
+			(
+				("★ " if GameState.favorite_pet == pet_id else "")
+				+ "♥ %d/50" % int(GameState.pet_affection.get(pet_id, 0))
+			)
 			if unlocked
 			else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
 		)
 		sub.add_theme_font_size_override("font_size", 22)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("78909c"))
+		if unlocked:
+			card.tooltip_text = Loc.t("FAVORITE_HINT")
+			card.gui_input.connect(
+				func(event: InputEvent, pid: String = pet_id) -> void:
+					if event is InputEventScreenTouch and event.pressed:
+						if GameState.set_favorite_pet(pid):
+							AudioManager.play(&"tap")
+							EventBus.toast_requested.emit(Loc.t("FAVORITE_SET"), GREEN)
+							_rebuild(&"collection")
+			)
 	_note(
 		"PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d"
 		% [
@@ -248,7 +262,12 @@ func _build_staff() -> void:
 		var cost: int = GameState.hire_cost(staff_id)
 		_info_row(
 			String(member.get("name", staff_id)),
-			"%s • %s" % [String(member.get("specialty", "")), Loc.t(passive_key)],
+			"%s • %s • %s"
+				% [
+					String(member.get("specialty", "")),
+					Loc.t(GameState.staff_vocation(staff_id)),
+					Loc.t(passive_key)
+				],
 			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %d" % [Loc.t("HIRE"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
 			not hired and staff_id != "player" and GameState.coins >= float(cost),
