@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 35,
+    "pets_generated": 36,
     "images_expected": 500,
-    "images_generated": 350,
-    "images_qa_passed": 350,
-    "pets_integrated": 35,
-    "generation_attempts": 364
+    "images_generated": 360,
+    "images_qa_passed": 360,
+    "pets_integrated": 36,
+    "generation_attempts": 373
   },
   "pets": [
     {
@@ -2042,51 +2042,52 @@
       "reference": "art/pets/nico_aussie.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nico_aussie/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave (no retakes) plus a lossless mirror for tilt_right; 9 attempts total. Identity for this blue merle pet is tracked by gray-band structure: the base holds dark/mid/light bands at 0.30/0.38/0.32 and every state keeps all three bands rich (min band 0.19-0.26; dirty and wet read darker by semantics, not identity loss). Hue corr 0.962-1.000. Blue eyes present in every open-eye state (87-510 px). Note on the tilt gate: this pet's base pose is itself diagonal (lean -30.7), so the tilt states are measured relative to base — tilt_left -62.9 equals a relative lean of -32.2, within the approved family range (13.5-47); tilt_right is the lossless mirror (+62.9). messy passed the roughness gate at +120% with the spiky-starburst brief. wet reads soaked (mean V 157 to 136, coverage 0.460 to 0.423) with 22 kept droplet components. sad droops (head top +30.5px, strong face change 66.1); dizzy has blue spiral eyes with no stars; blink preserves the pose (IoU 0.866) with closed lids; happy_air keeps short motion lines (7 components, no baked panel). GrabCut adopted on all frames; standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 37,
