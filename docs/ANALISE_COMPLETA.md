@@ -294,4 +294,15 @@ de localização com paridade nos 3 idiomas):
 
 **Ainda em aberto:** arte de estados dos 33 pets e áudio real (Fase 4), prestígio,
 efeito visual dos cosméticos comprados (hoje são de vitrine — declarado na própria
-loja), telas 100% `.tscn` (a UI segue codegen, porém estruturada em módulos).
+loja).
+
+### 17.1 Complemento `.tscn` (telas reais, fechando a citação original da Fase 2)
+
+As cascas e templates viraram cenas instanciáveis, com conteúdo dinâmico em código
+(padro Godot): `scenes/ui/meta_screen.tscn` (backdrop + painel + header + scroll),
+`info_row.tscn` (linha nome/descrição/ação usada por missões, staff, loja e toggles),
+`slider_row.tscn` e `pet_card.tscn`; `core/ui/style_factory.gd` centraliza os StyleBoxes.
+O MetaPanel vira controlador que instancia as cenas. A loja ganha a linha de
+**rewarded ads** via `AdsManager.request_rewarded` (fachada honesta offline; o adapter
+real só chama o callback de recompensa em conclusão verificada) e o catálogo IAP
+exibido como indisponível offline.

@@ -1,124 +1,93 @@
 class_name MetaPanel
 extends Node
-## Telas meta reais (Fase 2): missões com claim individual, coleção em grid,
-## equipe contratável, loja (brasas + IAP honesto), mapa e ajustes com sliders.
-## Tudo emerge do painel (stagger scale-in) — nada "popa do vazio".
+## Controlador das telas meta (Fase 2/.tscn): instancia meta_screen.tscn e
+## preenche o conteúdo com os templates info_row/slider_row/pet_card.
+## Missões com claim individual, coleção em grid, equipe contratável, loja
+## (brasas + IAP honesto + rewarded ads), mapa e ajustes com sliders.
+## Tudo emerge do painel (pivot na origem + cascata scale-in).
 
-const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
-const PINK: Color = Color("ff8fb1")
 const GREEN: Color = Color("7ed957")
 const BLUE: Color = Color("4fc3f7")
-const AMBER: Color = Color("ffd54f")
+const PINK: Color = Color("ff8fb1")
 const CHARCOAL: Color = Color("263238")
 
-var meta_backdrop: TextureRect
-var meta_panel: PanelContainer
-var meta_title: Label
-var scroll: ScrollContainer
-var content_box: VBoxContainer
-var close_button: Button
+const META_SCREEN: PackedScene = preload("res://scenes/ui/meta_screen.tscn")
+const INFO_ROW: PackedScene = preload("res://scenes/ui/info_row.tscn")
+const SLIDER_ROW: PackedScene = preload("res://scenes/ui/slider_row.tscn")
+const PET_CARD: PackedScene = preload("res://scenes/ui/pet_card.tscn")
+
+var screen: MetaScreen
 ## Main injeta aqui o refresh de economia (evita acoplamento direto).
 var refresh_callback: Callable
+var _section: StringName = &""
 
 
 func is_open() -> bool:
-	return is_instance_valid(meta_panel) and meta_panel.visible
+	return is_instance_valid(screen) and screen.panel.visible
 
 
 func build(root: Control) -> void:
-	meta_backdrop = TextureRect.new()
-	meta_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	meta_backdrop.texture = MENU_BACKGROUND
-	meta_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	meta_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	meta_backdrop.modulate = Color(0.42, 0.35, 0.48, 0.92)
-	meta_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
-	root.add_child(meta_backdrop)
-	meta_panel = PanelContainer.new()
-	meta_panel.position = Vector2(80, 290)
-	meta_panel.size = Vector2(920, 950)
-	meta_panel.add_theme_stylebox_override("panel", _style(Color("fffaf3", 0.98), 50, 42, PINK, 7))
-	root.add_child(meta_panel)
-	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", 18)
-	meta_panel.add_child(column)
-	var header: HBoxContainer = HBoxContainer.new()
-	header.add_theme_constant_override("separation", 12)
-	column.add_child(header)
-	meta_title = Label.new()
-	meta_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	meta_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	meta_title.add_theme_font_size_override("font_size", 46)
-	meta_title.add_theme_color_override("font_color", CHARCOAL)
-	header.add_child(meta_title)
-	close_button = _button("↙", PINK, 84, 70)
-	close_button.pressed.connect(close)
-	header.add_child(close_button)
-	scroll = ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
-	content_box = VBoxContainer.new()
-	content_box.add_theme_constant_override("separation", 14)
-	content_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(content_box)
-	meta_panel.hide()
-	meta_backdrop.hide()
+	screen = META_SCREEN.instantiate()
+	root.add_child(screen)
+	screen.close_button.pressed.connect(close)
+	_style_button(screen.close_button, PINK)
 
 
 func close() -> void:
-	meta_panel.hide()
-	meta_backdrop.hide()
+	screen.panel.hide()
+	screen.backdrop.hide()
 	AudioManager.play(&"tap")
 
 
-## origin = controle que abriu a tela: o painel cresce a partir dele
-## (princípio de emergência: nada aparece do vazio).
+## origin = controle que abriu a tela: o painel cresce a partir dele.
 func open(section: StringName, origin: Control = null) -> void:
-	meta_backdrop.show()
-	meta_backdrop.pivot_offset = meta_backdrop.size * 0.5
-	meta_backdrop.scale = Vector2(1.035, 1.035)
-	meta_backdrop.create_tween().tween_property(meta_backdrop, "scale", Vector2.ONE, 3.5).set_trans(
-		Tween.TRANS_SINE
-	)
+	screen.backdrop.show()
+	screen.backdrop.pivot_offset = screen.backdrop.size * 0.5
+	screen.backdrop.scale = Vector2(1.035, 1.035)
+	screen.backdrop.create_tween().tween_property(
+		screen.backdrop, "scale", Vector2.ONE, 3.5
+	).set_trans(Tween.TRANS_SINE)
 	if is_instance_valid(origin):
-		meta_panel.pivot_offset = origin.global_position + origin.size * 0.5 - meta_panel.position
+		screen.panel.pivot_offset = (
+			origin.global_position + origin.size * 0.5 - screen.panel.position
+		)
 	else:
-		meta_panel.pivot_offset = meta_panel.size * 0.5
-	_pop_panel(meta_panel)
+		screen.panel.pivot_offset = screen.panel.size * 0.5
+	_pop_panel(screen.panel)
 	AudioManager.play(&"panel_open")
 	_rebuild(section)
 
 
 func _rebuild(section: StringName) -> void:
-	for child: Node in content_box.get_children():
+	_section = section
+	for child: Node in screen.content_box.get_children():
 		child.queue_free()
 	match section:
 		&"missions":
-			meta_title.text = Loc.t("MISSIONS_TITLE")
+			screen.title_label.text = Loc.t("MISSIONS_TITLE")
 			_build_missions()
 		&"collection":
-			meta_title.text = Loc.t("COLLECTION_TITLE")
+			screen.title_label.text = Loc.t("COLLECTION_TITLE")
 			_build_collection()
 		&"staff":
-			meta_title.text = Loc.t("STAFF_TITLE")
+			screen.title_label.text = Loc.t("STAFF_TITLE")
 			_build_staff()
 		&"shop":
-			meta_title.text = Loc.t("SHOP_TITLE")
+			screen.title_label.text = Loc.t("SHOP_TITLE")
 			_build_shop()
 		&"map":
-			meta_title.text = Loc.t("MAP_TITLE")
+			screen.title_label.text = Loc.t("MAP_TITLE")
 			_build_map()
 		_:
-			meta_title.text = Loc.t("SETTINGS_TITLE")
+			screen.title_label.text = Loc.t("SETTINGS_TITLE")
 			_build_settings()
 	_emerge()
 
 
 ## Linhas/cards surgem escalando do painel, em cascata.
 func _emerge() -> void:
-	for i: int in content_box.get_child_count():
-		var child: Control = content_box.get_child(i)
+	for i: int in screen.content_box.get_child_count():
+		var child: Control = screen.content_box.get_child(i)
 		child.modulate.a = 0.0
 		child.scale = Vector2(0.94, 0.94)
 		child.pivot_offset = child.size * 0.5
@@ -131,71 +100,49 @@ func _emerge() -> void:
 func _build_missions() -> void:
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
-	var daily_ready: bool = not claimed_today
-	_add_claim_row(
+	_info_row(
 		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
 		"25×dia",
-		daily_ready,
-		claimed_today,
+		Loc.t("CLAIMED") if claimed_today else Loc.t("CLAIM"),
+		GREEN,
+		not claimed_today,
 		func() -> void:
 			GameState.claim_daily_reward()
+			AudioManager.play(&"coin")
 	)
+	var services: int = int(GameState.mission_progress.get("services", 0))
+	var perfects: int = int(GameState.mission_progress.get("perfect", 0))
+	var upgrades: int = int(GameState.mission_progress.get("upgrades", 0))
 	var missions: Array[Dictionary] = [
 		{
 			"id": &"daily_bath_5",
-			"label": Loc.t("MISSION_SERVICES") % mini(int(GameState.mission_progress.get("services", 0)), 5),
-			"done": int(GameState.mission_progress.get("services", 0)) >= 5,
+			"label": Loc.t("MISSION_SERVICES") % mini(services, 5),
+			"done": services >= 5,
 		},
 		{
 			"id": &"daily_perfect_3",
-			"label": Loc.t("MISSION_PERFECT") % mini(int(GameState.mission_progress.get("perfect", 0)), 3),
-			"done": int(GameState.mission_progress.get("perfect", 0)) >= 3,
+			"label": Loc.t("MISSION_PERFECT") % mini(perfects, 3),
+			"done": perfects >= 3,
 		},
 		{
 			"id": &"daily_upgrade_1",
-			"label": Loc.t("MISSION_UPGRADE") % mini(int(GameState.mission_progress.get("upgrades", 0)), 1),
-			"done": int(GameState.mission_progress.get("upgrades", 0)) >= 1,
+			"label": Loc.t("MISSION_UPGRADE") % mini(upgrades, 1),
+			"done": upgrades >= 1,
 		},
 	]
 	for mission: Dictionary in missions:
 		var claimed: bool = GameState.claimed_missions.has(String(mission["id"]))
-		_add_claim_row(
+		_info_row(
 			String(mission["label"]) + " • 75",
-			"75",
+			"moedas",
+			Loc.t("CLAIMED") if claimed else Loc.t("CLAIM"),
+			GREEN,
 			bool(mission["done"]) and not claimed,
-			claimed,
 			func(mission_id: StringName = mission["id"]) -> void:
 				GameState.claim_mission(mission_id)
-		)
-	var note: Label = _label("Missões nunca exigem anúncio ou compra.", 26, Color("546e7a"))
-	content_box.add_child(note)
-
-
-func _add_claim_row(
-	title: String, reward_text: String, ready: bool, claimed: bool, claimer: Callable
-) -> void:
-	var row: PanelContainer = _card()
-	var box: HBoxContainer = _row_box(row)
-	var name_label: Label = _label(title, 28, CHARCOAL)
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box.add_child(name_label)
-	var button: Button
-	if claimed:
-		button = _button(Loc.t("CLAIMED"), Color("b0bec5"), 190, 64)
-		button.disabled = true
-	else:
-		button = _button("%s +%s" % [Loc.t("CLAIM"), reward_text], GREEN, 190, 64)
-		button.disabled = not ready
-		button.pressed.connect(
-			func() -> void:
-				claimer.call()
 				AudioManager.play(&"coin")
-				EventBus.toast_requested.emit("+%s" % reward_text, GREEN)
-				if refresh_callback.is_valid():
-					refresh_callback.call()
-				_rebuild(&"missions")
 		)
-	box.add_child(button)
+	_note("Missões nunca exigem anúncio ou compra.")
 
 
 func _build_collection() -> void:
@@ -203,48 +150,37 @@ func _build_collection() -> void:
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
-	content_box.add_child(grid)
+	screen.content_box.add_child(grid)
 	for pet: Dictionary in ContentDB.pets:
 		var pet_id: String = String(pet.get("id", ""))
 		var unlocked: bool = GameState.unlocked_pets.has(pet_id)
-		var card: PanelContainer = PanelContainer.new()
-		card.custom_minimum_size = Vector2(196, 240)
+		var card: PanelContainer = PET_CARD.instantiate()
 		var card_alpha: float = 0.9 if unlocked else 0.45
 		var card_border: Color = PINK if unlocked else Color("90a4ae")
 		card.add_theme_stylebox_override(
-			"panel", _style(Color("ffffff", card_alpha), 22, 10, card_border, 3)
+			"panel", StyleFactory.box(Color("ffffff", card_alpha), 22, 10, card_border, 3)
 		)
 		grid.add_child(card)
-		var box: VBoxContainer = VBoxContainer.new()
-		box.add_theme_constant_override("separation", 6)
-		card.add_child(box)
-		var portrait: TextureRect = TextureRect.new()
-		portrait.custom_minimum_size = Vector2(150, 150)
-		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		portrait.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		var portrait: TextureRect = card.get_node("VBox/Portrait")
 		if unlocked:
 			var path: String = "res://art/pets/%s.png" % pet_id
 			if ResourceLoader.exists(path):
 				portrait.texture = load(path)
 		else:
 			portrait.modulate.a = 0.0
-		box.add_child(portrait)
-		var name_label: Label = _label(
-			String(pet.get("name", pet_id)) if unlocked else "???", 24, CHARCOAL
-		)
-		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(name_label)
-		var sub: Label = _label(
+		var name_label: Label = card.get_node("VBox/Name")
+		name_label.text = String(pet.get("name", pet_id)) if unlocked else "???"
+		name_label.add_theme_font_size_override("font_size", 24)
+		name_label.add_theme_color_override("font_color", CHARCOAL)
+		var sub: Label = card.get_node("VBox/Sub")
+		sub.text = (
 			"♥ %d/50" % int(GameState.pet_affection.get(pet_id, 0))
 			if unlocked
-			else Loc.t("LOCKED") % int(pet.get("unlock_level", 1)),
-			22,
-			PINK if unlocked else Color("78909c"),
+			else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
 		)
-		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(sub)
-	var summary: Label = _label(
+		sub.add_theme_font_size_override("font_size", 22)
+		sub.add_theme_color_override("font_color", PINK if unlocked else Color("78909c"))
+	_note(
 		"PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d"
 		% [
 			GameState.unlocked_pets.size(),
@@ -252,53 +188,30 @@ func _build_collection() -> void:
 			GameState.achievement_ids.size(),
 			ContentDB.achievements.size(),
 			GameState.unlocked_cosmetics.size(),
-		],
-		26,
-		Color("546e7a"),
+		]
 	)
-	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content_box.add_child(summary)
 
 
 func _build_staff() -> void:
 	for member: Dictionary in ContentDB.staff:
 		var staff_id: String = String(member.get("id", ""))
 		var hired: bool = GameState.hired_staff.has(staff_id)
-		var row: PanelContainer = _card()
-		var box: HBoxContainer = _row_box(row)
-		var info: VBoxContainer = VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		box.add_child(info)
 		var passive: Dictionary = member.get("passive", {})
 		var passive_key: String = "PASSIVE_" + String(passive.get("type", "speed")).to_upper()
-		info.add_child(_label(String(member.get("name", staff_id)), 30, CHARCOAL))
-		info.add_child(
-			_label(
-				"%s • %s" % [String(member.get("specialty", "")), Loc.t(passive_key)],
-				24,
-				Color("546e7a"),
-			)
+		var cost: int = GameState.hire_cost(staff_id)
+		_info_row(
+			String(member.get("name", staff_id)),
+			"%s • %s" % [String(member.get("specialty", "")), Loc.t(passive_key)],
+			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %d" % [Loc.t("HIRE"), cost],
+			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
+			not hired and staff_id != "player" and GameState.coins >= float(cost),
+			func(sid: String = staff_id) -> void:
+				if GameState.hire_staff(sid):
+					AudioManager.play(&"upgrade")
+					EventBus.toast_requested.emit(
+						"%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN
+					)
 		)
-		var button: Button
-		if staff_id == "player" or hired:
-			button = _button(Loc.t("HIRED"), Color("b0bec5"), 220, 64)
-			button.disabled = true
-		else:
-			var cost: int = GameState.hire_cost(staff_id)
-			button = _button("%s • %d" % [Loc.t("HIRE"), cost], BLUE, 220, 64)
-			button.disabled = GameState.coins < float(cost)
-			button.pressed.connect(
-				func(sid: String = staff_id) -> void:
-					if GameState.hire_staff(sid):
-						AudioManager.play(&"upgrade")
-						EventBus.toast_requested.emit(
-							"%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN
-						)
-					_rebuild(&"staff")
-					if refresh_callback.is_valid():
-						refresh_callback.call()
-			)
-		box.add_child(button)
 
 
 func _build_shop() -> void:
@@ -306,12 +219,6 @@ func _build_shop() -> void:
 		var look_id: String = String(look.get("id", ""))
 		var owned: bool = GameState.unlocked_cosmetics.has(look_id)
 		var price: Dictionary = look.get("price", {})
-		var row: PanelContainer = _card()
-		var box: HBoxContainer = _row_box(row)
-		var info: VBoxContainer = VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		box.add_child(info)
-		info.add_child(_label(String(look.get("name", look_id)), 28, CHARCOAL))
 		var price_text: String
 		if price.has("coins"):
 			price_text = "%d moedas" % int(price["coins"])
@@ -319,30 +226,55 @@ func _build_shop() -> void:
 			price_text = "%d %s" % [int(price["embers"]), Loc.t("EMBERS")]
 		else:
 			price_text = String(look.get("source", "evento"))
-		info.add_child(_label(price_text, 24, Color("546e7a")))
-		var button: Button
+		var action_text: String
+		var action_color: Color = PINK
+		var enabled: bool = not owned and not price.is_empty()
 		if owned:
-			button = _button(Loc.t("OWNED"), Color("b0bec5"), 200, 64)
-			button.disabled = true
+			action_text = Loc.t("OWNED")
+			action_color = Color("b0bec5")
 		elif price.is_empty():
-			button = _button(Loc.t("LOCKED") % 0, Color("b0bec5"), 200, 64)
-			button.disabled = true
+			action_text = "EVENTO"
+			action_color = Color("b0bec5")
 		else:
-			button = _button(Loc.t("BUY"), PINK, 200, 64)
-			button.pressed.connect(
-				func(lid: String = look_id) -> void:
-					if GameState.buy_cosmetic(lid):
-						AudioManager.play(&"coin")
-						EventBus.toast_requested.emit("%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN)
-					else:
-						AudioManager.play(&"error_soft")
-					_rebuild(&"shop")
-					if refresh_callback.is_valid():
-						refresh_callback.call()
-			)
-		box.add_child(button)
-	content_box.add_child(_label(Loc.t("COSMETIC_NO_FX"), 24, Color("90a4ae")))
-	content_box.add_child(_label(Loc.t("IAP_NOTE"), 24, Color("90a4ae")))
+			action_text = Loc.t("BUY")
+		_info_row(
+			String(look.get("name", look_id)),
+			price_text,
+			action_text,
+			action_color,
+			enabled,
+			func(lid: String = look_id) -> void:
+				if GameState.buy_cosmetic(lid):
+					AudioManager.play(&"coin")
+					EventBus.toast_requested.emit(
+						"%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
+					)
+				else:
+					AudioManager.play(&"error_soft")
+		)
+	# Rewarded ads honesto: fachada avisa indisponível offline; o adapter real
+	# chamará o callback de recompensa apenas em conclusão verificada.
+	_info_row(
+		"+1 %s" % Loc.t("EMBERS"),
+		"anúncio recompensado",
+		"▶",
+		BLUE,
+		true,
+		func() -> void:
+			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
+	)
+	for sku: String in IAPManager.PRODUCTS:
+		_info_row(sku, "R$", "OFFLINE", Color("b0bec5"), false, Callable())
+	_note(Loc.t("COSMETIC_NO_FX"))
+	_note(Loc.t("IAP_NOTE"))
+
+
+func _grant_ember() -> void:
+	GameState.embers += 1
+	EventBus.currency_changed.emit(&"coins", GameState.coins)
+	SaveManager.request_save()
+	AudioManager.play(&"coin")
+	_rebuild(&"shop")
 
 
 func _build_map() -> void:
@@ -359,9 +291,7 @@ func _build_map() -> void:
 		var marker: String = "✓" if GameState.player_level >= unlock_level else "□"
 		text += "%s %s — nível %d\n" % [marker, entry.get("name", "Petshop"), unlock_level]
 	text += "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
-	var map_label: Label = _label(text, 28, CHARCOAL)
-	map_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content_box.add_child(map_label)
+	_note(text, 28, CHARCOAL, true)
 
 
 func _build_settings() -> void:
@@ -371,10 +301,14 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
 	var lang_row: HBoxContainer = HBoxContainer.new()
 	lang_row.add_theme_constant_override("separation", 12)
-	content_box.add_child(lang_row)
-	lang_row.add_child(_label(Loc.t("LANGUAGE") + ":", 28, CHARCOAL))
+	screen.content_box.add_child(lang_row)
+	var caption: Label = _label_node(Loc.t("LANGUAGE") + ":", 28, CHARCOAL)
+	lang_row.add_child(caption)
 	for code: String in Loc.LANGS:
-		var lang_button: Button = _button(code, BLUE if code == Loc.lang else Color("b0bec5"), 150, 60)
+		var lang_button: Button = Button.new()
+		_style_button(lang_button, BLUE if code == Loc.lang else Color("b0bec5"))
+		lang_button.text = code
+		lang_button.custom_minimum_size = Vector2(150, 60)
 		lang_button.pressed.connect(
 			func(c: String = code) -> void:
 				Loc.set_language(c)
@@ -384,68 +318,100 @@ func _build_settings() -> void:
 
 
 func _add_slider(caption: String, setting_key: String, default_value: float) -> void:
-	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
-	content_box.add_child(row)
-	row.add_child(_label(caption + ":", 28, CHARCOAL))
-	var slider: HSlider = HSlider.new()
-	slider.min_value = 0.0
-	slider.max_value = 1.0
-	slider.step = 0.05
+	var row: HBoxContainer = SLIDER_ROW.instantiate()
+	screen.content_box.add_child(row)
+	var caption_label: Label = row.get_node("Caption")
+	caption_label.text = caption + ":"
+	caption_label.add_theme_font_size_override("font_size", 28)
+	caption_label.add_theme_color_override("font_color", CHARCOAL)
+	var slider: HSlider = row.get_node("Slider")
 	slider.value = float(GameState.settings.get(setting_key, default_value))
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.custom_minimum_size = Vector2(420, 40)
 	slider.value_changed.connect(
 		func(v: float) -> void:
 			GameState.settings[setting_key] = v
 			SaveManager.request_save()
 			AudioManager.apply_volumes()
 	)
-	row.add_child(slider)
 
 
 func _add_toggle(caption: String, setting_key: String, default_value: bool) -> void:
-	var row: PanelContainer = _card()
-	var box: HBoxContainer = _row_box(row)
-	var name_label: Label = _label(caption, 28, CHARCOAL)
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box.add_child(name_label)
 	var enabled: bool = bool(GameState.settings.get(setting_key, default_value))
 	var toggle_text: String = Loc.t("ON") if enabled else Loc.t("OFF")
 	var toggle_color: Color = GREEN if enabled else Color("b0bec5")
-	var button: Button = _button(toggle_text, toggle_color, 170, 60)
-	button.pressed.connect(
-		func() -> void:
-			var now: bool = not bool(GameState.settings.get(setting_key, default_value))
-			GameState.settings[setting_key] = now
-			if setting_key == "eco_mode":
-				GameState.settings["reduced_particles"] = now
-			SaveManager.request_save()
-			_rebuild(&"settings")
+	_info_row(caption, "", toggle_text, toggle_color, true, func() -> void:
+		var now: bool = not bool(GameState.settings.get(setting_key, default_value))
+		GameState.settings[setting_key] = now
+		if setting_key == "eco_mode":
+			GameState.settings["reduced_particles"] = now
+		SaveManager.request_save()
 	)
-	box.add_child(button)
 
 
-func _card() -> PanelContainer:
-	var card: PanelContainer = PanelContainer.new()
-	card.add_theme_stylebox_override("panel", _style(Color("ffffff", 0.9), 24, 16, PINK, 3))
-	content_box.add_child(card)
-	return card
+func _info_row(
+	name_text: String,
+	desc_text: String,
+	action_text: String,
+	action_color: Color,
+	enabled: bool,
+	on_action: Callable,
+) -> void:
+	var row: PanelContainer = INFO_ROW.instantiate()
+	screen.content_box.add_child(row)
+	row.add_theme_stylebox_override(
+		"panel", StyleFactory.box(Color("ffffff", 0.9), 24, 16, PINK, 3)
+	)
+	var name_label: Label = row.get_node("Box/Info/Name")
+	name_label.text = name_text
+	name_label.add_theme_font_size_override("font_size", 28)
+	name_label.add_theme_color_override("font_color", CHARCOAL)
+	var desc_label: Label = row.get_node("Box/Info/Desc")
+	desc_label.text = desc_text
+	desc_label.add_theme_font_size_override("font_size", 24)
+	desc_label.add_theme_color_override("font_color", Color("546e7a"))
+	var button: Button = row.get_node("Box/Action")
+	_style_button(button, action_color)
+	button.text = action_text
+	button.disabled = not enabled
+	if enabled and on_action.is_valid():
+		button.pressed.connect(
+			func() -> void:
+				on_action.call()
+				if refresh_callback.is_valid():
+					refresh_callback.call()
+				_rebuild(_current_section())
+		)
 
 
-func _row_box(parent: PanelContainer) -> HBoxContainer:
-	var box: HBoxContainer = HBoxContainer.new()
-	box.add_theme_constant_override("separation", 12)
-	parent.add_child(box)
-	return box
+func _current_section() -> StringName:
+	return _section
 
 
-func _label(text: String, size: int, color: Color) -> Label:
+func _note(
+	text: String, size: int = 24, color: Color = Color("90a4ae"), wrap: bool = false
+) -> void:
+	var note: Label = _label_node(text, size, color)
+	if wrap:
+		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	screen.content_box.add_child(note)
+
+
+func _label_node(text: String, size: int, color: Color) -> Label:
 	var label: Label = Label.new()
 	label.text = text
 	label.add_theme_font_size_override("font_size", size)
 	label.add_theme_color_override("font_color", color)
 	return label
+
+
+func _style_button(button: Button, color: Color) -> void:
+	button.add_theme_font_size_override("font_size", 26)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	button.add_theme_stylebox_override("normal", StyleFactory.box(color, 30, 10))
+	button.add_theme_stylebox_override("hover", StyleFactory.box(color.lightened(0.08), 30, 10))
+	button.add_theme_stylebox_override("pressed", StyleFactory.box(color.darkened(0.12), 26, 14))
+	button.add_theme_stylebox_override("disabled", StyleFactory.box(Color("b0bec5"), 30, 10))
+	InteractionFX.bind_button(button)
 
 
 func _pop_panel(panel: Control) -> void:
@@ -457,43 +423,3 @@ func _pop_panel(panel: Control) -> void:
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(panel, "scale", Vector2.ONE, 0.22)
 	tween.tween_property(panel, "modulate:a", 1.0, 0.16)
-
-
-func _button(text: String, color: Color, width: float, height: float) -> Button:
-	var button: Button = Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(width, height)
-	button.add_theme_font_size_override("font_size", 26)
-	button.add_theme_color_override("font_color", Color.WHITE)
-	button.add_theme_color_override("font_pressed_color", Color.WHITE)
-	button.add_theme_stylebox_override("normal", _style(color, 30, 10))
-	button.add_theme_stylebox_override("hover", _style(color.lightened(0.08), 30, 10))
-	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.12), 26, 14))
-	button.add_theme_stylebox_override("disabled", _style(Color("b0bec5"), 30, 10))
-	InteractionFX.bind_button(button)
-	return button
-
-
-func _style(
-	color: Color,
-	radius: int,
-	content_margin: int,
-	border_color: Color = Color(0, 0, 0, 0),
-	border_width: int = 0
-) -> StyleBoxFlat:
-	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = color
-	style.corner_radius_top_left = radius
-	style.corner_radius_top_right = radius
-	style.corner_radius_bottom_left = radius
-	style.corner_radius_bottom_right = radius
-	style.content_margin_left = content_margin
-	style.content_margin_right = content_margin
-	style.content_margin_top = content_margin
-	style.content_margin_bottom = content_margin
-	style.border_color = border_color
-	style.border_width_left = border_width
-	style.border_width_right = border_width
-	style.border_width_top = border_width
-	style.border_width_bottom = border_width
-	return style
