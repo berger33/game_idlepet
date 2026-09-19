@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 46,
+    "pets_generated": 47,
     "images_expected": 500,
-    "images_generated": 463,
-    "images_qa_passed": 463,
-    "pets_integrated": 46,
-    "generation_attempts": 479
+    "images_generated": 470,
+    "images_qa_passed": 470,
+    "pets_integrated": 47,
+    "generation_attempts": 485
   },
   "pets": [
     {
@@ -2681,40 +2681,40 @@
           "path": "art/pet_animations/cosmo_birman/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cosmo_birman/blink.png"
         }
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 3,
-      "qa_notes": "Setimo gato. Sagrado da Birmacao seal-point: corpo marfim + pontos seal escuros + LUVAS BRANCAS nas 4 patas + OLHOS AZUIS (assinaturas da raca; 577 px azuis na banda facial da base). Oficiais BGR 219,233,242 / 33,42,77 / 75,90,134 / 177,193,218 / 126,143,183, tol 20 (base 78054 px). Hue-corr FORTE (0.982-0.997 — marfim+seal funciona bem). Lote PARCIAL 3/10 (dirty/wet/messy): turno consumido pelo fechamento da Zara (+correcao do tracker). Faltam 2 tilt, squash, air, dizzy, sad, blink (7 geracoes = proximo turno exato). Base quase simetrica (lean -10.3) — tilt deve vir facil nas 2 direcoes (primeira base simetrica desde o inicio dos gatos). Registro padrao bottom 476: dirty/wet 478, messy 476. messy +170% (2o maior do catalogo, apos Olivia +214%). wet: V 173->160, cov 0.542->0.385 (colapso forte de pelo fofo, como Apolo 0.496->0.356) + 11 gotas (13 comps). Contrato 3/3 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/wet, flood no messy. PROXIMO TURNO: 7 geracoes (tl c/ dupla ref Lola, tr espelhado SE lean simetrico, squash, air c/ inspecao flood, dizzy, sad, blink c/ diff-clustering), fechar 10/10, pin 46->47."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Setimo gato. Sagrado da Birmacao seal-point: corpo marfim + pontos seal escuros + LUVAS BRANCAS nas 4 patas + OLHOS AZUIS (assinaturas da raca; 577 px azuis na banda facial da base). Oficiais BGR 219,233,242 / 33,42,77 / 75,90,134 / 177,193,218 / 126,143,183, tol 20 (base 78054 px). Hue-corr FORTE (0.982-0.997 — marfim+seal funciona bem). Lote COMPLETO 10/10 (fechado no turno seguinte, +6 geracoes). Base quase simetrica (lean -10.3) — tilt deve vir facil nas 2 direcoes (primeira base simetrica desde o inicio dos gatos). Registro padrao bottom 476: dirty/wet 478, messy 476. messy +170% (2o maior do catalogo, apos Olivia +214%). wet: V 173->160, cov 0.542->0.385 (colapso forte de pelo fofo, como Apolo 0.496->0.356) + 11 gotas (13 comps). Contrato 3/3 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/wet, flood no messy. FECHAMENTO LIMPO: TILT = PRIMEIRO PAR TOTALMENTE VALIDO NAS 2 DIRECOES desde o inicio dos gatos: base simetrica (lean -10.3) -> tl -24.3 (rel -14.1, acima do piso) c/ tr ESPELHADO +24.3 (rel +34.6) — ambos validos, espelho voltou a servir (primeiro desde Mimi). happy_air: OVERRIDE p/ flood (6o seguido) — flood: corpo aereo 32px acima do chao (y ate 444) + 7 comps de rastro abaixo (linhas de salto alto); grab teria corpo quase tocando (465) e 1 comp. happy_squash: 446x339 (h -24% vs base 441). blink: diff-cluster par nos olhos (217,137)/(138,138) dx=79 (1072/1055 px) + cluster maior na mascara (2856); IoU 0.932, hue 0.994. dizzy: cluster 15570px na face (206,139) = espirais+wobble; 5 comps (flood). sad: 15650px (cabeca caida) + 1937 secundario. sad lean -79.5 (cabeca a esquerda e baixa — base simetrica permite). 9 tentativas, zero retakes."
     },
     {
       "sequence": 48,
