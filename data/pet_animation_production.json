@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 22,
     "images_expected": 500,
-    "images_generated": 220,
-    "images_qa_passed": 220,
+    "images_generated": 229,
+    "images_qa_passed": 229,
     "pets_integrated": 22,
-    "generation_attempts": 231
+    "generation_attempts": 240
   },
   "pets": [
     {
@@ -1301,27 +1301,27 @@
       "reference": "art/pets/cacau_labrador.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/happy_squash.png"
         },
         "happy_air": {
@@ -1329,23 +1329,24 @@
           "path": "art/pet_animations/cacau_labrador/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cacau_labrador/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 9,
+      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. happy_air pending: per-turn image generation limit was reached; it will be generated next turn. Missing state falls back to happy_squash via the existing runtime crossfade. wet ships with a small puddle at the feet that reads naturally inside the tub."
     },
     {
       "sequence": 24,
