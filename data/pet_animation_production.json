@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 48,
     "images_expected": 500,
-    "images_generated": 480,
-    "images_qa_passed": 480,
+    "images_generated": 481,
+    "images_qa_passed": 481,
     "pets_integrated": 48,
-    "generation_attempts": 498
+    "generation_attempts": 499
   },
   "pets": [
     {
@@ -2783,7 +2783,7 @@
       "reference": "art/pets/odin_nebelung.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/dirty.png"
         },
         "wet": {
@@ -2823,11 +2823,12 @@
           "path": "art/pet_animations/odin_nebelung/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "partial",
       "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_attempts": 1,
+      "qa_notes": "Nono gato. Nebelung azul-cinza c/ pelo longo e pontas prateadas (oficiais BGR 98,77,68 / 127,108,97 / 67,46,37 / 161,145,133 / 207,206,202, tol 20; base ~57k px). Caso quase-neutro como Yuki: hue-corr fraca — identidade por paleta oficial (B>G>R consistente = azul-cinza). BASE CURTA E LARGA: 454x309, bottom 409 (registro proprio; 2a mais curta apos Mimi 400) — aterrados registrar em 409. lean +3.8 QUASE SIMETRICA (como Cosmo) — tilt deve vir facil nas 2 direcoes c/ espelho p/ tr. RISCO CHROMA: pelo azul-cinza vs backdrop azul — dual obrigatorio; dirty: flood venceu (57.9k vs 55.4k oficiais). Lote PARCIAL 1/10 (dirty): limite de 10 geracoes/TURNO (9 do fechamento da Iris + 1 daqui). PROXIMO TURNO: 8 geracoes (wet, messy, tl, squash, air, dizzy, sad, blink) + tr espelhado (nao conta) = fecha 10/10 c/ 2 sobras p/ retake."
     },
     {
       "sequence": 50,
