@@ -82,11 +82,34 @@ def gear(draw: ImageDraw.ImageDraw, s: int) -> None:
     draw.ellipse([cx - s * 0.13, cy - s * 0.13, cx + s * 0.13, cy + s * 0.13], fill=(0, 0, 0, 0))
 
 
+def person(draw: ImageDraw.ImageDraw, s: int) -> None:
+    draw.ellipse([s * 0.32, s * 0.10, s * 0.68, s * 0.46], fill=WHITE)
+    draw.pieslice(
+        [s * 0.14, s * 0.42, s * 0.86, s * 1.16], start=180, end=360, fill=WHITE
+    )
+    draw.rectangle([s * 0.14, s * 0.76, s * 0.86, s * 0.90], fill=WHITE)
+
+
+def bag(draw: ImageDraw.ImageDraw, s: int) -> None:
+    draw.arc([s * 0.30, s * 0.08, s * 0.70, s * 0.48], start=180, end=360, fill=WHITE, width=int(s * 0.09))
+    draw.polygon(
+        [
+            (s * 0.16, s * 0.34),
+            (s * 0.84, s * 0.34),
+            (s * 0.78, s * 0.90),
+            (s * 0.22, s * 0.90),
+        ],
+        fill=WHITE,
+    )
+
+
 def main() -> None:
     render("missions", star)
     render("collection", heart)
     render("map", house)
     render("settings", gear)
+    render("staff", person)
+    render("shop", bag)
 
 
 if __name__ == "__main__":

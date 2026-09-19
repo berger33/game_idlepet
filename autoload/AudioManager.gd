@@ -47,6 +47,14 @@ func play(sfx: StringName) -> void:
 	player.play()
 
 
+## Sliders de ajustes chamam isto para valer na hora (música inclusive).
+func apply_volumes() -> void:
+	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
+	player.volume_db = linear_to_db(sfx_volume)
+	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
+	music_player.volume_db = linear_to_db(music_volume * 0.22)
+
+
 func _tone(frequency: float, duration: float, volume: float) -> AudioStreamWAV:
 	var frames: int = int(SAMPLE_RATE * duration)
 	var bytes: PackedByteArray = PackedByteArray()

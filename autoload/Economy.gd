@@ -1,6 +1,23 @@
 extends Node
 ## Fonte única para fórmulas monetárias. Nunca muta o estado diretamente.
 
+## Loteria de gorjeta (odds publicadas na tela de resultado):
+## 60% sem gorjeta · 25% +15% · 10% +30% · 5% +60%.
+const TIP_ODDS: Array[float] = [0.60, 0.25, 0.10, 0.05]
+const TIP_MULTIPLIERS: Array[float] = [1.0, 1.15, 1.30, 1.60]
+## Chance de um cliente da fila ser VIP (recompensa ×2, paciência menor).
+const VIP_CHANCE: float = 0.12
+const VIP_REWARD_MULTIPLIER: float = 2.0
+
+
+func tip_multiplier(roll: float) -> float:
+	var accumulated: float = 0.0
+	for index: int in TIP_ODDS.size():
+		accumulated += TIP_ODDS[index]
+		if roll < accumulated:
+			return TIP_MULTIPLIERS[index]
+	return TIP_MULTIPLIERS[TIP_MULTIPLIERS.size() - 1]
+
 
 func upgrade_cost(level: int) -> float:
 	return ceil(

@@ -56,6 +56,8 @@ const SERVICE_TOOL_Y: Dictionary = {
 }
 
 var pet_position: Vector2 = Vector2(540, 840)
+## Sala sem cliente (aguardando escolha na fila): não desenha pet.
+var room_empty: bool = true
 var pet_happy: bool = false
 var pet_wet: bool = false
 var progress: float = 0.0
@@ -257,6 +259,11 @@ func _tool_position(tool: StringName) -> Vector2:
 	return Vector2(910, float(shelf_levels[index]))
 
 
+## Posição da prateleira de um utensílio (para spotlight do tutorial).
+func tool_shelf_position(tool: StringName) -> Vector2:
+	return _tool_position(tool)
+
+
 func tool_at(point: Vector2) -> StringName:
 	for tool: StringName in TOOL_ORDER:
 		if (
@@ -299,9 +306,17 @@ func react_to_failure() -> void:
 
 
 func arrive() -> void:
+	room_empty = false
 	arrival_time = 0.0
 	departure_time = -1.0
 	pet_happy = false
+
+
+func clear_room() -> void:
+	room_empty = true
+	reset_pet()
+	pet_texture = null
+	pet_state_textures.clear()
 
 
 func depart() -> void:
@@ -386,12 +401,13 @@ func _draw() -> void:
 	var pet_center: Vector2 = (
 		pet_position + Vector2((1.0 - eased_arrival) * -430.0 + exit_offset, idle_bob)
 	)
-	if rarity == &"legendary":
-		draw_circle(pet_center, 205.0 + sin(shake_phase * 3.0) * 8.0, Color("ffd54f", 0.22))
-		draw_arc(pet_center, 190.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
-	elif rarity == &"epic":
-		draw_circle(pet_center, 185.0, Color("ce93d8", 0.16))
-	_draw_pet(pet_center)
+	if not room_empty:
+		if rarity == &"legendary":
+			draw_circle(pet_center, 205.0 + sin(shake_phase * 3.0) * 8.0, Color("ffd54f", 0.22))
+			draw_arc(pet_center, 190.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
+		elif rarity == &"epic":
+			draw_circle(pet_center, 185.0, Color("ce93d8", 0.16))
+		_draw_pet(pet_center)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:

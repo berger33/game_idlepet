@@ -7,6 +7,8 @@ const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfum
 const NAV_ICONS: Dictionary = {
 	&"missions": preload("res://art/ui/icons/missions.png"),
 	&"collection": preload("res://art/ui/icons/collection.png"),
+	&"staff": preload("res://art/ui/icons/staff.png"),
+	&"shop": preload("res://art/ui/icons/shop.png"),
 	&"map": preload("res://art/ui/icons/map.png"),
 	&"settings": preload("res://art/ui/icons/settings.png"),
 }
@@ -32,14 +34,29 @@ const SERVICE_LABELS: Dictionary = {
 	&"perfume": "perfumar",
 	&"style": "colocar lacinho"
 }
+## Gestos distintos por serviço: eixo da esfregada, modo de preenchimento,
+## teto de distância por evento e taxa de preenchimento por tempo (hold).
+const GESTURES: Dictionary = {
+	&"bath": {"axis": &"any", "mode": &"rub", "cap": 90.0, "rate": 0.0},
+	&"groom": {"axis": &"vertical", "mode": &"rub", "cap": 70.0, "rate": 0.0},
+	&"dry": {"axis": &"horizontal", "mode": &"rub", "cap": 70.0, "rate": 0.0},
+	&"perfume": {"axis": &"any", "mode": &"hold", "cap": 90.0, "rate": 0.22},
+	&"style": {"axis": &"any", "mode": &"rub", "cap": 20.0, "rate": 0.0},
+}
+const GESTURE_HINTS: Dictionary = {
+	&"bath": "HINT_BATH",
+	&"groom": "HINT_GROOM",
+	&"dry": "HINT_DRY",
+	&"perfume": "HINT_PERFUME",
+	&"style": "HINT_STYLE",
+}
+const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
 
 var bath: BathService
 var world: PetShopCanvas
 var coin_label: Label
 var combo_label: Label
 var review_label: Label
-var order_card: PanelContainer
-var order_label: Label
 var instruction_label: Label
 var primary_button: Button
 var upgrade_button: Button
@@ -48,20 +65,29 @@ var result_panel: PanelContainer
 var result_title: Label
 var result_detail: Label
 var dragging: bool = false
-var next_client_timer: float = 0.0
 var bubble_sound_gate: float = 0.0
 var toast_layer: Control
 var current_service: StringName = &"bath"
 var current_pet_id: String = "caramelo"
 var current_pet_name: String = "Caramelo"
 var pet_touch_gate: float = 0.0
-var meta_backdrop: TextureRect
-var meta_panel: PanelContainer
-var meta_title: Label
-var meta_content: Label
-var meta_action_button: Button
+var meta: MetaPanel
 var dragged_tool: StringName = &""
 var wrong_tool_gate: float = 0.0
+## Fila de clientes (até 3): o jogador escolhe quem atender — decisão real.
+var queue: Array[Dictionary] = [{}, {}, {}]
+var selected_slot: int = -1
+var refill_timers: Array[float] = [0.0, 0.0, 0.0]
+var queue_row: HBoxContainer
+var queue_cards: Array[Button] = []
+var queue_name_labels: Array[Label] = []
+var queue_service_labels: Array[Label] = []
+var queue_bars: Array[ColorRect] = []
+var current_vip: bool = false
+var last_tip_percent: int = 0
+var tutorial_overlay: Control
+var tutorial_skip_button: Button
+var tutorial_step: int = -1
 
 
 func _ready() -> void:
@@ -69,14 +95,15 @@ func _ready() -> void:
 	bath = BathServiceScript.new()
 	_configure_current_service()
 	_build_interface()
-	world.set_pet_profile(ContentDB.pet(current_pet_id))
-	world.arrive()
+	world.clear_room()
+	for slot: int in 3:
+		queue[slot] = _make_client()
+	_update_queue_ui()
 	_connect_events()
 	_refresh_economy()
 	_show_pending_offline_reward()
+	_setup_tutorial()
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
-	Analytics.track(&"pet_arrived", {"rarity": "common", "pet_id": "caramelo"})
-	EventBus.pet_arrived.emit(&"caramelo")
 
 
 func _process(delta: float) -> void:
@@ -92,17 +119,11 @@ func _process(delta: float) -> void:
 		world.service_time_ratio = (
 			bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
 		)
-	elif next_client_timer > 0.0:
-		next_client_timer -= delta
-		if next_client_timer <= 0.0:
-			_new_client()
+	_process_queue(delta)
 
 
 func _input(event: InputEvent) -> void:
-	if (
-		(is_instance_valid(meta_panel) and meta_panel.visible)
-		or (is_instance_valid(result_panel) and result_panel.visible)
-	):
+	if meta.is_open() or (is_instance_valid(result_panel) and result_panel.visible):
 		return
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
@@ -233,14 +254,12 @@ func _on_primary_pressed() -> void:
 func _start_bath() -> void:
 	bath.start_service()
 	world.begin_service()
-	instruction_label.text = (
-		"%s sobre o pet • solte na faixa verde"
-		% String(SERVICE_LABELS[current_service]).capitalize()
-	)
-	order_card.hide()
+	instruction_label.text = _gesture_hint()
 	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
 	EventBus.service_started.emit(current_service)
+	if tutorial_step == 1:
+		_tutorial_advance()
 
 
 func _finish_bath() -> void:
@@ -259,6 +278,11 @@ func _finish_bath() -> void:
 		)
 		var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
 		var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
+		# Gorjeta variável (odds publicadas) e bônus VIP: variabilidade real de
+		# recompensa — o mesmo serviço rende diferente a cada atendimento.
+		var tip_multiplier: float = Economy.tip_multiplier(randf())
+		last_tip_percent = int(roundf((tip_multiplier - 1.0) * 100.0))
+		var vip_multiplier: float = Economy.VIP_REWARD_MULTIPLIER if current_vip else 1.0
 		var reward: float = (
 			(
 				Economy
@@ -274,6 +298,8 @@ func _finish_bath() -> void:
 			)
 			* LiveOps.multiplier_for(current_service)
 			* affection_multiplier
+			* tip_multiplier
+			* vip_multiplier
 		)
 		var stars: int = 5 if quality == &"perfect" else 4
 		GameState.register_review(stars)
@@ -294,7 +320,13 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	world.celebrate(quality == &"perfect" or GameState.combo >= 5)
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
 	HapticsManager.success()
-	result_title.text = "PERFEITO!" if quality == &"perfect" else "MUITO BOM!"
+	result_title.text = (
+		Loc.t("PERFECT_RESULT") if quality == &"perfect" else Loc.t("GOOD_RESULT")
+	)
+	if current_vip:
+		result_title.text = Loc.t("VIP_TAG") + "! " + result_title.text
+	if tutorial_step == 2:
+		_tutorial_advance()
 	if GameState.combo >= 5:
 		result_title.text = "RITMO PERFEITO ×%d" % GameState.combo
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
@@ -310,9 +342,15 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		. get(current_service, "recebeu cuidado especial!")
 	)
 	var xp_reward: int = 15 if quality == &"perfect" else 10
+	xp_reward = int(xp_reward * (1.0 + GameState.staff_bonus(&"veterinary_xp")))
+	var tip_line: String = (
+		Loc.t("TIP_LINE") % last_tip_percent if last_tip_percent > 0 else Loc.t("NO_TIP")
+	)
+	if current_vip:
+		tip_line = Loc.t("VIP_TAG") + " ×2 · " + tip_line
 	result_detail.text = (
-		"%s\n+%d moedas  •  +%d XP\n%s %s"
-		% ["★".repeat(stars), int(reward), xp_reward, current_pet_name, outcome]
+		"%s\n+%d moedas  •  +%d XP\n%s\n%s %s"
+		% ["★".repeat(stars), int(reward), xp_reward, tip_line, current_pet_name, outcome]
 	)
 	_pop_panel(result_panel)
 	primary_button.text = "✓  CONTINUAR"
@@ -348,69 +386,210 @@ func _fail(reason: StringName) -> void:
 	primary_button.text = "↻  TENTAR NOVAMENTE"
 	primary_button.disabled = false
 	primary_button.show()
+	if tutorial_step == 2:
+		_tutorial_advance()
 
 
 func _dismiss_result() -> void:
 	result_panel.hide()
 	world.reset_pet()
 	world.depart()
+	world.clear_room()
 	bath = BathServiceScript.new()
-	var available_pets: Array[String] = GameState.unlocked_pets
-	if available_pets.is_empty():
-		available_pets = ["caramelo"]
-	current_pet_id = available_pets[GameState.services_completed % available_pets.size()]
+	if selected_slot >= 0:
+		queue[selected_slot] = {}
+		refill_timers[selected_slot] = 1.1
+	selected_slot = -1
+	current_vip = false
+	instruction_label.text = Loc.t("CHOOSE_CLIENT")
+	primary_button.hide()
+	_update_queue_ui()
+
+
+func _make_client() -> Dictionary:
+	var unlocked: Array[String] = GameState.unlocked_pets
+	if unlocked.is_empty():
+		unlocked = ["caramelo"]
+	var pet_id: String = unlocked[randi() % unlocked.size()]
+	var services: Array[StringName] = _available_services()
+	var service: StringName = services[randi() % services.size()]
+	var vip: bool = randf() < Economy.VIP_CHANCE
+	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
+	return {
+		"pet": pet_id,
+		"service": service,
+		"vip": vip,
+		"wait_total": wait_total,
+		"wait_left": wait_total,
+	}
+
+
+func _on_queue_pressed(slot: int) -> void:
+	if not _can_select(slot):
+		return
+	selected_slot = slot
+	var client: Dictionary = queue[slot]
+	current_vip = bool(client.get("vip", false))
+	current_pet_id = String(client["pet"])
+	current_service = StringName(client["service"])
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
-	current_pet_name = String(profile.get("name", "Caramelo"))
-	var available_services: Array[StringName] = _available_services()
-	current_service = available_services[GameState.services_completed % available_services.size()]
+	current_pet_name = String(profile.get("name", "Pet"))
 	_configure_current_service()
 	world.set_service_layout(current_service)
-	order_card.hide()
-	instruction_label.text = "Novo cliente chegando..."
-	primary_button.hide()
-	next_client_timer = 1.1
-
-
-func _new_client() -> void:
-	order_card.show()
-	var service_name: String = (
-		{
-			&"bath": "Banho com espuma",
-			&"groom": "Tosa higiênica",
-			&"dry": "Secagem macia",
-			&"perfume": "Perfume delicado",
-			&"style": "Laço especial",
-		}
-		. get(current_service, "Cuidado especial")
-	)
-	var profile: Dictionary = ContentDB.pet(current_pet_id)
-	order_label.text = (
-		"%s\n%s • %s\n%d+ moedas"
-		% [
-			current_pet_name.to_upper(),
-			profile.get("breed", "Pet especial"),
-			service_name,
-			int(
-				{&"bath": 12, &"groom": 20, &"dry": 24, &"perfume": 30, &"style": 38}.get(
-					current_service, 12
-				)
-			),
-		]
-	)
-	primary_button.hide()
+	world.set_pet_profile(profile)
+	world.arrive()
+	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 	instruction_label.text = (
 		"Arraste %s da prateleira até %s" % [_tool_display_name(required_tool), current_pet_name]
 	)
-	world.set_pet_profile(profile)
-	world.arrive()
-	_refresh_economy()
-	var arrival_params: Dictionary = {
-		"rarity": profile.get("rarity", "common"),
-		"pet_id": current_pet_id,
-		"species": profile.get("species", "dog"),
-	}
-	Analytics.track(&"pet_arrived", arrival_params)
+	_update_queue_ui()
+	Analytics.track(
+		&"client_selected",
+		{
+			"pet_id": current_pet_id,
+			"service": String(current_service),
+			"vip": current_vip,
+			"rarity": profile.get("rarity", "common"),
+		}
+	)
+	EventBus.pet_arrived.emit(StringName(current_pet_id))
+	if tutorial_step == 0:
+		_tutorial_advance()
+
+
+func _can_select(slot: int) -> bool:
+	if queue[slot].is_empty() or selected_slot != -1:
+		return false
+	if is_instance_valid(result_panel) and result_panel.visible:
+		return false
+	if meta.is_open():
+		return false
+	return true
+
+
+func _process_queue(delta: float) -> void:
+	for slot: int in 3:
+		if refill_timers[slot] > 0.0:
+			refill_timers[slot] -= delta
+			if refill_timers[slot] <= 0.0:
+				queue[slot] = _make_client()
+				_update_queue_ui()
+		elif (
+			not queue[slot].is_empty()
+			and slot != selected_slot
+			and bool(GameState.tutorial_complete)
+		):
+			queue[slot]["wait_left"] = float(queue[slot]["wait_left"]) - delta
+			if float(queue[slot]["wait_left"]) <= 0.0:
+				_client_left(slot)
+	# Barras de paciência e habilitação dos cartões (estado muda todo frame).
+	for slot: int in 3:
+		var client: Dictionary = queue[slot]
+		if client.is_empty():
+			queue_bars[slot].custom_minimum_size.x = 0.0
+		else:
+			var ratio: float = clampf(
+				float(client["wait_left"]) / float(client["wait_total"]), 0.0, 1.0
+			)
+			var bar_width: float = queue_bars[slot].get_parent().size.x * ratio
+			queue_bars[slot].custom_minimum_size.x = bar_width
+			queue_bars[slot].color = (
+				Color("ef5350") if ratio <= 0.25 else Color("7ed957")
+			)
+		queue_cards[slot].disabled = not _can_select(slot)
+
+
+func _client_left(slot: int) -> void:
+	var client: Dictionary = queue[slot]
+	var leaver_name: String = String(
+		ContentDB.pet(String(client["pet"])).get("name", "Alguém")
+	)
+	_show_toast("%s cansou de esperar e foi embora." % leaver_name, Color("ef5350"))
+	GameState.register_review(3)
+	Analytics.track(&"client_left", {"pet_id": String(client["pet"])})
+	queue[slot] = {}
+	refill_timers[slot] = 2.0
+	_update_queue_ui()
+
+
+func _setup_tutorial() -> void:
+	if bool(GameState.tutorial_complete):
+		return
+	tutorial_step = 0
+	tutorial_skip_button.visible = true
+	_tutorial_apply()
+
+
+func _tutorial_apply() -> void:
+	if tutorial_step == 0:
+		tutorial_overlay.show_step(
+			Rect2(queue_row.position - Vector2(10, 10), queue_row.size + Vector2(20, 20)),
+			"1/3 · Toque em um cliente da fila para atender",
+		)
+	elif tutorial_step == 1:
+		var tool: StringName = StringName(SERVICE_TOOLS[current_service])
+		tutorial_overlay.show_step(
+			_tool_spot_rect(),
+			"2/3 · Arraste %s até %s" % [_tool_display_name(tool), current_pet_name],
+		)
+	elif tutorial_step == 2:
+		tutorial_overlay.show_step(
+			Rect2(world.pet_position - Vector2(250, 250), Vector2(500, 560)),
+			"3/3 · " + _gesture_hint(),
+		)
+
+
+func _gesture_hint() -> String:
+	return Loc.t(String(GESTURE_HINTS.get(current_service, GESTURE_HINTS[&"bath"])))
+
+
+func _tool_spot_rect() -> Rect2:
+	var tool: StringName = StringName(SERVICE_TOOLS[current_service])
+	var shelf: Vector2 = world.tool_shelf_position(tool)
+	return Rect2(shelf - Vector2(80, 80), Vector2(160, 160))
+
+
+func _tutorial_advance() -> void:
+	tutorial_step += 1
+	if tutorial_step >= 3:
+		_finish_tutorial()
+		Analytics.track(&"tutorial_complete")
+	else:
+		_tutorial_apply()
+
+
+func _finish_tutorial() -> void:
+	tutorial_step = -1
+	tutorial_overlay.finish()
+	tutorial_skip_button.visible = false
+	GameState.tutorial_complete = true
+
+
+func _skip_tutorial() -> void:
+	_finish_tutorial()
+	Analytics.track(&"tutorial_skipped")
+
+
+func _update_queue_ui() -> void:
+	for slot: int in 3:
+		var client: Dictionary = queue[slot]
+		if client.is_empty():
+			queue_name_labels[slot].text = "· · ·"
+			queue_service_labels[slot].text = "aguardando cliente"
+			queue_cards[slot].modulate.a = 0.45
+		else:
+			var client_name: String = String(
+				ContentDB.pet(String(client["pet"])).get("name", "Pet")
+			)
+			if bool(client["vip"]):
+				client_name = "VIP " + client_name
+			queue_name_labels[slot].text = client_name
+			queue_service_labels[slot].text = String(
+				SERVICE_LABELS.get(StringName(client["service"]), "cuidado")
+			).capitalize()
+			queue_cards[slot].modulate.a = 1.0
+		queue_cards[slot].disabled = not _can_select(slot)
 
 
 func _configure_current_service() -> void:
@@ -422,14 +601,25 @@ func _configure_current_service() -> void:
 		{&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}
 		. get(current_service, 1350.0)
 	)
-	# A paciência do pet modula o tempo real do atendimento (27–50 no catálogo).
+	# A paciência do pet modula o tempo real do atendimento (27–50 no catálogo);
+	# passivos de equipe contratada (staff.json) ajustam tempo, distância e janela.
 	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
 	var patience_factor: float = clampf(patience / 42.0, 0.6, 1.25)
+	patience_factor += GameState.staff_bonus(&"patience")
+	if current_service == &"bath":
+		required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
+	var window_bonus: float = GameState.staff_bonus(&"perfect_window")
+	if current_service == &"groom":
+		window_bonus += GameState.staff_bonus(&"groom_quality")
 	bath.configure(
 		duration * patience_factor,
 		RemoteConfig.get_float("bath_target_min"),
-		RemoteConfig.get_float("bath_target_max"),
+		minf(RemoteConfig.get_float("bath_target_max") + window_bonus, 1.0),
 		required_distance,
+	)
+	var gesture: Dictionary = GESTURES.get(current_service, GESTURES[&"bath"])
+	bath.configure_gesture(
+		gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"]
 	)
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
@@ -554,18 +744,43 @@ func _build_interface() -> void:
 	review_label = _pill(top_bar, "★ 5.0", PINK, 235)
 	combo_label = _pill(top_bar, "COMBO ×1", GREEN, 300)
 
-	order_card = PanelContainer.new()
-	order_card.position = Vector2(65, 310)
-	order_card.size = Vector2(560, 175)
-	order_card.add_theme_stylebox_override(
-		"panel", _style(Color("ffffff", 0.94), 36, 24, Color("ff8fb1"), 6)
-	)
-	add_child(order_card)
-	order_label = Label.new()
-	order_label.text = "CARAMELO\nVira-lata caramelo • Banho simples\n12+ moedas"
-	order_label.add_theme_font_size_override("font_size", 32)
-	order_label.add_theme_color_override("font_color", CHARCOAL)
-	order_card.add_child(order_label)
+	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
+	queue_row = HBoxContainer.new()
+	queue_row.position = Vector2(45, 310)
+	queue_row.size = Vector2(990, 175)
+	queue_row.add_theme_constant_override("separation", 15)
+	add_child(queue_row)
+	for slot: int in 3:
+		var card: Button = _button("", Color("ffffff", 0.94), 320, 175)
+		card.add_theme_stylebox_override("panel", _style(Color("ffffff", 0.94), 26, 16, PINK, 4))
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		var column: VBoxContainer = VBoxContainer.new()
+		column.add_theme_constant_override("separation", 8)
+		column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		column.offset_left = 14.0
+		column.offset_right = -14.0
+		column.offset_top = 12.0
+		column.offset_bottom = -12.0
+		card.add_child(column)
+		var name_label: Label = Label.new()
+		name_label.add_theme_font_size_override("font_size", 27)
+		name_label.add_theme_color_override("font_color", CHARCOAL)
+		column.add_child(name_label)
+		var service_label: Label = Label.new()
+		service_label.add_theme_font_size_override("font_size", 22)
+		service_label.add_theme_color_override("font_color", Color("546e7a"))
+		column.add_child(service_label)
+		var bar: ColorRect = ColorRect.new()
+		bar.custom_minimum_size = Vector2(0, 10)
+		bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		bar.color = Color("7ed957")
+		column.add_child(bar)
+		card.pressed.connect(_on_queue_pressed.bind(slot))
+		queue_row.add_child(card)
+		queue_cards.append(card)
+		queue_name_labels.append(name_label)
+		queue_service_labels.append(service_label)
+		queue_bars.append(bar)
 
 	# Navegação superior compacta: ícones flutuantes preservam o cenário e a área de trabalho.
 	var nav: HBoxContainer = HBoxContainer.new()
@@ -577,6 +792,8 @@ func _build_interface() -> void:
 	for item: Dictionary in [
 		{"id": "missions", "tip": "Missões"},
 		{"id": "collection", "tip": "Pets"},
+		{"id": "staff", "tip": "Equipe"},
+		{"id": "shop", "tip": "Loja"},
 		{"id": "map", "tip": "Mapa"},
 		{"id": "settings", "tip": "Ajustes"}
 	]:
@@ -587,7 +804,7 @@ func _build_interface() -> void:
 			"normal", _style(Color("263238", 0.88), 41, 8, Color("ffffff", 0.72), 3)
 		)
 		nav_button.add_theme_stylebox_override("hover", _style(PINK, 41, 8, Color.WHITE, 3))
-		nav_button.pressed.connect(_open_meta.bind(StringName(item["id"])))
+		nav_button.pressed.connect(meta.open.bind(StringName(item["id"]), nav_button))
 		nav.add_child(nav_button)
 
 	# HUD flutuante sem rodapé sólido: cenário continua visível até a borda inferior.
@@ -617,7 +834,9 @@ func _build_interface() -> void:
 	tool_upgrade_button.pressed.connect(_on_tool_upgrade_pressed)
 	upgrades_row.add_child(tool_upgrade_button)
 
-	_build_meta_panel()
+	meta = MetaPanel.new()
+	meta.refresh_callback = _refresh_economy
+	meta.build(self)
 
 	result_panel = PanelContainer.new()
 	result_panel.position = Vector2(110, 430)
@@ -652,108 +871,17 @@ func _build_interface() -> void:
 	toast_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(toast_layer)
 
-
-func _build_meta_panel() -> void:
-	meta_backdrop = TextureRect.new()
-	meta_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	meta_backdrop.texture = MENU_BACKGROUND
-	meta_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	meta_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	meta_backdrop.modulate = Color(0.42, 0.35, 0.48, 0.92)
-	meta_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(meta_backdrop)
-	meta_panel = PanelContainer.new()
-	meta_panel.position = Vector2(80, 290)
-	meta_panel.size = Vector2(920, 950)
-	meta_panel.add_theme_stylebox_override("panel", _style(Color("fffaf3", 0.98), 50, 42, PINK, 7))
-	add_child(meta_panel)
-	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", 22)
-	meta_panel.add_child(column)
-	meta_title = Label.new()
-	meta_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	meta_title.add_theme_font_size_override("font_size", 54)
-	meta_title.add_theme_color_override("font_color", CHARCOAL)
-	column.add_child(meta_title)
-	meta_content = Label.new()
-	meta_content.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	meta_content.add_theme_font_size_override("font_size", 32)
-	meta_content.add_theme_color_override("font_color", CHARCOAL)
-	meta_content.custom_minimum_size = Vector2(820, 610)
-	column.add_child(meta_content)
-	meta_action_button = _button("COLETAR RECOMPENSAS", GREEN, 0, 90)
-	meta_action_button.pressed.connect(_claim_available_rewards)
-	column.add_child(meta_action_button)
-	var close: Button = _button("↙  VOLTAR AO PETSHOP", PINK, 0, 90)
-	close.pressed.connect(_close_meta)
-	column.add_child(close)
-	meta_panel.hide()
-	meta_backdrop.hide()
-
-
-func _close_meta() -> void:
-	meta_panel.hide()
-	meta_backdrop.hide()
-	AudioManager.play(&"tap")
-
-
-func _open_meta(section: StringName) -> void:
-	meta_backdrop.show()
-	meta_backdrop.pivot_offset = meta_backdrop.size * 0.5
-	meta_backdrop.scale = Vector2(1.035, 1.035)
-	meta_backdrop.create_tween().tween_property(meta_backdrop, "scale", Vector2.ONE, 3.5).set_trans(
-		Tween.TRANS_SINE
-	)
-	_pop_panel(meta_panel)
-	AudioManager.play(&"panel_open")
-	meta_action_button.show()
-	meta_action_button.text = "COLETAR RECOMPENSAS"
-	if section == &"missions":
-		meta_title.text = "MISSÕES DO DIA"
-		meta_content.text = _mission_text()
-	elif section == &"collection":
-		meta_action_button.hide()
-		meta_title.text = "COLEÇÃO"
-		meta_content.text = (
-			(
-				"PETS  %d / %d\n%s\n\nEQUIPE  %d / 6\n%s\n\n"
-				+ "CONQUISTAS  %d / 10\n%s\n\nCOSMÉTICOS  %d\nBRASAS  %d"
-			)
-			% [
-				GameState.unlocked_pets.size(),
-				ContentDB.pets.size(),
-				_pet_names(),
-				GameState.hired_staff.size(),
-				_staff_names(),
-				GameState.achievement_ids.size(),
-				_achievement_names(),
-				GameState.unlocked_cosmetics.size(),
-				GameState.embers,
-			]
-		)
-	elif section == &"map":
-		meta_action_button.hide()
-		meta_title.text = "DO BALDE AO IMPÉRIO"
-		meta_content.text = _career_text()
-	else:
-		meta_action_button.text = "ALTERNAR MODO ECONÔMICO"
-		meta_title.text = "AJUSTES E ACESSIBILIDADE"
-		meta_content.text = (
-			(
-				"Som: %s\nVibração: %s\nPartículas reduzidas: %s\nModo econômico: %s\n\n"
-				+ "Use o botão abaixo para alternar o modo econômico e reduzir partículas. "
-				+ "O gameplay permanece idêntico."
-			)
-			% [
-				"ligado" if float(GameState.settings.get("sfx", 0.9)) > 0 else "desligado",
-				"ligada" if bool(GameState.settings.get("haptics", true)) else "desligada",
-				"sim" if bool(GameState.settings.get("reduced_particles", false)) else "não",
-				"sim" if bool(GameState.settings.get("eco_mode", false)) else "não"
-			]
-		)
-		meta_panel.set_meta("settings_mode", true)
-		return
-	meta_panel.set_meta("settings_mode", false)
+	# Spotlight por cima de tudo (input passa direto: guia não-bloqueante).
+	tutorial_overlay = TutorialOverlayScript.new()
+	tutorial_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tutorial_overlay.visible = false
+	add_child(tutorial_overlay)
+	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("7f8c8d", 0.9), 300, 64)
+	tutorial_skip_button.position = Vector2(390, 1830)
+	tutorial_skip_button.pressed.connect(_skip_tutorial)
+	tutorial_skip_button.visible = false
+	add_child(tutorial_skip_button)
 
 
 func _pop_panel(panel: Control) -> void:
@@ -766,104 +894,6 @@ func _pop_panel(panel: Control) -> void:
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(panel, "scale", Vector2.ONE, 0.22)
 	tween.tween_property(panel, "modulate:a", 1.0, 0.16)
-
-
-func _list_text(values: Array[String]) -> String:
-	var result: String = ""
-	for value: String in values:
-		result += ("" if result.is_empty() else ", ") + value
-	return result
-
-
-func _staff_names() -> String:
-	var names: Array[String] = []
-	for staff_id: String in GameState.hired_staff:
-		names.append(ContentDB.staff_name(staff_id))
-	return _list_text(names)
-
-
-func _achievement_names() -> String:
-	var names: Array[String] = []
-	for achievement_id: String in GameState.achievement_ids:
-		names.append(ContentDB.achievement_name(achievement_id))
-	return _list_text(names)
-
-
-func _pet_names() -> String:
-	var result: String = ""
-	for pet_id: String in GameState.unlocked_pets:
-		var pet_name: String = String(ContentDB.pet(pet_id).get("name", pet_id))
-		result += ("" if result.is_empty() else ", ") + pet_name
-	return result
-
-
-func _career_text() -> String:
-	var text: String = (
-		"EVENTO: %s\nCARREIRA: nível %d/120 • %.1fh ativas\n\n"
-		% [
-			LiveOps.current_event_name(),
-			GameState.player_level,
-			GameState.active_play_seconds / 3600.0,
-		]
-	)
-	for entry: Dictionary in ContentDB.career.get("establishments", []):
-		var unlock_level: int = int(entry.get("unlock_level", 1))
-		var marker: String = "✓" if GameState.player_level >= unlock_level else "□"
-		text += "%s %s — nível %d\n" % [marker, entry.get("name", "Petshop"), unlock_level]
-	return text + "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
-
-
-func _mission_text() -> String:
-	var claimed_today: bool = GameState.is_daily_claimed_today()
-	var service_count: int = int(GameState.mission_progress.get("services", 0))
-	var perfect_count: int = int(GameState.mission_progress.get("perfect", 0))
-	var upgrade_count: int = int(GameState.mission_progress.get("upgrades", 0))
-	var next_day: int = GameState.daily_streak % 7 + 1
-	var display_day: int = GameState.daily_streak if claimed_today else next_day
-	var daily_status: String = (
-		"Coletado hoje" if claimed_today else "%d moedas disponíveis" % (25 * next_day)
-	)
-	return (
-		(
-			"LOGIN DIÁRIO  Dia %d/7\n%s\n\n"
-			+ "BANHOS E TOSAS  %d/5\nFaça 5 serviços • 75 moedas\n\n"
-			+ "NA MEDIDA  %d/3\nConsiga 3 Perfect • 75 moedas\n\n"
-			+ "TUDO NOVINHO  %d/1\nCompre 1 upgrade • 75 moedas\n\n"
-			+ "Missões nunca exigem anúncio ou compra."
-		)
-		% [
-			display_day,
-			daily_status,
-			mini(service_count, 5),
-			mini(perfect_count, 3),
-			mini(upgrade_count, 1)
-		]
-	)
-
-
-func _claim_available_rewards() -> void:
-	if bool(meta_panel.get_meta("settings_mode", false)):
-		var enabled: bool = not bool(GameState.settings.get("eco_mode", false))
-		GameState.settings["eco_mode"] = enabled
-		GameState.settings["reduced_particles"] = enabled
-		SaveManager.request_save()
-		_open_meta(&"settings")
-		_show_toast("Modo econômico %s" % ("ativado" if enabled else "desativado"), BLUE)
-		return
-	var total_claimed: int = GameState.claim_daily_reward()
-	for mission_id: StringName in [&"daily_bath_5", &"daily_perfect_3", &"daily_upgrade_1"]:
-		if GameState.claim_mission(mission_id):
-			total_claimed += 75
-	_open_meta(&"missions")
-	_show_toast(
-		(
-			"Recompensas coletadas: +%d" % total_claimed
-			if total_claimed > 0
-			else "Nada pronto para coletar ainda"
-		),
-		GREEN if total_claimed > 0 else Color("b0bec5")
-	)
-	_refresh_economy()
 
 
 func _pill(parent: Container, text: String, color: Color, width: float) -> Label:

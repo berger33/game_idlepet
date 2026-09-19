@@ -3,6 +3,7 @@ extends Node
 
 const SAVE_VERSION: int = 6
 const MAX_CAREER_LEVEL: int = 120
+const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 var coins: float = 0.0
 var embers: int = 0
 var franchise_tokens: int = 0
@@ -120,6 +121,59 @@ func buy_tool_upgrade(tool_id: StringName) -> bool:
 
 func tool_bonus(tool_id: StringName) -> float:
 	return 1.0 + clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30) * 0.04
+
+
+## Soma dos passivos contratados de um tipo (staff.json agora dirige o jogo).
+func staff_bonus(passive_type: StringName) -> float:
+	var total: float = 0.0
+	for staff_id: String in hired_staff:
+		var entry: Dictionary = ContentDB.staff_by_id.get(staff_id, {})
+		var passive: Dictionary = entry.get("passive", {})
+		if String(passive.get("type", "")) == String(passive_type):
+			total += float(passive.get("value", 0.0))
+	return total
+
+
+func hire_cost(staff_id: String) -> int:
+	var rarity: String = String(
+		ContentDB.staff_by_id.get(staff_id, {}).get("rarity", "common")
+	)
+	return int(HIRE_COSTS.get(rarity, 150))
+
+
+func hire_staff(staff_id: String) -> bool:
+	if staff_id == "player" or hired_staff.has(staff_id):
+		return false
+	if not ContentDB.staff_by_id.has(staff_id):
+		return false
+	if not spend_coins(float(hire_cost(staff_id)), &"hire_staff"):
+		return false
+	hired_staff.append(staff_id)
+	Analytics.track(&"staff_hired", {"id": staff_id})
+	SaveManager.request_save()
+	return true
+
+
+func buy_cosmetic(cosmetic_id: String) -> bool:
+	if unlocked_cosmetics.has(cosmetic_id):
+		return false
+	var entry: Dictionary = ContentDB.cosmetic(cosmetic_id)
+	var price: Dictionary = entry.get("price", {})
+	if price.is_empty():
+		return false
+	var coin_price: int = int(price.get("coins", 0))
+	var ember_price: int = int(price.get("embers", 0))
+	if coins < float(coin_price) or embers < ember_price:
+		return false
+	if coin_price > 0:
+		spend_coins(float(coin_price), &"cosmetic")
+	if ember_price > 0:
+		embers -= ember_price
+		EventBus.currency_changed.emit(&"coins", coins)
+	unlocked_cosmetics.append(cosmetic_id)
+	Analytics.track(&"cosmetic_bought", {"id": cosmetic_id})
+	SaveManager.request_save()
+	return true
 
 
 func register_review(stars: int) -> void:

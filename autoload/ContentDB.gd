@@ -5,6 +5,7 @@ const PETS_PATH: String = "res://data/pets.json"
 const CAREER_PATH: String = "res://data/career_track.json"
 const STAFF_PATH: String = "res://data/staff.json"
 const ACHIEVEMENTS_PATH: String = "res://data/achievements.json"
+const COSMETICS_PATH: String = "res://data/cosmetics.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -13,6 +14,8 @@ var staff: Array[Dictionary] = []
 var staff_by_id: Dictionary = {}
 var achievements: Array[Dictionary] = []
 var achievements_by_id: Dictionary = {}
+var cosmetics: Array[Dictionary] = []
+var cosmetics_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -32,6 +35,15 @@ func _ready() -> void:
 		var achievement_id: String = String(achievement.get("id", ""))
 		if not achievement_id.is_empty() and not achievements_by_id.has(achievement_id):
 			achievements_by_id[achievement_id] = achievement
+	cosmetics = _load_array(COSMETICS_PATH, "cosmetics")
+	for look: Dictionary in cosmetics:
+		var look_id: String = String(look.get("id", ""))
+		if not look_id.is_empty() and not cosmetics_by_id.has(look_id):
+			cosmetics_by_id[look_id] = look
+
+
+func cosmetic(id: String) -> Dictionary:
+	return cosmetics_by_id.get(id, {})
 
 
 func staff_name(id: String) -> String:

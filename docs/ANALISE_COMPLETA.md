@@ -232,3 +232,66 @@ Executado e verificado (gdlint limpo, 17/17 testes, `validate_project` 0 erros):
 **Em aberto (próximas fases):** fila/clientes com escolha (Fase 1), telas `.tscn` reais
 (Fase 2), áudio licenciado/composto (Fase 4 — requer aquisição de assets fora do sandbox),
 merge na `main` via PR (a abrir pelo usuário, que detém a decisão de merge).
+
+## 16. Status de implementação — Fase 1 (sessão 2026-09-19, continuação)
+
+Executado e verificado (gdlint projeto inteiro limpo, 17/17 testes, `validate_project`
+0 erros, tokens de contrato intactos, `Button.new()` ainda único em Main):
+
+1. **Fila com escolha (C3)** — até 3 clientes gerados (`_make_client`): pet aleatório dos
+   desbloqueados + serviço aleatório dos disponíveis; cartões tocáveis com nome, pedido e
+   barra de paciência (60–90 s; decai só com tutorial completo; quem espera demais vai
+   embora ⇒ review 3★ + toast + analytics `client_left`); reabastece em 1,1–2 s. A rotação
+   determinística foi removida — **o jogador escolhe pet e serviço** (decisão real:
+   recompensas distintas, risco de perder cliente).
+2. **Clientes VIP** — 12% de chance (`Economy.VIP_CHANCE`), recompensa ×2, paciência de
+   espera ×0,7, marcador no cartão e no resultado.
+3. **Gestos distintos por serviço** — `BathService.configure_gesture`: banho = esfregar
+   livre; tosa = só eixo vertical; secagem = só horizontal; perfume = **segurar** para
+   borrifar (preenchimento por tempo, 0,22/s); laço = esfregada delicada (teto 20 px por
+   evento). Simulação de pior caso (pet patience 27): todos os gestos alcançam a janela
+   Perfect antes do timeout.
+4. **Gorjetas com odds publicadas** — `Economy.tip_multiplier` (60/25/10/5 → +0/+15/+30/
+   +60%), aplicadas à recompensa e exibidas no resultado; odds também na tela de missões.
+5. **Tutorial spotlight (C7)** — `TutorialOverlay.gd` não-bloqueante (dim em 4 faixas,
+   borda pulsante, 3 passos: fila → prateleira → gesto), avança só com eventos reais,
+   sempre pulável; grava `tutorial_complete` (campo já persistido no save v6).
+6. **Higiene de engenharia** — painéis meta extraídos para `MetaPanel.gd` (Main de 1.140
+   para ~950 linhas, abaixo do teto de lint); sala vazia (`room_empty`/`clear_room`)
+   enquanto nenhum cliente é escolhido.
+
+**Ainda em aberto:** telas `.tscn` reais (Fase 2), arte de estados dos 33 pets e áudio
+real (Fase 4), prestígio/loja (Fases 2–4). Runtime Godot segue coberto só pelo CI.
+
+## 17. Status de implementação — Fase 2 (sessão 2026-09-19, continuação)
+
+Executado e verificado (gdlint limpo, 17/17 testes, `validate_project` 0 erros, 53 chaves
+de localização com paridade nos 3 idiomas):
+
+1. **Telas reais no MetaPanel** (fim dos blocos de texto): missões com **claim
+   individual** por linha; coleção em **grid de cards** com retrato/afeto/cadeado por
+   nível; **equipe contratável** (custo por raridade 150/400/900/2000 moedas); **loja**
+   com cosméticos compráveis em moedas **e Brasas** (a moeda morta ganha sumidouro —
+   C13) + catálogo IAP exibido com fachada honesta ("indisponível offline"); mapa
+   preservado; ajustes com **sliders reais** de SFX/música (`AudioManager.apply_volumes`
+   ao vivo), toggles e **seletor de idioma**.
+2. **i18n runtime** — autoload `Loc` parseia `data/localization/*.csv` em memória (sem
+   depender de `.import`/TranslationServer); 53 chaves × pt_BR/en_US/es_ES; textos de
+   telas, hints de gesto, resultado e configurações passam por `Loc.t`.
+3. **Staff dirige o jogo** — `GameState.staff_bonus(type)` soma passivos contratados de
+   `staff.json`: `patience` (+tempo), `bath_speed` (−distância do banho),
+   `perfect_window`/`groom_quality` (+janela Perfect), `veterinary_xp` (+XP). Os 6 NPCs
+   deixam de ser dados mortos.
+4. **Princípios de direção herdados do feedback externo (registrados como regra):**
+   - *Emergência*: nada "popa do vazio" — o painel cresce do botão que o abriu
+     (`open(section, origin)` ajusta o pivot) e linhas/cards surgem em cascata
+     scale-in; vale para qualquer elemento novo daqui em diante.
+   - *Sync de áudio*: o áudio procedural é placeholder; quando existir trilha real,
+     re-verificar âncoras contra o áudio **real** e ajustar o áudio ao frame, nunca o
+     contrário.
+5. Navegação cresce para 6 seções com ícones novos gerados por `gen_ui_icons.py`
+   (pessoa = equipe, sacola = loja).
+
+**Ainda em aberto:** arte de estados dos 33 pets e áudio real (Fase 4), prestígio,
+efeito visual dos cosméticos comprados (hoje são de vitrine — declarado na própria
+loja), telas 100% `.tscn` (a UI segue codegen, porém estruturada em módulos).
