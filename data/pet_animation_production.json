@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 24,
     "images_expected": 500,
-    "images_generated": 260,
-    "images_qa_passed": 260,
+    "images_generated": 269,
+    "images_qa_passed": 269,
     "pets_integrated": 26,
-    "generation_attempts": 271
+    "generation_attempts": 280
   },
   "pets": [
     {
@@ -1529,35 +1529,35 @@
       "reference": "art/pets/gaia_samoyed.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/dizzy.png"
         },
         "sad": {
@@ -1565,15 +1565,16 @@
           "path": "art/pet_animations/gaia_samoyed/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 9,
+      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. sad pending: per-turn image generation limit reached; will be generated next turn. Sad falls back to base pose via the existing runtime crossfade until then. wet ships with the curled tail uncurled as wet body language."
     },
     {
       "sequence": 28,
