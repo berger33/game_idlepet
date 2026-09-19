@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 29,
+    "pets_generated": 30,
     "images_expected": 500,
-    "images_generated": 297,
-    "images_qa_passed": 297,
-    "pets_integrated": 29,
-    "generation_attempts": 310
+    "images_generated": 307,
+    "images_qa_passed": 307,
+    "pets_integrated": 30,
+    "generation_attempts": 320
   },
   "pets": [
     {
@@ -1728,24 +1728,24 @@
           "path": "art/pet_animations/estrela_khao/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/estrela_khao/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 7,
-      "qa_notes": "7/10 states approved on the first batch with the new --flood backdrop recovery: GrabCut left holes in the white coat over the light gradient backdrop, so normalize_pet_state.py gained a flood-fill path (border flood stopped by the sticker outline; ground-shadow/pocket/debris filters) selected per source, with the default GrabCut path regression-verified at worst IoU 0.989 against the committed Rio/Nox frames. Odd eyes (viewer-left blue, viewer-right amber) preserved in every state; dirty mud+leaf, wet gray slicked with droplets, messy tufts, strong opposite tilts (mask IoU tl-vs-tr 0.089), squash without sparkles, clean mid-air jump. dizzy/sad/blink queued for next turn. Contract OK on all 7 (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 on the first batch (flood path); dizzy (spiral odd eyes, orbiting stars, wavy tail), sad (ears drooped sideways, single tear from the blue eye, tail wrapped low) and blink (both eyes closed, blush preserved) approved next turn closing the lote 10/10. Odd eyes (viewer-left blue, viewer-right amber) preserved in every state; all frames on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 31,
@@ -1757,31 +1757,31 @@
       "reference": "art/pets/pipoca_corgi.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/happy_air.png"
         },
         "dizzy": {
@@ -1797,11 +1797,12 @@
           "path": "art/pet_animations/pipoca_corgi/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 7,
+      "qa_notes": "7/10 states approved on the first batch with default GrabCut path: dirty (mud + leaf on white chest), wet (darker slicked coat, drooped floppy ears as wet body language, droplets), messy (ruffled tufts), tilt_left/tilt_right with opposite diagonals (mask IoU 0.513 direct / 0.532 mirrored — high overlap due to the wide compact body, visually confirmed opposite leans), happy_squash (squashed wide, tongue out, no sparkles), happy_air (mid-air jump with motion lines). Corgi identity preserved (orange-red coat, white blaze/chest/paws, huge upright ears, brown eyes). dizzy/sad/blink queued for next turn. Contract OK on all 7."
     },
     {
       "sequence": 32,
