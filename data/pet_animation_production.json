@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 27,
+    "pets_generated": 28,
     "images_expected": 500,
-    "images_generated": 277,
-    "images_qa_passed": 277,
-    "pets_integrated": 27,
-    "generation_attempts": 290
+    "images_generated": 287,
+    "images_qa_passed": 287,
+    "pets_integrated": 28,
+    "generation_attempts": 300
   },
   "pets": [
     {
@@ -1598,11 +1598,11 @@
           "path": "art/pet_animations/nox_sphynx/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/tilt_right.png"
         },
         "happy_squash": {
@@ -1618,7 +1618,7 @@
           "path": "art/pet_animations/nox_sphynx/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/sad.png"
         },
         "blink": {
@@ -1626,12 +1626,12 @@
           "path": "art/pet_animations/nox_sphynx/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 9,
-      "qa_notes": "7/10 states approved on the first batch: dirty (mud smudges + leaf on wrinkled skin), wet (darker glossy skin, droplets, drooped ears), messy (stubble stray hairs, kinked tail), happy_squash (squashed wide with happy arcs), happy_air (mid-air jump, clean transparency), dizzy (spiral eyes, tongue out, orbiting stars), blink (closed curved eyes) — sphynx identity preserved (taupe wrinkled skin, huge pink-lined bat ears, olive-green eyes, whip tail). tilt_left and tilt_right were REJECTED: generated as near-duplicates of the neutral pose (mask IoU 0.996 between them, 0.992 vs blink), no opposite lean; queued for regeneration with stronger tilt prompts next turn together with sad. Contract OK on the 7 accepted frames (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 12,
+      "qa_notes": "7/10 on the first batch; tilt_left/tilt_right regenerated this turn with strong-lean prompts and approved (mask IoU tl-vs-tr 0.335, IoU tl-vs-flip(tr) 0.38 — genuinely opposite diagonal leans), sad approved (ears drooped sideways, single tear, tail wrapped low). Lote closed 10/10 on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479). Sphynx identity preserved in all states."
     },
     {
       "sequence": 29,
@@ -1643,31 +1643,31 @@
       "reference": "art/pets/rio_savannah.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/rio_savannah/happy_air.png"
         },
         "dizzy": {
@@ -1683,11 +1683,12 @@
           "path": "art/pet_animations/rio_savannah/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 7,
+      "qa_notes": "7/10 states approved on the first batch: dirty (mud + leaf over spotted golden coat), wet (slicked darker fur, drooped spread ears, dripping ringed tail), messy (ruffled tufts, disheveled tail), tilt_left/tilt_right with strong opposite diagonal leans (mask IoU tl-vs-tr 0.277, tl-vs-flip(tr) 0.395), happy_squash and happy_air. happy_squash shipped with baked-in sparkle stars removed during alpha QA as undue VFX (stars reserved for Perfect/special combo; detached 77-359px islands excised, same precedent as lote 13 puddle removal) and re-verified on contract. dizzy/sad/blink queued for next turn. Savannah identity preserved (spotted golden coat, cream chest, huge tall ears, green eyes, ringed tail)."
     },
     {
       "sequence": 30,
