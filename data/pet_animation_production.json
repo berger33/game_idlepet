@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 24,
     "images_expected": 500,
-    "images_generated": 239,
-    "images_qa_passed": 239,
-    "pets_integrated": 23,
-    "generation_attempts": 250
+    "images_generated": 240,
+    "images_qa_passed": 240,
+    "pets_integrated": 24,
+    "generation_attempts": 251
   },
   "pets": [
     {
@@ -1394,16 +1394,16 @@
           "path": "art/pet_animations/onca_bengal/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/onca_bengal/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 9,
-      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. blink pending: per-turn image generation limit reached; it will be generated next turn. Missing blink falls back to the base pose via the existing runtime crossfade. sad uses the bald-patch-between-drooped-ears shorthand with a single tear; rosette identity preserved in all frames."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 passed on first batch; blink regenerated next turn with rosette pattern and ringed tail preserved — approved. All 10 states qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 25,
