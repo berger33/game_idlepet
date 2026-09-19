@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 40,
+    "pets_generated": 41,
     "images_expected": 500,
-    "images_generated": 400,
-    "images_qa_passed": 400,
-    "pets_integrated": 40,
-    "generation_attempts": 410
+    "images_generated": 410,
+    "images_qa_passed": 410,
+    "pets_integrated": 41,
+    "generation_attempts": 420
   },
   "pets": [
     {
@@ -2327,51 +2327,52 @@
       "reference": "art/pets/mimi_persa.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/mimi_persa/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "Primeiro gato do catalogo. Creme persa (oficiais d8c4aa/8d7763/f6ead9, tol 20). Base curta: bottom 400 — TODOS os aterrados registrados em 400 (wet 478->400 c/ rescale 446->398, messy 474->400 rescale 438->398, dizzy 460->400 rescale 411->398, sad 468->400 rescale 427->398, tilt 422->400 e squash 431->400 deslocados; dirty/blink ja ~398); happy_air aereo (bottom 418) com 10/10 comps near-pet = motion lines (override grab sobre flood, precedente Apolo). GrabCut em todos os 9 estados + happy_air. Identidade: hue-corr 0.985-1.000; oficiais 9150-15057 px (base 12704); olhos cobre ~64.5k px laranja, zero confusao com backdrop. Contrato 10/10 (512x512x4, ext<=446, alpha de borda <8, registro 398-400 aterrados + happy_air<=479). messy roughness 14.40 vs base 7.97 = +81% (gate >=+63%). wet: V 211->165 (maior queda absoluta de V do catalogo em pelo claro), cov 0.358->0.289, 13 comps (gotas preservadas via grab). blink: -28% pupila escura na banda facial (1207->867 px; palpebra fechada = linha fina vs pupila redonda; olhos cobre sobre creme = baixo contraste p/ gray-diff puro), pose identica IoU 0.955, hue 1.000; dizzy +53% (aneis/espirais), sad +108%. tilt: v1 rejeitado (lean rel -10.7; top_x=146 era assimetria de orelha, nao inclinacao) -> retake c/ dupla referencia (base + Lola tilt_left) aprovado: tl abs -6.9 / tr +6.9 (par espelhado real); rel tl -18.1 (piso familia 13.5). ASSIMETRIA DOCUMENTADA: base posa c/ lean +11.2 e absorve parte da diagonal direita (rel tr -4.3) — par mais fraco do catalogo junto c/ Bob +-13; convencao primaria (tl negativo / tr positivo absolutos) OK. sad head top -45.8px (orelhas caidas); dirty quase estatico (IoU 0.955) c/ manchas. Registro curto 400 = crossfades alinham c/ a base embarcada; se art lead re-groundar a base, re-registrar os 9 aterrados."
     },
     {
       "sequence": 42,
