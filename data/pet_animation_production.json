@@ -2880,8 +2880,8 @@
           "path": "art/pet_animations/cleo_egyptian/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
+      "generation_status": "complete",
+      "normalization_status": "complete",
       "visual_qa_status": "passed",
       "integration_status": "integrated",
       "generation_attempts": 9,

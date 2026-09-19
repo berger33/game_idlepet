@@ -172,6 +172,34 @@ O tracker `data/pet_animation_production.json` continua sendo a fonte auditável
 
 Itens abertos de revisão humana: `sad` da Maya (leitura contida, cauda permaneceu enrolada) e a métrica de lean do tilt da Maya (inflada pela cauda enrolada) — ambos registrados nas `qa_notes` do tracker.
 
+### Lotes 38–50 — fechamento do catálogo (FASE 8 COMPLETA: 500/500)
+
+Os lotes 38–40 fecharam os cachorros (40/40) e os lotes 41–50 introduziram os dez gatos, que concentraram os casos-limite do catálogo: bases esguias (Zara 309×449, Íris 247×446), bases diagonais com cabeça no extremo (Olívia −47.8, Simba −37.9, Zara +63.8, Lilo +50.5) e pelagens quase-neutras em que a correlação de matiz falha e a paleta oficial k-means vira o gate (Yuki prata, Zara lilac-point, Odin azul-cinza — precedente merle). O `tilt_right` por espelhamento, padrão dos lotes 18–40, foi progressivamente substituído: par 100% gerado (Lilo, primeiro do catálogo), edit direto de um estado aprovado preservando pose (Zara edit-do-sad, Íris edit-do-sad_v2), dupla referência com verificação de pose/aspect-ratio do par (Mimi, Odin) e espelho apenas com exceção documentada (Zara +12.7, Odin +7.9 — precedentes Bob ±13). `happy_air` consolidou o override para o caminho flood em 9 lotes consecutivos (Zara→Cléo): o GrabCut funde as linhas de movimento no corpo; o flood preserva o corpo aéreo e os rastros alongados. O `blink` dos gatos passou a ser validado por diff-clustering (par simétrico nos olhos), técnico superior ao diff de pupila escura quando olhos cobre/face colorida dominam a banda facial. Registros próprios de chão por base curta: Otto 411, Mimi 400, Apolo 465, Simba 434, Odin 409, Zara 481, Lilo 465 — os aterrados de cada pet alinham com a base embarcada para os crossfades dirty→clean e messy→clean.
+
+| Lote | Pet | Tent. | Observações-chave de QA |
+|---|---|---:|---|
+| 38 | Otto (Basset Hound) | 9 | Base curta bottom 411 (registro próprio); aterrados re-registrados 411±3; messy +63% (piso da família); base flutua ~68px (flag art lead) |
+| 39 | Kiara (Doberman) | 9 | Identidade por tan points (hue fraco em pelo preto); rótulos tl/tr corrigidos por troca lossless; happy_squash re-registrado 380→478 |
+| 40 | Apolo (Boiadeiro Bernês) | 9 | Lendário; bandas tricolores + marcas ferrugem; wet com colapso forte (cov 0.496→0.356); blink validado por eye-shine (face preta anula gray diff) |
+| 41 | Mimi (Persa) | 10 | 1º gato; base curta bottom 400; wet V 211→165; tilt por dupla referência (base + Lola); par fraco documentado (rel tr −4.3) |
+| 42 | Yuki (Scottish Fold) | 9 | Assinatura orelhas dobradas = 0 picos no topo (needle test); happy_air override INVERSO p/ flood (grab destruiu 19 motion lines); tilt rel −52.0 |
+| 43 | Olívia (Calico) | 14 | Tilt em 6 tentativas (cabeça da base no extremo esquerdo); resolução por convenção absoluta; seleção invertida (flood em 8 estados); messy +214% (recorde absoluto) |
+| 44 | Simba (Norueguês da Floresta) | 9 | Base curta/larga bottom 434; wet veio baixo/largo nativamente (zero rescale); tilt de 1ª; blink com face larga (filtro de par dx<240) |
+| 45 | Lilo (Munchkin) | 11 | 1ª base com cabeça à direita (espelho não serve) → PAR 100% GERADO (tl rel −26.6 / tr +46.9); wet única com cov subindo |
+| 46 | Zara (Oriental Shorthair) | 13 | Base mais esguia (cov 0.239) e mais diagonal (+63.8) do catálogo; tr fechado por edit-do-sad c/ exceção documentada (+12.7); wet clareia (V 164→183, brilho especular) |
+| 47 | Cosmo (Sagrado da Birmânia) | 9 | Luvas brancas + olhos azuis preservados; 1ª base quase simétrica dos gatos → primeiro par totalmente válido nas 2 direções (tl −24.3/espelho +24.3) |
+| 48 | Íris (Cornish Rex) | 13 | Base mais esguia (247×446); orelhas gigantes (34 spikes); tr no piso exato por edit-do-sad_v2; sad v1 rejeitado por escala → novo gate de cov relativo |
+| 49 | Odin (Nebelung) | 11 | Azul-cinza quase-neutro (paleta oficial B>G>R); tr dual-ref rejeitado por pose em pé (ar 0.98 vs 0.68) → espelho c/ exceção; wet 74 comps (recorde de gotas) |
+| 50 | Cléo (Mau Egípcio) | 9 | Gate spots ≥40 (base 72 manchas; estados 64–150); tilt espelhado mais forte (±111.0); blink IoU 0.980 (recorde); zero retakes — fechamento limpo |
+
+Gates de QA criados ou refinados nesta era: needle test para orelhas dobradas (Yuki); gate de escala `sad`/`dizzy` cov < base×1.35 (Íris, refinamento relativo do cov<0.40); contagem de manchas da assinatura da raça (Cléo); verificação obrigatória de pose/aspect-ratio do par tilt além do piso de lean (Odin); filtro de par de olhos por largura de face (Simba). Recorde do catálogo em `messy`: Olívia +214%.
+
+Itens abertos de revisão humana: re-ground lossless da base do Otto (e re-registro dos 10 estados como uma mudança dedicada) — a base renderiza ~68px acima da baseline 479 das demais; `sad` da Maya e métrica de lean inflada (cauda enrolada), ambos pré-existentes. Todos os demais registros próprios de chão (Mimi/Apolo/Simba/Odin/Zara/Lilo) alinham os aterrados com a base embarcada por design e não exigem ação.
+
+### Verificação funcional automatizada
+
+`tools/verify_pet_animations.py` (executado no CI) confere o contrato ponta a ponta: 50 pets × 10 estados `qa_passed`/`integrated` no tracker com resumo recalculado; `PET_STATE_NAMES` do renderer idêntico ao contrato; gatilho funcional para cada um dos 10 estados no `PetShopCanvas.gd`; catálogo `data/pets.json` ↔ tracker ↔ diretórios ↔ sprites base sem órfãos; e os 500 PNGs válidos (assinatura, 512×512 RGBA, transparência real, conteúdo e margens seguras) e rastreados no git. Orçamento de textura medido no fechamento: 500 estados = 158,7 MB (média 310 KB, mín. 174 KB, máx. 442 KB), mais 13,5 MB das 50 bases — para o export final, avaliar atlas/compressão (WebP/ETC2) no Godot conforme item LOW do backlog.
+
 ## Backlog
 
 ### CRITICAL
@@ -191,14 +219,16 @@ Itens abertos de revisão humana: `sad` da Maya (leitura contida, cauda permanec
 - Entrada, saída, bounce com squash/stretch e recuperação de falha.
 - Corações exclusivos do carinho; partículas exclusivas da ferramenta correta.
 - Estrelas removidas do styling e da conclusão comum; reservadas a Perfect/combo especial.
+- Produção completa dos 50 lotes: 500/500 imagens `qa_passed`, 50/50 pets integrados (518 tentativas; detalhes por lote nas seções acima e nas `qa_notes` do tracker).
+- Verificação funcional automatizada dos 500 PNGs no CI (`tools/verify_pet_animations.py`): contrato tracker→renderer→catálogo→arquivos.
+- Orçamento de textura medido: 158,7 MB nos 500 estados (média 310 KB) + 13,5 MB nas 50 bases.
 
 ### MEDIUM
 
-- Gerar e revisar os 49 lotes restantes na ordem do tracker.
 - Ajustar amplitudes por temperamento e `reduced_particles`.
 - Validar escala, apoio, oclusão e conforto tátil no Godot 4.7.2 para Windows.
+- Avaliar atlas/compressão de textura (WebP/ETC2) no export para reduzir os ~172 MB de arte de pet.
 
 ### LOW
 
-- Medir orçamento real de textura/export após os primeiros cinco pets integrados.
 - Refinar cadências raras de idle após playtest da Vertical Slice.

@@ -31,7 +31,7 @@ Cada sprite foi recortado por segmentação, normalizado para 512×512, converti
 
 ## Animação runtime
 
-A coleção-base alimenta uma arquitetura híbrida de estados autorais, interpolação e VFX. O renderer atual já possui reações básicas, mas a produção completa e os gatilhos estritos são acompanhados em [PET_ANIMATION_PRODUCTION.md](PET_ANIMATION_PRODUCTION.md) e `data/pet_animation_production.json`. Essa documentação é a fonte de verdade para o que está concluído, pendente de integração e ainda na fila; não se considera cobertura final antes dos respectivos marcos de QA.
+A coleção-base alimenta uma arquitetura híbrida de estados autorais, interpolação e VFX. A produção dos 10 estados anatômicos dos 50 pets foi concluída: 500/500 imagens `qa_passed` e 50/50 pets integrados, com verificação funcional automatizada no CI. O histórico de produção, os gates de QA e os gatilhos estritos estão em [PET_ANIMATION_PRODUCTION.md](PET_ANIMATION_PRODUCTION.md) e `data/pet_animation_production.json`.
 
 ## Lote 2 concluído
 
