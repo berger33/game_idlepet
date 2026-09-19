@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 21,
+    "pets_generated": 22,
     "images_expected": 500,
-    "images_generated": 210,
-    "images_qa_passed": 210,
+    "images_generated": 219,
+    "images_qa_passed": 219,
     "pets_integrated": 21,
-    "generation_attempts": 220
+    "generation_attempts": 230
   },
   "pets": [
     {
@@ -1244,51 +1244,52 @@
       "reference": "art/pets/sushi_japanese.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "rejected_identity",
           "path": "art/pet_animations/sushi_japanese/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/sushi_japanese/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review. sad was rejected for species drift (floppy round puppy ears and a thick dog tail broke the cat identity); retry queued for the next batch with a prompt enforcing pointed triangular cat ears and the stubby pom-pom tail. Runtime fallback keeps the sad reaction readable via base pose + darkening tint."
     },
     {
       "sequence": 23,
