@@ -121,6 +121,14 @@ class FoundationTests(unittest.TestCase):
         content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
         self.assertIn('func staff(', content)
 
+    def test_fase7_queue_follows_daily_event(self):
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        self.assertIn('func featured_service', liveops)
+        self.assertIn('events_on()', liveops)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.featured_service()', main)
+        self.assertIn('event_client', main)
+
     def test_fase5_weekly_missions_and_cosmetic_catalog(self):
         weekly = json.loads(Path('data/weekly_missions.json').read_text(encoding='utf8'))
         missions = weekly['missions']

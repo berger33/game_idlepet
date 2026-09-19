@@ -10,6 +10,13 @@ const DAY_SERVICE: Array[StringName] = [
 ]
 
 
+## Serviço que domina a fila hoje (dia temático); &"" se não houver.
+func featured_service() -> StringName:
+	if not events_on():
+		return &""
+	return DAY_SERVICE[weekday()]
+
+
 func events_on() -> bool:
 	return RemoteConfig.get_float(&"events_enabled") > 0.5
 

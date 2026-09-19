@@ -436,6 +436,12 @@ func _make_client() -> Dictionary:
 		Analytics.track(&"buddy_spawned", {"pet_id": pet_id})
 	var services: Array[StringName] = _available_services()
 	var service: StringName = services[randi() % services.size()]
+	# A fila segue o evento do dia: no dia temático, metade dos clientes
+	# chega com o serviço em destaque — o evento se sente andando pela porta.
+	var featured: StringName = LiveOps.featured_service()
+	if featured != &"" and featured in services and service != featured and randf() < 0.5:
+		service = featured
+		Analytics.track(&"event_client", {"service": String(service)})
 	var vip: bool = randf() < Economy.VIP_CHANCE
 	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
 	return {
