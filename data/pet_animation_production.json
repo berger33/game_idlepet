@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 32,
     "images_expected": 500,
-    "images_generated": 320,
-    "images_qa_passed": 320,
+    "images_generated": 329,
+    "images_qa_passed": 329,
     "pets_integrated": 32,
-    "generation_attempts": 333
+    "generation_attempts": 343
   },
   "pets": [
     {
@@ -1871,11 +1871,11 @@
       "reference": "art/pets/belinha_maltes.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/wet.png"
         },
         "messy": {
@@ -1883,39 +1883,40 @@
           "path": "art/pet_animations/belinha_maltes/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/belinha_maltes/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 states approved; messy rejected and queued for regeneration next turn (per-turn generation limit reached). Normalization used the flood path for the whole set: GrabCut eats the official cool-gray cfd8dc shading of the white coat (wet kept only 646 px vs 1119 flood; base 1329), while flood preserves it. wet needed one retry after an empty model response (10 attempts total: 8 first wave + empty + retry). wet reads soaked (mean V 213 to 188, coverage 0.555 to 0.481, flattened ears/tail, kept droplets); dirty shows mud/dust on white fur; dizzy has spiral eyes with no stars and a wobbly lean (head top +50px); sad droops strongly (head top +99px, single tear, plumed tail fallen) and stays naturally grounded; blink preserves the base pose (IoU 0.969) with closed lids (eye-band dark fraction 0.077 to 0.038); tilt_left/tilt_right are a lossless mirrored pair in the repo convention (head-top sweep 176/335, IoU 0.548). Fringe cleanup used a thin 2px boundary ring chroma key (per-image measured backdrop, dist<40, B-R>10) that preserves interior cool shading (88-99% kept); 8 crevice blend pixels on wet kept as anti-aliasing. Messy rejection: boundary roughness +35% vs base, below the approved family range (+63% Luna/Estrela to +146% Zeca); bbox width cannot be used as proof of expansion here because the base already fills the max extent. Identity hue corr 0.86-1.00. All 9 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 34,
