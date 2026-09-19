@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 36,
+    "pets_generated": 37,
     "images_expected": 500,
-    "images_generated": 360,
-    "images_qa_passed": 360,
-    "pets_integrated": 36,
-    "generation_attempts": 373
+    "images_generated": 370,
+    "images_qa_passed": 370,
+    "pets_integrated": 37,
+    "generation_attempts": 383
   },
   "pets": [
     {
@@ -2099,51 +2099,52 @@
       "reference": "art/pets/maya_akita.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/maya_akita/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus one retake (10 attempts). tilt_left v1 was rejected for an upright read (absolute lean -9.9, below the approved family minimum 13.5; head-top x 256 = no sweep) and retaken with a dual reference (Maya base + approved Lola tilt pose): v2 delivers an unambiguous left read (head-top x 310 to 192, ~118px sweep) with identity hue corr 1.000. Caveat documented: the body-wide lean metric is inflated for this breed because the curled tail shifts the feet centroid right (the base itself reads +67), so v2's raw lean of -111.6 overstates the pose; flagged for art-lead visual confirmation on the contact sheet. tilt_right is the lossless mirror (head-top 319). sad is approved with the weakest signal of the catalogue so far and explicitly flagged for art-lead review: face-only expression (eye-band diff 26.7, head top +10.9) with the tail still curled and a subdued read matching the calm temperament; it was re-grounded lossless from 465 to baseline 478. wet reads soaked (mean V 206 to 160, coverage 0.443 to 0.402, translucent urajiro) with 6 kept droplets (grab path override); happy_air keeps 7 motion lines (flood path chosen because grab dropped them); happy_squash had 7 one-sided detached wisps removed to match the single-component family pattern. messy passed the roughness gate at +151%. Urajiro preserved in every state (8289-15049 cream px). dizzy eye diff 34.4 is within the approved range (Belinha 33). Hue corr 0.847-1.000 (wet darkest by semantics). Standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 38,
