@@ -8,6 +8,12 @@ const TIP_MULTIPLIERS: Array[float] = [1.0, 1.15, 1.30, 1.60]
 ## Chance de um cliente da fila ser VIP (recompensa ×2, paciência menor).
 const VIP_CHANCE: float = 0.12
 const VIP_REWARD_MULTIPLIER: float = 2.0
+
+## Reputação do bairro: estrelas acumuladas desde sempre (reviews_sum, que já
+## sobrevive ao prestígio). Cada faixa dá +3% de chance de VIP e +2% de gorjeta.
+const NEIGHBORHOOD_TIERS: Array[int] = [0, 60, 150, 300, 600]
+const NEIGHBORHOOD_VIP_BONUS: float = 0.03
+const NEIGHBORHOOD_TIP_BONUS: float = 0.02
 ## Prestígio: cada nível de franquia rende +10% em todas as recompensas.
 const PRESTIGE_COIN_BONUS: float = 0.10
 
@@ -32,6 +38,22 @@ func upgrade_cost(level: int) -> float:
 
 func income_multiplier(level: int) -> float:
 	return pow(RemoteConfig.get_float("upgrade_income_growth"), level)
+
+
+func neighborhood_tier(reputation: int) -> int:
+	var tier: int = 0
+	for index: int in NEIGHBORHOOD_TIERS.size():
+		if reputation >= NEIGHBORHOOD_TIERS[index]:
+			tier = index
+	return tier
+
+
+func vip_chance(reputation: int) -> float:
+	return minf(0.35, VIP_CHANCE + neighborhood_tier(reputation) * NEIGHBORHOOD_VIP_BONUS)
+
+
+func tip_bonus(reputation: int) -> float:
+	return neighborhood_tier(reputation) * NEIGHBORHOOD_TIP_BONUS
 
 
 func prestige_coin_multiplier(prestige_level: int) -> float:

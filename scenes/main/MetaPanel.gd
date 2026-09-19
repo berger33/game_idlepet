@@ -352,12 +352,26 @@ func _grant_ember() -> void:
 
 
 func _build_map() -> void:
+	var rep: int = GameState.reviews_sum
+	var tier: int = Economy.neighborhood_tier(rep)
+	var next_at: int = (
+		Economy.NEIGHBORHOOD_TIERS[tier + 1]
+		if tier + 1 < Economy.NEIGHBORHOOD_TIERS.size()
+		else -1
+	)
+	var rep_line: String = "%s: %s • %d⭐ %s" % [
+		Loc.t("NEIGHBORHOOD"),
+		Loc.t("NEIGHBORHOOD_%d" % tier),
+		rep,
+		"(%d)" % next_at if next_at > 0 else "(MAX)",
+	]
 	var text: String = (
-		"EVENTO: %s\nCARREIRA: nível %d/120 • %.1fh ativas\n\n"
+		"EVENTO: %s\nCARREIRA: nível %d/120 • %.1fh ativas\n%s\n\n"
 		% [
 			LiveOps.current_event_name(),
 			GameState.player_level,
 			GameState.active_play_seconds / 3600.0,
+			rep_line,
 		]
 	)
 	for entry: Dictionary in ContentDB.career.get("establishments", []):

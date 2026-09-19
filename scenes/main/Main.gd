@@ -286,9 +286,11 @@ func _finish_bath() -> void:
 		)
 		var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
 		var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
-		# Gorjeta variável (odds publicadas) e bônus VIP: variabilidade real de
-		# recompensa — o mesmo serviço rende diferente a cada atendimento.
-		var tip_multiplier: float = Economy.tip_multiplier(randf())
+		# Gorjeta variável (odds publicadas) + bônus de reputação do bairro:
+		# variabilidade real de recompensa — o mesmo serviço rende diferente.
+		var tip_multiplier: float = (
+			Economy.tip_multiplier(randf()) * (1.0 + Economy.tip_bonus(GameState.reviews_sum))
+		)
 		last_tip_percent = int(roundf((tip_multiplier - 1.0) * 100.0))
 		var vip_multiplier: float = Economy.VIP_REWARD_MULTIPLIER if current_vip else 1.0
 		var reward: float = (
@@ -312,7 +314,15 @@ func _finish_bath() -> void:
 			* vip_multiplier
 		)
 		var stars: int = 5 if quality == &"perfect" else 4
+		var reputation_before: int = GameState.reviews_sum
 		GameState.register_review(stars)
+		if Economy.neighborhood_tier(GameState.reviews_sum) > Economy.neighborhood_tier(
+			reputation_before
+		):
+			EventBus.toast_requested.emit(Loc.t("REP_UP"), Color("ffd54f"))
+			Analytics.track(
+				&"neighborhood_tier_up", {"tier": Economy.neighborhood_tier(GameState.reviews_sum)}
+			)
 		if last_tip_percent > 0:
 			GameState.register_weekly_event(&"tips")
 		if current_vip:
@@ -442,7 +452,7 @@ func _make_client() -> Dictionary:
 	if featured != &"" and featured in services and service != featured and randf() < 0.5:
 		service = featured
 		Analytics.track(&"event_client", {"service": String(service)})
-	var vip: bool = randf() < Economy.VIP_CHANCE
+	var vip: bool = randf() < Economy.vip_chance(GameState.reviews_sum)
 	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
 	return {
 		"pet": pet_id,

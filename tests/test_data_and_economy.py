@@ -370,4 +370,18 @@ class FoundationTests(unittest.TestCase):
             self.assertGreater(path.stat().st_size, 100_000)
             self.assertLess(path.stat().st_size, 5_000_000)
 
+    def test_fase8_neighborhood_reputation(self):
+        economy = Path('autoload/Economy.gd').read_text(encoding='utf8')
+        for token in ('NEIGHBORHOOD_TIERS', 'func neighborhood_tier', 'func vip_chance',
+                      'func tip_bonus', 'NEIGHBORHOOD_VIP_BONUS', 'NEIGHBORHOOD_TIP_BONUS'):
+            self.assertIn(token, economy)
+        self.assertIn('[0, 60, 150, 300, 600]', economy)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('Economy.vip_chance(GameState.reviews_sum)', main)
+        self.assertIn('Economy.tip_bonus(GameState.reviews_sum)', main)
+        self.assertIn('REP_UP', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('NEIGHBORHOOD_%d', panel)
+
+
 if __name__=='__main__': unittest.main()
