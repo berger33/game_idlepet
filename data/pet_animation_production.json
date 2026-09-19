@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 24,
+    "pets_generated": 27,
     "images_expected": 500,
-    "images_generated": 269,
-    "images_qa_passed": 269,
-    "pets_integrated": 26,
-    "generation_attempts": 280
+    "images_generated": 277,
+    "images_qa_passed": 277,
+    "pets_integrated": 27,
+    "generation_attempts": 290
   },
   "pets": [
     {
@@ -1561,7 +1561,7 @@
           "path": "art/pet_animations/gaia_samoyed/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/gaia_samoyed/sad.png"
         },
         "blink": {
@@ -1569,12 +1569,12 @@
           "path": "art/pet_animations/gaia_samoyed/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 9,
-      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. sad pending: per-turn image generation limit reached; will be generated next turn. Sad falls back to base pose via the existing runtime crossfade until then. wet ships with the curled tail uncurled as wet body language."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 states passed on the first batch; sad regenerated next turn and approved (ears drooped fully, single tear on white cheek, curled tail uncurled and drooped low, hunched shoulders) closing the lote 10/10. All states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479). wet keeps the uncurled dripping tail as wet body language."
     },
     {
       "sequence": 28,
@@ -1586,15 +1586,15 @@
       "reference": "art/pets/nox_sphynx.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/messy.png"
         },
         "tilt_left": {
@@ -1606,15 +1606,15 @@
           "path": "art/pet_animations/nox_sphynx/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/dizzy.png"
         },
         "sad": {
@@ -1622,15 +1622,16 @@
           "path": "art/pet_animations/nox_sphynx/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/nox_sphynx/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 9,
+      "qa_notes": "7/10 states approved on the first batch: dirty (mud smudges + leaf on wrinkled skin), wet (darker glossy skin, droplets, drooped ears), messy (stubble stray hairs, kinked tail), happy_squash (squashed wide with happy arcs), happy_air (mid-air jump, clean transparency), dizzy (spiral eyes, tongue out, orbiting stars), blink (closed curved eyes) — sphynx identity preserved (taupe wrinkled skin, huge pink-lined bat ears, olive-green eyes, whip tail). tilt_left and tilt_right were REJECTED: generated as near-duplicates of the neutral pose (mask IoU 0.996 between them, 0.992 vs blink), no opposite lean; queued for regeneration with stronger tilt prompts next turn together with sad. Contract OK on the 7 accepted frames (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 29,
