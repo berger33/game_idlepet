@@ -133,6 +133,10 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["pass_day_unlocked"] = int(data.get("pass_day_unlocked", 0))
 		data["pass_day_claimed"] = int(data.get("pass_day_claimed", 0))
 		version = 7
+	if version == 7:
+		data["version"] = 8
+		data["active_cosmetics"] = data.get("active_cosmetics", {})
+		version = 8
 	return data
 
 

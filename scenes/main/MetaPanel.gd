@@ -243,12 +243,13 @@ func _build_shop() -> void:
 			price_text = "%d %s" % [int(price["embers"]), Loc.t("EMBERS")]
 		else:
 			price_text = String(look.get("source", "evento"))
+		var is_active: bool = GameState.active_cosmetic(String(look.get("slot", ""))) == look_id
 		var action_text: String
 		var action_color: Color = PINK
-		var enabled: bool = not owned and not price.is_empty()
+		var enabled: bool = (not owned and not price.is_empty()) or owned
 		if owned:
-			action_text = Loc.t("OWNED")
-			action_color = Color("b0bec5")
+			action_text = Loc.t("EQUIPPED") if is_active else Loc.t("EQUIP")
+			action_color = GREEN if is_active else PINK
 		elif price.is_empty():
 			action_text = "EVENTO"
 			action_color = Color("b0bec5")
@@ -261,7 +262,14 @@ func _build_shop() -> void:
 			action_color,
 			enabled,
 			func(lid: String = look_id) -> void:
-				if GameState.buy_cosmetic(lid):
+				if GameState.unlocked_cosmetics.has(lid):
+					if GameState.equip_cosmetic(lid):
+						AudioManager.play(&"equip")
+						EventBus.toast_requested.emit(
+							"%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
+						)
+				elif GameState.buy_cosmetic(lid):
+					GameState.equip_cosmetic(lid)
 					AudioManager.play(&"coin")
 					EventBus.toast_requested.emit(
 						"%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
@@ -309,6 +317,23 @@ func _build_map() -> void:
 		text += "%s %s — nível %d\n" % [marker, entry.get("name", "Petshop"), unlock_level]
 	text += "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
 	_note(text, 28, CHARCOAL, true)
+	var tokens: int = GameState.prestige_tokens_available()
+	_info_row(
+		"%s Nv.%d" % [Loc.t("PRESTIGE_TITLE"), GameState.prestige_level],
+		Loc.t("PRESTIGE_DESC") % [tokens, Economy.prestige_coin_multiplier(GameState.prestige_level)],
+		Loc.t("PRESTIGE_GO") if GameState.can_prestige() else Loc.t("PRESTIGE_LOCKED"),
+		Color("ce93d8") if GameState.can_prestige() else Color("b0bec5"),
+		GameState.can_prestige(),
+		func() -> void:
+			if GameState.perform_prestige():
+				AudioManager.play(&"prestige")
+				EventBus.toast_requested.emit(
+					Loc.t("PRESTIGE_DONE") % GameState.prestige_level, Color("ce93d8")
+				)
+				_rebuild(&"map")
+	)
+	_note(Loc.t("PRESTIGE_KEEP"))
+	_note(Loc.t("PRESTIGE_LOST"))
 
 
 func _build_settings() -> void:

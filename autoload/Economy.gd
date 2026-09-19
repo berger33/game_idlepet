@@ -8,6 +8,8 @@ const TIP_MULTIPLIERS: Array[float] = [1.0, 1.15, 1.30, 1.60]
 ## Chance de um cliente da fila ser VIP (recompensa ×2, paciência menor).
 const VIP_CHANCE: float = 0.12
 const VIP_REWARD_MULTIPLIER: float = 2.0
+## Prestígio: cada nível de franquia rende +10% em todas as recompensas.
+const PRESTIGE_COIN_BONUS: float = 0.10
 
 
 func tip_multiplier(roll: float) -> float:
@@ -32,8 +34,17 @@ func income_multiplier(level: int) -> float:
 	return pow(RemoteConfig.get_float("upgrade_income_growth"), level)
 
 
+func prestige_coin_multiplier(prestige_level: int) -> float:
+	return 1.0 + clampi(prestige_level, 0, 200) * PRESTIGE_COIN_BONUS
+
+
 func service_reward(
-	base_reward: float, quality: StringName, upgrade_level: int, combo: int, tool_level: int = 0
+	base_reward: float,
+	quality: StringName,
+	upgrade_level: int,
+	combo: int,
+	tool_level: int = 0,
+	prestige_level: int = 0
 ) -> float:
 	var quality_multiplier: float = 1.0
 	if quality == &"perfect":
@@ -49,6 +60,7 @@ func service_reward(
 			* tool_multiplier
 			* quality_multiplier
 			* combo_multiplier
+			* prestige_coin_multiplier(prestige_level)
 		)
 	)
 

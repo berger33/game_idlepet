@@ -335,3 +335,26 @@ Cinco sistemas de retenção fechados, todos com fachada honesta offline:
 Save v7 (migração 6→7), 66 chaves × 3 idiomas com paridade testada, e dois testes
 novos no contrato: `test_retention_systems_are_wired` e
 `test_localization_parity_across_languages`.
+
+## 19. Fase 4 — Prestígio, cosméticos visíveis e áudio real
+
+1. **Prestígio (Franquia)** — `Economy.prestige_coin_multiplier` (+10%/nível em
+   toda recompensa); `GameState.perform_prestige()` troca tokens acumulados
+   (`prestige_tokens(total_coins) - prestige_level`) por um reinício só da corrida:
+   mantém brasas, pets, cosméticos, conquistas, streak/passe e recordes; reinicia
+   moedas (stake 150), melhorias, equipe e nível. Porta de entrada: nível 15.
+   UI no mapa com prévia de tokens e o que mantém/perde.
+2. **Cosméticos com efeito visual real** — `active_cosmetics` (slot→id, save v8,
+   migração 7→8). Banheiras recolorem espuma/bolhas/selo da estação; parede
+   junina pendura bandeirinhas animadas; bandana e coroa de bolhas aparecem no
+   pet nos dois caminhos de render (textura e vetorial), seguindo o pivô dos pés.
+   Comprar já equipa; botão USAR/EM USO na loja.
+3. **Áudio real v2** — `MUSIC_BPM = 96` e `AudioManager.beat_phase()` lida a fase
+   do compasso do playback real; aura lendária e estrelas de celebração pulsam no
+   compasso (âncora de sincronia agora é o áudio, como manda a regra do projeto).
+   Camada de percussão (`_energy_loop`) entra só durante atendimentos, com fade.
+   SFX novos: freeze, pass_claim, comeback, share_saved, equip e prestige.
+4. **Contratos** — save v8; 75 chaves × 3 idiomas; novo teste
+   `test_fase4_prestige_cosmetics_and_audio_anchor` (prestígio não zera
+   total_coins/unlocked_pets; canvas tem cosméticos e âncora de áudio; main
+   propaga prestígio e cosméticos).

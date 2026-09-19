@@ -299,10 +299,11 @@ func _finish_bath() -> void:
 					quality,
 					GameState.bath_upgrade_level,
 					GameState.combo,
-					int(
-						GameState.tool_upgrade_levels.get(String(SERVICE_TOOLS[current_service]), 0)
-					),
-				)
+				int(
+					GameState.tool_upgrade_levels.get(String(SERVICE_TOOLS[current_service]), 0)
+				),
+				GameState.prestige_level,
+			)
 			)
 			* LiveOps.multiplier_for(current_service)
 			* LiveOps.bonus_for_quality(quality)
@@ -683,6 +684,7 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
+		world.set_cosmetics(GameState.active_cosmetics)
 	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
 	var station_bonus: float = (
 		(Economy.income_multiplier(GameState.bath_upgrade_level) - 1.0) * 100.0

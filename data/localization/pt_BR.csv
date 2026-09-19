@@ -1,67 +1,76 @@
 key,pt_BR
-GAME_TITLE,"PetShop Tycoon: Do Banho à Rede"
-SERVE,"SERVIR"
-FINISH_BATH,"FINALIZAR BANHO"
-PERFECT,"PERFEITO!"
-TRY_AGAIN,"TENTAR NOVAMENTE"
-COINS,"Moedas"
-MISSIONS_TITLE,"MISSÕES DO DIA"
-COLLECTION_TITLE,"COLEÇÃO"
-STAFF_TITLE,"EQUIPE"
-SHOP_TITLE,"LOJA"
-MAP_TITLE,"DO BALDE AO IMPÉRIO"
-SETTINGS_TITLE,"AJUSTES E ACESSIBILIDADE"
-BACK,"VOLTAR AO PETSHOP"
-CLAIM,"COLETAR"
-CLAIMED,"COLETADO"
-LOCKED,"nv. %d"
-HIRE,"CONTRATAR"
-HIRED,"NA EQUIPE"
-BUY,"COMPRAR"
-OWNED,"ADQUIRIDO"
-EMBERS,"Brasas"
-DAILY_LOGIN,"LOGIN DIÁRIO Dia %d/7"
-MISSION_SERVICES,"BANHOS E TOSAS %d/5"
-MISSION_PERFECT,"NA MEDIDA %d/3"
-MISSION_UPGRADE,"TUDO NOVINHO %d/1"
-SFX_VOLUME,"Efeitos"
-MUSIC_VOLUME,"Música"
-HAPTICS,"Vibração"
-REDUCED_FX,"Partículas reduzidas"
-ECO_MODE,"Modo econômico"
-LANGUAGE,"Idioma"
-CHOOSE_CLIENT,"Escolha o próximo cliente da fila"
-SKIP_TUTORIAL,"PULAR TUTORIAL"
-HINT_BATH,"Esfregue em círculos e solte na faixa verde"
-HINT_GROOM,"Deslize de cima a baixo e solte na faixa verde"
-HINT_DRY,"Deslize de um lado a outro e solte na faixa verde"
-HINT_PERFUME,"Segure sobre o pet e solte na faixa verde"
-HINT_STYLE,"Esfregue devagarinho e solte na faixa verde"
-PERFECT_RESULT,"PERFEITO!"
-GOOD_RESULT,"MUITO BOM!"
-VIP_TAG,"VIP"
-TIP_LINE,"gorjeta +%d%%"
-NO_TIP,"sem gorjeta desta vez"
-ON,"ligado"
-OFF,"desligado"
-PASSIVE_SPEED,"+agilidade geral"
-PASSIVE_BATH_SPEED,"banho rende mais"
-PASSIVE_GROOM_QUALITY,"tosa com mais qualidade"
-PASSIVE_VETERINARY_XP,"+XP em tudo"
-PASSIVE_PATIENCE,"clientes esperam mais"
-PASSIVE_PERFECT_WINDOW,"faixa Perfect maior"
-IAP_NOTE,"Compras reais chegam com a integração da loja (offline: indisponível)."
-COSMETIC_NO_FX,"Cosmético de vitrine (efeito visual em fase posterior)."
-PASS_TITLE,"PASSE 28 DIAS —"
-PASS_DESC,"Complete as 3 missões do dia para avançar"
-PASS_DONE,"Passe completo! Obrigado pela jornada"
-PASS_UNLOCKED,"Dia do passe destravado:"
-STREAK_LINE,"Sequência: %d dias • Freezes: %d"
-FREEZE_USED,"Freeze protegeu sua sequência!"
-FREEZE_EARNED,"Freeze ganho pela sequência!"
-COMEBACK_TITLE,"BEM-VINDO DE VOLTA!"
-COMEBACK_GIFT,"+1 freeze e moedas de boas-vindas!"
-SHARE_BUTTON,"📷 ANTES/DEPOIS"
-SHARE_SAVED,"Foto salva em user://shares/!"
-SHARE_FAILED,"Sem captura ainda — termine um serviço"
-EVENTS_OFF,"Sem evento hoje"
+GAME_TITLE,PetShop Tycoon: Do Banho à Rede
+SERVE,SERVIR
+FINISH_BATH,FINALIZAR BANHO
+PERFECT,PERFEITO!
+TRY_AGAIN,TENTAR NOVAMENTE
+COINS,Moedas
+MISSIONS_TITLE,MISSÕES DO DIA
+COLLECTION_TITLE,COLEÇÃO
+STAFF_TITLE,EQUIPE
+SHOP_TITLE,LOJA
+MAP_TITLE,DO BALDE AO IMPÉRIO
+SETTINGS_TITLE,AJUSTES E ACESSIBILIDADE
+BACK,VOLTAR AO PETSHOP
+CLAIM,COLETAR
+CLAIMED,COLETADO
+LOCKED,nv. %d
+HIRE,CONTRATAR
+HIRED,NA EQUIPE
+BUY,COMPRAR
+OWNED,ADQUIRIDO
+EMBERS,Brasas
+DAILY_LOGIN,LOGIN DIÁRIO Dia %d/7
+MISSION_SERVICES,BANHOS E TOSAS %d/5
+MISSION_PERFECT,NA MEDIDA %d/3
+MISSION_UPGRADE,TUDO NOVINHO %d/1
+SFX_VOLUME,Efeitos
+MUSIC_VOLUME,Música
+HAPTICS,Vibração
+REDUCED_FX,Partículas reduzidas
+ECO_MODE,Modo econômico
+LANGUAGE,Idioma
+CHOOSE_CLIENT,Escolha o próximo cliente da fila
+SKIP_TUTORIAL,PULAR TUTORIAL
+HINT_BATH,Esfregue em círculos e solte na faixa verde
+HINT_GROOM,Deslize de cima a baixo e solte na faixa verde
+HINT_DRY,Deslize de um lado a outro e solte na faixa verde
+HINT_PERFUME,Segure sobre o pet e solte na faixa verde
+HINT_STYLE,Esfregue devagarinho e solte na faixa verde
+PERFECT_RESULT,PERFEITO!
+GOOD_RESULT,MUITO BOM!
+VIP_TAG,VIP
+TIP_LINE,gorjeta +%d%%
+NO_TIP,sem gorjeta desta vez
+ON,ligado
+OFF,desligado
+PASSIVE_SPEED,+agilidade geral
+PASSIVE_BATH_SPEED,banho rende mais
+PASSIVE_GROOM_QUALITY,tosa com mais qualidade
+PASSIVE_VETERINARY_XP,+XP em tudo
+PASSIVE_PATIENCE,clientes esperam mais
+PASSIVE_PERFECT_WINDOW,faixa Perfect maior
+IAP_NOTE,Compras reais chegam com a integração da loja (offline: indisponível).
+COSMETIC_NO_FX,Cosméticos equipados aparecem no petshop na hora
+PASS_TITLE,PASSE 28 DIAS —
+PASS_DESC,Complete as 3 missões do dia para avançar
+PASS_DONE,Passe completo! Obrigado pela jornada
+PASS_UNLOCKED,Dia do passe destravado:
+STREAK_LINE,Sequência: %d dias • Freezes: %d
+FREEZE_USED,Freeze protegeu sua sequência!
+FREEZE_EARNED,Freeze ganho pela sequência!
+COMEBACK_TITLE,BEM-VINDO DE VOLTA!
+COMEBACK_GIFT,+1 freeze e moedas de boas-vindas!
+SHARE_BUTTON,📷 ANTES/DEPOIS
+SHARE_SAVED,Foto salva em user://shares/!
+SHARE_FAILED,Sem captura ainda — termine um serviço
+EVENTS_OFF,Sem evento hoje
+EQUIP,USAR
+EQUIPPED,EM USO
+PRESTIGE_TITLE,FRANQUIA
+PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
+PRESTIGE_GO,PRESTIGIAR
+PRESTIGE_LOCKED,Alcance nível 15 e acumule mais moedas
+PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe e recordes"
+PRESTIGE_LOST,"Recomeça: moedas, melhorias, equipe e nível de carreira"
+PRESTIGE_DONE,Franquia nível %d! +10%% de moedas por nível

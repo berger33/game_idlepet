@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 7
+const SAVE_VERSION: int = 8
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 var coins: float = 0.0
@@ -27,6 +27,8 @@ var unlocked_pets: Array[String] = ["caramelo"]
 var hired_staff: Array[String] = ["player"]
 var achievement_ids: Array[String] = []
 var unlocked_cosmetics: Array[String] = []
+## Slot ativo por categoria: "bath" | "pet_accessory" | "wall" -> cosmetic id.
+var active_cosmetics: Dictionary = {}
 var mission_progress: Dictionary = {"services": 0, "perfect": 0, "upgrades": 0}
 var claimed_missions: Array[String] = []
 var missions_date: String = ""
@@ -181,6 +183,61 @@ func buy_cosmetic(cosmetic_id: String) -> bool:
 	return true
 
 
+## Equipa (ou desequipar, se já ativo) um cosmético owned; 1 por slot.
+func equip_cosmetic(cosmetic_id: String) -> bool:
+	if not unlocked_cosmetics.has(cosmetic_id):
+		return false
+	var slot: String = String(ContentDB.cosmetic(cosmetic_id).get("slot", ""))
+	if slot.is_empty():
+		return false
+	if String(active_cosmetics.get(slot, "")) == cosmetic_id:
+		active_cosmetics.erase(slot)
+		Analytics.track(&"cosmetic_unequipped", {"id": cosmetic_id})
+	else:
+		active_cosmetics[slot] = cosmetic_id
+		Analytics.track(&"cosmetic_equipped", {"id": cosmetic_id})
+	SaveManager.request_save()
+	EventBus.settings_changed.emit()
+	return true
+
+
+func active_cosmetic(slot: String) -> String:
+	return String(active_cosmetics.get(slot, ""))
+
+
+## Prestígio: tokens disponíveis ainda não convertidos em nível de franquia.
+func prestige_tokens_available() -> int:
+	return maxi(0, Economy.prestige_tokens(total_coins) - prestige_level)
+
+
+func can_prestige() -> bool:
+	return prestige_tokens_available() > 0 and player_level >= 15
+
+
+## Reinicia o progresso da corrida em troca de tokens de franquia (+10%/nível).
+## Mantém brasas, pets, cosméticos, conquistas, streak/passe e o total acumulado.
+func perform_prestige() -> bool:
+	if not can_prestige():
+		return false
+	var gain: int = prestige_tokens_available()
+	franchise_tokens += gain
+	prestige_level += 1
+	coins = 150.0
+	bath_upgrade_level = 0
+	for tool: String in tool_upgrade_levels:
+		tool_upgrade_levels[tool] = 0
+	combo = 0
+	player_level = 1
+	player_xp = 0
+	mission_progress = {"services": 0, "perfect": 0, "upgrades": 0}
+	claimed_missions.clear()
+	hired_staff = ["player"]
+	establishment_tier = 1
+	Analytics.track(&"prestige_performed", {"level": prestige_level, "tokens": gain})
+	SaveManager.request_save()
+	return true
+
+
 func register_review(stars: int) -> void:
 	var safe_stars: int = clampi(stars, 1, 5)
 	reviews_total += 1
@@ -220,6 +277,7 @@ func to_dictionary() -> Dictionary:
 		"hired_staff": hired_staff,
 		"achievement_ids": achievement_ids,
 		"unlocked_cosmetics": unlocked_cosmetics,
+		"active_cosmetics": active_cosmetics,
 		"mission_progress": mission_progress,
 		"claimed_missions": claimed_missions,
 		"missions_date": missions_date,

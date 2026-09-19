@@ -30,12 +30,14 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 7', state)
+        self.assertIn('const SAVE_VERSION: int = 8', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)
-        self.assertIn('data["version"] = 7', migration)
+        self.assertIn('if version == 7:', migration)
+        self.assertIn('data["version"] = 8', migration)
         self.assertIn('tool_upgrade_levels', state)
+        self.assertIn('active_cosmetics', state)
 
     def test_retention_systems_are_wired(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
@@ -70,6 +72,35 @@ class FoundationTests(unittest.TestCase):
                 sets[lang] = {r[0] for r in csv.reader(f) if r and r[0] != 'key'}
         self.assertEqual(sets['pt_BR'], sets['en_US'])
         self.assertEqual(sets['pt_BR'], sets['es_ES'])
+
+    def test_fase4_prestige_cosmetics_and_audio_anchor(self):
+        economy = Path('autoload/Economy.gd').read_text(encoding='utf8')
+        self.assertIn('prestige_coin_multiplier', economy)
+        self.assertIn('PRESTIGE_COIN_BONUS', economy)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for token in ('func equip_cosmetic', 'func perform_prestige',
+                      'prestige_tokens_available', 'active_cosmetics'):
+            self.assertIn(token, state)
+        reset_block = state.split('func perform_prestige', 1)[1].split('func ', 2)[1]
+        self.assertNotIn('total_coins =', reset_block)
+        self.assertNotIn('unlocked_pets =', reset_block)
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        for token in ('func set_cosmetics', '_bath_foam_color', 'bandana_blue',
+                      'crown_bubbles', 'wall_junina', 'AudioManager.beat_phase'):
+            self.assertIn(token, canvas)
+        audio = Path('autoload/AudioManager.gd').read_text(encoding='utf8')
+        self.assertIn('func beat_phase', audio)
+        self.assertIn('get_playback_position', audio)
+        self.assertIn('MUSIC_BPM', audio)
+        self.assertIn('func _energy_loop', audio)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('prestige_level', main)
+        self.assertIn('world.set_cosmetics', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('EQUIPPED', panel)
+        self.assertIn('PRESTIGE_GO', panel)
+        migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
+        self.assertIn('if version == 7:', migration)
 
     def test_career_has_at_least_fifty_active_hours(self):
         rows = simulate_career()
