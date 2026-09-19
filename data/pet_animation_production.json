@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 24,
     "images_expected": 500,
-    "images_generated": 249,
-    "images_qa_passed": 249,
-    "pets_integrated": 24,
-    "generation_attempts": 260
+    "images_generated": 250,
+    "images_qa_passed": 250,
+    "pets_integrated": 25,
+    "generation_attempts": 261
   },
   "pets": [
     {
@@ -1435,7 +1435,7 @@
           "path": "art/pet_animations/tupa_mane_wolf/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/tupa_mane_wolf/happy_squash.png"
         },
         "happy_air": {
@@ -1455,12 +1455,12 @@
           "path": "art/pet_animations/tupa_mane_wolf/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 9,
-      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. happy_squash pending: per-turn image generation limit reached; will be generated next turn. Celebration falls back to base pose crossfade until then. sad ships with fully dropped ears and low tail as body language."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 passed on first batch; happy_squash regenerated next turn — squashed body, flopped huge ears and dark mane preserved. All 10 states qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 26,
