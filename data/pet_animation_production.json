@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 43,
+    "pets_generated": 44,
     "images_expected": 500,
-    "images_generated": 436,
-    "images_qa_passed": 436,
-    "pets_integrated": 43,
-    "generation_attempts": 449
+    "images_generated": 440,
+    "images_qa_passed": 440,
+    "pets_integrated": 44,
+    "generation_attempts": 452
   },
   "pets": [
     {
@@ -2510,15 +2510,15 @@
           "path": "art/pet_animations/simba_noruegues/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/simba_noruegues/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/simba_noruegues/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/simba_noruegues/happy_squash.png"
         },
         "happy_air": {
@@ -2526,7 +2526,7 @@
           "path": "art/pet_animations/simba_noruegues/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/simba_noruegues/dizzy.png"
         },
         "sad": {
@@ -2540,10 +2540,10 @@
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 6,
-      "qa_notes": "Quarto gato. Noruegues da Floresta tabby marrom (oficiais BGR 42,71,121 / 19,38,79 / 67,106,160 / 111,157,204, tol 20; base 57602 px). Hue-corr FORTE (0.913-0.999 — pelo marrom saturado, S 157). Lote PARCIAL 6/10: limite de 10 geracoes/TURNO atingido (4 retakes do tilt da Olivia + 6 daqui); faltam tilt_left/tilt_right, happy_squash e dizzy — fechar no proximo turno. BASE CURTA E LARGA: 452x358, bottom 434 (registro proprio, como Otto 411/Mimi 400/Apolo 465) — aterrados registrados em 433-435; sad rescale 446x442->436x432 (-2.3%); wet ja veio BAIXO E LARGO (445x433) = pose encharcada cabe nativamente na base curta (zero rescale); happy_air aereo bottom 449 (flood). happy_air: OVERRIDE p/ flood (padrao Olivia/Yuki) — grab fundiu tudo em 1 comp (corpo ate y=453); flood = corpo + 4 tufos de pelo voando near-pet (elong 1.0-1.8, areas 179-468 — plausivel p/ NFC de pelo longo). messy: flood (10 comps vs 16 do grab, menos floaters); roughness 15.19 vs base 9.39 = +62% (acima do piso +60%; base ja e a mais rugosa do catalogo ate aqui). wet: V 135->131 (marrom escuro mal escurece, como o preto da Kiara), colapso de forma no IoU 0.414 + 22 gotas (23 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos dois olhos (133,181) 3462px / (353,185) 2821px, dy=4 — FACE LARGA: olhos a 220px de distancia (filtro de par por dx<160 nao pega; usar dx<240 p/ bases largas). Pose IoU 0.927, hue 0.999. sad: eye_diff 66.6 + dark_face 6349->11306 (+78%, olhos marejados) + par proprio nos olhos no diff. Contrato 6/6 (512x512x4, ext<=446, alpha borda <8, registro 433-435 + aereo 449). PROXIMO TURNO: gerar tilt_left (dupla ref; CUIDADO base diagonal lean -37.9 e larga — risco do padrao Olivia: sprawl vs cabeca a direita; aceitar par espelhado sob convencao absoluta se repetir), happy_squash e dizzy (3 geracoes), espelhar tilt_right (nao conta), fechar 10/10, pin 43->44."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Quarto gato. Noruegues da Floresta tabby marrom (oficiais BGR 42,71,121 / 19,38,79 / 67,106,160 / 111,157,204, tol 20; base 57602 px). Hue-corr FORTE (0.913-0.999 — pelo marrom saturado, S 157). Lote COMPLETO 10/10 (fechado no turno seguinte, +3 geracoes). BASE CURTA E LARGA: 452x358, bottom 434 (registro proprio, como Otto 411/Mimi 400/Apolo 465) — aterrados registrados em 433-435; sad rescale 446x442->436x432 (-2.3%); wet ja veio BAIXO E LARGO (445x433) = pose encharcada cabe nativamente na base curta (zero rescale); happy_air aereo bottom 449 (flood). happy_air: OVERRIDE p/ flood (padrao Olivia/Yuki) — grab fundiu tudo em 1 comp (corpo ate y=453); flood = corpo + 4 tufos de pelo voando near-pet (elong 1.0-1.8, areas 179-468 — plausivel p/ NFC de pelo longo). messy: flood (10 comps vs 16 do grab, menos floaters); roughness 15.19 vs base 9.39 = +62% (acima do piso +60%; base ja e a mais rugosa do catalogo ate aqui). wet: V 135->131 (marrom escuro mal escurece, como o preto da Kiara), colapso de forma no IoU 0.414 + 22 gotas (23 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos dois olhos (133,181) 3462px / (353,185) 2821px, dy=4 — FACE LARGA: olhos a 220px de distancia (filtro de par por dx<160 nao pega; usar dx<240 p/ bases largas). Pose IoU 0.927, hue 0.999. sad: eye_diff 66.6 + dark_face 6349->11306 (+78%, olhos marejados) + par proprio nos olhos no diff. Contrato 6/6 (512x512x4, ext<=446, alpha borda <8, registro 433-435 + aereo 449). FECHAMENTO: tilt 1a tentativa — ereto e valido (446x405, pescoco estendido, IoU 0.835), par espelhado sob CONVENCAO ABSOLUTA (padrao Olivia): tl -27.2 (rel +10.7) / tr +27.2 (rel +65.1); base -37.9 c/ cabeca no extremo esquerdo. happy_squash: h 343 w 446, IoU 0.671 (base ja e baixa/larga 452x358 — squash le por largura maxima + pose). dizzy: flood (4 comps vs 17 do grab); diff-clusters concentrados nas 2 zonas dos olhos (10041px + 383-406,174-211) = espirais. 9 tentativas, zero retakes no fechamento."
     },
     {
       "sequence": 45,
