@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 34,
+    "pets_generated": 35,
     "images_expected": 500,
-    "images_generated": 340,
-    "images_qa_passed": 340,
-    "pets_integrated": 34,
-    "generation_attempts": 354
+    "images_generated": 350,
+    "images_qa_passed": 350,
+    "pets_integrated": 35,
+    "generation_attempts": 364
   },
   "pets": [
     {
@@ -1985,51 +1985,52 @@
       "reference": "art/pets/lola_boxer.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lola_boxer/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus one retake: the first tilt_left was rejected for a mild diagonal (head-vs-feet lean +/-11.7, below the approved family range 13.5-47; the metric also biases against folded-ear breeds) and the extreme-angle retake landed at -40.6, with tilt_right as its lossless mirror (pair lean -40.6/+40.6, repo tilt_left=viewer-left convention). messy passed the roughness gate at +75% with the short-coat spiky brief (bristly jagged contour, NOT long fur — boxer coat stays short). wet reads soaked via the warm-coat palette (mean V 156 to 117, dark-brown 10140 to 12731 px, coverage 0.423 to 0.410, heavy drooping folded ears, kept droplets). The dark facial mask stays in place in every state (dark-brown centroid y 196-240, upper body). Identity hue corr 0.975-0.999 (warm saturated coat makes hue a strong metric here). sad: drooped folded ears and strong face change (eye-band diff 58.2) while staying grounded at baseline 478; dizzy has spiral eyes with no stars (eye diff 42.7, head top +24px); blink preserves the base pose (IoU 0.970) with closed lids; happy_air keeps short motion lines (9 components, no baked panel). GrabCut adopted on all frames (less fringe than flood, equal/better official palette, keeps motion lines); standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 36,
