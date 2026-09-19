@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 30,
+    "pets_generated": 31,
     "images_expected": 500,
-    "images_generated": 307,
-    "images_qa_passed": 307,
-    "pets_integrated": 30,
-    "generation_attempts": 320
+    "images_generated": 310,
+    "images_qa_passed": 310,
+    "pets_integrated": 31,
+    "generation_attempts": 323
   },
   "pets": [
     {
@@ -1785,24 +1785,24 @@
           "path": "art/pet_animations/pipoca_corgi/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/pipoca_corgi/blink.png"
         }
       },
-      "generation_status": "in_progress",
+      "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "pending_retry",
-      "integration_status": "partial",
-      "generation_attempts": 7,
-      "qa_notes": "7/10 states approved on the first batch with default GrabCut path: dirty (mud + leaf on white chest), wet (darker slicked coat, drooped floppy ears as wet body language, droplets), messy (ruffled tufts), tilt_left/tilt_right with opposite diagonals (mask IoU 0.513 direct / 0.532 mirrored — high overlap due to the wide compact body, visually confirmed opposite leans), happy_squash (squashed wide, tongue out, no sparkles), happy_air (mid-air jump with motion lines). Corgi identity preserved (orange-red coat, white blaze/chest/paws, huge upright ears, brown eyes). dizzy/sad/blink queued for next turn. Contract OK on all 7."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 states approved on the first batch with default GrabCut path; dizzy/sad/blink generated on the second batch closing the lote 10/10 (10 attempts, no retries needed). dizzy: spiral unfocused eyes (no stars, per contract), tilted head and asymmetric ears, still grounded; sad: ears folded down (head top drops from y=33 to y=87 vs base), lowered head, single tear, tail nub low — the hunched pose normalized 27px above baseline and received a lossless vertical re-translation to y=478 so the feet stay anchored like every grounded state; blink: closed curved eyelids (eye-band dark fraction 0.140 to 0.087) with the clean base pose preserved (mask IoU vs base 0.973). A pale-blue backdrop fringe survived GrabCut on all three frames; removed with a deterministic chroma key (B>170 and B-R>15, a range with zero pixels in the approved set) plus debris filtering — residue 0 and a single connected component per sprite after cleanup. Corgi identity preserved (hue histogram correlation 0.99-1.00 vs base: orange-red coat, white blaze/chest/paws, huge upright ears, brown eyes). All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 32,
