@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 42,
+    "pets_generated": 43,
     "images_expected": 500,
-    "images_generated": 428,
-    "images_qa_passed": 428,
-    "pets_integrated": 42,
-    "generation_attempts": 439
+    "images_generated": 430,
+    "images_qa_passed": 430,
+    "pets_integrated": 43,
+    "generation_attempts": 443
   },
   "pets": [
     {
@@ -2453,11 +2453,11 @@
           "path": "art/pet_animations/olivia_calico/messy.png"
         },
         "tilt_left": {
-          "status": "rejected_pose",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/olivia_calico/tilt_right.png"
         },
         "happy_squash": {
@@ -2483,10 +2483,10 @@
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 10,
-      "qa_notes": "Terceiro gato. Calico tricolor: branco 0.281 / laranja 0.414 / preto 0.184 (bandas V>150&S<60 / r>150&r-b>60 / V<90). Lote PARCIAL 8/10: tilt rejeitado 2x, fecha no proximo turno (limite de 10 geracoes/turno atingido). SELECAO INVERTIDA vs Yuki: flood venceu em 8 estados (recupera mais pelo branco, fracoes tricolor melhores); happy_air override p/ flood tambem — grab FUNDIU as motion lines no corpo (1 comp tocando y=471, quebra a leitura aerea); flood: corpo aereo bottom 448 + 8 comps near-pet alongados (elong ate 6.9). Registro padrao 477: aterrados em 477-478; happy_air aereo bottom 475 (motion line tail). Identidade tricolor presence gate (branco>0.10, laranja>0.15, preto>0.10) PASS em todos; drift documentado: dirty/blink/dizzy c/ mais laranja (0.51 vs 0.41) e menos branco (0.14-0.17 vs 0.28); messy c/ laranja 0.24 / preto 0.32 (tufts escuros inflam preto) — rank order muda no messy, aceito c/ nota. Contrato 8/8 (512x512x4, ext<=446, alpha borda <8). messy roughness 17.52 vs base 5.58 = +214% (RECORDE ABSOLUTO do catalogo, superou Duke +185%). wet: V 184->174, cov 0.489->0.405, 6 comps (5 gotas). blink VALIDADO POR DIFF-CLUSTERING (nova tecnica p/ olhos cobre sobre mancha laranja — dark-pupil inutil: manchas pretas da cabeca dominam a banda facial, 10846px base vs 10484 blink = -3% so): diff base<->blink (>25) clusteriza em PAR SIMETRICO nos olhos (2176/2117 px, dx=105, dy=5) = cobre aberto -> palpebra fechada; dizzy = par + cluster extra 3062px (espirais); sad = face inteira (19430px). Pose blink IoU 0.891. sad: eye_diff 67.7 + face toda mudada (cabeca caida). TILT (rejeitacoes): v1 = pose horizontal esticada (bbox 446x331, altura -113px vs base 444, head zone espalhada por 444px de largura, IoU 0.439, lean rel -69.5 MUITO forte mas corpo errado — sprawl, nao sitting tilt); v2 (retake c/ brief anti-horizontal) = pose ereta correta (423x446, IoU 0.776) MAS sem tilt (lean rel +8.0, head_x 216.5 vs base 216.1, top_x +5 direita — modelo reproduziu a base e ignorou a inclinacao). PROXIMO TURNO: regenerar tilt c/ dupla referencia + enfase simultanea em corpo ereto E cabeca deslocada (v1 acertou a cabeca mas errou o corpo; v2 acertou o corpo mas ignorou a cabeca — combinar os dois requisitos no brief, considerar 2 tentativas se necessario). Espelhar p/ tilt_right apos aprovacao (mirror nao conta attempt). 8 aprovados integrados em art/pet_animations/olivia_calico/ (runtime carrega oportunisticamente, conjunto parcial seguro)."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 14,
+      "qa_notes": "Terceiro gato. Calico tricolor: branco 0.281 / laranja 0.414 / preto 0.184 (bandas V>150&S<60 / r>150&r-b>60 / V<90). Lote COMPLETO 10/10 (fechado no turno seguinte). TILT: 6 tentativas totais (4 alem do limite do 1o turno). SELECAO INVERTIDA vs Yuki: flood venceu em 8 estados (recupera mais pelo branco, fracoes tricolor melhores); happy_air override p/ flood tambem — grab FUNDIU as motion lines no corpo (1 comp tocando y=471, quebra a leitura aerea); flood: corpo aereo bottom 448 + 8 comps near-pet alongados (elong ate 6.9). Registro padrao 477: aterrados em 477-478; happy_air aereo bottom 475 (motion line tail). Identidade tricolor presence gate (branco>0.10, laranja>0.15, preto>0.10) PASS em todos; drift documentado: dirty/blink/dizzy c/ mais laranja (0.51 vs 0.41) e menos branco (0.14-0.17 vs 0.28); messy c/ laranja 0.24 / preto 0.32 (tufts escuros inflam preto) — rank order muda no messy, aceito c/ nota. Contrato 8/8 (512x512x4, ext<=446, alpha borda <8). messy roughness 17.52 vs base 5.58 = +214% (RECORDE ABSOLUTO do catalogo, superou Duke +185%). wet: V 184->174, cov 0.489->0.405, 6 comps (5 gotas). blink VALIDADO POR DIFF-CLUSTERING (nova tecnica p/ olhos cobre sobre mancha laranja — dark-pupil inutil: manchas pretas da cabeca dominam a banda facial, 10846px base vs 10484 blink = -3% so): diff base<->blink (>25) clusteriza em PAR SIMETRICO nos olhos (2176/2117 px, dx=105, dy=5) = cobre aberto -> palpebra fechada; dizzy = par + cluster extra 3062px (espirais); sad = face inteira (19430px). Pose blink IoU 0.891. sad: eye_diff 67.7 + face toda mudada (cabeca caida). TILT (historico completo, 6 tentativas): v1 sprawl 446x331 (IoU 0.439, rel -69.5, corpo errado); v2 base-copy ereta sem tilt (IoU 0.776, rel +8.0); v3 ereta c/ cabeca a DIREITA (IoU 0.801, rel +28.1); v4 sprawl de novo ao usar v1 como ref de pose (IoU 0.498); v5 torre inclinada = cabeca direita (rel +34.6); v6 loaf-sit = cabeca direita (rel +53.9). RESOLUCAO: padrao conclusivo — a cabeca da base ja esta no extremo esquerdo (head_x 216, lean -47.8); qualquer regeneracao ereta poe a cabeca a direita (head_x 241-271) e o unico caminho a esquerda e o sprawl. Par aceito = v3 + espelho sob a CONVENCAO PRIMARIA ABSOLUTA: tl -19.8 / tr +19.8 (piso 13.5 OK, IoU 0.799/0.665, tricolor 0.320/0.409/0.196 = mais fiel a base entre os 10 estados). ASSIMETRIA INVERTIDA DOCUMENTADA (caso extremo do precedente Mimi tr rel -4.3): rel a base diagonal ambos oscilam para o centro (+28.1/-28.1) no crossfade; as figuras leem corretamente como inclinacao esq/dir isoladas. Base extremamente diagonal e o caso-limite do catalogo p/ tilt. 8 aprovados integrados em art/pet_animations/olivia_calico/ (runtime carrega oportunisticamente, conjunto parcial seguro)."
     },
     {
       "sequence": 44,
