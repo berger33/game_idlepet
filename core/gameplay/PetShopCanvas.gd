@@ -16,12 +16,14 @@ const TOOL_TEXTURES: Dictionary = {
 }
 const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
 const SERVICE_PET_POSITIONS: Dictionary = {
-	# Centro calibrado para que a sombra em y+226 encontre a superfície de cada estação.
-	&"bath": Vector2(540, 840),
-	&"groom": Vector2(540, 810),
-	&"dry": Vector2(540, 820),
-	&"perfume": Vector2(540, 1060),
-	&"style": Vector2(540, 1065),
+	# Centro calibrado por composição offline (tools/compose_preview.py) sobre a
+	# ilustração de cada sala: o pet assenta na superfície real da estação
+	# (banheira, mesa de tosa, maca, penteadeira e otomana).
+	&"bath": Vector2(520, 1040),
+	&"groom": Vector2(560, 1090),
+	&"dry": Vector2(450, 1190),
+	&"perfume": Vector2(560, 1075),
+	&"style": Vector2(570, 1300),
 }
 const TOOL_ORDER: Array[StringName] = [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]
 const SERVICE_TOOLS: Dictionary = {
@@ -44,6 +46,7 @@ const PET_STATE_NAMES: Array[StringName] = [
 	&"blink"
 ]
 const PET_TEXTURE_BASELINE: float = 479.0 / 512.0
+const UI_TITLE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
 const SERVICE_TOOL_Y: Dictionary = {
 	&"bath": [235.0, 390.0, 545.0, 700.0, 855.0],
 	&"groom": [235.0, 390.0, 545.0, 700.0, 855.0],
@@ -56,6 +59,7 @@ var pet_position: Vector2 = Vector2(540, 840)
 var pet_happy: bool = false
 var pet_wet: bool = false
 var progress: float = 0.0
+var service_time_ratio: float = 1.0
 var bubbles: Array[Dictionary] = []
 var celebration: float = 0.0
 var shake_phase: float = 0.0
@@ -315,6 +319,7 @@ func reset_pet() -> void:
 	condition_release = 0.0
 	special_reward_active = false
 	progress = 0.0
+	service_time_ratio = 1.0
 	tool_visible = false
 	tool_contact_valid = false
 	reaction_time = 0.0
@@ -351,7 +356,7 @@ func _draw() -> void:
 		. get(service_mode, "PET SHOP DO BAIRRO")
 	)
 	draw_string(
-		ThemeDB.fallback_font,
+		UI_TITLE_FONT,
 		Vector2(330, 225),
 		room_title,
 		HORIZONTAL_ALIGNMENT_CENTER,
@@ -364,7 +369,7 @@ func _draw() -> void:
 	if upgrade_level > 0:
 		draw_style_box(level_box, Rect2(70, 500, 250, 78))
 		draw_string(
-			ThemeDB.fallback_font,
+			UI_TITLE_FONT,
 			Vector2(95, 552),
 			"ESTAÇÃO  Nv.%d" % upgrade_level,
 			HORIZONTAL_ALIGNMENT_LEFT,
@@ -441,11 +446,46 @@ func _draw() -> void:
 			float(heart["size"]),
 			Color("ff6f91", clampf(float(heart["life"]), 0.0, 1.0))
 		)
-	if tool_visible:
+	if tool_visible and service_active:
 		_draw_tool(active_tool, tool_position, 1.0, true)
-		var ring_color: Color = Color("7ed957") if progress >= 0.72 else Color("ffffff")
-		draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * progress, 40, ring_color, 11.0)
-		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.22), 4.0)
+		# Aro de dosagem: faixa verde fixa = janela do Perfect; o preenchimento
+		# cru avança com a esfregada e soltar decide a qualidade (sem auto-complete).
+		var band_min: float = RemoteConfig.get_float("bath_target_min")
+		var band_max: float = RemoteConfig.get_float("bath_target_max")
+		var fill: float = clampf(progress, 0.0, 1.0)
+		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.25), 6.0)
+		draw_arc(
+			tool_position,
+			66.0,
+			-PI / 2.0 + TAU * band_min,
+			-PI / 2.0 + TAU * band_max,
+			40,
+			Color("7ed957", 0.5),
+			14.0,
+		)
+		var ring_color: Color = Color.WHITE
+		if fill > band_max:
+			ring_color = Color("ef5350")
+		elif fill >= band_min:
+			ring_color = Color("7ed957")
+		elif fill >= 0.62:
+			ring_color = Color("ffd54f")
+		if fill > 0.005:
+			draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * fill, 40, ring_color, 10.0)
+	if service_active:
+		# Barra de paciência (tempo restante do atendimento).
+		var patience_rect: Rect2 = Rect2(270, 128, 540, 14)
+		draw_rect(patience_rect, Color("263238", 0.55))
+		var patience_ratio: float = clampf(service_time_ratio, 0.0, 1.0)
+		var patience_fill: Vector2 = Vector2(
+			patience_rect.size.x * patience_ratio, patience_rect.size.y
+		)
+		var patience_color: Color = Color("7ed957")
+		if patience_ratio <= 0.25:
+			patience_color = Color("ef5350")
+		elif patience_ratio <= 0.5:
+			patience_color = Color("ffd54f")
+		draw_rect(Rect2(patience_rect.position, patience_fill), patience_color)
 	if celebration > 0.0 and special_reward_active:
 		for i: int in 14:
 			var angle: float = TAU * float(i) / 14.0 + shake_phase
@@ -778,7 +818,7 @@ func _draw_tool_shelf() -> void:
 		if not unlocked:
 			draw_circle(shelf_position, 29, Color("263238", 0.76))
 			draw_string(
-				ThemeDB.fallback_font,
+				UI_TITLE_FONT,
 				shelf_position + Vector2(-28, 10),
 				"Nv.%d" % int(TOOL_LEVELS[tool]),
 				HORIZONTAL_ALIGNMENT_CENTER,

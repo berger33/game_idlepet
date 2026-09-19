@@ -225,8 +225,10 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('draw_arc(tool_position, 66.0', canvas)
         self.assertNotIn('for shelf_y:', canvas)
         self.assertIn('✓  CONTINUAR', main)
-        self.assertIn('DOBRAR PONTUAÇÃO • EM BREVE', main)
-        self.assertIn('double_reward_button.disabled = true', main)
+        # O CTA morto "DOBRAR PONTUAÇÃO • EM BREVE" foi removido (auditoria C10);
+        # ele não pode voltar sem um provedor de anúncios real.
+        self.assertNotIn('EM BREVE', main)
+        self.assertNotIn('double_reward_button', main)
         self.assertIn('include_filter=""', presets)
         self.assertIn('exclude_filter=', presets)
         self.assertNotIn('platform="Android"', presets)

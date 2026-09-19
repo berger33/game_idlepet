@@ -3,6 +3,10 @@ extends RefCounted
 ## Máquina de estados pura e testável do primeiro serviço.
 
 enum State { WAITING, ACTIVE, COMPLETE, FAILED }
+
+## Abaixo disso, soltar a ferramenta não "entrega" o serviço (permite retomar esfregando).
+const GOOD_FLOOR: float = 0.62
+
 var state: State = State.WAITING
 var progress: float = 0.0
 var time_left: float = 0.0
@@ -64,8 +68,8 @@ func finish() -> StringName:
 	if progress >= target_minimum and progress <= target_maximum:
 		state = State.COMPLETE
 		return &"perfect"
-	if progress >= 0.62 and progress < target_minimum:
+	if progress >= GOOD_FLOOR and progress < target_minimum:
 		state = State.COMPLETE
 		return &"good"
 	state = State.FAILED
-	return &"too_soon" if progress < 0.62 else &"overwashed"
+	return &"too_soon" if progress < GOOD_FLOOR else &"overwashed"

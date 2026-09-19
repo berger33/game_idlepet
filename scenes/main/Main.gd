@@ -4,6 +4,12 @@ extends Control
 const BathServiceScript: Script = preload("res://core/gameplay/BathService.gd")
 const PetShopCanvasScript: Script = preload("res://core/gameplay/PetShopCanvas.gd")
 const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
+const NAV_ICONS: Dictionary = {
+	&"missions": preload("res://art/ui/icons/missions.png"),
+	&"collection": preload("res://art/ui/icons/collection.png"),
+	&"map": preload("res://art/ui/icons/map.png"),
+	&"settings": preload("res://art/ui/icons/settings.png"),
+}
 const PINK: Color = Color("ff8fb1")
 const BLUE: Color = Color("4fc3f7")
 const GREEN: Color = Color("7ed957")
@@ -36,7 +42,6 @@ var order_card: PanelContainer
 var order_label: Label
 var instruction_label: Label
 var primary_button: Button
-var double_reward_button: Button
 var upgrade_button: Button
 var tool_upgrade_button: Button
 var result_panel: PanelContainer
@@ -82,8 +87,11 @@ func _process(delta: float) -> void:
 		if bath.tick(delta):
 			_fail(&"timeout")
 			return
-		# O único progresso visual é o aro que acompanha o utensílio arrastado.
-		world.progress = clampf(bath.progress / bath.target_minimum, 0.0, 1.0)
+		# Aro de dosagem (progresso cru) + barra de paciência no topo da cena.
+		world.progress = bath.progress
+		world.service_time_ratio = (
+			bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
+		)
 	elif next_client_timer > 0.0:
 		next_client_timer -= delta
 		if next_client_timer <= 0.0:
@@ -150,10 +158,17 @@ func _move_pointer(point: Vector2) -> void:
 
 
 func _end_pointer() -> void:
+	# Soltar a ferramenta com o serviço em andamento entrega o resultado:
+	# o jogador dosa a espuma e solta dentro da faixa verde (sem auto-complete).
+	var finalize_now: bool = (
+		bath.state == BathService.State.ACTIVE and bath.progress >= BathService.GOOD_FLOOR
+	)
 	dragging = false
 	dragged_tool = &""
 	bath.release_pointer()
 	world.release_tool()
+	if finalize_now:
+		_finish_bath()
 
 
 func _pet_hit(point: Vector2) -> bool:
@@ -182,8 +197,6 @@ func _rub(point: Vector2) -> void:
 		AudioManager.play(_service_sound())
 		bubble_sound_gate = 0.11
 	EventBus.service_progress.emit(bath.progress)
-	if bath.progress >= bath.target_minimum:
-		_finish_bath()
 
 
 func _service_sound() -> StringName:
@@ -221,7 +234,7 @@ func _start_bath() -> void:
 	bath.start_service()
 	world.begin_service()
 	instruction_label.text = (
-		"%s sobre o pet • o aro completa sozinho"
+		"%s sobre o pet • solte na faixa verde"
 		% String(SERVICE_LABELS[current_service]).capitalize()
 	)
 	order_card.hide()
@@ -232,7 +245,6 @@ func _start_bath() -> void:
 
 func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
-	_end_pointer()
 	if quality == &"perfect" or quality == &"good":
 		world.complete_service()
 		var base_reward: float = (
@@ -325,7 +337,10 @@ func _fail(reason: StringName) -> void:
 	if reason == &"timeout":
 		hint = "O tempo acabou. Faça o movimento com mais ritmo!"
 	elif reason == &"overwashed":
-		hint = "%s demais. Pare assim que entrar na faixa verde." % action_name.capitalize()
+		hint = (
+			"%s demais. Solte assim que o aro entrar na faixa verde."
+			% action_name.capitalize()
+		)
 	else:
 		hint = "Leve a %s até a faixa verde antes de finalizar." % action_name
 	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
@@ -407,7 +422,15 @@ func _configure_current_service() -> void:
 		{&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}
 		. get(current_service, 1350.0)
 	)
-	bath.configure(duration, 0.86, 1.0, required_distance)
+	# A paciência do pet modula o tempo real do atendimento (27–50 no catálogo).
+	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
+	var patience_factor: float = clampf(patience / 42.0, 0.6, 1.25)
+	bath.configure(
+		duration * patience_factor,
+		RemoteConfig.get_float("bath_target_min"),
+		RemoteConfig.get_float("bath_target_max"),
+		required_distance,
+	)
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
 		world.player_level = GameState.player_level
@@ -549,15 +572,17 @@ func _build_interface() -> void:
 	nav.position = Vector2(45, 155)
 	nav.add_theme_constant_override("separation", 14)
 	add_child(nav)
+	# Ícones desenhados (PNG) em vez de glifos Unicode: renderização idêntica
+	# em qualquer plataforma, sem depender da cobertura da fonte do dispositivo.
 	for item: Dictionary in [
-		{"id": "missions", "icon": "★", "tip": "Missões"},
-		{"id": "collection", "icon": "♥", "tip": "Pets"},
-		{"id": "map", "icon": "⌂", "tip": "Mapa"},
-		{"id": "settings", "icon": "⚙", "tip": "Ajustes"}
+		{"id": "missions", "tip": "Missões"},
+		{"id": "collection", "tip": "Pets"},
+		{"id": "map", "tip": "Mapa"},
+		{"id": "settings", "tip": "Ajustes"}
 	]:
-		var nav_button: Button = _button(String(item["icon"]), CHARCOAL, 82, 82)
+		var nav_button: Button = _button("", CHARCOAL, 82, 82)
+		nav_button.icon = NAV_ICONS[StringName(item["id"])]
 		nav_button.tooltip_text = String(item["tip"])
-		nav_button.add_theme_font_size_override("font_size", 38)
 		nav_button.add_theme_stylebox_override(
 			"normal", _style(Color("263238", 0.88), 41, 8, Color("ffffff", 0.72), 3)
 		)
@@ -620,12 +645,6 @@ func _build_interface() -> void:
 	primary_button = _button("✓  CONTINUAR", GREEN, 0, 105)
 	primary_button.pressed.connect(_on_primary_pressed)
 	result_actions.add_child(primary_button)
-	double_reward_button = _button("▶  DOBRAR PONTUAÇÃO • EM BREVE", Color("7f8c8d"), 0, 88)
-	double_reward_button.tooltip_text = (
-		"Vídeo recompensado será ativado " + "após integração do provedor de anúncios."
-	)
-	double_reward_button.disabled = true
-	result_actions.add_child(double_reward_button)
 	result_panel.hide()
 
 	toast_layer = Control.new()
@@ -705,9 +724,9 @@ func _open_meta(section: StringName) -> void:
 				ContentDB.pets.size(),
 				_pet_names(),
 				GameState.hired_staff.size(),
-				_list_text(GameState.hired_staff),
+				_staff_names(),
 				GameState.achievement_ids.size(),
-				_list_text(GameState.achievement_ids),
+				_achievement_names(),
 				GameState.unlocked_cosmetics.size(),
 				GameState.embers,
 			]
@@ -754,6 +773,20 @@ func _list_text(values: Array[String]) -> String:
 	for value: String in values:
 		result += ("" if result.is_empty() else ", ") + value
 	return result
+
+
+func _staff_names() -> String:
+	var names: Array[String] = []
+	for staff_id: String in GameState.hired_staff:
+		names.append(ContentDB.staff_name(staff_id))
+	return _list_text(names)
+
+
+func _achievement_names() -> String:
+	var names: Array[String] = []
+	for achievement_id: String in GameState.achievement_ids:
+		names.append(ContentDB.achievement_name(achievement_id))
+	return _list_text(names)
 
 
 func _pet_names() -> String:

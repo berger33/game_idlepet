@@ -3,10 +3,16 @@ extends Node
 
 const PETS_PATH: String = "res://data/pets.json"
 const CAREER_PATH: String = "res://data/career_track.json"
+const STAFF_PATH: String = "res://data/staff.json"
+const ACHIEVEMENTS_PATH: String = "res://data/achievements.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
 var career: Dictionary = {}
+var staff: Array[Dictionary] = []
+var staff_by_id: Dictionary = {}
+var achievements: Array[Dictionary] = []
+var achievements_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -16,6 +22,26 @@ func _ready() -> void:
 		if not id.is_empty() and not pets_by_id.has(id):
 			pets_by_id[id] = pet
 	career = _load_dictionary(CAREER_PATH)
+	staff = _load_array(STAFF_PATH, "staff")
+	for member: Dictionary in staff:
+		var member_id: String = String(member.get("id", ""))
+		if not member_id.is_empty() and not staff_by_id.has(member_id):
+			staff_by_id[member_id] = member
+	achievements = _load_array(ACHIEVEMENTS_PATH, "achievements")
+	for achievement: Dictionary in achievements:
+		var achievement_id: String = String(achievement.get("id", ""))
+		if not achievement_id.is_empty() and not achievements_by_id.has(achievement_id):
+			achievements_by_id[achievement_id] = achievement
+
+
+func staff_name(id: String) -> String:
+	var entry: Dictionary = staff_by_id.get(id, {})
+	return String(entry.get("name", id))
+
+
+func achievement_name(id: String) -> String:
+	var entry: Dictionary = achievements_by_id.get(id, {})
+	return String(entry.get("name", id))
 
 
 func has_pet(id: String) -> bool:

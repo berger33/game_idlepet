@@ -10,3 +10,4 @@ analytics_queue.jsonl
 
 __pycache__/
 *.py[cod]
+.preview/

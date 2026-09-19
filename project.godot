@@ -39,6 +39,7 @@ textures/default_filters/use_nearest_mipmap_filter=false
 audio/driver/enable_input=false
 
 [gui]
+theme/custom_font="res://art/fonts/DejaVuSans.ttf"
 theme/default_font_multichannel_signed_distance_field=true
 
 [physics]

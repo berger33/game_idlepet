@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "arena/*"]
+  pull_request:
+
+jobs:
+  static:
+    name: Lint + testes de dados/economia
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Dependências Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install gdtoolkit pillow
+      - name: Lint GDScript (projeto inteiro)
+        run: gdlint $(git ls-files '*.gd')
+      - name: Testes de dados, economia e contratos de UI
+        run: python -m unittest discover -s tests -v
+      - name: Validação estrutural do projeto
+        run: python tools/validate_project.py
+
+  runtime:
+    name: Godot headless (import + smoke test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar Godot 4.3 headless
+        run: |
+          curl -fL -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip godot.zip
+          mv Godot_v4.3-stable_linux.x86_64 godot
+          chmod +x godot
+      - name: Import de assets (valida preload/paths)
+        run: ./godot --headless --import
+      - name: Smoke test — 120 frames da cena principal
+        run: ./godot --headless --quit-after 120

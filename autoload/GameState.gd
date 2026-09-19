@@ -352,7 +352,9 @@ func _on_service_completed(_service_id: StringName, quality: StringName, reward:
 	best_combo = maxi(best_combo, combo)
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
-		EventBus.toast_requested.emit("Bia foi contratada! +5% banho", Color("7ed957"))
+		EventBus.toast_requested.emit(
+			"Bia foi contratada! Produção automática de moedas no banho.", Color("7ed957")
+		)
 	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
 	_check_achievements()
