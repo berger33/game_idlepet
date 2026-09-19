@@ -377,3 +377,19 @@ novos no contrato: `test_retention_systems_are_wired` e
 5. **Refatoração** — `PetCosmeticsArt` (novo módulo) concentra o desenho dos
    cosméticos; o canvas de gameplay volta a ficar folgado sob o limite de 1000
    linhas para os próximos lotes.
+
+## 21. Fase 6 — Vínculo (buddy) e linguagem da equipe
+
+1. **Pet preferido (buddy)** — toque no cartão da coleção define o favorito
+   (★, toast, `favorite_pet_set`); persistido no save e sanitizado contra
+   pets travados. O buddy entra na fila com 40% de prioridade
+   (`buddy_spawned`) — o laço muda o jogo, não só o número.
+2. **Vocações da equipe** — `STAFF_VOCATION` traduz cada passivo em uma
+   vocação de uma palavra (Banhista, Tosador, Estilista, Veterinário,
+   Massagem, Perfeccionista); a tela de equipe mostra vocação + efeito e uma
+   nota em missões explica o que cada um faz antes da contratação.
+3. **Arte — lote 20** — Lua (Maine Coon) 9/10 estados aprovados; `tilt_right`
+   rejeitado por legenda embutida (retry no lote 21) com degradação suave no
+   runtime (crossfade para pose base). Tracker: 199/500 imagens.
+4. **Contratos** — 101 chaves × 3 idiomas; teste
+   `test_fase6_buddy_priority_and_staff_vocations`.
