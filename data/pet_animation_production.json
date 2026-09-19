@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 37,
+    "pets_generated": 38,
     "images_expected": 500,
-    "images_generated": 370,
-    "images_qa_passed": 370,
-    "pets_integrated": 37,
-    "generation_attempts": 383
+    "images_generated": 380,
+    "images_qa_passed": 380,
+    "pets_integrated": 38,
+    "generation_attempts": 392
   },
   "pets": [
     {
@@ -2156,51 +2156,52 @@
       "reference": "art/pets/otto_basset.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/otto_basset/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. REGISTER FINDING: Otto's base is the only one of 50 whose content bottom sits at y=411 (a short 312px sprite vertically centered by the base pipeline; every other pet grounds at ~471-479). All grounded states were re-registered to the base's bottom (411 +/- 3) so dirty->clean and messy->clean crossfades align perfectly with the shipped base; happy_air keeps the normalizer placement (aerial pose, runtime adds the jump offset). The base itself therefore renders ~68px above the 479 texture baseline at runtime — pre-existing quirk, flagged for the art lead: a future lossless re-ground of base + 10 states as one dedicated change would fix it. messy: crop rescaled 445x430 -> 423x409 (4.9%) to fit the 411 register window, plus a 3x3 morphological close that rejoined 1-2px interpolation slivers into a single component; roughness +63% (family floor, same as Estrela/Luna). wet reads soaked (mean V 156 to 142, heavy flattened ears, kept droplets). Tilt pair lean -21.6/+21.6 absolute (within family 13.5-47; the base itself reads +45.9 due to the wide low silhouette). sad has the basset melancholy amplified with flat ears and a tear (eye-band diff 35.2); dizzy eye diff 33.6; blink preserves the pose (IoU 0.958). Identity hue corr 0.978-1.000 (warm tricolor). GrabCut adopted on all frames; standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, register 411 for grounded states)."
     },
     {
       "sequence": 39,
