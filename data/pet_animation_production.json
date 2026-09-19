@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 48,
+    "pets_generated": 49,
     "images_expected": 500,
-    "images_generated": 481,
-    "images_qa_passed": 481,
-    "pets_integrated": 48,
-    "generation_attempts": 499
+    "images_generated": 490,
+    "images_qa_passed": 490,
+    "pets_integrated": 49,
+    "generation_attempts": 509
   },
   "pets": [
     {
@@ -2787,48 +2787,48 @@
           "path": "art/pet_animations/odin_nebelung/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/odin_nebelung/blink.png"
         }
       },
       "generation_status": "complete",
       "normalization_status": "complete",
-      "visual_qa_status": "partial",
-      "integration_status": "pending",
-      "generation_attempts": 1,
-      "qa_notes": "Nono gato. Nebelung azul-cinza c/ pelo longo e pontas prateadas (oficiais BGR 98,77,68 / 127,108,97 / 67,46,37 / 161,145,133 / 207,206,202, tol 20; base ~57k px). Caso quase-neutro como Yuki: hue-corr fraca — identidade por paleta oficial (B>G>R consistente = azul-cinza). BASE CURTA E LARGA: 454x309, bottom 409 (registro proprio; 2a mais curta apos Mimi 400) — aterrados registrar em 409. lean +3.8 QUASE SIMETRICA (como Cosmo) — tilt deve vir facil nas 2 direcoes c/ espelho p/ tr. RISCO CHROMA: pelo azul-cinza vs backdrop azul — dual obrigatorio; dirty: flood venceu (57.9k vs 55.4k oficiais). Lote PARCIAL 1/10 (dirty): limite de 10 geracoes/TURNO (9 do fechamento da Iris + 1 daqui). PROXIMO TURNO: 8 geracoes (wet, messy, tl, squash, air, dizzy, sad, blink) + tr espelhado (nao conta) = fecha 10/10 c/ 2 sobras p/ retake."
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "Nono gato. Nebelung azul-cinza c/ pelo longo e pontas prateadas (oficiais BGR 98,77,68 / 127,108,97 / 67,46,37 / 161,145,133 / 207,206,202, tol 20; base ~57k px). Caso quase-neutro como Yuki: hue-corr fraca — identidade por paleta oficial (B>G>R consistente = azul-cinza). BASE CURTA E LARGA: 454x309, bottom 409 (registro proprio; 2a mais curta apos Mimi 400) — aterrados registrar em 409. lean +3.8 QUASE SIMETRICA (como Cosmo) — tilt deve vir facil nas 2 direcoes c/ espelho p/ tr. RISCO CHROMA: pelo azul-cinza vs backdrop azul — dual obrigatorio; dirty: flood venceu (57.9k vs 55.4k oficiais). Lote COMPLETO 10/10 (fechado no turno seguinte, +10 geracoes c/ sandbox reset no meio — recuperado c/ fetch+reset; staging perdido, dirty recuperado da copia integrada). FECHAMENTO: 8 geracoes limpas + 2 retakes do tr. TILT: tl rel -15.4 PASS (low-wide 444x325, IoU 0.854 — par c/ a base curta/larga). tr: retake 1 (coruja) = base-copy rel -6.3; retake 2 (dual-ref c/ tilt_right REAL do Cosmo) = rel +18.4 PASS no piso MAS pose EM PE (446x439 ar 0.98 vs base 0.68; mirror-IoU vs tl 0.618) — REJEITADO por inconsistencia do par look-left/right -> MIRROR aceito c/ EXCECAO DOCUMENTADA: tr abs +11.6 / rel +7.9 (padrao Bob +-13, Mimi -4.3, Zara +12.7; lado fraco de par valido). happy_air: OVERRIDE p/ flood (8o seguido; grab 1 comp; flood = corpo aereo y ate 434 + 8 nuvens de salto near-pet). wet: 74 comps near-pet (MAIOR contagem de gotas/spray do catalogo — pelo longo encharcado; 21 comps >=150px, zero far) + V 123->128 (azul-cinza quase-neutro mal escurece, como Kiara/Zara). messy +66%. blink: par diff-cluster nos olhos (2694/2438 px) + IoU 0.943. dizzy 18978px (espirais), sad 19559px (cabeca caida, c/ brief anti-inflar: cov 0.447 ok gate relativo 1.35x). GATE DE ESCALA agora relativo: cov < base*1.35 (Iris sad 1.98x falharia; Odin ok). Base curta/larga 454x309 bottom 409: aterrados 406-409; dizzy/sad rescale -8.7% (poses altas). 11 tentativas totais."
     },
     {
       "sequence": 50,
