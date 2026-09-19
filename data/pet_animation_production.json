@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 49,
+    "pets_generated": 50,
     "images_expected": 500,
-    "images_generated": 490,
-    "images_qa_passed": 490,
-    "pets_integrated": 49,
-    "generation_attempts": 509
+    "images_generated": 500,
+    "images_qa_passed": 500,
+    "pets_integrated": 50,
+    "generation_attempts": 518
   },
   "pets": [
     {
@@ -2840,51 +2840,52 @@
       "reference": "art/pets/cleo_egyptian.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/cleo_egyptian/blink.png"
         }
       },
       "generation_status": "queued",
       "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Decimo e ULTIMO gato — FASE 8 COMPLETA (500/500). Mau Egipcio bronze fumê c/ a ASSINATURA DA RACA quantificada: 72 manchas escuras naturais (20-900px pos open 3x3) — GATE spots>=40 em todos os estados: PASS 64-150 (messy 150 inflamado por sombras de tufts; wet 85, air 86, squash 91, blink 100). Oficiais BGR 160,180,211 / 198,218,235 / 126,138,174 / 30,41,69 / 72,86,110, tol 20 (base 37930 px). Base esguia 289x446 ar 1.54, bottom 478 padrao, lean -17.6 quase simetrica. TILT PAR ESPELHADO (mais forte do catalogo): tl -111.0 (rel -93.4) / tr +111.0 (rel +128.6) — pose peek-left tipo Zara (cabeca y[45-233] vs patas y[339-466], zero overlap = sentado, nao sprawl; IoU 0.488 c/ precedente Zara 0.425 p/ base esguia->tilt largo). happy_air: OVERRIDE p/ flood (9o seguido; grab corpo tocava y=479; flood = corpo aereo y ate 458 + 7 comps alongados near-pet) — IoU 0.298 = salto mais dinamico do catalogo, manchas visiveis no ar (86). blink: PAR PERFEITO no diff-clustering (175,141) 1212px / (251,141) 1182px (dx=76, dy=0) + IoU 0.980 (maior do catalogo p/ blink) + spots 100. messy +93% (16.81 vs 8.71). wet: V 175->167, cov 0.297->0.339 (sobe, pelo curto molhado espalha — como Lilo), 9 gotas (10 comps). dizzy 9666px (espirais), sad 12836px (cabeca caida, cov 0.369 dentro do gate 1.35x). happy_squash 444x280 (esmagamento perfeito: largo+baixo). Registro padrao 478: aterrados 477-478; squash 395->478 (+83), tilt 466->478 (+12). 9 tentativas, zero retakes — fechamento limpo do catalogo."
     }
   ]
 }
