@@ -32,10 +32,10 @@
     "pets_total": 50,
     "pets_generated": 19,
     "images_expected": 500,
-    "images_generated": 190,
-    "images_qa_passed": 190,
+    "images_generated": 199,
+    "images_qa_passed": 199,
     "pets_integrated": 19,
-    "generation_attempts": 199
+    "generation_attempts": 209
   },
   "pets": [
     {
@@ -1130,19 +1130,19 @@
       "reference": "art/pets/lua_maine_coon.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/tilt_left.png"
         },
         "tilt_right": {
@@ -1150,31 +1150,32 @@
           "path": "art/pet_animations/lua_maine_coon/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/lua_maine_coon/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "in_progress",
+      "normalization_status": "complete",
+      "visual_qa_status": "pending_retry",
+      "integration_status": "partial",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review. tilt_right was rejected for embedded caption text baked into the artwork and will be regenerated in the next batch; runtime idle tilt falls back to the base pose until then. dizzy accepted with an intentional mint soap tint. Missing states crossfade to base/happy_squash via the existing runtime fallback."
     },
     {
       "sequence": 21,
