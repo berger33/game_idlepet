@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 31,
+    "pets_generated": 32,
     "images_expected": 500,
-    "images_generated": 310,
-    "images_qa_passed": 310,
-    "pets_integrated": 31,
-    "generation_attempts": 323
+    "images_generated": 320,
+    "images_qa_passed": 320,
+    "pets_integrated": 32,
+    "generation_attempts": 333
   },
   "pets": [
     {
@@ -1814,51 +1814,52 @@
       "reference": "art/pets/zeca_schnauzer.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/zeca_schnauzer/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus a lossless horizontal mirror for tilt_right (geometric opposition by construction; pair IoU 0.630, head-top sweep 176/335 matching the repo tilt_left=viewer-left convention). First messy attempt rejected in QA for a timid silhouette (+3% width, IoU vs base 0.926); the single retake of the batch (10th attempt) delivered the contract expansion: +23% width, IoU 0.600, identity hue corr 0.956. wet reads soaked (mean V 135 to 94) with kept droplets; happy_air keeps short motion lines (12 components, no baked panel); dizzy uses spiral eyes with no stars; sad is natively grounded at baseline 478 with bowed head and folded ears; blink preserves the base pose (IoU 0.985) with closed lids (eye-band dark fraction 0.310 to 0.249). Backdrop fringe removed with a surgical per-image chroma key (boundary-adjacent bluish pixels within dist<40-45 of the measured backdrop) that protects the silver fur (B~R) and interior cool-gray paw shading; 3 dark cool-gray edge pixels kept as fur. Identity hue corr 0.90-1.00 across states. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479)."
     },
     {
       "sequence": 33,
