@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 39,
+    "pets_generated": 40,
     "images_expected": 500,
-    "images_generated": 390,
-    "images_qa_passed": 390,
-    "pets_integrated": 39,
-    "generation_attempts": 401
+    "images_generated": 400,
+    "images_qa_passed": 400,
+    "pets_integrated": 40,
+    "generation_attempts": 410
   },
   "pets": [
     {
@@ -2270,51 +2270,52 @@
       "reference": "art/pets/apolo_bernese.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/apolo_bernese/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. Legendary pet. Identity tracked by tricolor band structure and rust marks (hue weak on the dominant black coat: dirty 0.820 / wet 0.788): dark 0.53-0.67, light 0.13-0.19, rust 8251-19233 px vs base 0.60/0.21/13934 in every state (wet rust darker by semantics). REGISTRATION: base bottom is 465 (not the standard 478); all grounded states registered to 465 (wet shifted 478->465, tilt_left 428->465) so dirty->clean crossfades align with the shipped base; happy_air keeps normalizer placement. blink verified by eye-shine evidence instead of gray diff (black face patch makes gray diff tiny): shine pixels at the two eye windows 73/59 (open base) -> 0/13 (blink, lids closed); dizzy shows bright spiral eyes (153/268) and sad partially visible shines (28/43) — all three reads distinct. wet shows the strongest volume collapse of the catalogue so far (coverage 0.496 -> 0.356, flattened double coat) with 9 kept droplet components. sad droops strongly (head top +60.4px). messy +95% roughness with the spiky-starburst brief (219 debris specks cleaned). Tilt pair lean -43.1/+43.1 absolute over a diagonal base (-41.8): same documented asymmetry as Nico/Maya/Kiara (near-base left, strong right swing). happy_air keeps 13 near-body motion-line components (grab override over flood). Standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, register 465 for grounded states)."
     },
     {
       "sequence": 41,
