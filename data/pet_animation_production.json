@@ -30,12 +30,12 @@
   ],
   "summary": {
     "pets_total": 50,
-    "pets_generated": 38,
+    "pets_generated": 39,
     "images_expected": 500,
-    "images_generated": 380,
-    "images_qa_passed": 380,
-    "pets_integrated": 38,
-    "generation_attempts": 392
+    "images_generated": 390,
+    "images_qa_passed": 390,
+    "pets_integrated": 39,
+    "generation_attempts": 401
   },
   "pets": [
     {
@@ -2213,51 +2213,52 @@
       "reference": "art/pets/kiara_doberman.png",
       "states": {
         "dirty": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/dirty.png"
         },
         "wet": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/wet.png"
         },
         "messy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/messy.png"
         },
         "tilt_left": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/tilt_left.png"
         },
         "tilt_right": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/tilt_right.png"
         },
         "happy_squash": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/happy_squash.png"
         },
         "happy_air": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/happy_air.png"
         },
         "dizzy": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/dizzy.png"
         },
         "sad": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/sad.png"
         },
         "blink": {
-          "status": "queued",
+          "status": "qa_passed",
           "path": "art/pet_animations/kiara_doberman/blink.png"
         }
       },
-      "generation_status": "queued",
-      "normalization_status": "queued",
-      "visual_qa_status": "queued",
-      "integration_status": "pending",
-      "generation_attempts": 0
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. Identity for this black-and-rust pet is tracked by tan-point preservation and official palette (hue histogram is weak on dominant black coats: dirty 0.800 / wet 0.787): tan points 7320-10807 px vs base 10493 in every state (wet darker-rust by semantics), official palette strong throughout. REGISTRATION: happy_squash is a short pose (~298px) that the normalizer vertically centered (bottom 380); re-registered lossless to the standard 478 ground. TILT NOTE: the base pose is itself strongly diagonal (lean -46.0, head-top x 212), so the mirrored pair is lopsided relative to base — tilt_left -53.9 is only -7.9 relative (near-base) while tilt_right +53.9 is a +99.9 swing; same documented asymmetry as the other diagonal-pose pets (Nico, Maya). The pair labels were verified against the repo tilt_left=viewer-left convention (initial auto-label anchored on canvas center was wrong for this off-center base; fixed by a lossless content swap). messy passed the roughness gate at +70% with the short-coat bristly brief. wet reads soaked via coverage 0.331 to 0.324, flattened ears and kept droplets (V 96 to 93 — a black coat cannot darken much further). sad approved with a family-range head signal (top -9.5px, Duke precedent -25) and strong face change (eye-band diff 38.8); dizzy 37.5; blink preserves the pose (IoU 0.982) with closed lids. happy_air keeps 10 motion-line components (grab path; flood dropped them). GrabCut adopted on all frames except blink (flood, equal identity, less fringe); standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, grounded register 478)."
     },
     {
       "sequence": 40,
