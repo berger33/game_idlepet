@@ -31,7 +31,7 @@ static func draw_room_cosmetics(shop) -> void:
 			var x: float = 90.0 + float(i) * 72.0
 			var top_y: float = 292.0 + sway * float(i % 2) * 0.4
 			var tip_y: float = 356.0 + sway * float(i % 2) * 0.6
-			draw_colored_polygon(
+			shop.draw_colored_polygon(
 				PackedVector2Array(
 					[Vector2(x, top_y), Vector2(x + 36.0, top_y), Vector2(x + 18.0, tip_y)]
 				),
@@ -42,26 +42,26 @@ static func draw_room_cosmetics(shop) -> void:
 		var sun: Vector2 = Vector2(160, 250)
 		for ray: int in 8:
 			var ray_angle: float = TAU * float(ray) / 8.0 + shop.shake_phase * 0.4
-			draw_line(
+			shop.draw_line(
 				sun + Vector2(cos(ray_angle), sin(ray_angle)) * 58.0,
 				sun + Vector2(cos(ray_angle), sin(ray_angle)) * 84.0,
 				Color("ffd54f", 0.75),
 				9
 			)
-		draw_circle(sun, 52, Color("ffe082"))
-		draw_circle(sun, 44, Color("ffd54f"))
+		shop.draw_circle(sun, 52, Color("ffe082"))
+		shop.draw_circle(sun, 44, Color("ffd54f"))
 		for wave: int in 3:
 			var wave_x: float = 380.0 + float(wave) * 240.0
 			var wave_y: float = 336.0 + sin(shop.shake_phase * 2.4 + float(wave) * 2.1) * 9.0
-			draw_arc(
+			shop.draw_arc(
 				Vector2(wave_x, wave_y + 60.0), 70.0, PI + 0.25, TAU - 0.25, 16,
 				Color("81d4fa", 0.9), 10
 			)
 	if String(shop.room_cosmetics.get("bath", "")).is_empty():
 		return
-	var tub_color: Color = _bath_foam_color().darkened(0.08)
-	draw_styleshop._box(shop._box(tub_color, 14), Rect2(70, 592, 250, 44))
-	draw_styleshop._box(shop._box(Color.WHITE, 6), Rect2(86, 606, 218, 16))
+	var tub_color: Color = bath_foam_color(shop).darkened(0.08)
+	shop.draw_style_box(shop._box(tub_color, 14), Rect2(70, 592, 250, 44))
+	shop.draw_style_box(shop._box(Color.WHITE, 6), Rect2(86, 606, 218, 16))
 
 
 static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_local: bool) -> void:
@@ -77,14 +77,14 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 			Vector2(0.0, -140.0 * fit) if texture_local else center + Vector2(0, 98)
 		)
 		var half: float = 68.0 * fit
-		draw_colored_polygon(
+		shop.draw_colored_polygon(
 			PackedVector2Array(
 				[neck + Vector2(-half, 0), neck + Vector2(half, 0), neck + Vector2(0, 84 * fit)]
 			),
 			Color(String(pair[0]))
 		)
-		draw_circle(neck + Vector2(-half * 0.7, 4.0 * fit), 11.0 * fit, Color(String(pair[1])))
-		draw_circle(neck + Vector2(half * 0.7, 4.0 * fit), 11.0 * fit, Color(String(pair[1])))
+		shop.draw_circle(neck + Vector2(-half * 0.7, 4.0 * fit), 11.0 * fit, Color(String(pair[1])))
+		shop.draw_circle(neck + Vector2(half * 0.7, 4.0 * fit), 11.0 * fit, Color(String(pair[1])))
 	elif accessory == "scarf_caramel":
 		var neck: Vector2 = (
 			Vector2(0.0, -140.0 * fit) if texture_local else center + Vector2(0, 98)
@@ -92,7 +92,7 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 		var half: float = 66.0 * fit
 		var scarf: Color = Color("c98b5b")
 		var shade: Color = Color("8d5a33")
-		draw_colored_polygon(
+		shop.draw_colored_polygon(
 			PackedVector2Array(
 				[
 					neck + Vector2(-half, -12.0 * fit),
@@ -103,7 +103,7 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 			),
 			scarf
 		)
-		draw_colored_polygon(
+		shop.draw_colored_polygon(
 			PackedVector2Array(
 				[
 					neck + Vector2(-half * 0.55, 24.0 * fit),
@@ -113,14 +113,14 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 			),
 			scarf
 		)
-		draw_line(
+		shop.draw_line(
 			neck + Vector2(-half * 0.4, 34.0 * fit),
 			neck + Vector2(-half * 0.28, 108.0 * fit),
 			shade,
 			6.0 * fit
 		)
-		draw_circle(neck + Vector2(-half * 0.55, 24.0 * fit), 13.0 * fit, shade)
-		draw_circle(neck + Vector2(half * 0.8, 6.0 * fit), 13.0 * fit, shade)
+		shop.draw_circle(neck + Vector2(-half * 0.55, 24.0 * fit), 13.0 * fit, shade)
+		shop.draw_circle(neck + Vector2(half * 0.8, 6.0 * fit), 13.0 * fit, shade)
 	elif accessory == "crown_bubbles" or accessory == "crown_gold":
 		var crown_palettes: Dictionary = {
 			"crown_bubbles": ["f6c445", "b3e5fc"],
@@ -135,7 +135,7 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 		var width: float = 72.0 * fit
 		var band_h: float = 18.0 * fit
 		var tip_h: float = 58.0 * fit
-		draw_colored_polygon(
+		shop.draw_colored_polygon(
 			PackedVector2Array(
 				[
 					crown + Vector2(-width, -band_h),
@@ -147,7 +147,7 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 			Color(String(gems[0]))
 		)
 		for point_x: float in [-width * 0.8, 0.0, width * 0.8]:
-			draw_colored_polygon(
+			shop.draw_colored_polygon(
 				PackedVector2Array(
 					[
 						crown + Vector2(point_x - 16.0 * fit, -band_h),
@@ -158,7 +158,7 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 				Color(String(gems[0]))
 			)
 		for bubble_x: float in [-width * 0.8, 0.0, width * 0.8]:
-			draw_circle(
+			shop.draw_circle(
 				crown + Vector2(bubble_x, -tip_h - 20.0 * fit),
 				13.0 * fit,
 				Color(String(gems[1]), 0.9)

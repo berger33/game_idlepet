@@ -103,7 +103,7 @@ func _ready() -> void:
 	_connect_events()
 	_refresh_economy()
 	_show_pending_offline_reward()
-	_show_comeback()
+	SessionFeedback.show_comeback(self)
 	NotificationManager.schedule_return_reminders(GameState.last_seen_unix)
 	if GameState.tutorial_complete:
 		var deep_section: StringName = NotificationManager.deep_link_section()
@@ -905,7 +905,7 @@ func _build_interface() -> void:
 	primary_button.pressed.connect(_on_primary_pressed)
 	result_actions.add_child(primary_button)
 	share_button = _button(Loc.t("SHARE_BUTTON"), BLUE, 0, 88)
-	share_button.pressed.connect(_on_share_pressed)
+	share_button.pressed.connect(SessionFeedback.on_share_pressed.bind(self))
 	result_actions.add_child(share_button)
 	result_panel.hide()
 

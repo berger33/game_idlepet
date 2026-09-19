@@ -43,3 +43,24 @@ jobs:
         run: ./godot --headless --import
       - name: Smoke test — 120 frames da cena principal
         run: ./godot --headless --quit-after 120
+      - name: Análise estática de todos os scripts (nível editor, 4.7.2)
+        run: |
+          status=0
+          while IFS= read -r script; do
+            output=$(./godot --headless --check-only --script "res://$script" 2>&1)
+            if [ $? -ne 0 ]; then
+              echo "::error file=$script::análise estática falhou (Godot 4.7.2)"
+              echo "$output"
+              status=1
+            fi
+          done < <(git ls-files '*.gd')
+          # Autoteste do detector: um script com colisão var/func DEVE falhar.
+          printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
+          if ./godot --headless --check-only --script res://probe_collision_selftest.gd > /dev/null 2>&1; then
+            echo "::error::detector de análise estática não registrou a colisão de teste"
+            status=1
+          else
+            echo "detector validado: script de teste com colisão falhou como esperado"
+          fi
+          rm -f probe_collision_selftest.gd
+          exit $status

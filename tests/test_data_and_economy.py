@@ -62,7 +62,13 @@ class FoundationTests(unittest.TestCase):
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
         self.assertEqual(main.count('Button.new()'), 1)
         self.assertIn('ShareManager.begin_snapshot', main)
-        self.assertIn('_show_comeback()', main)
+        self.assertIn('SessionFeedback.show_comeback(self)', main)
+        self.assertIn('SessionFeedback.on_share_pressed.bind(self)', main)
+        feedback = Path('core/ui/SessionFeedback.gd').read_text(encoding='utf8')
+        self.assertIn('static func show_comeback(', feedback)
+        self.assertIn('static func on_share_pressed(', feedback)
+        self.assertIn('GameState.check_return_bonus()', feedback)
+        self.assertIn('ShareManager.last_saved_path', feedback)
 
     def test_localization_parity_across_languages(self):
         import csv
@@ -385,6 +391,37 @@ class FoundationTests(unittest.TestCase):
                 names.setdefault(name, []).append(match.start())
             collisions = {name for name, spots in names.items() if len(spots) > 1}
             self.assertEqual(collisions, set(), f'{path}: nomes declarados 2x (var/func/const/signal): {collisions}')
+
+    def test_no_orphan_private_method_references(self):
+        # Referências a métodos privados (_nome) sem definição no próprio
+        # arquivo são erros de análise no Godot 4.7+ (ex.: _show_comeback e
+        # _on_share_pressed órfãos quebravam o Main). Métodos nativos não usam
+        # o prefixo _ exceto os overrides de ciclo de vida abaixo.
+        import re
+        lifecycle = {
+            '_ready', '_process', '_physics_process', '_input', '_unhandled_input',
+            '_unhandled_key_input', '_draw', '_notification', '_init', '_enter_tree',
+            '_exit_tree', '_gui_input', '_get_configuration_warnings', '_make_custom_tooltip',
+        }
+        call_pattern = re.compile(r'(?<![\w.])(_[A-Za-z_][A-Za-z0-9_]*)\s*\(')
+        connect_pattern = re.compile(r'\.connect\(\s*(_[A-Za-z_][A-Za-z0-9_]*)\s*[,)]')
+        for path in Path('.').rglob('*.gd'):
+            if '.git' in path.parts:
+                continue
+            text = path.read_text(encoding='utf8')
+            defined = set(re.findall(r'^\t?(?:static\s+)?func\s+(_?[A-Za-z_][A-Za-z0-9_]*)', text, re.MULTILINE))
+            for match in call_pattern.finditer(text):
+                name = match.group(1)
+                if name in defined or name in lifecycle:
+                    continue
+                line = text[:match.start()].count('\n') + 1
+                self.fail(f'{path}:{line}: chamada órfã {name}() — método não declarado no arquivo')
+            for match in connect_pattern.finditer(text):
+                name = match.group(1)
+                if name in defined:
+                    continue
+                line = text[:match.start()].count('\n') + 1
+                self.fail(f'{path}:{line}: connect({name}) referencia handler não declarado')
 
     def test_professional_backgrounds_exist_and_are_reasonable(self):
         for name in (
