@@ -358,3 +358,22 @@ novos no contrato: `test_retention_systems_are_wired` e
    `test_fase4_prestige_cosmetics_and_audio_anchor` (prestígio não zera
    total_coins/unlocked_pets; canvas tem cosméticos e âncora de áudio; main
    propaga prestígio e cosméticos).
+
+## 20. Fase 5 — Conteúdo e variedade
+
+1. **Missões semanais** — `data/weekly_missions.json` com 7 missões (banhos,
+   perfeitos, combo, gorjetas, laços, VIPs e investimento); reiniciam na
+   segunda-feira (chave = dia unix da segunda, estável entre fusos). Resgate
+   individual na tela de missões com recompensas 400–600 moedas (VIP paga
+   brasas). Analítica `weekly_mission_complete`.
+2. **Catálogo de cosméticos 5→11, todos com efeito visual real** — banheira
+   Menta e Lavanda (recolorem espuma/bolhas/selo), Bandana Vermelha, Cachecol
+   Caramelo, Coroa Real (novos acessórios desenhados nos dois caminhos de
+   render) e Parede Praiana (sol com raios girando + ondas animadas).
+3. **Eventos com nomes localizados** — LiveOps usa `EVENT_0..EVENT_6` do
+   sistema de localização (92 chaves × 3 idiomas com paridade testada).
+4. **Arte — lote 19** — Paçoca (Dachshund) com 10 estados aprovados na primeira
+   leva (tracker: 19/50 pets, 190/500 imagens).
+5. **Refatoração** — `PetCosmeticsArt` (novo módulo) concentra o desenho dos
+   cosméticos; o canvas de gameplay volta a ficar folgado sob o limite de 1000
+   linhas para os próximos lotes.

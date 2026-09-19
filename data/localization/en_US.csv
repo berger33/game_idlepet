@@ -74,3 +74,20 @@ PRESTIGE_LOCKED,Reach level 15 and save up more coins
 PRESTIGE_KEEP,"Keeps: embers, pets, cosmetics, achievements, streak, pass and records"
 PRESTIGE_LOST,"Restarts: coins, upgrades, staff and career level"
 PRESTIGE_DONE,Franchise level %d! +10%% coins per level
+EVENT_0,Family Sunday
+EVENT_1,Bath Monday
+EVENT_2,Grooming Tuesday
+EVENT_3,Drying Wednesday
+EVENT_4,Bow Thursday
+EVENT_5,VIP Friday
+EVENT_6,Combo Saturday
+WEEKLY_TITLE,WEEKLY MISSIONS
+WEEKLY_NOTE,Resets on Monday • bigger rewards than daily ones
+WEEKLY_NOTE_SHORT,weekly
+WMISSION_BATH,%d/40 baths
+WMISSION_PERFECT,%d/15 perfects
+WMISSION_COMBO,Combo %d/8
+WMISSION_TIPS,%d/10 tips
+WMISSION_STYLE,%d/12 bows
+WMISSION_VIP,%d/3 VIP clients
+WMISSION_SPEND,%d/600 invested

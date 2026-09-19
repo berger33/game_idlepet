@@ -7,6 +7,7 @@ const STAFF_PATH: String = "res://data/staff.json"
 const ACHIEVEMENTS_PATH: String = "res://data/achievements.json"
 const COSMETICS_PATH: String = "res://data/cosmetics.json"
 const PASS_PATH: String = "res://data/pass.json"
+const WEEKLY_PATH: String = "res://data/weekly_missions.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -18,6 +19,8 @@ var achievements_by_id: Dictionary = {}
 var cosmetics: Array[Dictionary] = []
 var cosmetics_by_id: Dictionary = {}
 var pass_days: Array[Dictionary] = []
+var weekly_missions: Array[Dictionary] = []
+var weekly_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -43,6 +46,11 @@ func _ready() -> void:
 		if not look_id.is_empty() and not cosmetics_by_id.has(look_id):
 			cosmetics_by_id[look_id] = look
 	pass_days = _load_array(PASS_PATH, "pass")
+	weekly_missions = _load_array(WEEKLY_PATH, "missions")
+	for weekly: Dictionary in weekly_missions:
+		var weekly_id: String = String(weekly.get("id", ""))
+		if not weekly_id.is_empty() and not weekly_by_id.has(weekly_id):
+			weekly_by_id[weekly_id] = weekly
 
 
 func cosmetic(id: String) -> Dictionary:
@@ -54,6 +62,10 @@ func pass_day(day: int) -> Dictionary:
 	if day < 1 or day > pass_days.size():
 		return {}
 	return pass_days[day - 1]
+
+
+func weekly_mission(id: String) -> Dictionary:
+	return weekly_by_id.get(id, {})
 
 
 func staff_name(id: String) -> String:

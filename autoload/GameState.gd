@@ -32,6 +32,12 @@ var active_cosmetics: Dictionary = {}
 var mission_progress: Dictionary = {"services": 0, "perfect": 0, "upgrades": 0}
 var claimed_missions: Array[String] = []
 var missions_date: String = ""
+## Missões semanais: reiniciam na segunda-feira (chave = dia unix da semana).
+var weekly_progress: Dictionary = {
+	"services": 0, "perfect": 0, "combo_max": 0, "tips": 0, "style": 0, "vip": 0, "spend": 0
+}
+var claimed_weeklies: Array[String] = []
+var week_start: String = ""
 var last_daily_claim: String = ""
 var daily_streak: int = 0
 var streak_freezes: int = 1
@@ -96,6 +102,7 @@ func buy_bath_upgrade() -> bool:
 		return false
 	bath_upgrade_level += 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
+	register_weekly_spend(int(cost))
 	EventBus.upgrade_purchased.emit(&"bath", bath_upgrade_level)
 	Analytics.track(&"establishment_upgrade", {"id": "bath", "level": bath_upgrade_level})
 	_check_achievements()
@@ -115,10 +122,12 @@ func tool_upgrade_cost(tool_id: StringName) -> float:
 func buy_tool_upgrade(tool_id: StringName) -> bool:
 	var key: String = String(tool_id)
 	var level: int = clampi(int(tool_upgrade_levels.get(key, 0)), 0, 30)
-	if level >= 30 or not spend_coins(tool_upgrade_cost(tool_id), &"tool_upgrade"):
+	var cost: float = tool_upgrade_cost(tool_id)
+	if level >= 30 or not spend_coins(cost, &"tool_upgrade"):
 		return false
 	tool_upgrade_levels[key] = level + 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
+	register_weekly_spend(int(cost))
 	EventBus.upgrade_purchased.emit(tool_id, level + 1)
 	Analytics.track(&"tool_upgrade", {"id": key, "level": level + 1})
 	_check_achievements()
@@ -281,6 +290,9 @@ func to_dictionary() -> Dictionary:
 		"mission_progress": mission_progress,
 		"claimed_missions": claimed_missions,
 		"missions_date": missions_date,
+		"weekly_progress": weekly_progress,
+		"claimed_weeklies": claimed_weeklies,
+		"week_start": week_start,
 		"last_daily_claim": last_daily_claim,
 		"daily_streak": daily_streak,
 		"streak_freezes": streak_freezes,
@@ -336,6 +348,15 @@ func apply_dictionary(data: Dictionary) -> void:
 		mission_progress[metric] = maxi(0, int(mission_progress.get(metric, 0)))
 	claimed_missions = _safe_string_array(data.get("claimed_missions", []))
 	missions_date = String(data.get("missions_date", ""))
+	weekly_progress = _safe_dictionary(
+		data.get("weekly_progress", {}),
+		{"services": 0, "perfect": 0, "combo_max": 0, "tips": 0, "style": 0, "vip": 0, "spend": 0}
+	)
+	for weekly_metric: String in ["services", "perfect", "combo_max", "tips", "style", "vip", "spend"]:
+		weekly_progress[weekly_metric] = maxi(0, int(weekly_progress.get(weekly_metric, 0)))
+	claimed_weeklies = _safe_string_array(data.get("claimed_weeklies", []))
+	week_start = String(data.get("week_start", ""))
+	_refresh_weekly_missions()
 	_refresh_daily_missions()
 	last_daily_claim = String(data.get("last_daily_claim", ""))
 	daily_streak = clampi(int(data.get("daily_streak", 0)), 0, 7)
@@ -481,6 +502,61 @@ func claim_mission(mission_id: StringName) -> bool:
 	return true
 
 
+## Chave da segunda-feira desta semana (dia unix), estável entre dias.
+func _week_key() -> String:
+	var days: int = int(floor(Time.get_unix_time_from_system() / 86400.0))
+	return str(days - ((days + 3) % 7))
+
+
+func _refresh_weekly_missions() -> void:
+	var week: String = _week_key()
+	if week_start == week:
+		return
+	week_start = week
+	weekly_progress = {
+		"services": 0, "perfect": 0, "combo_max": 0, "tips": 0, "style": 0, "vip": 0, "spend": 0
+	}
+	claimed_weeklies.clear()
+
+
+func weekly_value(metric: String) -> int:
+	_refresh_weekly_missions()
+	return int(weekly_progress.get(metric, 0))
+
+
+func register_weekly_event(metric: StringName) -> void:
+	_refresh_weekly_missions()
+	weekly_progress[String(metric)] = int(weekly_progress.get(String(metric), 0)) + 1
+
+
+func register_weekly_spend(amount: int) -> void:
+	_refresh_weekly_missions()
+	weekly_progress["spend"] = int(weekly_progress.get("spend", 0)) + maxi(0, amount)
+
+
+func claim_weekly(mission_id: StringName) -> bool:
+	_refresh_weekly_missions()
+	var id: String = String(mission_id)
+	if claimed_weeklies.has(id):
+		return false
+	var data: Dictionary = ContentDB.weekly_mission(id)
+	if data.is_empty():
+		return false
+	var metric: String = String(data.get("metric", ""))
+	if int(weekly_progress.get(metric, 0)) < int(data.get("target", 1)):
+		return false
+	claimed_weeklies.append(id)
+	var reward: Dictionary = data.get("reward", {})
+	if reward.has("coins"):
+		add_coins(float(int(reward["coins"])), &"weekly_mission")
+	if reward.has("embers"):
+		embers += int(reward["embers"])
+		EventBus.currency_changed.emit(&"embers", float(embers))
+	Analytics.track(&"weekly_mission_complete", {"id": id})
+	SaveManager.request_save()
+	return true
+
+
 ## Pass de 28 dias: um dia destravado por ciclo diário completo (3 missões).
 func _advance_pass() -> void:
 	var today: String = Time.get_date_string_from_system()
@@ -529,13 +605,17 @@ func check_return_bonus() -> bool:
 
 func _on_service_completed(_service_id: StringName, quality: StringName, reward: float) -> void:
 	_refresh_daily_missions()
+	_refresh_weekly_missions()
 	services_completed += 1
 	mission_progress["services"] = int(mission_progress.get("services", 0)) + 1
+	weekly_progress["services"] = int(weekly_progress.get("services", 0)) + 1
 	if quality == &"perfect":
 		mission_progress["perfect"] = int(mission_progress.get("perfect", 0)) + 1
+		weekly_progress["perfect"] = int(weekly_progress.get("perfect", 0)) + 1
 		total_perfect_services += 1
 	combo = combo + 1 if quality == &"perfect" else 0
 	best_combo = maxi(best_combo, combo)
+	weekly_progress["combo_max"] = maxi(int(weekly_progress.get("combo_max", 0)), combo)
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
 		EventBus.toast_requested.emit(

@@ -313,6 +313,12 @@ func _finish_bath() -> void:
 		)
 		var stars: int = 5 if quality == &"perfect" else 4
 		GameState.register_review(stars)
+		if last_tip_percent > 0:
+			GameState.register_weekly_event(&"tips")
+		if current_vip:
+			GameState.register_weekly_event(&"vip")
+		if current_service == &"style":
+			GameState.register_weekly_event(&"style")
 		EventBus.service_completed.emit(current_service, quality, reward)
 		Analytics.track(
 			&"service_complete",

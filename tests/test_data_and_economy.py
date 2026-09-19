@@ -85,9 +85,11 @@ class FoundationTests(unittest.TestCase):
         self.assertNotIn('total_coins =', reset_block)
         self.assertNotIn('unlocked_pets =', reset_block)
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
-        for token in ('func set_cosmetics', '_bath_foam_color', 'bandana_blue',
-                      'crown_bubbles', 'wall_junina', 'AudioManager.beat_phase'):
+        for token in ('func set_cosmetics', '_bath_foam_color', 'AudioManager.beat_phase'):
             self.assertIn(token, canvas)
+        cosmetics_art = Path('core/gameplay/PetCosmeticsArt.gd').read_text(encoding='utf8')
+        for token in ('bandana_blue', 'crown_bubbles', 'wall_junina', 'scarf_caramel'):
+            self.assertIn(token, cosmetics_art)
         audio = Path('autoload/AudioManager.gd').read_text(encoding='utf8')
         self.assertIn('func beat_phase', audio)
         self.assertIn('get_playback_position', audio)
@@ -101,6 +103,40 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('PRESTIGE_GO', panel)
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
         self.assertIn('if version == 7:', migration)
+
+    def test_fase5_weekly_missions_and_cosmetic_catalog(self):
+        weekly = json.loads(Path('data/weekly_missions.json').read_text(encoding='utf8'))
+        missions = weekly['missions']
+        self.assertEqual(len(missions), 7)
+        ids = [m['id'] for m in missions]
+        self.assertEqual(len(set(ids)), 7)
+        self.assertTrue(
+            {m['metric'] for m in missions}
+            <= {'services', 'perfect', 'combo_max', 'tips', 'style', 'vip', 'spend'}
+        )
+        self.assertTrue(
+            all(m['reward'].get('coins', 0) >= 400 or m['reward'].get('embers', 0) >= 2
+                for m in missions)
+        )
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for token in ('func claim_weekly', 'func register_weekly_event',
+                      'func register_weekly_spend', 'func _week_key', 'claimed_weeklies'):
+            self.assertIn(token, state)
+        self.assertIn('weekly_mission', Path('autoload/ContentDB.gd').read_text(encoding='utf8'))
+        cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))['cosmetics']
+        self.assertEqual(len(cosmetics), 11)
+        cosmetic_ids = {c['id'] for c in cosmetics}
+        self.assertTrue(
+            {'tub_mint', 'tub_lavender', 'bandana_red', 'scarf_caramel', 'crown_gold',
+             'wall_beach'} <= cosmetic_ids
+        )
+        cosmetics_art = Path('core/gameplay/PetCosmeticsArt.gd').read_text(encoding='utf8')
+        for token in ('tub_mint', 'tub_lavender', 'bandana_red', 'scarf_caramel',
+                      'crown_gold', 'wall_beach'):
+            self.assertIn(token, cosmetics_art)
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        self.assertIn('EVENT_%d', liveops)
+        self.assertIn('claim_weekly', Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8'))
 
     def test_career_has_at_least_fifty_active_hours(self):
         rows = simulate_career()
@@ -236,7 +272,7 @@ class FoundationTests(unittest.TestCase):
                 all(record['status'] == 'qa_passed' for record in entry['states'].values()),
                 entry['pet_id']
             )
-        self.assertEqual(tracker['summary']['pets_integrated'], 18)
+        self.assertEqual(tracker['summary']['pets_integrated'], 19)
 
     def test_pet_animation_runtime_uses_strict_context_triggers(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')

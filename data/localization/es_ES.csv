@@ -74,3 +74,20 @@ PRESTIGE_LOCKED,Llega al nivel 15 y junta más monedas
 PRESTIGE_KEEP,"Conserva: brasas, mascotas, cosméticos, logros, racha, pase y récords"
 PRESTIGE_LOST,"Reinicia: monedas, mejoras, equipo y nivel de carrera"
 PRESTIGE_DONE,¡Franquicia nivel %d! +10%% de monedas por nivel
+EVENT_0,Domingo de Familia
+EVENT_1,Lunes de Baño
+EVENT_2,Martes de Tosa
+EVENT_3,Miércoles de Secado
+EVENT_4,Jueves de Lazo
+EVENT_5,Viernes VIP
+EVENT_6,Sábado de Combo
+WEEKLY_TITLE,MISIONES DE LA SEMANA
+WEEKLY_NOTE,Reinicia el lunes • recompensas mayores que las diarias
+WEEKLY_NOTE_SHORT,semanal
+WMISSION_BATH,%d/40 baños
+WMISSION_PERFECT,%d/15 perfectos
+WMISSION_COMBO,Combo %d/8
+WMISSION_TIPS,%d/10 propinas
+WMISSION_STYLE,%d/12 lazos
+WMISSION_VIP,%d/3 clientes VIP
+WMISSION_SPEND,%d/600 invertido

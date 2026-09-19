@@ -74,3 +74,20 @@ PRESTIGE_LOCKED,Alcance nível 15 e acumule mais moedas
 PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe e recordes"
 PRESTIGE_LOST,"Recomeça: moedas, melhorias, equipe e nível de carreira"
 PRESTIGE_DONE,Franquia nível %d! +10%% de moedas por nível
+EVENT_0,Domingo da Família
+EVENT_1,Segunda do Banho
+EVENT_2,Terça da Tosa
+EVENT_3,Quarta da Secagem
+EVENT_4,Quinta do Laço
+EVENT_5,Sexta do VIP
+EVENT_6,Sábado do Combo
+WEEKLY_TITLE,MISSÕES DA SEMANA
+WEEKLY_NOTE,Reinicia na segunda-feira • recompensas maiores que as diárias
+WEEKLY_NOTE_SHORT,semanal
+WMISSION_BATH,%d/40 banhos
+WMISSION_PERFECT,%d/15 perfeitos
+WMISSION_COMBO,Combo %d/8
+WMISSION_TIPS,%d/10 gorjetas
+WMISSION_STYLE,%d/12 laços
+WMISSION_VIP,%d/3 clientes VIP
+WMISSION_SPEND,%d/600 investidos

@@ -160,6 +160,36 @@ func _build_missions() -> void:
 				AudioManager.play(&"coin")
 	)
 	_note("Missões nunca exigem anúncio ou compra.")
+	_note(Loc.t("WEEKLY_TITLE"), 28, CHARCOAL, true)
+	for weekly: Dictionary in ContentDB.weekly_missions:
+		var weekly_id: String = String(weekly["id"])
+		var target: int = int(weekly["target"])
+		var value: int = mini(GameState.weekly_value(String(weekly["metric"])), target)
+		var weekly_done: bool = GameState.claimed_weeklies.has(weekly_id)
+		var weekly_ready: bool = value >= target and not weekly_done
+		var reward: Dictionary = weekly.get("reward", {})
+		var reward_text: String = (
+			"%d moedas" % int(reward.get("coins", 0))
+			if reward.has("coins")
+			else "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
+		)
+		var action_label: String = (
+			Loc.t("CLAIMED") if weekly_done else (
+				Loc.t("CLAIM") if weekly_ready else "%d/%d" % [value, target]
+			)
+		)
+		_info_row(
+			Loc.t(String(weekly["label_key"])) % value,
+			"%s • %s" % [Loc.t("WEEKLY_NOTE_SHORT"), reward_text],
+			action_label,
+			GREEN if weekly_ready else (Color("b0bec5") if weekly_done else Color("4fc3f7")),
+			weekly_ready,
+			func(claimed_id: String = weekly_id) -> void:
+				if GameState.claim_weekly(claimed_id):
+					AudioManager.play(&"coin")
+					_rebuild(_current_section())
+	)
+	_note(Loc.t("WEEKLY_NOTE"))
 
 
 func _build_collection() -> void:

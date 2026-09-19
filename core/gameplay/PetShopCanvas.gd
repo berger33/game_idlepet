@@ -206,89 +206,15 @@ func set_cosmetics(active: Dictionary) -> void:
 
 ## Cosmético de banheira troca a cor da espuma e das bolhas em todo o banho.
 func _bath_foam_color() -> Color:
-	match String(room_cosmetics.get("bath", "")):
-		"tub_pink":
-			return Color("ffd1e0")
-		"tub_ocean":
-			return Color("a5e6f2")
-		_:
-			return Color("f8ffff")
+	return PetCosmeticsArt.bath_foam_color(self)
 
 
 func _draw_room_cosmetics() -> void:
-	if String(room_cosmetics.get("wall", "")) == "wall_junina":
-		var flag_colors: Array[Color] = [
-			Color("ef5350"), Color("ffd54f"), Color("4fc3f7"), Color("7ed957")
-		]
-		var sway: float = sin(shake_phase * 2.0) * 6.0
-		for i: int in 13:
-			var x: float = 90.0 + float(i) * 72.0
-			var top_y: float = 292.0 + sway * float(i % 2) * 0.4
-			var tip_y: float = 356.0 + sway * float(i % 2) * 0.6
-			draw_colored_polygon(
-				PackedVector2Array(
-					[Vector2(x, top_y), Vector2(x + 36.0, top_y), Vector2(x + 18.0, tip_y)]
-				),
-				flag_colors[i % flag_colors.size()]
-			)
-	if String(room_cosmetics.get("bath", "")).is_empty():
-		return
-	var tub_color: Color = _bath_foam_color().darkened(0.08)
-	draw_style_box(_box(tub_color, 14), Rect2(70, 592, 250, 44))
-	draw_style_box(_box(Color.WHITE, 6), Rect2(86, 606, 218, 16))
+	PetCosmeticsArt.draw_room_cosmetics(self)
 
 
 func _draw_pet_accessories(center: Vector2, fit: float, texture_local: bool) -> void:
-	# texture_local: coordenadas locais ao pivô dos pés do sprite texturizado.
-	var accessory: String = String(room_cosmetics.get("pet_accessory", ""))
-	if accessory == "bandana_blue":
-		var neck: Vector2 = (
-			Vector2(0.0, -140.0 * fit) if texture_local else center + Vector2(0, 98)
-		)
-		var half: float = 68.0 * fit
-		draw_colored_polygon(
-			PackedVector2Array(
-				[neck + Vector2(-half, 0), neck + Vector2(half, 0), neck + Vector2(0, 84 * fit)]
-			),
-			Color("4a7bd0")
-		)
-		draw_circle(neck + Vector2(-half * 0.7, 4.0 * fit), 11.0 * fit, Color("3a63ad"))
-		draw_circle(neck + Vector2(half * 0.7, 4.0 * fit), 11.0 * fit, Color("3a63ad"))
-	elif accessory == "crown_bubbles":
-		var crown: Vector2 = (
-			Vector2(0.0, -390.0 * fit * PET_TEXTURE_BASELINE - 16.0 * fit)
-			if texture_local
-			else center + Vector2(0, -164)
-		)
-		var width: float = 72.0 * fit
-		var band_h: float = 18.0 * fit
-		var tip_h: float = 58.0 * fit
-		draw_colored_polygon(
-			PackedVector2Array(
-				[
-					crown + Vector2(-width, -band_h),
-					crown + Vector2(width, -band_h),
-					crown + Vector2(width, 0),
-					crown + Vector2(-width, 0)
-				]
-			),
-			Color("f6c445")
-		)
-		for point_x: float in [-width * 0.8, 0.0, width * 0.8]:
-			draw_colored_polygon(
-				PackedVector2Array(
-					[
-						crown + Vector2(point_x - 16.0 * fit, -band_h),
-						crown + Vector2(point_x + 16.0 * fit, -band_h),
-						crown + Vector2(point_x, -tip_h)
-					]
-				),
-				Color("f6c445")
-			)
-		for bubble_x: float in [-width * 0.8, 0.0, width * 0.8]:
-			draw_circle(
-				crown + Vector2(bubble_x, -tip_h - 20.0 * fit), 13.0 * fit, Color("b3e5fc", 0.9)
-			)
+	PetCosmeticsArt.draw_pet_accessories(self, center, fit, texture_local)
 
 
 func react_to_touch() -> String:

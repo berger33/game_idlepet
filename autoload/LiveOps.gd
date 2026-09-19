@@ -3,16 +3,8 @@ extends Node
 ## Kill switch remoto: events_enabled = 0 desliga tudo; event_boost_scale
 ## (0..1) dosifica a intensidade sem quebrar a economia.
 
-const NAMES: PackedStringArray = [
-	"Domingo da Família",
-	"Segunda do Banho",
-	"Terça da Tosa",
-	"Quarta da Secagem",
-	"Quinta do Laço",
-	"Sexta do VIP",
-	"Sábado do Combo"
-]
 ## Serviço em destaque de cada dia (0 = domingo: todos ganham bônus família).
+## Nomes dos eventos vivem na localização: EVENT_0..EVENT_6.
 const DAY_SERVICE: Array[StringName] = [
 	&"", &"bath", &"groom", &"dry", &"style", &"perfume", &""
 ]
@@ -33,7 +25,7 @@ func weekday() -> int:
 func current_event_name() -> String:
 	if not events_on():
 		return Loc.t("EVENTS_OFF")
-	return NAMES[weekday()]
+	return Loc.t("EVENT_%d" % weekday())
 
 
 func multiplier_for(service_id: StringName) -> float:
