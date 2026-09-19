@@ -254,7 +254,7 @@ func _build_collection() -> void:
 
 
 func _build_staff() -> void:
-	for member: Dictionary in ContentDB.staff:
+	for member: Dictionary in ContentDB.staff_members:
 		var staff_id: String = String(member.get("id", ""))
 		var hired: bool = GameState.hired_staff.has(staff_id)
 		var passive: Dictionary = member.get("passive", {})

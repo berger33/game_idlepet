@@ -3,7 +3,7 @@
 Vertical slice em **Godot 4.x**, portrait e offline-first. Pegue sabonete, máquina, secador, perfume e laço diretamente na prateleira e arraste sobre cães e gatos; o aro ao redor do item comunica o progresso sem HUD intrusivo. Faça carinho, construa afeto, receba reviews/XP/moedas, melhore estação e utensílios e evolua por uma carreira modelada em 61,85 horas ativas. O slice possui 50 pets, 120 níveis, cinco salas ilustradas, feedback universal, VFX vetoriais e áudio procedural por ação.
 
 ## Rodar
-1. Instale Godot 4.3+ com renderer Compatibility.
+1. Instale Godot **4.7.2** (versão validada; ver `docs/GODOT_4_7_COMPATIBILITY.md`) com renderer Compatibility.
 2. Importe `project.godot` e execute F6/F5; a cena inicial é `scenes/main/Main.tscn`.
 3. Clique/segure o sabonete na prateleira direita, arraste-o até o pet e esfregue até completar o aro ao redor do item.
 4. O atendimento finaliza automaticamente. Receba moedas/XP e use **PRÓXIMO CLIENTE**. Novos utensílios e salas entram no ciclo nos níveis 3, 5, 7 e 10.

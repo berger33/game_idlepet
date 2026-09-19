@@ -184,30 +184,6 @@ func _energy_loop() -> AudioStreamWAV:
 	return stream
 
 
-func _energy_loop() -> AudioStreamWAV:
-	var beat_length: float = 60.0 / MUSIC_BPM
-	var duration: float = beat_length * 8.0
-	var frames: int = int(SAMPLE_RATE * duration)
-	var bytes: PackedByteArray = PackedByteArray()
-	bytes.resize(frames * 2)
-	for i: int in frames:
-		var time: float = float(i) / SAMPLE_RATE
-		var beat_position: float = fmod(time, beat_length)
-		var sample_value: float = 0.0
-		# Bumbo no tempo, contratempo curto agudo: pulso tátil sem brigar com o tema.
-		sample_value += sin(TAU * 58.0 * beat_position * (1.0 - beat_position * 2.2)) * 0.16
-		if int(time / (beat_length * 0.5)) % 2 == 1:
-			var offbeat: float = fmod(time, beat_length * 0.5) / (beat_length * 0.5)
-			sample_value += sin(TAU * 3100.0 * time) * 0.05 * (1.0 - offbeat)
-		var sample: int = int(clampf(sample_value, -0.3, 0.3) * 32767.0)
-		bytes.encode_s16(i * 2, sample)
-	var stream: AudioStreamWAV = _wav(bytes)
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_begin = 0
-	stream.loop_end = frames
-	return stream
-
-
 func _wav(bytes: PackedByteArray) -> AudioStreamWAV:
 	var stream: AudioStreamWAV = AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS

@@ -32,12 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Instalar Godot 4.3 headless
+      - name: Instalar Godot 4.7.2 headless
         run: |
           curl -fL -o godot.zip \
-            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip godot.zip
-          mv Godot_v4.3-stable_linux.x86_64 godot
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
           chmod +x godot
       - name: Import de assets (valida preload/paths)
         run: ./godot --headless --import

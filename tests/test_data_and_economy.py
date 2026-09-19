@@ -341,8 +341,14 @@ class FoundationTests(unittest.TestCase):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
         presets = Path('export_presets.cfg').read_text(encoding='utf8')
+        content_db = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
         self.assertNotIn('func draw_ellipse(', canvas)
         self.assertIn('func _draw_pet_ellipse(', canvas)
+        # 4.7.2: `func staff` colidia com `var staff` (erro de parse que impede
+        # a inicialização; o Godot 4.3 do CI tolerava a colisão).
+        self.assertIn('var staff_members:', content_db)
+        self.assertNotIn('var staff:', content_db)
+        self.assertIn('func staff(', content_db)
         self.assertNotIn('FILA  2', canvas)
         self.assertNotIn('bottom.offset_top', main)
         self.assertIn('action_hud.position = Vector2(45, 1350)', main)
@@ -359,6 +365,26 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('include_filter=""', presets)
         self.assertIn('exclude_filter=', presets)
         self.assertNotIn('platform="Android"', presets)
+
+    def test_no_gdscript_name_collisions(self):
+        # No Godot 4.4+ declarar função com o mesmo nome de uma variável já
+        # declarada é erro de parse (o 4.3 usado pelo CI tolerava). Esta varredura
+        # cobre a classe inteira de erro em todas as versões.
+        import re
+        pattern = re.compile(
+            r'^(?:var|const|signal|enum)\s+([A-Za-z_][A-Za-z0-9_]*)'
+            r'|^(?:static\s+)?func\s+([A-Za-z_][A-Za-z0-9_]*)',
+            re.MULTILINE,
+        )
+        for path in Path('.').rglob('*.gd'):
+            if '.git' in path.parts:
+                continue
+            names: dict = {}
+            for match in pattern.finditer(path.read_text(encoding='utf8')):
+                name = match.group(1) or match.group(2)
+                names.setdefault(name, []).append(match.start())
+            collisions = {name for name, spots in names.items() if len(spots) > 1}
+            self.assertEqual(collisions, set(), f'{path}: nomes declarados 2x (var/func/const/signal): {collisions}')
 
     def test_professional_backgrounds_exist_and_are_reasonable(self):
         for name in (
