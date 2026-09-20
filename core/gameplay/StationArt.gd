@@ -23,8 +23,8 @@ const PLANK_DROP: float = 34.0
 const SURFACE_REF: float = 1160.0
 const RIM_LINE_OFFSET: float = -36.0
 const STATION_ART_BOXES: Dictionary = {
-	&"bathtub_rustic": Rect2(320.0, SURFACE_REF - 55.0, 440.0, 324.0),
-	&"bathtub_spa": Rect2(320.0, SURFACE_REF - 84.0, 440.0, 284.0),
+	&"bathtub_rustic": Rect2(320.0, SURFACE_REF - 87.0, 440.0, 314.0),
+	&"bathtub_spa": Rect2(320.0, SURFACE_REF - 109.0, 440.0, 305.0),
 	&"groom": Rect2(340.0, SURFACE_REF, 400.0, 121.0),
 	&"dry": Rect2(330.0, SURFACE_REF, 420.0, 169.0),
 	&"perfume": Rect2(390.0, SURFACE_REF, 300.0, 179.0),
@@ -33,8 +33,8 @@ const STATION_ART_BOXES: Dictionary = {
 ## Fração da altura da banheira onde começa o aro frontal (fatia que oclui
 ## as patas do pet) — medida pela ferramenta de normalização.
 const BATHTUB_RIM_FRACS: Dictionary = {
-	&"bathtub_rustic": 0.0586,
-	&"bathtub_spa": 0.169,
+	&"bathtub_rustic": 0.1624,
+	&"bathtub_spa": 0.2393,
 }
 ## Estante: arte de 216x786; a 1ª prancha fica a 18.38% da altura.
 const SHELF_X: float = 812.0

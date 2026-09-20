@@ -40,14 +40,14 @@ PLANK_DROP = 34.0
 SHELF_Y = [679, 801, 923, 1045, 1167]
 
 STATION_BOXES = {
-    "bathtub_rustic": (320.0, SURFACE - 55.0, 440.0, 324.0),
-    "bathtub_spa": (320.0, SURFACE - 84.0, 440.0, 284.0),
+    "bathtub_rustic": (320.0, SURFACE - 87.0, 440.0, 314.0),
+    "bathtub_spa": (320.0, SURFACE - 109.0, 440.0, 305.0),
     "groom": (340.0, SURFACE, 400.0, 121.0),
     "dry": (330.0, SURFACE, 420.0, 169.0),
     "perfume": (390.0, SURFACE, 300.0, 179.0),
     "style": (370.0, SURFACE, 340.0, 110.0),
 }
-BATHTUB_RIM_FRACS = {"bathtub_rustic": 0.0586, "bathtub_spa": 0.169}
+BATHTUB_RIM_FRACS = {"bathtub_rustic": 0.1624, "bathtub_spa": 0.2393}
 
 SERVICE_BG = {
     "bath": "petshop_quintal.png",
