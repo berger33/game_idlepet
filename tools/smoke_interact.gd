@@ -12,6 +12,13 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	print("INTERACT: boot")
+	var watchdog: SceneTreeTimer = get_tree().create_timer(120.0)
+	watchdog.timeout.connect(
+		func() -> void:
+			push_error("smoke_interact TIMEOUT: coroutine morreu sem _finish (erro de runtime acima?)")
+			quit(96)
+	)
 	var packed: PackedScene = load("res://scenes/main/Main.tscn")
 	if packed == null:
 		_fail("cena principal não carrega")
@@ -22,6 +29,7 @@ func _run() -> void:
 	for i: int in 3:
 		await process_frame
 
+	print("INTERACT: step1 boot limpo")
 	# 1) Boot limpo: painel meta fechado e os três cartões da fila habilitados.
 	if main.meta.is_open():
 		_fail("meta.is_open() true no boot — cartões da fila ficam desabilitados")
@@ -33,6 +41,7 @@ func _run() -> void:
 		if not main._can_select(slot):
 			_fail("_can_select(%d) false no boot" % slot)
 
+	print("INTERACT: step2 ciclo meta")
 	# 2) Ciclo do painel meta: abre, renderiza de verdade e bloqueia seleção.
 	main.meta.open(&"missions")
 	for i: int in 2:
@@ -50,6 +59,7 @@ func _run() -> void:
 	if not main._can_select(0):
 		_fail("_can_select(0) false após fechar o painel")
 
+	print("INTERACT: step3 seleção de cliente")
 	# 3) Seleção de cliente: o passo que travava o jogador.
 	main._on_queue_pressed(0)
 	await process_frame
@@ -62,6 +72,7 @@ func _run() -> void:
 	if String(main.current_pet_name).is_empty():
 		_fail("cliente selecionado sem nome")
 
+	print("INTERACT: step4 contrato espacial")
 	# 4) Contrato espacial: pés ancorados + prateleiras uniformes (HUD V2).
 	if abs(main.world.pet_position.x - 540.0) > 0.5 or abs(main.world.pet_position.y - 1160.0) > 0.5:
 		_fail("pet_position != (540,1160): %s" % [main.world.pet_position])
@@ -77,6 +88,7 @@ func _run() -> void:
 		if abs(tool_pos.y - shelves[i]) > 0.5 or abs(tool_pos.x - 910.0) > 0.5:
 			_fail("utensílio %d fora da prancha: %s" % [i, tool_pos])
 
+	print("INTERACT: step5 painel de melhorias")
 	# 5) Botão redondo de melhorias abre o painel de melhorias.
 	if not is_instance_valid(main.upgrades_button):
 		_fail("upgrades_button não existe")
@@ -92,6 +104,7 @@ func _run() -> void:
 		await process_frame
 		if main.meta.is_open():
 			_fail("painel de melhorias não fechou")
+	print("INTERACT: fim, failures=%d" % failures)
 	_finish()
 
 
@@ -101,6 +114,8 @@ func _fail(message: String) -> void:
 
 
 func _finish() -> void:
+	# quit() SEMPRE: sem ele o SceneTree headless roda para sempre e o CI trava
+	# justamente quando todos os checks passam (failures == 0).
 	if failures == 0:
 		print("smoke_interact: PASS (fila selecionável, meta abre/fecha)")
 	else:
