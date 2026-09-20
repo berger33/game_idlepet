@@ -101,6 +101,20 @@ var service_condition_complete: bool = false
 var condition_release: float = 0.0
 var special_reward_active: bool = false
 var departure_time: float = -1.0
+## Onda 1 (docs/DESIGN_ENGAJAMENTO.md): UI de gesto por serviço, estados
+## forçados (consequência de erro/acerto), pulinho do pet brincalhão, pico
+## do bairro, banheira dupla (buddy em paralelo) e selo de maestria por
+## ferramenta (aro prata/ouro nos marcos 10/20).
+var gesture_ui: Dictionary = {}
+var forced_state: StringName = &""
+var forced_state_time: float = 0.0
+var playful_hop: bool = false
+var rush_active: bool = false
+var buddy_pet_id: String = ""
+var buddy_active: bool = false
+var buddy_texture: Texture2D
+var buddy_texture_id: String = ""
+var tool_levels: Dictionary = {}
 
 
 func _ready() -> void:
@@ -120,6 +134,9 @@ func _process(delta: float) -> void:
 	if celebration <= 0.0:
 		special_reward_active = false
 	reaction_time = maxf(0.0, reaction_time - delta)
+	forced_state_time = maxf(0.0, forced_state_time - delta)
+	if forced_state_time <= 0.0:
+		forced_state = &""
 	if reaction_time <= 0.0 and celebration <= 0.0:
 		reaction_kind = &"idle"
 		pet_happy = false
@@ -471,6 +488,8 @@ func _draw() -> void:
 		_draw_pet(pet_center)
 		StationArt.draw_station_foreground(self)
 		_draw_affection_hearts(body_center)
+		GestureArt.draw_gesture_ui(self, body_center)
+		GestureArt.draw_buddy(self)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:
@@ -578,6 +597,12 @@ func _draw() -> void:
 					* (190.0 + beat_pulse * 26.0 + 12.0 * sin(shake_phase * 6.0 + i))
 			)
 			_star(star_pos, 18.0, Color("ffd54f" if i % 2 == 0 else "ff8fb1"))
+	if rush_active:
+		# Pico do bairro (onda 2): faixa dourada pulsante no topo da cena.
+		var rush_glow: float = 0.42 + 0.18 * sin(shake_phase * 5.0)
+		draw_rect(Rect2(0.0, 0.0, 1080.0, 22.0), Color("ffb300", rush_glow))
+		draw_rect(Rect2(0.0, 22.0, 1080.0, 8.0), Color("ffd54f", 0.28))
+		draw_rect(Rect2(0.0, 0.0, 1080.0, 1920.0), Color("ffd54f", 0.04))
 
 
 func _draw_pet(center: Vector2) -> void:
@@ -761,7 +786,21 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	var second_state: StringName = &""
 	var second_alpha: float = 0.0
 
-	if celebration > 0.0:
+	if forced_state != &"" and forced_state_time > 0.0:
+		# Consequência visível (onda 1): exagero = tonto, tempo esgotado =
+		# triste, sequência perfeita = feliz. O pet REAGE ao jeito de jogar.
+		overlay_state = forced_state
+		overlay_alpha = clampf(forced_state_time, 0.0, 1.0)
+		if forced_state == &"dizzy":
+			foot_anchor.x += sin(shake_phase * 30.0) * 6.0
+			spin = sin(shake_phase * 16.0) * 0.02
+		elif forced_state == &"happy_squash":
+			jump_height = abs(sin(shake_phase * 8.0)) * 20.0
+	elif playful_hop:
+		overlay_state = &"happy_air"
+		overlay_alpha = 0.9
+		jump_height = 34.0
+	elif celebration > 0.0:
 		var celebration_phase: float = 1.0 - celebration / 1.8
 		if celebration_phase < 0.2:
 			overlay_state = &"happy_squash"
@@ -971,6 +1010,23 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = 
 	)
 	if is_dragged:
 		draw_arc(Vector2.ZERO, draw_size * 0.48, -2.7, -0.45, 20, Color("ffffff", 0.38), 4.0)
+	# Maestria (onda 3): aro prata no marco 10, ouro no 20 — progresso visível.
+	var milestone: int = 0
+	var tool_level: int = int(tool_levels.get(String(tool), 0))
+	if tool_level >= 20:
+		milestone = 2
+	elif tool_level >= 10:
+		milestone = 1
+	if milestone > 0:
+		draw_arc(
+			Vector2.ZERO,
+			draw_size * 0.56,
+			0.0,
+			TAU,
+			36,
+			Color("ffd54f", 0.9) if milestone == 2 else Color("cfd8dc", 0.9),
+			5.0
+		)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -1007,3 +1063,4 @@ func _star(center: Vector2, radius: float, color: Color) -> void:
 		var angle: float = -PI / 2.0 + float(i) * PI / 5.0
 		points.append(center + Vector2(cos(angle), sin(angle)) * r)
 	draw_colored_polygon(points, color)
+

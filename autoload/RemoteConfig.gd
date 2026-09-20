@@ -16,7 +16,13 @@ const DEFAULTS: Dictionary = {
 	"rewarded_cooldown_seconds": 180,
 	"interstitial_min_session_seconds": 1200,
 	"events_enabled": 1.0,
-	"event_boost_scale": 1.0
+	"event_boost_scale": 1.0,
+	"rush_interval_seconds": 240.0,
+	"rush_duration": 45.0,
+	"rush_tip_mult": 2.0,
+	"upsell_chance": 0.35,
+	"upsell_tip_mult": 1.4,
+	"petting_max_per_client": 5.0,
 }
 const RANGES: Dictionary = {
 	"bath_base_reward": Vector2(1.0, 1000.0),
@@ -34,6 +40,12 @@ const RANGES: Dictionary = {
 	"interstitial_min_session_seconds": Vector2(1200.0, 86400.0),
 	"events_enabled": Vector2(0.0, 1.0),
 	"event_boost_scale": Vector2(0.0, 1.0),
+	"rush_interval_seconds": Vector2(60.0, 1800.0),
+	"rush_duration": Vector2(15.0, 120.0),
+	"rush_tip_mult": Vector2(1.0, 5.0),
+	"upsell_chance": Vector2(0.0, 1.0),
+	"upsell_tip_mult": Vector2(1.0, 3.0),
+	"petting_max_per_client": Vector2(0.0, 20.0),
 }
 
 var values: Dictionary = DEFAULTS.duplicate(true)

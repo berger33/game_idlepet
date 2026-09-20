@@ -107,6 +107,99 @@ func _run() -> void:
 		await process_frame
 		if main.meta.is_open():
 			_fail("painel de melhorias não fechou")
+	print("INTERACT: step6 gestos por serviço (BathService v2)")
+	# 6) Gestos com mecânica própria (Onda 1): traçado direcionado, zona que
+	# deriva, borrifadas no ritmo e encaixe de precisão — simulados por
+	# ponteiro direto no BathService, sem autoload (determinístico).
+	var bath_script: GDScript = load("res://core/gameplay/BathService.gd")
+	var gesture_bath: Object = bath_script.new()
+
+	# Tosa (stroke): movimento no eixo certo pontua; no eixo errado, não.
+	gesture_bath.configure(10.0, 0.82, 0.96, 600.0)
+	gesture_bath.configure_gesture(&"vertical", &"stroke", 70.0, 0.0)
+	gesture_bath.configure_strokes([&"vertical", &"horizontal", &"vertical"], 520.0)
+	gesture_bath.start_service()
+	gesture_bath.rub(Vector2(500, 900))
+	for i: int in 12:
+		gesture_bath.rub(Vector2(500, 900 + (i + 1) * 60.0))
+	if gesture_bath.progress <= 0.0:
+		_fail("stroke: movimento vertical não pontuou (progress=%f)" % gesture_bath.progress)
+	var before_cross: float = gesture_bath.progress
+	gesture_bath.rub(Vector2(820, 1620))
+	if gesture_bath.progress != before_cross:
+		_fail("stroke: movimento no eixo errado pontuou")
+	if gesture_bath.stroke_index != 1:
+		_fail("stroke: passo 1 não concluído após cota no eixo (index=%d)" % gesture_bath.stroke_index)
+
+	# Secagem (zone): dentro do círculo enche; fora, drena.
+	gesture_bath = bath_script.new()
+	gesture_bath.configure(10.0, 0.82, 0.96, 600.0)
+	gesture_bath.configure_gesture(&"any", &"zone", 70.0, 0.30)
+	var zone_home: Vector2 = Vector2(540, 1000.0)
+	gesture_bath.configure_zone(zone_home, 112.0, 0.5)
+	gesture_bath.start_service()
+	gesture_bath.rub(zone_home)
+	var zone_progress: float = 0.0
+	for i: int in 30:
+		gesture_bath.tick(1.0 / 30.0)
+		gesture_bath.rub(zone_home + Vector2(0.0, 60.0))
+		zone_progress = gesture_bath.progress
+	if zone_progress <= 0.0:
+		_fail("zone: dentro do círculo não encheu (progress=%f)" % zone_progress)
+	gesture_bath.rub(zone_home + Vector2(800.0, 0.0))
+	gesture_bath.tick(1.0)
+	if gesture_bath.zone_inside:
+		_fail("zone: fora do círculo marcado como dentro")
+	var outside_progress: float = gesture_bath.progress
+	gesture_bath.rub(zone_home + Vector2(800.0, 0.0))
+	gesture_bath.tick(1.0)
+	if gesture_bath.progress >= outside_progress and outside_progress > 0.0:
+		_fail("zone: fora do círculo não drenou (progress=%f)" % gesture_bath.progress)
+
+	# Perfume (pulse): 3 borrifadas na janela acesa = perfect; apagada = miss.
+	gesture_bath = bath_script.new()
+	gesture_bath.configure(10.0, 0.95, 1.0, 600.0)
+	gesture_bath.configure_gesture(&"any", &"pulse", 90.0, 0.0)
+	gesture_bath.configure_pulses(3, 1.35, 0.45)
+	gesture_bath.start_service()
+	for i: int in 3:
+		gesture_bath.tick(0.05)
+		if gesture_bath.pulse_contact() != &"hit":
+			_fail("pulse: borrifada na janela acesa não acertou")
+	if gesture_bath.progress < 0.99:
+		_fail("pulse: 3 acertos não fecharam o progresso (progress=%f)" % gesture_bath.progress)
+	var pulse_quality: StringName = gesture_bath.finish()
+	if pulse_quality != &"perfect":
+		_fail("pulse: 3 acertos deram %s, esperado perfect" % pulse_quality)
+	gesture_bath = bath_script.new()
+	gesture_bath.configure(10.0, 0.95, 1.0, 600.0)
+	gesture_bath.configure_gesture(&"any", &"pulse", 90.0, 0.0)
+	gesture_bath.configure_pulses(3, 1.35, 0.45)
+	gesture_bath.start_service()
+	gesture_bath.tick(0.9)
+	if gesture_bath.pulse_contact() != &"miss":
+		_fail("pulse: borrifada fora da janela não registrou miss")
+	if gesture_bath.progress > 0.0:
+		_fail("pulse: miss não deveria pontuar (progress=%f)" % gesture_bath.progress)
+
+	# Laço (drop): perto da marca enche; longe, não.
+	gesture_bath = bath_script.new()
+	gesture_bath.configure(10.0, 0.82, 0.96, 600.0)
+	gesture_bath.configure_gesture(&"any", &"drop", 90.0, 0.0)
+	var drop_target: Vector2 = Vector2(540, 920.0)
+	gesture_bath.configure_drop(drop_target, 112.0, 0.5)
+	gesture_bath.start_service()
+	gesture_bath.rub(drop_target + Vector2(20.0, 10.0))
+	var drop_progress: float = 0.0
+	for i: int in 30:
+		gesture_bath.tick(1.0 / 30.0)
+		drop_progress = gesture_bath.progress
+	if drop_progress <= 0.0:
+		_fail("drop: perto da marca não encheu (progress=%f)" % drop_progress)
+	gesture_bath.rub(drop_target + Vector2(600.0, 0.0))
+	gesture_bath.tick(1.0)
+	if gesture_bath.progress > drop_progress:
+		_fail("drop: longe da marca o progresso subiu")
 	print("INTERACT: fim, failures=%d" % failures)
 	_finish()
 

@@ -33,10 +33,10 @@ LANGUAGE,Language
 CHOOSE_CLIENT,Pick the next client from the queue
 SKIP_TUTORIAL,SKIP TUTORIAL
 HINT_BATH,"Rub in circles, release in the green band"
-HINT_GROOM,"Slide up and down, release in the green band"
-HINT_DRY,"Slide side to side, release in the green band"
-HINT_PERFUME,"Hold over the pet, release in the green band"
-HINT_STYLE,"Rub gently, release in the green band"
+HINT_GROOM,Follow the arrows: slide the way they point
+HINT_DRY,Keep the dryer inside the moving circle
+HINT_PERFUME,Spray when the golden ring glows (3 sprays)
+HINT_STYLE,Fit the bow on the pink mark and hold tight
 PERFECT_RESULT,PERFECT!
 GOOD_RESULT,GREAT!
 VIP_TAG,VIP

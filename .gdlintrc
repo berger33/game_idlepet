@@ -1,2 +1,4 @@
-max-public-methods: 36
+# Limites do gdlint: Main.gd e GameState.gd são os hubs centrais do jogo
+# (coordenação da cena e persistência) e concentram a API pública por design.
+max-public-methods: 38
 max-file-lines: 1100

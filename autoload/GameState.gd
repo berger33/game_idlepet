@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 8
+const SAVE_VERSION: int = 9
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 ## Glossário da equipe: o que cada passivo faz em uma palavra (a UI explica a
@@ -22,6 +22,10 @@ var bath_upgrade_level: int = 0
 var tool_upgrade_levels: Dictionary = {"soap": 0, "clipper": 0, "dryer": 0, "perfume": 0, "bow": 0}
 var combo: int = 0
 var best_combo: int = 0
+## Maestria (C2): usos por ferramenta — selos em 100/500/2000 usos.
+var tool_uses: Dictionary = {}
+## Pico do bairro (B3): durante o rush, serviço bom não quebra o combo.
+var rush_combo_protection: bool = false
 var best_streak: int = 0
 var weekly_chest_week: String = ""
 # Folga de combo da sessão: o primeiro Good de uma sequência não zera o combo
@@ -156,6 +160,20 @@ func tool_bonus(tool_id: StringName) -> float:
 	return 1.0 + clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30) * 0.04
 
 
+## Maestria (C2): cada atendimento conta um uso da ferramenta; ao cruzar
+## 100/500/2000 usos o jogador ganha um selo (retornado UMA vez, p/ toast).
+func register_tool_use(tool_id: StringName) -> Dictionary:
+	var key: String = String(tool_id)
+	var before: int = int(tool_uses.get(key, 0))
+	var count: int = before + 1
+	tool_uses[key] = count
+	var steps: Array[int] = SalonTuning.TOOL_MASTERY_STEPS
+	for i: int in steps.size():
+		if before < steps[i] and count >= steps[i]:
+			return {"milestone": i + 1}
+	return {}
+
+
 ## Soma dos passivos contratados de um tipo (staff.json agora dirige o jogo).
 func staff_bonus(passive_type: StringName) -> float:
 	var total: float = 0.0
@@ -252,6 +270,8 @@ func perform_prestige() -> bool:
 	bath_upgrade_level = 0
 	for tool: String in tool_upgrade_levels:
 		tool_upgrade_levels[tool] = 0
+	tool_uses = {}
+	rush_combo_protection = false
 	combo = 0
 	player_level = 1
 	player_xp = 0
@@ -286,6 +306,7 @@ func to_dictionary() -> Dictionary:
 		"total_coins": total_coins,
 		"bath_upgrade_level": bath_upgrade_level,
 		"tool_upgrade_levels": tool_upgrade_levels,
+		"tool_uses": tool_uses,
 		"combo": combo,
 		"best_combo": best_combo,
 		"services_completed": services_completed,
@@ -334,6 +355,7 @@ func apply_dictionary(data: Dictionary) -> void:
 	total_coins = maxf(coins, float(data.get("total_coins", coins)))
 	bath_upgrade_level = clampi(int(data.get("bath_upgrade_level", 0)), 0, MAX_CAREER_LEVEL)
 	tool_upgrade_levels = _safe_tool_levels(data.get("tool_upgrade_levels", {}))
+	tool_uses = _safe_int_map(data.get("tool_uses", {}), 1000000)
 	combo = clampi(int(data.get("combo", 0)), 0, 1000)
 	best_combo = maxi(combo, int(data.get("best_combo", combo)))
 	services_completed = maxi(0, int(data.get("services_completed", 0)))
@@ -430,6 +452,14 @@ func _safe_tool_levels(value: Variant) -> Dictionary:
 	var result: Dictionary = {}
 	for tool_id: String in ["soap", "clipper", "dryer", "perfume", "bow"]:
 		result[tool_id] = clampi(int(source.get(tool_id, 0)), 0, 30)
+	return result
+
+
+func _safe_int_map(value: Variant, max_value: int) -> Dictionary:
+	var source: Dictionary = value if value is Dictionary else {}
+	var result: Dictionary = {}
+	for key: String in source:
+		result[key] = clampi(int(source[key]), 0, max_value)
 	return result
 
 

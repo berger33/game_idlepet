@@ -30,12 +30,13 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 8', state)
+        self.assertIn('const SAVE_VERSION: int = 9', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)
         self.assertIn('if version == 7:', migration)
-        self.assertIn('data["version"] = 8', migration)
+        self.assertIn('if version == 8:', migration)
+        self.assertIn('data["version"] = 9', migration)
         self.assertIn('tool_upgrade_levels', state)
         self.assertIn('active_cosmetics', state)
 
@@ -102,7 +103,8 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('MUSIC_BPM', audio)
         self.assertIn('func _energy_loop', audio)
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
-        self.assertIn('prestige_level', main)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('prestige_level', salon)
         self.assertIn('world.set_cosmetics', main)
         panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
         self.assertIn('EQUIPPED', panel)
@@ -119,8 +121,9 @@ class FoundationTests(unittest.TestCase):
                     'VOCATION_PERFECTIONIST', 'VOCATION_GROOMER', 'VOCATION_MASSEUSE'):
             self.assertIn(f'"{voc}"', state)
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
         self.assertIn('GameState.favorite_pet', main)
-        self.assertIn('buddy_spawned', main)
+        self.assertIn('buddy_spawned', salon)
         panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
         self.assertIn('FAVORITE_SET', panel)
         self.assertIn('MISSION_NOTE', panel)
@@ -132,8 +135,9 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('func featured_service', liveops)
         self.assertIn('events_on()', liveops)
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
-        self.assertIn('LiveOps.featured_service()', main)
-        self.assertIn('event_client', main)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.featured_service()', salon)
+        self.assertIn('event_client', salon)
 
     def test_fase5_weekly_missions_and_cosmetic_catalog(self):
         weekly = json.loads(Path('data/weekly_missions.json').read_text(encoding='utf8'))
@@ -479,11 +483,107 @@ class FoundationTests(unittest.TestCase):
             self.assertIn(token, economy)
         self.assertIn('[0, 60, 150, 300, 600]', economy)
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
-        self.assertIn('Economy.vip_chance(GameState.reviews_sum)', main)
-        self.assertIn('Economy.tip_bonus(GameState.reviews_sum)', main)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('Economy.vip_chance(GameState.reviews_sum)', salon)
+        self.assertIn('Economy.tip_bonus(GameState.reviews_sum)', salon)
         self.assertIn('REP_UP', main)
         panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
         self.assertIn('NEIGHBORHOOD_%d', panel)
+
+
+class EngagementWaveTests(unittest.TestCase):
+    """Ondas 1-3 do DESIGN_ENGAJAMENTO.md: gestos por serviço, temperamento,
+    estados-consequência, fila com trade-offs, upsell, pico, marcos,
+    maestria e carinho — contratos de fonte que o CI valida."""
+
+    def _read(self, path):
+        return Path(path).read_text(encoding='utf8')
+
+    def test_wave1_gesture_modes_per_service(self):
+        tuning = self._read('core/gameplay/SalonTuning.gd')
+        for service, mode in (('bath', 'rub'), ('groom', 'stroke'), ('dry', 'zone'),
+                              ('perfume', 'pulse'), ('style', 'drop')):
+            self.assertIn(f'&"{service}": {{"axis":', tuning)
+            self.assertIn(f'"mode": &"{mode}"', tuning)
+        bath = self._read('core/gameplay/BathService.gd')
+        for token in ('func configure_strokes', 'func configure_zone', 'func configure_pulses',
+                      'func configure_drop', 'func configure_temperament', 'func pulse_contact',
+                      'func pulse_bright', 'const GOOD_FLOOR'):
+            self.assertIn(token, bath)
+
+    def test_wave1_gesture_ui_and_forced_states_in_canvas(self):
+        canvas = self._read('core/gameplay/PetShopCanvas.gd')
+        gesture = self._read('core/gameplay/GestureArt.gd')
+        for token in ('var gesture_ui', 'var forced_state', 'var playful_hop',
+                      'var rush_active', 'var buddy_active', 'var buddy_pet_id',
+                      'var tool_levels', 'GestureArt.draw_gesture_ui',
+                      'GestureArt.draw_buddy'):
+            self.assertIn(token, canvas)
+        for token in ('static func draw_gesture_ui', 'static func draw_buddy',
+                      'static func gesture_snapshot', '&"stroke"', '&"zone"',
+                      '&"pulse"', '&"drop"'):
+            self.assertIn(token, gesture)
+
+    def test_wave1_localized_hints_match_new_gestures(self):
+        expectations = {
+            'data/localization/pt_BR.csv': ('setas', 'círculo', 'anel dourado', 'marca rosa'),
+            'data/localization/en_US.csv': ('arrows', 'circle', 'golden ring', 'pink mark'),
+            'data/localization/es_ES.csv': ('flechas', 'círculo', 'anillo dorado', 'marca rosa'),
+        }
+        for path, needles in expectations.items():
+            text = self._read(path)
+            for needle in needles:
+                self.assertIn(needle, text, f'{path} sem hint do gesto novo: {needle}')
+
+    def test_wave2_rush_and_upsell_remote_config(self):
+        config = self._read('autoload/RemoteConfig.gd')
+        for key in ('rush_interval_seconds', 'rush_duration', 'rush_tip_mult',
+                    'upsell_chance', 'upsell_tip_mult', 'petting_max_per_client'):
+            self.assertIn(f'"{key}"', config)
+        # cada chave nova existe em DEFAULTS e em RANGES (2 ocorrências)
+        for key in ('rush_interval_seconds', 'rush_duration', 'rush_tip_mult',
+                    'upsell_chance', 'upsell_tip_mult', 'petting_max_per_client'):
+            self.assertEqual(config.count(f'"{key}"'), 2, key)
+
+    def test_wave2_rush_upsell_and_queue_tradeoffs_wired(self):
+        main = self._read('scenes/main/Main.gd')
+        for token in ('func _update_rush', 'func _start_rush', 'func _end_rush',
+                      'func _offer_special', 'func _on_upsell_accept', 'func _on_upsell_decline',
+                      'func _refill_delay', 'rush_combo_protection',
+                      'SalonTuning.queue_info_text', 'SalonTuning.queue_border',
+                      'special_multiplier'):
+            self.assertIn(token, main, token)
+        salon = self._read('core/gameplay/SalonTuning.gd')
+        self.assertIn('upsell_chance', salon)
+        salon = self._read('core/gameplay/SalonPanels.gd')
+        for token in ('build_result_panel', 'build_upsell_panel', 'build_queue_card'):
+            self.assertIn(token, salon)
+            self.assertIn(token, main)
+
+    def test_wave3_mastery_petting_and_buddy(self):
+        state = self._read('autoload/GameState.gd')
+        for token in ('func register_tool_use', 'var tool_uses', 'var rush_combo_protection',
+                      '"tool_uses": tool_uses', 'TOOL_MASTERY_STEPS'):
+            self.assertIn(token, state, token)
+        tuning = self._read('core/gameplay/SalonTuning.gd')
+        for token in ('TOOL_MASTERY_STEPS', 'static func mastery_bonus',
+                      'static func compute_reward', 'static func make_client',
+                      'static func hint'):
+            self.assertIn(token, tuning, token)
+        main = self._read('scenes/main/Main.gd')
+        for token in ('register_tool_use', 'petting_max_per_client', 'buddy_active',
+                      'bath_upgrade_level >= 30', 'mood_buff_clients', 'recovery_penalty'):
+            self.assertIn(token, main, token)
+
+    def test_tutorial_flow_extracted_and_wired(self):
+        flow = self._read('scenes/main/TutorialFlow.gd')
+        for token in ('func setup', 'func advance', 'func skip', 'func apply'):
+            self.assertIn(token, flow)
+        main = self._read('scenes/main/Main.gd')
+        self.assertIn('var tutorial := TutorialFlow.new()', main)
+        self.assertIn('tutorial.attach(self)', main)
+        self.assertIn('tutorial_skip_button.pressed.connect(tutorial.skip)', main)
+        self.assertNotIn('var tutorial_step', main)
 
 
 if __name__=='__main__': unittest.main()

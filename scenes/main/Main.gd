@@ -34,24 +34,6 @@ const SERVICE_LABELS: Dictionary = {
 	&"perfume": "perfumar",
 	&"style": "colocar lacinho"
 }
-## Gestos distintos por serviço: eixo da esfregada, modo de preenchimento,
-## teto de distância por evento e taxa de preenchimento por tempo (hold).
-const GESTURES: Dictionary = {
-	&"bath": {"axis": &"any", "mode": &"rub", "cap": 90.0, "rate": 0.0},
-	&"groom": {"axis": &"vertical", "mode": &"rub", "cap": 70.0, "rate": 0.0},
-	&"dry": {"axis": &"horizontal", "mode": &"rub", "cap": 70.0, "rate": 0.0},
-	&"perfume": {"axis": &"any", "mode": &"hold", "cap": 90.0, "rate": 0.22},
-	&"style": {"axis": &"any", "mode": &"rub", "cap": 20.0, "rate": 0.0},
-}
-const GESTURE_HINTS: Dictionary = {
-	&"bath": "HINT_BATH",
-	&"groom": "HINT_GROOM",
-	&"dry": "HINT_DRY",
-	&"perfume": "HINT_PERFUME",
-	&"style": "HINT_STYLE",
-}
-const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
-const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 
 var bath: BathService
 var world: PetShopCanvas
@@ -84,12 +66,32 @@ var queue_row: HBoxContainer
 var queue_cards: Array[Button] = []
 var queue_name_labels: Array[Label] = []
 var queue_service_labels: Array[Label] = []
+var queue_info_labels: Array[Label] = []
 var queue_bars: Array[ColorRect] = []
 var current_vip: bool = false
 var last_tip_percent: int = 0
 var tutorial_overlay: Control
 var tutorial_skip_button: Button
-var tutorial_step: int = -1
+var tutorial := TutorialFlow.new()
+## Onda 1: consequências visíveis + penalidade de recuperação pós-exagero.
+var recovery_penalty: bool = false
+var consecutive_perfects: int = 0
+var mood_buff_clients: int = 0
+## Onda 2: pico do bairro e pedidos especiais (upsell).
+var rush_cooldown: float = 240.0
+var rush_left: float = 0.0
+var rush_active: bool = false
+var rush_label: Label
+var pending_special: StringName = &""
+var special_active: bool = false
+var special_multiplier: float = 1.0
+var upsell_panel: PanelContainer
+var upsell_label: Label
+var upsell_accept: Button
+var upsell_decline: Button
+## Onda 3: maestria e carinho com limite por cliente.
+var petting_count: int = 0
+var pending_special_result: Dictionary = {}
 
 
 func _ready() -> void:
@@ -99,10 +101,12 @@ func _ready() -> void:
 	_build_interface()
 	world.clear_room()
 	for slot: int in 3:
-		queue[slot] = _make_client()
+		queue[slot] = SalonTuning.make_client(_available_services())
 	_update_queue_ui()
 	_connect_events()
 	_refresh_economy()
+	# Onda 2: o pico do bairro começa a contar desde a abertura.
+	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
 	_show_pending_offline_reward()
 	SessionFeedback.show_comeback(self)
 	# Retenção: o opt-in de lembretes persiste nos ajustes; sincroniza antes de
@@ -118,7 +122,8 @@ func _ready() -> void:
 		var deep_section: StringName = NotificationManager.deep_link_section()
 		if deep_section != &"":
 			meta.open(deep_section)
-	_setup_tutorial()
+	tutorial.attach(self)
+	tutorial.setup()
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
 
 
@@ -142,11 +147,24 @@ func _process(delta: float) -> void:
 		world.service_time_ratio = (
 			bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
 		)
+		# Onda 1: UI de gesto por serviço + pulinho do brincalhão.
+		world.gesture_ui = GestureArt.gesture_snapshot(bath)
+		world.playful_hop = bath.hopping
+	else:
+		world.gesture_ui = {}
+		world.playful_hop = false
+	world.tool_levels = GameState.tool_upgrade_levels
+	world.rush_active = rush_active
+	_update_rush(delta)
 	_process_queue(delta)
 
 
 func _input(event: InputEvent) -> void:
-	if meta.is_open() or (is_instance_valid(result_panel) and result_panel.visible):
+	if (
+		meta.is_open()
+		or (is_instance_valid(result_panel) and result_panel.visible)
+		or (is_instance_valid(upsell_panel) and upsell_panel.visible)
+	):
 		return
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
@@ -191,13 +209,27 @@ func _move_pointer(point: Vector2) -> void:
 		world.set_tool_contact(false)
 		if wrong_tool_gate <= 0.0:
 			wrong_tool_gate = 0.8
-			_show_toast("Use %s neste pedido" % _tool_display_name(required_tool), Color("ffd54f"))
+			_show_toast(
+				"Use %s neste pedido" % SalonTuning.tool_display_name(required_tool),
+				Color("ffd54f")
+			)
 			AudioManager.play(&"error_soft")
 		return
+	var contact_resumed: bool = not world.tool_contact_valid
 	world.set_tool_contact(true)
 	if bath.state == BathService.State.WAITING:
 		_start_bath()
 	if bath.state == BathService.State.ACTIVE:
+		if contact_resumed and bath.fill_mode == &"pulse":
+			# Perfume (Onda 1): cada novo contato é uma borrifada — acerto se
+			# o anel dourado está aceso, desperdício se está apagado.
+			var spray: StringName = bath.pulse_contact()
+			if spray == &"hit":
+				AudioManager.play(&"spray")
+				HapticsManager.light()
+				world.spawn_bubble(point)
+			elif spray == &"miss":
+				AudioManager.play(&"error_soft")
 		_rub(point)
 
 
@@ -232,9 +264,17 @@ func _pet_hit(point: Vector2) -> bool:
 
 
 func _react_to_pet_touch() -> void:
-	if pet_touch_gate > 0.0:
+	if pet_touch_gate > 0.35:
+		return
+	if petting_count >= int(RemoteConfig.get_float("petting_max_per_client")):
+		# C3: carinho segue rendendo reação, mas o afeto tem teto por cliente.
+		if pet_touch_gate <= 0.0:
+			pet_touch_gate = 0.6
+			world.react_to_touch()
+			_show_toast("%s já está banhado de carinho!" % current_pet_name, PINK)
 		return
 	pet_touch_gate = 0.35
+	petting_count += 1
 	var message: String = world.react_to_touch()
 	var affection: int = GameState.register_pet_interaction(current_pet_id)
 	world.affection_level = affection
@@ -251,35 +291,9 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		AudioManager.play(_service_sound())
+		AudioManager.play(SalonTuning.service_sound(current_service))
 		bubble_sound_gate = 0.11
 	EventBus.service_progress.emit(bath.progress)
-
-
-func _service_sound() -> StringName:
-	return (
-		{
-			&"bath": &"bubble",
-			&"groom": &"clipper",
-			&"dry": &"dryer",
-			&"perfume": &"spray",
-			&"style": &"bow",
-		}
-		. get(current_service, &"bubble")
-	)
-
-
-func _tool_display_name(tool: StringName) -> String:
-	return (
-		{
-			&"soap": "o sabonete",
-			&"clipper": "a máquina de tosa",
-			&"dryer": "o secador",
-			&"perfume": "o perfume",
-			&"bow": "o lacinho",
-		}
-		. get(tool, "o utensílio")
-	)
 
 
 func _on_primary_pressed() -> void:
@@ -291,57 +305,44 @@ func _start_bath() -> void:
 	bath.start_service()
 	world.begin_service()
 	ShareManager.begin_snapshot(get_viewport())
-	instruction_label.text = _gesture_hint()
+	instruction_label.text = SalonTuning.hint(current_service)
 	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
 	EventBus.service_started.emit(current_service)
-	if tutorial_step == 1:
-		_tutorial_advance()
+	if tutorial.step == 1:
+		tutorial.advance()
 
 
 func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
 	if quality == &"perfect" or quality == &"good":
 		world.complete_service()
-		var base_reward: float = (
-			{
-				&"bath": RemoteConfig.get_float("bath_base_reward"),
-				&"groom": 20.0,
-				&"dry": 24.0,
-				&"perfume": 30.0,
-				&"style": 38.0,
-			}
-			. get(current_service, 12.0)
-		)
-		var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
-		var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
-		# Gorjeta variável (odds publicadas) + bônus de reputação do bairro:
-		# variabilidade real de recompensa — o mesmo serviço rende diferente.
-		var tip_multiplier: float = (
-			Economy.tip_multiplier(randf()) * (1.0 + Economy.tip_bonus(GameState.reviews_sum))
-		)
-		last_tip_percent = int(roundf((tip_multiplier - 1.0) * 100.0))
-		var vip_multiplier: float = Economy.VIP_REWARD_MULTIPLIER if current_vip else 1.0
-		var reward: float = (
-			(
-				Economy
-				. service_reward(
-					base_reward,
-					quality,
-					GameState.bath_upgrade_level,
-					GameState.combo,
-				int(
-					GameState.tool_upgrade_levels.get(String(SERVICE_TOOLS[current_service]), 0)
-				),
-				GameState.prestige_level,
+		var used_tool: StringName = StringName(SERVICE_TOOLS[current_service])
+		var mastery: Dictionary = GameState.register_tool_use(used_tool)
+		var reward_result: Dictionary = SalonTuning.compute_reward({
+			"service": current_service,
+			"quality": quality,
+			"pet_id": current_pet_id,
+			"vip": current_vip,
+			"buddy": world.buddy_active,
+			"rush": rush_active,
+			"special": special_multiplier,
+			"mastery": SalonTuning.mastery_bonus(int(GameState.tool_uses.get(String(used_tool), 0))),
+			"tool_level": int(GameState.tool_upgrade_levels.get(String(used_tool), 0)),
+			"rand": randf(),
+		})
+		var reward: float = float(reward_result["reward"])
+		last_tip_percent = int(reward_result["tip_percent"])
+		if mastery.has("milestone"):
+			_show_toast(
+				"Maestria de %s %s!" % [
+					SalonTuning.tool_display_name(used_tool).strip_edges(), "★".repeat(int(mastery["milestone"]))
+				],
+				Color("ffd54f")
 			)
+			Analytics.track(
+				&"tool_milestone", {"tool": String(used_tool), "milestone": int(mastery["milestone"])}
 			)
-			* LiveOps.multiplier_for(current_service)
-			* LiveOps.bonus_for_quality(quality)
-			* affection_multiplier
-			* tip_multiplier
-			* vip_multiplier
-		)
 		var stars: int = 5 if quality == &"perfect" else 4
 		var reputation_before: int = GameState.reviews_sum
 		GameState.register_review(stars)
@@ -365,6 +366,25 @@ func _finish_bath() -> void:
 		)
 		if quality == &"perfect":
 			Analytics.track(&"perfect_service")
+		# A3: recuperação — qualquer acerto limpa a penalidade do exagero.
+		recovery_penalty = false
+		if quality == &"perfect":
+			consecutive_perfects += 1
+			if consecutive_perfects >= 2:
+				# Ritmo do salão: a fila inteira perde paciência mais devagar.
+				mood_buff_clients = 3
+				world.forced_state = &"happy_squash"
+				world.forced_state_time = 2.0
+				_show_toast("O salão está no ritmo! Fila mais paciente.", GREEN)
+				Analytics.track(&"mood_buff", {"streak": consecutive_perfects})
+		else:
+			consecutive_perfects = 0
+		# Onda 2: pedido especial (upsell) — oferecer antes do resultado.
+		var client: Dictionary = queue[selected_slot] if selected_slot >= 0 else {}
+		var offered: StringName = StringName(client.get("special", &""))
+		if not special_active and offered != &"" and offered != current_service:
+			_offer_special(offered, quality, reward, stars)
+			return
 		_show_success(quality, reward, stars)
 	else:
 		_fail(quality)
@@ -380,8 +400,8 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	)
 	if current_vip:
 		result_title.text = Loc.t("VIP_TAG") + "! " + result_title.text
-	if tutorial_step == 2:
-		_tutorial_advance()
+	if tutorial.step == 2:
+		tutorial.advance()
 	if GameState.combo >= 5:
 		result_title.text = "RITMO PERFEITO ×%d" % GameState.combo
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
@@ -403,9 +423,22 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	)
 	if current_vip:
 		tip_line = Loc.t("VIP_TAG") + " ×2 · " + tip_line
+	var extra_line: String = ""
+	if special_active:
+		extra_line += "\n★ pedido especial atendido!"
+	if world.buddy_active:
+		extra_line += "\n• buddy na banheira dupla: +40%"
 	result_detail.text = (
-		"%s\n+%d moedas  •  +%d XP\n%s\n%s %s"
-		% ["★".repeat(stars), int(reward), xp_reward, tip_line, current_pet_name, outcome]
+		"%s\n+%d moedas  •  +%d XP\n%s\n%s %s%s"
+		% [
+			"★".repeat(stars),
+			int(reward),
+			xp_reward,
+			tip_line,
+			current_pet_name,
+			outcome,
+			extra_line,
+		]
 	)
 	ShareManager.finish_snapshot(get_viewport(), String(current_service))
 	share_button.visible = true
@@ -420,6 +453,18 @@ func _fail(reason: StringName) -> void:
 	bath.state = BathService.State.FAILED
 	dragging = false
 	dragged_tool = &""
+	world.gesture_ui = {}
+	world.playful_hop = false
+	# A3: o pet REAGE ao erro — tonto no exagero, triste no tempo esgotado;
+	# exagerar estreita a janela do próximo atendimento até um acerto.
+	if reason == &"overwashed":
+		world.forced_state = &"dizzy"
+		world.forced_state_time = 3.0
+		recovery_penalty = true
+	elif reason == &"timeout":
+		world.forced_state = &"sad"
+		world.forced_state_time = 2.5
+	consecutive_perfects = 0
 	EventBus.service_failed.emit(current_service, reason)
 	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason)})
 	world.react_to_failure()
@@ -444,8 +489,8 @@ func _fail(reason: StringName) -> void:
 	primary_button.text = "↻  TENTAR NOVAMENTE"
 	primary_button.disabled = false
 	primary_button.show()
-	if tutorial_step == 2:
-		_tutorial_advance()
+	if tutorial.step == 2:
+		tutorial.advance()
 
 
 func _dismiss_result() -> void:
@@ -453,43 +498,115 @@ func _dismiss_result() -> void:
 	world.reset_pet()
 	world.depart()
 	world.clear_room()
+	world.gesture_ui = {}
+	world.buddy_active = false
 	bath = BathServiceScript.new()
 	if selected_slot >= 0:
 		queue[selected_slot] = {}
-		refill_timers[selected_slot] = 1.1
+		refill_timers[selected_slot] = _refill_delay()
 	selected_slot = -1
 	current_vip = false
+	special_active = false
+	pending_special = &""
+	pending_special_result = {}
+	special_multiplier = 1.0
+	mood_buff_clients = maxi(0, mood_buff_clients - 1)
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	primary_button.hide()
 	_update_queue_ui()
 
 
-func _make_client() -> Dictionary:
-	var unlocked: Array[String] = GameState.unlocked_pets
-	if unlocked.is_empty():
-		unlocked = ["caramelo"]
-	var pet_id: String = unlocked[randi() % unlocked.size()]
-	# O pet preferido (buddy) visita com prioridade: 40% de chance de vir.
-	if pet_id != GameState.favorite_pet and randf() < 0.4:
-		pet_id = GameState.favorite_pet
-		Analytics.track(&"buddy_spawned", {"pet_id": pet_id})
-	var services: Array[StringName] = _available_services()
-	var service: StringName = services[randi() % services.size()]
-	# A fila segue o evento do dia: no dia temático, metade dos clientes
-	# chega com o serviço em destaque — o evento se sente andando pela porta.
-	var featured: StringName = LiveOps.featured_service()
-	if featured != &"" and featured in services and service != featured and randf() < 0.5:
-		service = featured
-		Analytics.track(&"event_client", {"service": String(service)})
-	var vip: bool = randf() < Economy.vip_chance(GameState.reviews_sum)
-	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
-	return {
-		"pet": pet_id,
-		"service": service,
-		"vip": vip,
-		"wait_total": wait_total,
-		"wait_left": wait_total,
-	}
+## Recarga da fila: o pico do bairro (Onda 2) traz clientes bem mais rápido.
+func _refill_delay() -> float:
+	return 0.35 if rush_active else 1.1
+
+
+## Pico do bairro (B3): janela periódica com gorjetas ×2, recarga rápida e
+## proteção de combo — o jogador corre para aproveitar antes de acabar.
+func _update_rush(delta: float) -> void:
+	if rush_active:
+		rush_left -= delta
+		if is_instance_valid(rush_label):
+			rush_label.text = "PICO ×2 — %ds" % int(ceilf(maxf(0.0, rush_left)))
+			rush_label.modulate = (
+				Color("ffd54f") if fmod(rush_left, 0.8) < 0.4 else Color("ff8f00")
+			)
+		if rush_left <= 0.0:
+			_end_rush()
+	elif (
+		bool(GameState.tutorial_complete)
+		and not result_panel.visible
+		and not upsell_panel.visible
+	):
+		rush_cooldown -= delta
+		if is_instance_valid(rush_label):
+			rush_label.text = (
+				"pico em %ds" % int(ceilf(rush_cooldown)) if rush_cooldown <= 10.0 else ""
+			)
+		if rush_cooldown <= 0.0:
+			_start_rush()
+
+
+func _start_rush() -> void:
+	rush_active = true
+	rush_left = RemoteConfig.get_float("rush_duration")
+	GameState.rush_combo_protection = true
+	_show_toast("PICO DO BAIRRO! Gorjetas dobradas e fila cheia!", Color("ffb300"))
+	Analytics.track(&"rush_started", {})
+	for slot: int in 3:
+		if queue[slot].is_empty():
+			refill_timers[slot] = minf(refill_timers[slot], 0.5)
+
+
+func _end_rush() -> void:
+	rush_active = false
+	GameState.rush_combo_protection = false
+	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
+	if is_instance_valid(rush_label):
+		rush_label.text = ""
+
+
+## Upsell (B2): oferecer o serviço extra ANTES do resultado — aceitar abre
+## um novo atendimento com gorjeta extra; recusar segue direto pro resultado.
+func _offer_special(
+	offered: StringName, quality: StringName, reward: float, stars: int
+) -> void:
+	pending_special = offered
+	pending_special_result = {"quality": quality, "reward": reward, "stars": stars}
+	var service_name: String = String(SERVICE_LABELS.get(offered, "cuidado")).capitalize()
+	upsell_label.text = (
+		"%s adoraria também um %s!\nAceitar o pedido?" % [current_pet_name, service_name]
+	)
+	world.forced_state = &"happy_squash"
+	world.forced_state_time = 1.6
+	Analytics.track(&"upsell_offered", {"service": String(offered)})
+	_pop_panel(upsell_panel)
+
+
+func _on_upsell_accept() -> void:
+	upsell_panel.hide()
+	special_active = true
+	special_multiplier = RemoteConfig.get_float("upsell_tip_mult")
+	current_service = pending_special
+	bath = BathServiceScript.new()
+	world.progress = 0.0
+	world.forced_state = &""
+	_configure_current_service()
+	instruction_label.text = SalonTuning.hint(current_service)
+	Analytics.track(&"upsell_accepted", {"service": String(current_service)})
+
+
+func _on_upsell_decline() -> void:
+	upsell_panel.hide()
+	var result: Dictionary = pending_special_result
+	pending_special = &""
+	pending_special_result = {}
+	Analytics.track(&"upsell_declined", {"service": String(current_service)})
+	_show_success(
+		StringName(result.get("quality", &"good")),
+		float(result.get("reward", 0.0)),
+		int(result.get("stars", 4)),
+	)
 
 
 func _on_queue_pressed(slot: int) -> void:
@@ -500,17 +617,31 @@ func _on_queue_pressed(slot: int) -> void:
 	current_vip = bool(client.get("vip", false))
 	current_pet_id = String(client["pet"])
 	current_service = StringName(client["service"])
+	petting_count = 0
+	special_active = false
+	special_multiplier = 1.0
+	pending_special = StringName(client.get("special", &""))
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
 	current_pet_name = String(profile.get("name", "Pet"))
 	_configure_current_service()
 	world.set_service_layout(current_service)
 	world.set_pet_profile(profile)
 	world.affection_level = int(GameState.pet_affection.get(current_pet_id, 0))
+	# Banheira dupla (Onda 3, marco 30): o buddy entra junto e é atendido em
+	# paralelo — o atendimento paga +40% sem segundo gesto.
+	world.buddy_active = (
+		GameState.bath_upgrade_level >= 30
+		and GameState.favorite_pet != current_pet_id
+		and GameState.unlocked_pets.has(GameState.favorite_pet)
+	)
+	world.buddy_pet_id = GameState.favorite_pet
 	world.arrive()
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 	instruction_label.text = (
-		"Arraste %s da prateleira até %s" % [_tool_display_name(required_tool), current_pet_name]
+		"Arraste %s da prateleira até %s" % [
+			SalonTuning.tool_display_name(required_tool), current_pet_name
+		]
 	)
 	_update_queue_ui()
 	Analytics.track(
@@ -523,8 +654,8 @@ func _on_queue_pressed(slot: int) -> void:
 		}
 	)
 	EventBus.pet_arrived.emit(StringName(current_pet_id))
-	if tutorial_step == 0:
-		_tutorial_advance()
+	if tutorial.step == 0:
+		tutorial.advance()
 
 
 func _can_select(slot: int) -> bool:
@@ -542,14 +673,21 @@ func _process_queue(delta: float) -> void:
 		if refill_timers[slot] > 0.0:
 			refill_timers[slot] -= delta
 			if refill_timers[slot] <= 0.0:
-				queue[slot] = _make_client()
+				queue[slot] = SalonTuning.make_client(_available_services())
 				_update_queue_ui()
 		elif (
 			not queue[slot].is_empty()
 			and slot != selected_slot
 			and bool(GameState.tutorial_complete)
 		):
-			queue[slot]["wait_left"] = float(queue[slot]["wait_left"]) - delta
+			# Onda 2: pico deixa a fila mais paciente (dá pra atender todos);
+			# A3: sequência de perfects deixa o salão "no ritmo" (-10%).
+			var patience_drain: float = delta
+			if rush_active:
+				patience_drain *= 0.5
+			if mood_buff_clients > 0:
+				patience_drain *= 0.9
+			queue[slot]["wait_left"] = float(queue[slot]["wait_left"]) - patience_drain
 			if float(queue[slot]["wait_left"]) <= 0.0:
 				_client_left(slot)
 	# Barras de paciência e habilitação dos cartões (estado muda todo frame).
@@ -578,66 +716,8 @@ func _client_left(slot: int) -> void:
 	GameState.register_review(3)
 	Analytics.track(&"client_left", {"pet_id": String(client["pet"])})
 	queue[slot] = {}
-	refill_timers[slot] = 2.0
+	refill_timers[slot] = 2.0 if not rush_active else 0.6
 	_update_queue_ui()
-
-
-func _setup_tutorial() -> void:
-	if bool(GameState.tutorial_complete):
-		return
-	tutorial_step = 0
-	tutorial_skip_button.visible = true
-	_tutorial_apply()
-
-
-func _tutorial_apply() -> void:
-	if tutorial_step == 0:
-		tutorial_overlay.show_step(
-			Rect2(queue_row.position - Vector2(10, 10), queue_row.size + Vector2(20, 20)),
-			"1/3 · Toque em um cliente da fila para atender",
-		)
-	elif tutorial_step == 1:
-		var tool: StringName = StringName(SERVICE_TOOLS[current_service])
-		tutorial_overlay.show_step(
-			_tool_spot_rect(),
-			"2/3 · Arraste %s até %s" % [_tool_display_name(tool), current_pet_name],
-		)
-	elif tutorial_step == 2:
-		tutorial_overlay.show_step(
-			Rect2(world.pet_focus() - Vector2(250, 250), Vector2(500, 560)),
-			"3/3 · " + _gesture_hint(),
-		)
-
-
-func _gesture_hint() -> String:
-	return Loc.t(String(GESTURE_HINTS.get(current_service, GESTURE_HINTS[&"bath"])))
-
-
-func _tool_spot_rect() -> Rect2:
-	var tool: StringName = StringName(SERVICE_TOOLS[current_service])
-	var shelf: Vector2 = world.tool_shelf_position(tool)
-	return Rect2(shelf - Vector2(80, 80), Vector2(160, 160))
-
-
-func _tutorial_advance() -> void:
-	tutorial_step += 1
-	if tutorial_step >= 3:
-		_finish_tutorial()
-		Analytics.track(&"tutorial_complete")
-	else:
-		_tutorial_apply()
-
-
-func _finish_tutorial() -> void:
-	tutorial_step = -1
-	tutorial_overlay.finish()
-	tutorial_skip_button.visible = false
-	GameState.tutorial_complete = true
-
-
-func _skip_tutorial() -> void:
-	_finish_tutorial()
-	Analytics.track(&"tutorial_skipped")
 
 
 func _update_queue_ui() -> void:
@@ -646,23 +726,38 @@ func _update_queue_ui() -> void:
 		if client.is_empty():
 			queue_name_labels[slot].text = "· · ·"
 			queue_service_labels[slot].text = "aguardando cliente"
+			queue_info_labels[slot].text = ""
 			queue_cards[slot].modulate.a = 0.45
-		else:
-			var client_name: String = String(
-				ContentDB.pet(String(client["pet"])).get("name", "Pet")
+			queue_cards[slot].add_theme_stylebox_override(
+				"panel", _style(Color("ffffff", 0.94), 26, 16, PINK, 4)
 			)
+		else:
+			var profile: Dictionary = ContentDB.pet(String(client["pet"]))
+			var client_name: String = String(profile.get("name", "Pet"))
 			if bool(client["vip"]):
 				client_name = "VIP " + client_name
 			if String(client["pet"]) == GameState.favorite_pet:
 				# Buddy na fila: marcador localizado (investimento emocional visível).
 				client_name += " • " + Loc.t("BUDDY_TAG")
 			queue_name_labels[slot].text = client_name
-			queue_service_labels[slot].text = String(
+			var service_text: String = String(
 				SERVICE_LABELS.get(StringName(client["service"]), "cuidado")
 			).capitalize()
+			if StringName(client.get("special", &"")) != &"":
+				service_text += " + ★"
+			queue_service_labels[slot].text = service_text
+			# B1: trade-offs explícitos — temperamento, pagamento e raridade.
+			queue_info_labels[slot].text = SalonTuning.queue_info_text(profile)
+			var border: Dictionary = SalonTuning.queue_border(profile)
+			queue_cards[slot].add_theme_stylebox_override(
+				"panel",
+				_style(
+					Color("ffffff", 0.94), 26, 16,
+					border["color"], int(border["width"])
+				)
+			)
 			queue_cards[slot].modulate.a = 1.0
-		queue_cards[slot].disabled = not _can_select(slot)
-
+			queue_cards[slot].disabled = not _can_select(slot)
 
 func _configure_current_service() -> void:
 	var duration: float = (
@@ -683,15 +778,36 @@ func _configure_current_service() -> void:
 	var window_bonus: float = GameState.staff_bonus(&"perfect_window")
 	if current_service == &"groom":
 		window_bonus += GameState.staff_bonus(&"groom_quality")
+	# Perfume funciona em borrifadas discretas: o perfect É a última
+	# borrifada (progresso salta em 1/n); Good aceita n-1 acertos. A janela
+	# máxima precisa ser 1.0 — senão 3 acertos (progresso 1.0) nunca dão
+	# perfect.
+	var target_min: float = RemoteConfig.get_float("bath_target_min")
+	var target_max: float = minf(RemoteConfig.get_float("bath_target_max") + window_bonus, 1.0)
+	if current_service == &"perfume":
+		target_min = 0.95
+		target_max = 1.0
 	bath.configure(
 		duration * patience_factor,
-		RemoteConfig.get_float("bath_target_min"),
-		minf(RemoteConfig.get_float("bath_target_max") + window_bonus, 1.0),
+		target_min,
+		target_max,
 		required_distance,
 	)
-	var gesture: Dictionary = GESTURES.get(current_service, GESTURES[&"bath"])
+	var gesture: Dictionary = SalonTuning.GESTURES.get(
+		current_service, SalonTuning.GESTURES[&"bath"]
+	)
 	bath.configure_gesture(
 		gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"]
+	)
+	# --- Ondas 1–3: gesto com identidade própria, ajustado ao pet
+	# (temperamento, espécie, porte, marcos de maestria e recuperação).
+	SalonTuning.apply(
+		bath,
+		current_service,
+		ContentDB.pet(current_pet_id),
+		GameState.tool_upgrade_levels,
+		recovery_penalty,
+		world.pet_focus() if is_instance_valid(world) else Vector2(540, 990)
 	)
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
@@ -769,6 +885,7 @@ func _build_interface() -> void:
 	coin_label = _pill(top_bar, "0", Color("ffd54f"), 280)
 	review_label = _pill(top_bar, "★ 5.0", PINK, 235)
 	combo_label = _pill(top_bar, "COMBO ×1", GREEN, 300)
+	rush_label = _pill(top_bar, "", Color("ff8f00"), 210)
 
 	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
 	queue_row = HBoxContainer.new()
@@ -777,36 +894,14 @@ func _build_interface() -> void:
 	queue_row.add_theme_constant_override("separation", 15)
 	add_child(queue_row)
 	for slot: int in 3:
-		var card: Button = _button("", Color("ffffff", 0.94), 320, 175)
-		card.add_theme_stylebox_override("panel", _style(Color("ffffff", 0.94), 26, 16, PINK, 4))
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		var column: VBoxContainer = VBoxContainer.new()
-		column.add_theme_constant_override("separation", 8)
-		column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		column.offset_left = 14.0
-		column.offset_right = -14.0
-		column.offset_top = 12.0
-		column.offset_bottom = -12.0
-		card.add_child(column)
-		var name_label: Label = Label.new()
-		name_label.add_theme_font_size_override("font_size", 27)
-		name_label.add_theme_color_override("font_color", CHARCOAL)
-		column.add_child(name_label)
-		var service_label: Label = Label.new()
-		service_label.add_theme_font_size_override("font_size", 22)
-		service_label.add_theme_color_override("font_color", Color("546e7a"))
-		column.add_child(service_label)
-		var bar: ColorRect = ColorRect.new()
-		bar.custom_minimum_size = Vector2(0, 10)
-		bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-		bar.color = Color("7ed957")
-		column.add_child(bar)
-		card.pressed.connect(_on_queue_pressed.bind(slot))
-		queue_row.add_child(card)
-		queue_cards.append(card)
-		queue_name_labels.append(name_label)
-		queue_service_labels.append(service_label)
-		queue_bars.append(bar)
+		var card_ui: Dictionary = SalonPanels.build_queue_card(_style, _button)
+		card_ui["card"].pressed.connect(_on_queue_pressed.bind(slot))
+		queue_row.add_child(card_ui["card"])
+		queue_cards.append(card_ui["card"])
+		queue_name_labels.append(card_ui["name"])
+		queue_service_labels.append(card_ui["service"])
+		queue_info_labels.append(card_ui["info"])
+		queue_bars.append(card_ui["bar"])
 
 	# Navegação superior compacta: ícones flutuantes preservam o cenário e a área de trabalho.
 	var nav: HBoxContainer = HBoxContainer.new()
@@ -882,36 +977,23 @@ func _build_interface() -> void:
 	meta.refresh_callback = _refresh_economy
 	meta.build(self)
 
-	result_panel = PanelContainer.new()
-	result_panel.position = Vector2(110, 430)
-	result_panel.size = Vector2(860, 720)
-	result_panel.add_theme_stylebox_override(
-		"panel", _style(Color("263238", 0.96), 52, 42, PINK, 7)
+	var result_ui: Dictionary = SalonPanels.build_result_panel(
+		self, _style, _button, _on_primary_pressed, SessionFeedback.on_share_pressed.bind(self)
 	)
-	add_child(result_panel)
-	var result_column: VBoxContainer = VBoxContainer.new()
-	result_column.alignment = BoxContainer.ALIGNMENT_CENTER
-	result_column.add_theme_constant_override("separation", 25)
-	result_panel.add_child(result_column)
-	result_title = Label.new()
-	result_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	result_title.add_theme_font_size_override("font_size", 72)
-	result_column.add_child(result_title)
-	result_detail = Label.new()
-	result_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	result_detail.add_theme_font_size_override("font_size", 39)
-	result_detail.add_theme_color_override("font_color", Color.WHITE)
-	result_column.add_child(result_detail)
-	var result_actions: VBoxContainer = VBoxContainer.new()
-	result_actions.add_theme_constant_override("separation", 16)
-	result_column.add_child(result_actions)
-	primary_button = _button("✓  CONTINUAR", GREEN, 0, 105)
-	primary_button.pressed.connect(_on_primary_pressed)
-	result_actions.add_child(primary_button)
-	share_button = _button(Loc.t("SHARE_BUTTON"), BLUE, 0, 88)
-	share_button.pressed.connect(SessionFeedback.on_share_pressed.bind(self))
-	result_actions.add_child(share_button)
-	result_panel.hide()
+	result_panel = result_ui["panel"]
+	result_title = result_ui["title"]
+	result_detail = result_ui["detail"]
+	primary_button = result_ui["primary"]
+	share_button = result_ui["share"]
+
+	# Onda 2: painel de pedido especial (upsell) — decisão antes do resultado.
+	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel(
+		self, _style, _button, _on_upsell_accept, _on_upsell_decline
+	)
+	upsell_panel = upsell_ui["panel"]
+	upsell_label = upsell_ui["body"]
+	upsell_accept = upsell_ui["accept"]
+	upsell_decline = upsell_ui["decline"]
 
 	toast_layer = Control.new()
 	toast_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -926,7 +1008,7 @@ func _build_interface() -> void:
 	add_child(tutorial_overlay)
 	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("7f8c8d", 0.9), 300, 64)
 	tutorial_skip_button.position = Vector2(390, 1830)
-	tutorial_skip_button.pressed.connect(_skip_tutorial)
+	tutorial_skip_button.pressed.connect(tutorial.skip)
 	tutorial_skip_button.visible = false
 	add_child(tutorial_skip_button)
 

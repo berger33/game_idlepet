@@ -33,10 +33,10 @@ LANGUAGE,Idioma
 CHOOSE_CLIENT,Escolha o próximo cliente da fila
 SKIP_TUTORIAL,PULAR TUTORIAL
 HINT_BATH,Esfregue em círculos e solte na faixa verde
-HINT_GROOM,Deslize de cima a baixo e solte na faixa verde
-HINT_DRY,Deslize de um lado a outro e solte na faixa verde
-HINT_PERFUME,Segure sobre o pet e solte na faixa verde
-HINT_STYLE,Esfregue devagarinho e solte na faixa verde
+HINT_GROOM,Siga as setas: deslize na direção indicada
+HINT_DRY,Acompanhe o círculo com o secador até encher
+HINT_PERFUME,Borrife quando o anel dourado acender (3 borrifadas)
+HINT_STYLE,Encaixe o lacinho na marca rosa e segure firme
 PERFECT_RESULT,PERFEITO!
 GOOD_RESULT,MUITO BOM!
 VIP_TAG,VIP

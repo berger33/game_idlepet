@@ -137,6 +137,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["version"] = 8
 		data["active_cosmetics"] = data.get("active_cosmetics", {})
 		version = 8
+	if version == 8:
+		# v9: maestria de ferramenta (C2) — usos por ferramenta persistidos.
+		data["version"] = 9
+		data["tool_uses"] = data.get("tool_uses", {})
+		version = 9
 	return data
 
 

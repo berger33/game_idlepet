@@ -33,10 +33,10 @@ LANGUAGE,Idioma
 CHOOSE_CLIENT,Elige al siguiente cliente de la fila
 SKIP_TUTORIAL,SALTAR TUTORIAL
 HINT_BATH,Frota en círculos y suelta en la franja verde
-HINT_GROOM,Desliza de arriba a abajo y suelta en la franja verde
-HINT_DRY,Desliza de lado a lado y suelta en la franja verde
-HINT_PERFUME,Sostén sobre el pet y suelta en la franja verde
-HINT_STYLE,Frota suavecito y suelta en la franja verde
+HINT_GROOM,Sigue las flechas: desliza hacia donde apuntan
+HINT_DRY,Mantén la secadora dentro del círculo en movimiento
+HINT_PERFUME,Rocía cuando el anillo dorado brille (3 rociadas)
+HINT_STYLE,Encaja el lacito en la marca rosa y aguanta firme
 PERFECT_RESULT,¡PERFECTO!
 GOOD_RESULT,¡MUY BIEN!
 VIP_TAG,VIP
