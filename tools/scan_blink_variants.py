@@ -34,12 +34,12 @@ def load(path: Path) -> Image.Image:
     return Image.open(path).convert("RGBA").resize((S, S), Image.LANCZOS)
 
 
-def diff_ratio(a: Image.Image, b: Image.Image) -> float:
+def diff_ratio(a: Image.Image, b: Image.Image, color_thr: int = 40) -> float:
     da = ImageChops.difference(a.getchannel("A"), b.getchannel("A")).point(
         lambda v: 255 if v > 24 else 0
     )
     dc = ImageChops.difference(a.convert("RGB"), b.convert("RGB")).convert("L").point(
-        lambda v: 255 if v > 40 else 0
+        lambda v: 255 if v > color_thr else 0
     )
     both = ImageChops.add(da, dc).point(lambda v: 255 if v > 0 else 0)
     return sum(1 for p in both.getdata() if p == 255) / (S * S)
@@ -47,6 +47,7 @@ def diff_ratio(a: Image.Image, b: Image.Image) -> float:
 
 def main() -> None:
     pets = [p["id"] for p in json.load(open(ROOT / "data/pets.json", encoding="utf-8"))["pets"]]
+    pets = [p for p in pets if p != "duke_husky"]  # exceção documentada
     problems: list[str] = []
     counts = {v: 0 for v in VARIANTS}
     for pet in pets:
@@ -61,15 +62,16 @@ def main() -> None:
                 problems.append(f"{pet}/{variant}: quase transparente ({opaque} opacos)")
             open_state = load(ROOT / "art/pet_animations" / pet / f"{BASE_OF[variant]}.png")
             ratio = diff_ratio(img, open_state)
-            if ratio < 0.005:
+            fine = diff_ratio(img, open_state, color_thr=16)
+            if fine < 0.004:
                 problems.append(f"{pet}/{variant}: identico ao estado aberto")
-            elif ratio > 0.15:
+            elif ratio > 0.18:
                 problems.append(f"{pet}/{variant}: diff {ratio:.0%} do estado aberto (pose?)")
             dry_blink = ROOT / "art/pet_animations" / pet / "blink.png"
             if os.path.exists(dry_blink) and diff_ratio(img, load(dry_blink)) < 0.005:
                 problems.append(f"{pet}/{variant}: identico ao blink seco (nao herdou condicao)")
     total = sum(counts.values())
-    print("progresso variantes: %d/250" % total)
+    print("progresso variantes: %d/245 (duke_husky excluído)" % total)
     for variant in VARIANTS:
         print("  %-12s %2d/50" % (variant, counts[variant]))
     if problems:

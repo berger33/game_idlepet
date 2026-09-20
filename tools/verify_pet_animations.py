@@ -111,8 +111,12 @@ def verify_renderer_contract(states_by_pet: dict[str, dict]) -> None:
     require(match is not None, "PET_STATE_NAMES não encontrado no renderer")
     if match:
         runtime_states = re.findall(r"&\"([a-z_]+)\"", match.group(1))
+        expected_states = list(next(iter(states_by_pet.values())).keys()) if states_by_pet else []
+        expected_states += load_json("data/pet_animation_production.json").get(
+            "blink_variant_states", []
+        )
         require(
-            runtime_states == list(next(iter(states_by_pet.values())).keys()) if states_by_pet else False,
+            runtime_states == expected_states,
             f"estados do renderer != tracker: {runtime_states}",
         )
     require(
@@ -136,6 +140,8 @@ def verify_catalog_and_files(states_by_pet: dict[str, dict]) -> None:
         set(states_by_pet) == catalog_ids,
         f"tracker e catálogo divergem: {set(states_by_pet) ^ catalog_ids}",
     )
+
+    variant_states = load_json("data/pet_animation_production.json").get("blink_variant_states", [])
 
     anim_root = ROOT / "art/pet_animations"
     dir_ids = {path.name for path in anim_root.iterdir() if path.is_dir()} if anim_root.exists() else set()
@@ -166,10 +172,23 @@ def verify_catalog_and_files(states_by_pet: dict[str, dict]) -> None:
         pet_dir = anim_root / pet_id
         files = {path.name for path in pet_dir.iterdir() if path.is_file()} if pet_dir.exists() else set()
         expected_files = {f"{state}.png" for state in states_by_pet[pet_id]}
+        if pet_id != "duke_husky":  # exceção documentada no BLINK_MATRIX
+            expected_files |= {f"{variant}.png" for variant in variant_states}
         require(
             files == expected_files,
             f"{pet_id}: arquivos {sorted(files ^ expected_files)} faltando/extra",
         )
+        # Variantes de piscada por estado (BLINK_MATRIX): contrato 512 RGBA.
+        for variant in ([] if pet_id == "duke_husky" else variant_states):
+            variant_path = pet_dir / f"{variant}.png"
+            require(variant_path.exists(), f"{pet_id}/{variant}: arquivo ausente")
+            if not variant_path.exists():
+                continue
+            with Image.open(variant_path) as variant_image:
+                require(
+                    variant_image.size == (512, 512) and variant_image.mode == "RGBA",
+                    f"{pet_id}/{variant}: formato {variant_image.size}/{variant_image.mode}",
+                )
 
         for state_name, entry in states_by_pet[pet_id].items():
             rel_path = entry.get("path", "")
