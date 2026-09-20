@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Mock offline do contrato espacial V2 (alinhamento pet/estação e utensílio/prancha).
 
-Replica em PIL a geometria exata de ``core/gameplay/StationArt.gd`` e
+Replica em PIL a geometria do FALLBACK vetorial de
+``core/gameplay/StationArt.gd`` (a arte raster de art/stations é validada
+por ``tools/compose_scene_preview.py``) e
 ``core/gameplay/PetShopCanvas.gd`` (mesmas constantes, mesma ordem de desenho),
 usando ``data/service_layouts.json`` como fonte única — igual ao runtime.
 

@@ -1,9 +1,9 @@
 class_name StationArt
 extends RefCounted
-## Mobiliário funcional desenhado por código: estante de utensílios, estação de
-## trabalho por serviço e placa do título. Determinístico e idêntico em todos
-## os cenários — o alinhamento pet/banheira e utensílio/prateleira nunca
-## depende da arte do background (fonte única: data/service_layouts.json).
+## Mobiliário da sala: arte raster (art/stations) com fallback vetorial.
+## A geometria continua ancorada em pet_position.y (pés do pet) e nas
+## pranchas de data/service_layouts.json — o layout validado é o mesmo da
+## arte vetorial anterior; as caixas vêm de tools/normalize_station_art.py.
 ## pet_position.y é a ANCORA DOS PÉS: a superfície da estação fica nesse Y.
 
 const WOOD: Color = Color("8d6e63")
@@ -16,6 +16,53 @@ const METAL: Color = Color("90a4ae")
 
 ## Largura/altura das pranchas da estante (tool center y = prancha y - 34).
 const PLANK_DROP: float = 34.0
+
+## Caixas das artes (canvas 1080x1920, surface=1160). Origem Y das
+## mesas/pedestal/otomana é a própria surface; banheiras são posicionadas
+## para que o ARO FRONTAL cruze o pet em surface-36 (RIM_LINE).
+const SURFACE_REF: float = 1160.0
+const RIM_LINE_OFFSET: float = -36.0
+const STATION_ART_BOXES: Dictionary = {
+	&"bathtub_rustic": Rect2(320.0, SURFACE_REF - 55.0, 440.0, 324.0),
+	&"bathtub_spa": Rect2(320.0, SURFACE_REF - 84.0, 440.0, 284.0),
+	&"groom": Rect2(340.0, SURFACE_REF, 400.0, 121.0),
+	&"dry": Rect2(330.0, SURFACE_REF, 420.0, 169.0),
+	&"perfume": Rect2(390.0, SURFACE_REF, 300.0, 179.0),
+	&"style": Rect2(370.0, SURFACE_REF, 340.0, 110.0),
+}
+## Fração da altura da banheira onde começa o aro frontal (fatia que oclui
+## as patas do pet) — medida pela ferramenta de normalização.
+const BATHTUB_RIM_FRACS: Dictionary = {
+	&"bathtub_rustic": 0.0586,
+	&"bathtub_spa": 0.169,
+}
+## Estante: arte de 216x786; a 1ª prancha fica a 18.38% da altura.
+const SHELF_X: float = 812.0
+const SHELF_W: float = 216.0
+const SHELF_ART_H: float = 780.0
+const SHELF_PLANK0_FRAC: float = 0.1853
+const SHELF_PLANK_COUNT: int = 5
+
+## Cache estático: o canvas redesenha a cada frame, a textura carrega uma vez.
+static var _art_cache: Dictionary = {}
+
+
+static func _art_texture(asset: StringName) -> Texture2D:
+	if _art_cache.has(asset):
+		return _art_cache[asset]
+	var path: String = "res://art/stations/%s.png" % String(asset)
+	var texture: Texture2D = null
+	if ResourceLoader.exists(path):
+		texture = load(path) as Texture2D
+	_art_cache[asset] = texture
+	return texture
+
+
+static func _station_box(shop, key: StringName) -> Rect2:
+	var box: Rect2 = STATION_ART_BOXES[key]
+	# Segue a âncora dos pés caso o layout do serviço mude o pet_position.
+	box.position.y += shop.pet_position.y - SURFACE_REF
+	return box
 
 
 static func _panel_box(
@@ -43,40 +90,44 @@ static func _ellipse(shop, center: Vector2, rx: float, ry: float, color: Color) 
 	shop.draw_colored_polygon(points, color)
 
 
-## Estante da direita: fundo creme translúcido + pranchas de madeira nas
-## posições exatas dos utensílios (desenhada antes dos sprites das ferramentas).
+## Estante da direita: arte raster posicionada pelas pranchas do layout
+## (desenhada antes dos sprites das ferramentas, que apoiam sobre elas).
 static func draw_shelf_unit(shop) -> void:
 	var levels: Array = shop.service_shelf_levels
 	if levels.is_empty():
 		return
-	var top: float = float(levels[0]) + PLANK_DROP - 26.0
-	var bottom: float = float(levels[levels.size() - 1]) + PLANK_DROP + 48.0
-	var board: StyleBoxFlat = _panel_box(Color(CREAM, 0.42), 22, Color(CHARCOAL, 0.16), 3)
-	shop.draw_style_box(board, Rect2(824, top, 192, bottom - top))
-	for level: float in levels:
-		var y: float = level + PLANK_DROP
-		shop.draw_style_box(
-			_panel_box(WOOD, 9, Color(CHARCOAL, 0.32), 3), Rect2(824, y, 192, 22)
-		)
-		shop.draw_line(Vector2(834.0, y + 4.0), Vector2(1006.0, y + 4.0), WOOD_LIGHT.lightened(0.22), 4)
-		shop.draw_line(Vector2(834.0, y + 24.0), Vector2(1006.0, y + 24.0), Color(CHARCOAL, 0.16), 3)
+	var texture: Texture2D = _art_texture(&"shelf_unit")
+	if texture != null and levels.size() == SHELF_PLANK_COUNT:
+		var first_plank_top: float = float(levels[0]) + PLANK_DROP
+		var top: float = first_plank_top - SHELF_PLANK0_FRAC * SHELF_ART_H
+		shop.draw_texture_rect(texture, Rect2(SHELF_X, top, SHELF_W, SHELF_ART_H), false)
+		return
+	_draw_shelf_fallback(shop, levels)
 
 
 ## Placa de título da sala atrás do texto localizado desenhado pelo canvas.
+## Duas linhas: serviço + capítulo do estabelecimento (progressão visível).
 static func draw_title_plaque(shop) -> void:
 	shop.draw_style_box(
-		_panel_box(Color(CREAM, 0.94), 26, PINK, 4), Rect2(320, 168, 450, 84)
+		_panel_box(Color(CREAM, 0.94), 26, PINK, 4), Rect2(310, 160, 460, 106)
 	)
-	shop.draw_line(Vector2(340, 178), Vector2(750, 178), Color(1.0, 1.0, 1.0, 0.5), 3)
+	shop.draw_line(Vector2(330, 170), Vector2(750, 170), Color(1.0, 1.0, 1.0, 0.5), 3)
 
 
-## Estação de trabalho (desenhada ANTES do pet): sombra de contato + corpo.
+## Estação de trabalho (desenhada ANTES do pet): sombra de contato + arte.
+## A banheira acompanha o capítulo do estabelecimento: rústica no quintal
+## (tier 1) e porcelana dourada a partir do tier 2.
 static func draw_station(shop) -> void:
 	if shop.room_empty:
 		return
 	var surface: float = shop.pet_position.y
 	var cx: float = shop.pet_position.x
 	_ellipse(shop, Vector2(cx, surface + 10), 216.0, 26.0, Color(CHARCOAL, 0.16))
+	var key: StringName = _station_key(shop)
+	var texture: Texture2D = _art_texture(key) if key != &"" else null
+	if texture != null:
+		shop.draw_texture_rect(texture, _station_box(shop, key), false)
+		return
 	match shop.service_mode:
 		&"bath":
 			_draw_bathtub(shop, cx, surface)
@@ -90,13 +141,32 @@ static func draw_station(shop) -> void:
 			_draw_ottoman(shop, cx, surface)
 
 
-## Primeira plano da banheira (desenhada DEPOIS do pet): a borda frontal
-## oclui as patas e vende a leitura "pet dentro da banheira".
+## Primeiro plano da banheira (desenhada DEPOIS do pet): a parede frontal
+## (fatia da MESMA textura) oclui as patas e vende a leitura "pet dentro
+## da banheira"; uma elipse de água translúcida na linha do aro molha as
+## patinhas que ficam visíveis.
 static func draw_station_foreground(shop) -> void:
 	if shop.room_empty or shop.service_mode != &"bath":
 		return
 	var surface: float = shop.pet_position.y
 	var cx: float = shop.pet_position.x
+	var key: StringName = _station_key(shop)
+	var texture: Texture2D = _art_texture(key) if key != &"" else null
+	if texture != null:
+		var rim_y: float = surface + RIM_LINE_OFFSET
+		_ellipse(
+			shop, Vector2(cx, rim_y + 6.0), 168.0, 14.0, Color(WATER_BLUE, 0.35)
+		)
+		var box: Rect2 = _station_box(shop, key)
+		var frac: float = BATHTUB_RIM_FRACS[key]
+		var tex_h: float = float(texture.get_height())
+		var tex_w: float = float(texture.get_width())
+		shop.draw_texture_rect_region(
+			texture,
+			Rect2(box.position.x, rim_y, box.size.x, box.end.y - rim_y),
+			Rect2(0.0, frac * tex_h, tex_w, tex_h * (1.0 - frac))
+		)
+		return
 	shop.draw_style_box(
 		_panel_box(Color(CREAM, 0.99), 24, Color(CHARCOAL, 0.30), 4),
 		Rect2(cx - 210.0, surface - 32.0, 420.0, 58.0)
@@ -106,6 +176,32 @@ static func draw_station_foreground(shop) -> void:
 		Color(1.0, 1.0, 1.0, 0.55), 4
 	)
 	_ellipse(shop, Vector2(cx, surface + 26.0), 176.0, 12.0, Color(WATER_BLUE, 0.35))
+
+
+static func _station_key(shop) -> StringName:
+	match shop.service_mode:
+		&"bath":
+			return &"bathtub_rustic" if shop.establishment_tier <= 1 else &"bathtub_spa"
+		&"groom", &"dry", &"perfume", &"style":
+			return shop.service_mode
+	return &""
+
+
+## ---------------------------- fallback vetorial ----------------------------
+
+
+static func _draw_shelf_fallback(shop, levels: Array) -> void:
+	var top: float = float(levels[0]) + PLANK_DROP - 26.0
+	var bottom: float = float(levels[levels.size() - 1]) + PLANK_DROP + 48.0
+	var board: StyleBoxFlat = _panel_box(Color(CREAM, 0.42), 22, Color(CHARCOAL, 0.16), 3)
+	shop.draw_style_box(board, Rect2(824, top, 192, bottom - top))
+	for level: float in levels:
+		var y: float = level + PLANK_DROP
+		shop.draw_style_box(
+			_panel_box(WOOD, 9, Color(CHARCOAL, 0.32), 3), Rect2(824, y, 192, 22)
+		)
+		shop.draw_line(Vector2(834.0, y + 4.0), Vector2(1006.0, y + 4.0), WOOD_LIGHT.lightened(0.22), 4)
+		shop.draw_line(Vector2(834.0, y + 24.0), Vector2(1006.0, y + 24.0), Color(CHARCOAL, 0.16), 3)
 
 
 static func _draw_bathtub(shop, cx: float, surface: float) -> void:

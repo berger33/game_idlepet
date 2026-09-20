@@ -53,6 +53,10 @@ var service_shelf_levels: Array[float] = DEFAULT_SHELF_LEVELS.duplicate()
 ## tornando visível o investimento emocional (retenção D7).
 var affection_level: int = 0
 
+## Capítulo do estabelecimento (1=quintal … 10=império, via career_track):
+## muda o título da placa e o mobiliário da banheira conforme a progressão.
+var establishment_tier: int = 1
+
 ## Ancora dos PÉS do pet (a superfície da estação fica neste Y).
 var pet_position: Vector2 = Vector2(540, 1160)
 ## Sala sem cliente (aguardando escolha na fila): não desenha pet.
@@ -397,25 +401,37 @@ func _draw() -> void:
 		Rect2(0.0, 0.0, float(background.get_width()), source_height)
 	)
 	# A placa da ilustração permanece sem texto; o título é localizado em runtime.
+	# O nome da sala é neutro; a localização vem do capítulo do estabelecimento
+	# (quintal humilde no início → império no fim) exibida logo abaixo.
 	var room_title: String = (
 		{
-			&"bath": "BANHO DO BAIRRO",
-			&"groom": "TOSA DO BAIRRO",
+			&"bath": "BANHO & ESPUMA",
+			&"groom": "TOSA & APARO",
 			&"dry": "SECAGEM ACONCHEGANTE",
 			&"perfume": "SPA PERFUMADO",
 			&"style": "ATELIÊ DE LAÇOS",
 		}
-		. get(service_mode, "PET SHOP DO BAIRRO")
+		. get(service_mode, "PET SHOP")
 	)
+	var establishment_name: String = ContentDB.establishment_name(clampi(establishment_tier, 1, 10))
 	StationArt.draw_title_plaque(self)
 	draw_string(
 		UI_TITLE_FONT,
-		Vector2(330, 225),
+		Vector2(330, 214),
 		room_title,
 		HORIZONTAL_ALIGNMENT_CENTER,
 		430,
-		42,
+		38,
 		Color("263238")
+	)
+	draw_string(
+		UI_TITLE_FONT,
+		Vector2(330, 248),
+		"★ " + establishment_name.to_upper() + " ★",
+		HORIZONTAL_ALIGNMENT_CENTER,
+		430,
+		20,
+		Color("8d5a77")
 	)
 	StationArt.draw_shelf_unit(self)
 	_draw_room_cosmetics()
@@ -772,7 +788,7 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		blink_force_time = maxf(blink_force_time, 0.22)
 	elif reaction_kind == &"love" or reaction_kind == &"excited":
 		overlay_state = &"happy_squash"
-		overlay_alpha = minf(0.88, reaction_time * 4.0)
+		overlay_alpha = minf(1.0, reaction_time * 4.0)
 		jump_height = abs(sin(shake_phase * 8.0)) * 18.0
 	elif service_active:
 		if service_mode == &"bath":
@@ -802,10 +818,10 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		var idle_phase: float = fmod(shake_phase, 8.0)
 		if idle_phase >= 1.2 and idle_phase < 2.8:
 			overlay_state = &"tilt_left"
-			overlay_alpha = sin(PI * (idle_phase - 1.2) / 1.6) * 0.82
+			overlay_alpha = sin(PI * (idle_phase - 1.2) / 1.6)
 		elif idle_phase >= 4.6 and idle_phase < 6.2:
 			overlay_state = &"tilt_right"
-			overlay_alpha = sin(PI * (idle_phase - 4.6) / 1.6) * 0.82
+			overlay_alpha = sin(PI * (idle_phase - 4.6) / 1.6)
 		# A piscada de idle saiu daqui: a camada global de blink cobre o idle.
 
 	# Authored expressions receive a small runtime deformation so weight reads between keyframes.
@@ -845,7 +861,19 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 
 	foot_anchor.y -= jump_height
 	draw_set_transform(foot_anchor, spin, reaction_scale)
-	_draw_pet_texture_layer(pet_texture, sprite_size, tint)
+	# A base seca só preenche o que nenhum estado cobre: os sprites de estado
+	# têm poses próprias (orelhas/cauda deslocadas) e, com a base sempre ativa
+	# por baixo, ela "vazava" pelas bordas transparentes do estado — duas
+	# imagens sobrepostas na mesma ação. Alpha residual = 1 - soma dos estados.
+	var covered_alpha: float = 0.0
+	if not overlay_state.is_empty() and pet_state_textures.has(overlay_state):
+		covered_alpha += clampf(overlay_alpha, 0.0, 1.0)
+	if not second_state.is_empty() and pet_state_textures.has(second_state):
+		covered_alpha += clampf(second_alpha, 0.0, 1.0)
+	var base_alpha: float = clampf(1.0 - covered_alpha, 0.0, 1.0)
+	var base_tint: Color = tint
+	base_tint.a *= base_alpha
+	_draw_pet_texture_layer(pet_texture, sprite_size, base_tint)
 	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
 	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
 	_draw_pet_state_layer(blink_layer, blink_pulse, sprite_size, tint)

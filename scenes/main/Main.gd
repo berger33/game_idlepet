@@ -696,6 +696,7 @@ func _configure_current_service() -> void:
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
 		world.player_level = GameState.player_level
+		world.establishment_tier = GameState.establishment_tier
 
 
 func _available_services() -> Array[StringName]:
