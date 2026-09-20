@@ -34,6 +34,8 @@ const SERVICE_LABELS: Dictionary = {
 	&"perfume": "perfumar",
 	&"style": "colocar lacinho"
 }
+const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
+const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 
 var bath: BathService
 var world: PetShopCanvas
