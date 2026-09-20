@@ -293,8 +293,11 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		AudioManager.play(SalonTuning.service_sound(current_service))
-		bubble_sound_gate = 0.11
+		# Ticks do gesto: arpejo pentatônico suave em vez de bip repetido.
+		# Perfume não tem tick de arrasto — cada borrifada já é um evento.
+		if bath.fill_mode != &"pulse":
+			AudioManager.play_tick(SalonTuning.service_sound(current_service))
+		bubble_sound_gate = 0.16
 	EventBus.service_progress.emit(bath.progress)
 
 

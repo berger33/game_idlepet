@@ -586,4 +586,71 @@ class EngagementWaveTests(unittest.TestCase):
         self.assertNotIn('var tutorial_step', main)
 
 
+class SoundDesignTests(unittest.TestCase):
+    """Revisão de conforto sonoro: SFX agradáveis, pentatônicos, sem clique
+    de ataque, loops em arpejo (não metralhadora), música ambiente intacta."""
+
+    def _read(self, path):
+        return Path(path).read_text(encoding='utf8')
+
+    def test_audio_synth_contracts(self):
+        audio = self._read('autoload/AudioManager.gd')
+        for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const ATTACK',
+                      'func play_tick', 'func _next_voice', 'func _pluck',
+                      'func _bloop', 'func _air', 'func _spray', 'func _wav_norm',
+                      'randf_range(0.992, 1.008)'):
+            self.assertIn(token, audio, token)
+        # o sintetizador antigo (seno puro com ataque instantâneo = bip) e o
+        # apito de 3,1 kHz do contratempo foram aposentados.
+        self.assertNotIn('func _chime', audio)
+        self.assertNotIn('3100.0', audio)
+        # música ambiente e sincronia de compasso intocadas (contrato fase 4).
+        for token in ('func _ambient_loop', 'func beat_phase', 'func _energy_loop',
+                      'get_playback_position', 'MUSIC_BPM'):
+            self.assertIn(token, audio, token)
+        canvas = self._read('core/gameplay/PetShopCanvas.gd')
+        self.assertIn('AudioManager.beat_phase', canvas)
+
+    def test_main_gesture_loop_uses_tick_arpeggio(self):
+        main = self._read('scenes/main/Main.gd')
+        self.assertIn('AudioManager.play_tick(SalonTuning.service_sound', main)
+        self.assertIn('bubble_sound_gate = 0.16', main)
+        # perfume: som por evento de borrifada, sem tick de arrasto
+        self.assertIn('if bath.fill_mode != &"pulse":', main)
+        self.assertNotIn('bubble_sound_gate = 0.11', main)
+
+    def test_every_sfx_played_is_cached(self):
+        # parsing por operações de string (à prova de camadas de escape)
+        audio = self._read('autoload/AudioManager.gd')
+        cached = set()
+        for line in audio.splitlines():
+            if line.startswith('\tcache[&"'):
+                cached.add(line.split('"')[1])
+            elif line.startswith('\t_cache_ticks(&"') or line.startswith('\t_cache_air_ticks(&"'):
+                cached.add(line.split('(&"')[1].split('"')[0])
+        played = set()
+        for path in Path('.').rglob('*.gd'):
+            if '.git' in path.parts or 'tools' in path.parts:
+                continue
+            for line in path.read_text(encoding='utf8').splitlines():
+                for call in ('AudioManager.play(&"', 'AudioManager.play_tick(&"'):
+                    if call in line:
+                        played.add(line.split(call)[1].split('"')[0])
+        # nomes vindos de service_sound() são dinâmicos: cobrir pelo mapa
+        tuning = self._read('core/gameplay/SalonTuning.gd')
+        dynamic = set()
+        for line in tuning.splitlines():
+            # formato do mapa service_sound: &"bath": &"bubble",
+            if ': &"' in line and '{' not in line and 'func' not in line:
+                dynamic.add(line.split(': &"')[1].split('"')[0])
+        missing = (played | dynamic) - cached
+        self.assertEqual(missing, set(), f'SFX tocados sem cache: {missing}')
+        self.assertTrue({'bubble', 'clipper', 'dryer', 'spray', 'bow'} <= cached)
+
+    def test_sfx_synthesis_quality(self):
+        from gen_sfx_preview import parse_audio_manager, validate
+        errors = validate(parse_audio_manager())
+        self.assertEqual(errors, [], 'SFX fora do padrão de conforto')
+
+
 if __name__=='__main__': unittest.main()
