@@ -114,20 +114,23 @@ func _run() -> void:
 	var bath_script: GDScript = load("res://core/gameplay/BathService.gd")
 	var gesture_bath: Object = bath_script.new()
 
-	# Tosa (stroke): movimento no eixo certo pontua; no eixo errado, não.
+	# Tosa (stroke): movimento no eixo do passo atual pontua; no eixo
+	# errado, não. Passo 1 é vertical — um movimento horizontal não pontua.
 	gesture_bath.configure(10.0, 0.82, 0.96, 600.0)
 	gesture_bath.configure_gesture(&"vertical", &"stroke", 70.0, 0.0)
 	gesture_bath.configure_strokes([&"vertical", &"horizontal", &"vertical"], 520.0)
 	gesture_bath.start_service()
 	gesture_bath.rub(Vector2(500, 900))
-	for i: int in 12:
+	for i: int in 5:
 		gesture_bath.rub(Vector2(500, 900 + (i + 1) * 60.0))
 	if gesture_bath.progress <= 0.0:
 		_fail("stroke: movimento vertical não pontuou (progress=%f)" % gesture_bath.progress)
 	var before_cross: float = gesture_bath.progress
-	gesture_bath.rub(Vector2(820, 1620))
+	gesture_bath.rub(Vector2(820, 1200))
 	if gesture_bath.progress != before_cross:
 		_fail("stroke: movimento no eixo errado pontuou")
+	for i: int in 4:
+		gesture_bath.rub(Vector2(500, 1200 + (i + 1) * 60.0))
 	if gesture_bath.stroke_index != 1:
 		_fail("stroke: passo 1 não concluído após cota no eixo (index=%d)" % gesture_bath.stroke_index)
 
