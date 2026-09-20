@@ -492,10 +492,10 @@ func _current_section() -> StringName:
 
 
 func _note(
-	text: String, size: int = 24, color: Color = Color("90a4ae"), wrap: bool = false
+	text: String, size: int = 24, color: Color = Color("90a4ae"), wrap_text: bool = false
 ) -> void:
 	var note: Label = _label_node(text, size, color)
-	if wrap:
+	if wrap_text:
 		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	screen.content_box.add_child(note)
 

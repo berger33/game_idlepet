@@ -57,9 +57,16 @@ jobs:
           fi
       - name: Smoke test — 120 frames da cena principal
         run: |
-          if ! output=$(./godot --headless --quit-after 120 2>&1); then
+          ./godot --headless --quit-after 120 2>&1 | tee /tmp/smoke.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
             echo "::error::smoke test falhou (cena principal não executou 120 frames)"
-            echo "$output" | grep -iE "error|script" | head -20 | while IFS= read -r line; do
+            exit 1
+          fi
+          # Erros de script em runtime NÃO alteram o exit code do Godot; sem
+          # esta checagem o smoke "passa" com a cena quebrando no meio do _ready.
+          if grep -q "SCRIPT ERROR" /tmp/smoke.log; then
+            echo "::error::erro(s) de script durante a execução da cena principal"
+            grep -E "SCRIPT ERROR|at:" /tmp/smoke.log | head -12 | while IFS= read -r line; do
               echo "::error::${line:0:220}"
             done
             exit 1

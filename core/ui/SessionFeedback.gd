@@ -16,6 +16,12 @@ static func show_comeback(main) -> void:
 	HapticsManager.success()
 
 
+## Abre uma seção do painel meta. Mediado porque os botões de navegação são
+## criados antes do MetaPanel existir; o acesso ao painel acontece só no clique.
+static func open_meta(main, section: StringName, origin: Control) -> void:
+	main.meta.open(section, origin)
+
+
 ## Compartilhar o antes/depois: o PNG composto é salvo pelo ShareManager ao
 ## concluir o serviço. Sem adapter de rede social nesta build, o toast indica
 ## o arquivo salvo em disco (contrato do ShareManager; não prometer rede social).

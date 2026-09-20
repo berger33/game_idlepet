@@ -9,6 +9,8 @@
 5. `AudioManager.gd` declarava `func _energy_loop()` duas vezes (definição duplicada idêntica, linhas 163/187) — mesma classe de erro de parse na versão 4.7.2.
 6. `PetCosmeticsArt.gd` chamava as primitivas de desenho (`draw_colored_polygon`, `draw_line`, `draw_circle`, `draw_arc`) sem o prefixo `shop.` dentro de funções `static` de uma classe `RefCounted` — `Function "..." not found in base self` (16 ocorrências). O arquivo também chamava `_bath_foam_color()` (que só existe no PetShopCanvas) e `draw_styleshop._box(...)`, identificador inexistente.
 7. `Main.gd` chamava `_show_comeback()` no `_ready` e conectava `_on_share_pressed` no botão de compartilhar sem declarar nenhum dos dois métodos — chamadas órfãs de um squash de históricos paralelos (commit 4676406).
+8. `Main.gd` conectava os botões de navegação a `meta.open.bind(...)` dentro de `_build_interface()` antes do `MetaPanel` ser instanciado (linhas 847 vs 877): `Invalid access to property or key 'open' on a base object of type 'Nil'` — a construção da interface abortava no meio (painéis restantes não criados) sem alterar o exit code, por isso o smoke test não reportava.
+9. Warnings de análise no editor 4.7.2: shadowing de `rotation` (propriedade de Control) e `ready` (signal de Node) por variáveis locais; parâmetro `wrap` com nome de built-in; locais sombreando funções da própria classe (`beat_phase`, iterator `pet`); divisão inteira implícita (`GameState`, `SaveManager`); `unused_signal` em todos os sinais do `EventBus`.
 
 ## Correções
 
@@ -23,6 +25,9 @@
 - Novo teste `test_no_gdscript_name_collisions` varre **todos** os `.gd` do projeto por declarações duplicadas de nome (var/const/signal/enum/func/static func) — guarda permanente para a classe inteira de erro, independente da versão do Godot do CI.
 - Novo teste `test_no_orphan_private_method_references` varre todos os `.gd` por chamadas/handlers `_privados` sem declaração no arquivo (a classe do `_show_comeback`/`_on_share_pressed`).
 - O job de runtime do CI foi migrado de Godot 4.3 para **4.7.2**, a versão alvo do projeto: `--headless --import` + smoke test agora validam o parse na mesma versão que o usuário executa.
+- `Main.gd`: navegação mediada por `SessionFeedback.open_meta(main, section, origin)` — o acesso ao painel acontece no clique, quando o `MetaPanel` já existe; teste de regressão proíbe `meta.open.bind` no Main.
+- Warnings do item 9: locais renomeadas (`rotation`→`spin` ×2 no PetShopCanvas, `ready`→`mission_ready` no GameState, `beat_phase`→`beat_frac` no AudioManager, iterator `pet`→`pet_entry` no ContentDB, parâmetro `wrap`→`wrap_text` no MetaPanel); divisões inteiras explícitas via `floori(...)` (GameState `gap_hours`, migração v2→v3 do SaveManager — semântica de truncamento preservada); `@warning_ignore(unused_signal)` sinal a sinal no `EventBus` (todos os 11 têm consumo cross-class real, de 1 a 21 usos).
+- O smoke test do CI agora **falha se a saída contiver `SCRIPT ERROR`** — erros de script em runtime não alteram o exit code do Godot; sem isso a cena podia quebrar no meio do `_ready` e o passo "passava".
 - O CI também executa `tools/check_scripts.gd` (análise em **contexto de projeto completo**, com autoloads registrados — igual ao editor) sobre **todos** os scripts no 4.7.2 — o import/smoke sozinhos não falham com erro de script — com autoteste que garante que o detector enxerga colisões de nome. (O `--check-only` por script isolado foi avaliado e descartado: não resolve identificadores de autoload fora do contexto do projeto.)
 
 ## Validação esperada no Windows

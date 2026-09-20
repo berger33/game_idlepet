@@ -25,10 +25,10 @@ var weekly_by_id: Dictionary = {}
 
 func _ready() -> void:
 	pets = _load_array(PETS_PATH, "pets")
-	for pet: Dictionary in pets:
-		var id: String = String(pet.get("id", ""))
+	for pet_entry: Dictionary in pets:
+		var id: String = String(pet_entry.get("id", ""))
 		if not id.is_empty() and not pets_by_id.has(id):
-			pets_by_id[id] = pet
+			pets_by_id[id] = pet_entry
 	career = _load_dictionary(CAREER_PATH)
 	staff_members = _load_array(STAFF_PATH, "staff")
 	for member: Dictionary in staff_members:

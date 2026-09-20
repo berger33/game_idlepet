@@ -844,7 +844,9 @@ func _build_interface() -> void:
 			"normal", _style(Color("263238", 0.88), 41, 8, Color("ffffff", 0.72), 3)
 		)
 		nav_button.add_theme_stylebox_override("hover", _style(PINK, 41, 8, Color.WHITE, 3))
-		nav_button.pressed.connect(meta.open.bind(StringName(item["id"]), nav_button))
+		nav_button.pressed.connect(
+			SessionFeedback.open_meta.bind(self, StringName(item["id"]), nav_button)
+		)
 		nav.add_child(nav_button)
 
 	# HUD flutuante sem rodapé sólido: cenário continua visível até a borda inferior.

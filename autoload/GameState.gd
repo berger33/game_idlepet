@@ -476,7 +476,7 @@ func claim_daily_reward() -> int:
 			Analytics.track(&"churn_risk_signal", {"reason": "daily_clock_rollback"})
 			return 0
 		if today_unix - last_day_unix > 36 * 3600:
-			var gap_hours: int = (today_unix - last_day_unix) / 3600
+			var gap_hours: int = floori(float(today_unix - last_day_unix) / 3600.0)
 			if streak_freezes > 0 and gap_hours <= 60:
 				streak_freezes -= 1
 				EventBus.toast_requested.emit(Loc.t("FREEZE_USED"), Color("4fc3f7"))
@@ -502,12 +502,12 @@ func claim_mission(mission_id: StringName) -> bool:
 	var id: String = String(mission_id)
 	if claimed_missions.has(id):
 		return false
-	var ready: bool = (
+	var mission_ready: bool = (
 		(id == "daily_bath_5" and int(mission_progress.get("services", 0)) >= 5)
 		or (id == "daily_perfect_3" and int(mission_progress.get("perfect", 0)) >= 3)
 		or (id == "daily_upgrade_1" and int(mission_progress.get("upgrades", 0)) >= 1)
 	)
-	if not ready:
+	if not mission_ready:
 		return false
 	claimed_missions.append(id)
 	add_coins(75, &"daily_mission")

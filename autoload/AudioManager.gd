@@ -148,9 +148,9 @@ func _ambient_loop() -> AudioStreamWAV:
 		var sample_value: float = 0.0
 		for frequency: float in chord:
 			sample_value += sin(TAU * frequency * time) * 0.06
-		var beat_phase: float = fmod(time, 0.5) / 0.5
+		var beat_frac: float = fmod(time, 0.5) / 0.5
 		var melody_frequency: float = chord[int(time * 2.0) % chord.size()] * 2.0
-		sample_value += sin(TAU * melody_frequency * time) * 0.04 * (1.0 - beat_phase)
+		sample_value += sin(TAU * melody_frequency * time) * 0.04 * (1.0 - beat_frac)
 		var sample: int = int(clampf(sample_value, -0.3, 0.3) * 32767.0)
 		bytes.encode_s16(i * 2, sample)
 	var stream: AudioStreamWAV = _wav(bytes)

@@ -712,7 +712,7 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	var breathe_x: float = 1.0 - sin(shake_phase * 2.2) * 0.004
 	var breathe_y: float = 1.0 + sin(shake_phase * 2.2) * 0.012
 	var reaction_scale: Vector2 = Vector2(breathe_x, breathe_y)
-	var rotation: float = 0.0
+	var spin: float = 0.0
 	var jump_height: float = 0.0
 	var overlay_state: StringName = &""
 	var overlay_alpha: float = 0.0
@@ -739,7 +739,7 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		overlay_state = &"dizzy"
 		overlay_alpha = minf(1.0, reaction_time * 4.0)
 		foot_anchor.x += sin(shake_phase * 32.0) * 7.0
-		rotation = sin(shake_phase * 18.0) * 0.025
+		spin = sin(shake_phase * 18.0) * 0.025
 	elif reaction_kind == &"blink":
 		overlay_state = &"blink"
 		overlay_alpha = minf(1.0, reaction_time * 7.0)
@@ -796,7 +796,7 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		tint = tint.darkened(0.18 * minf(1.0, reaction_time * 2.0))
 
 	foot_anchor.y -= jump_height
-	draw_set_transform(foot_anchor, rotation, reaction_scale)
+	draw_set_transform(foot_anchor, spin, reaction_scale)
 	_draw_pet_texture_layer(pet_texture, sprite_size, tint)
 	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
 	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
@@ -881,11 +881,11 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = 
 	var bob: float = (
 		sin(shake_phase * 2.4 + float(String(tool).hash() % 7)) * (4.0 if is_dragged else 2.0)
 	)
-	var rotation: float = sin(shake_phase * 4.8) * 0.055 if is_dragged else 0.0
+	var spin: float = sin(shake_phase * 4.8) * 0.055 if is_dragged else 0.0
 	var active_pulse: float = 1.0 + sin(shake_phase * 6.0) * 0.025 if is_dragged else 1.0
 	var draw_size: float = (138.0 if is_dragged else 116.0) * active_pulse
 	var item_modulate: Color = Color(1.0, 1.0, 1.0, alpha)
-	draw_set_transform(at + Vector2(0, bob), rotation)
+	draw_set_transform(at + Vector2(0, bob), spin)
 	draw_texture_rect(
 		texture,
 		Rect2(-draw_size * 0.5, -draw_size * 0.5, draw_size, draw_size),

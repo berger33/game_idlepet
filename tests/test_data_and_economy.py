@@ -361,6 +361,11 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('for member: Dictionary in staff_members:', content_db)
         self.assertNotIn('\n\tstaff = ', content_db)
         self.assertNotIn(' in staff:', content_db)
+        # 4.7.2 runtime: os botões de navegação eram conectados a `meta.open`
+        # antes do MetaPanel existir (Nil access no meio do _build_interface,
+        # sem afetar o exit code do smoke). O acesso ao painel é mediado.
+        self.assertIn('SessionFeedback.open_meta.bind(self', main)
+        self.assertNotIn('meta.open.bind', main)
         self.assertNotIn('FILA  2', canvas)
         self.assertNotIn('bottom.offset_top', main)
         self.assertIn('action_hud.position = Vector2(45, 1350)', main)
