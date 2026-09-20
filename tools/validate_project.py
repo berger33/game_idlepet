@@ -61,6 +61,9 @@ def validate_catalogs() -> None:
         require(len(colors) == 3, f"paleta incompleta: {pet_id}")
         for color in colors:
             require(bool(re.fullmatch(r"[0-9a-fA-F]{6}", str(color))), f"cor inválida em {pet_id}: {color}")
+    by_level = sorted(pets, key=lambda pet: int(pet.get("unlock_level", 0)))
+    tips = [float(pet.get("base_tip", 0.0)) for pet in by_level]
+    require(tips == sorted(tips), "base_tip deve ser não-decrescente com unlock_level (cliente avançado nunca paga menos)")
 
     career = load_json("data/career_track.json")
     establishments = career.get("establishments", [])

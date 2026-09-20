@@ -101,7 +101,7 @@
       "city": "suburbio",
       "unlock_level": 11,
       "patience": 40,
-      "base_tip": 1.25,
+      "base_tip": 1.27,
       "preferred_service": "groom",
       "colors": [
         "37474f",
@@ -173,7 +173,7 @@
       "city": "centro",
       "unlock_level": 24,
       "patience": 43,
-      "base_tip": 1.5,
+      "base_tip": 1.57,
       "preferred_service": "bath",
       "colors": [
         "b28a62",
@@ -191,7 +191,7 @@
       "city": "centro",
       "unlock_level": 28,
       "patience": 45,
-      "base_tip": 1.5,
+      "base_tip": 1.59,
       "preferred_service": "bath",
       "colors": [
         "a89b8d",
@@ -245,7 +245,7 @@
       "city": "metropole",
       "unlock_level": 40,
       "patience": 39,
-      "base_tip": 1.8,
+      "base_tip": 1.92,
       "preferred_service": "bath",
       "colors": [
         "30343b",
@@ -281,7 +281,7 @@
       "city": "litoral",
       "unlock_level": 48,
       "patience": 34,
-      "base_tip": 2.0,
+      "base_tip": 2.12,
       "preferred_service": "bath",
       "colors": [
         "c47b50",
@@ -299,7 +299,7 @@
       "city": "litoral",
       "unlock_level": 52,
       "patience": 41,
-      "base_tip": 2.0,
+      "base_tip": 2.14,
       "preferred_service": "bath",
       "colors": [
         "b86e3e",
@@ -335,7 +335,7 @@
       "city": "serra",
       "unlock_level": 60,
       "patience": 39,
-      "base_tip": 2.1,
+      "base_tip": 2.3,
       "preferred_service": "bath",
       "colors": [
         "a65f35",
@@ -371,7 +371,7 @@
       "city": "serra",
       "unlock_level": 68,
       "patience": 44,
-      "base_tip": 2.3,
+      "base_tip": 2.48,
       "preferred_service": "bath",
       "colors": [
         "d5b68a",
@@ -407,7 +407,7 @@
       "city": "amazonia",
       "unlock_level": 76,
       "patience": 57,
-      "base_tip": 2.5,
+      "base_tip": 2.65,
       "preferred_service": "bath",
       "colors": [
         "76503d",
@@ -461,7 +461,7 @@
       "city": "exotica",
       "unlock_level": 92,
       "patience": 63,
-      "base_tip": 3.4,
+      "base_tip": 3.52,
       "preferred_service": "groom",
       "colors": [
         "eee7de",
@@ -551,7 +551,7 @@
       "city": "vila_pacata",
       "unlock_level": 9,
       "patience": 47,
-      "base_tip": 1.2,
+      "base_tip": 1.26,
       "preferred_service": "bath",
       "colors": [
         "d99a55",
@@ -587,7 +587,7 @@
       "city": "suburbio",
       "unlock_level": 23,
       "patience": 42,
-      "base_tip": 1.51,
+      "base_tip": 1.56,
       "preferred_service": "groom",
       "colors": [
         "f8f4e9",
@@ -641,7 +641,7 @@
       "city": "metropole",
       "unlock_level": 50,
       "patience": 50,
-      "base_tip": 2.11,
+      "base_tip": 2.13,
       "preferred_service": "groom",
       "colors": [
         "7c665b",
@@ -695,7 +695,7 @@
       "city": "serra",
       "unlock_level": 90,
       "patience": 52,
-      "base_tip": 3.0,
+      "base_tip": 3.51,
       "preferred_service": "groom",
       "colors": [
         "5b4037",
@@ -713,7 +713,7 @@
       "city": "amazonia",
       "unlock_level": 108,
       "patience": 51,
-      "base_tip": 3.4,
+      "base_tip": 3.81,
       "preferred_service": "groom",
       "colors": [
         "292d2f",
@@ -785,7 +785,7 @@
       "city": "centro",
       "unlock_level": 38,
       "patience": 38,
-      "base_tip": 1.84,
+      "base_tip": 1.91,
       "preferred_service": "groom",
       "colors": [
         "9d795e",
@@ -803,7 +803,7 @@
       "city": "centro",
       "unlock_level": 46,
       "patience": 46,
-      "base_tip": 2.02,
+      "base_tip": 2.11,
       "preferred_service": "bath",
       "colors": [
         "d5aa76",
@@ -875,7 +875,7 @@
       "city": "amazonia",
       "unlock_level": 100,
       "patience": 43,
-      "base_tip": 3.22,
+      "base_tip": 3.61,
       "preferred_service": "groom",
       "colors": [
         "566773",
@@ -893,7 +893,7 @@
       "city": "exotica",
       "unlock_level": 116,
       "patience": 40,
-      "base_tip": 3.58,
+      "base_tip": 4.01,
       "preferred_service": "bath",
       "colors": [
         "9aa08f",
