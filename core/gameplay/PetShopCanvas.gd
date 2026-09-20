@@ -15,16 +15,6 @@ const TOOL_TEXTURES: Dictionary = {
 	&"bow": preload("res://art/props/tool_bow.png"),
 }
 const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
-const SERVICE_PET_POSITIONS: Dictionary = {
-	# Centro calibrado por composição offline (tools/compose_preview.py) sobre a
-	# ilustração de cada sala: o pet assenta na superfície real da estação
-	# (banheira, mesa de tosa, maca, penteadeira e otomana).
-	&"bath": Vector2(520, 1040),
-	&"groom": Vector2(560, 1090),
-	&"dry": Vector2(450, 1190),
-	&"perfume": Vector2(560, 1075),
-	&"style": Vector2(570, 1300),
-}
 const TOOL_ORDER: Array[StringName] = [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]
 const SERVICE_TOOLS: Dictionary = {
 	&"bath": &"soap",
@@ -47,15 +37,13 @@ const PET_STATE_NAMES: Array[StringName] = [
 ]
 const PET_TEXTURE_BASELINE: float = 479.0 / 512.0
 const UI_TITLE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
-const SERVICE_TOOL_Y: Dictionary = {
-	&"bath": [235.0, 390.0, 545.0, 700.0, 855.0],
-	&"groom": [235.0, 390.0, 545.0, 700.0, 855.0],
-	&"dry": [330.0, 500.0, 670.0, 840.0, 1010.0],
-	&"perfume": [310.0, 500.0, 690.0, 880.0, 1070.0],
-	&"style": [290.0, 470.0, 650.0, 830.0, 1010.0],
-}
+## Alturas das prateleiras do serviço atual (fonte única:
+## data/service_layouts.json via ContentDB; fallback uniforme do HUD).
+const DEFAULT_SHELF_LEVELS: Array[float] = [560.0, 730.0, 900.0, 1070.0, 1240.0]
+var service_shelf_levels: Array[float] = DEFAULT_SHELF_LEVELS.duplicate()
 
-var pet_position: Vector2 = Vector2(540, 840)
+## Ancora dos PÉS do pet (a superfície da estação fica neste Y).
+var pet_position: Vector2 = Vector2(540, 1160)
 ## Sala sem cliente (aguardando escolha na fila): não desenha pet.
 var room_empty: bool = true
 var pet_happy: bool = false
@@ -136,8 +124,14 @@ func set_service_layout(next_service: StringName) -> void:
 	tool_contact_valid = false
 	service_condition_complete = false
 	condition_release = 0.0
-	var next_position: Vector2 = SERVICE_PET_POSITIONS.get(next_service, Vector2(540, 840))
-	pet_position = next_position
+	# Fonte única: data/service_layouts.json (via ContentDB). pet_position é a
+	# âncora dos pés; a estação do StationArt usa a mesma superfície.
+	var layout: Dictionary = ContentDB.service_layout(next_service)
+	var position_entry: Array = layout.get("pet_position", [540, 1160])
+	pet_position = Vector2(float(position_entry[0]), float(position_entry[1]))
+	service_shelf_levels = []
+	for level: Variant in layout.get("shelf_y", DEFAULT_SHELF_LEVELS):
+		service_shelf_levels.append(float(level))
 	queue_redraw()
 
 
@@ -217,6 +211,12 @@ func _draw_pet_accessories(center: Vector2, fit: float, texture_local: bool) -> 
 	PetCosmeticsArt.draw_pet_accessories(self, center, fit, texture_local)
 
 
+## Posição de foco do pet (peito/corpo) para hit test e destaques: os pés
+## ficam em pet_position; o corpo ocupa ~340px acima.
+func pet_focus() -> Vector2:
+	return pet_position + Vector2(0.0, -170.0)
+
+
 func react_to_touch() -> String:
 	var reactions: PackedStringArray
 	if temperament == &"fearful" or temperament == &"anxious":
@@ -236,7 +236,7 @@ func react_to_touch() -> String:
 			. append(
 				{
 					"p":
-					pet_position + Vector2(-65.0 + index * 65.0, -130.0 - abs(index - 1) * 22.0),
+							pet_position + Vector2(-65.0 + index * 65.0, -300.0 - abs(index - 1) * 22.0),
 					"life": 0.9 + index * 0.12,
 					"size": 16.0 + index * 3.0,
 				}
@@ -273,10 +273,10 @@ func _service_effect_active() -> bool:
 
 func _tool_position(tool: StringName) -> Vector2:
 	var index: int = TOOL_ORDER.find(tool)
-	var shelf_levels: Array = SERVICE_TOOL_Y.get(service_mode, SERVICE_TOOL_Y[&"bath"])
+	var shelf_levels: Array[float] = service_shelf_levels
 	if index < 0 or index >= shelf_levels.size():
 		return Vector2(910, 545)
-	return Vector2(910, float(shelf_levels[index]))
+	return Vector2(910, shelf_levels[index])
 
 
 ## Posição da prateleira de um utensílio (para spotlight do tutorial).
@@ -390,6 +390,7 @@ func _draw() -> void:
 		}
 		. get(service_mode, "PET SHOP DO BAIRRO")
 	)
+	StationArt.draw_title_plaque(self)
 	draw_string(
 		UI_TITLE_FONT,
 		Vector2(330, 225),
@@ -397,8 +398,9 @@ func _draw() -> void:
 		HORIZONTAL_ALIGNMENT_CENTER,
 		430,
 		42,
-		Color.WHITE
+		Color("263238")
 	)
+	StationArt.draw_shelf_unit(self)
 	_draw_room_cosmetics()
 	_draw_tool_shelf()
 	# O selo de estação é informativo; elementos que parecem botões não são desenhados no cenário.
@@ -424,13 +426,17 @@ func _draw() -> void:
 	var pet_center: Vector2 = (
 		pet_position + Vector2((1.0 - eased_arrival) * -430.0 + exit_offset, idle_bob)
 	)
+	# pet_position é a âncora dos PÉS; auras e estação usam o centro do corpo.
+	var body_center: Vector2 = pet_center + Vector2(0.0, -170.0)
+	StationArt.draw_station(self)
 	if not room_empty:
 		if rarity == &"legendary":
-			draw_circle(pet_center, 205.0 + beat_pulse * 14.0, Color("ffd54f", 0.22))
-			draw_arc(pet_center, 190.0 + beat_pulse * 8.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
+			draw_circle(body_center, 205.0 + beat_pulse * 14.0, Color("ffd54f", 0.22))
+			draw_arc(body_center, 190.0 + beat_pulse * 8.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
 		elif rarity == &"epic":
-			draw_circle(pet_center, 185.0, Color("ce93d8", 0.16))
+			draw_circle(body_center, 185.0, Color("ce93d8", 0.16))
 		_draw_pet(pet_center)
+		StationArt.draw_station_foreground(self)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:
@@ -544,6 +550,8 @@ func _draw_pet(center: Vector2) -> void:
 	if is_instance_valid(pet_texture):
 		_draw_illustrated_pet(center)
 		return
+	# Fallback vetorial: center é a âncora dos pés; o corpo é desenhado acima.
+	center += Vector2(0.0, -170.0)
 	var fur: Color = fur_color if not pet_wet else fur_color.darkened(0.24)
 	# Cauda reage continuamente e torna cães/gatos legíveis pela silhueta.
 	var wag: float = sin(shake_phase * (9.0 if pet_happy else 3.0)) * 0.35
@@ -706,9 +714,9 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	elif large_breed:
 		sprite_size = 445.0
 
-	# The visual center remains calibrated to every workstation, but deformation pivots at the feet.
-	var foot_from_center: float = sprite_size * (PET_TEXTURE_BASELINE - 0.5)
-	var foot_anchor: Vector2 = center + Vector2(0.0, foot_from_center)
+	# pet_position é a âncora dos PÉS: o centro recebido já está na superfície
+	# da estação e a deformação (squash/breath) pivota nesse ponto.
+	var foot_anchor: Vector2 = center
 	var breathe_x: float = 1.0 - sin(shake_phase * 2.2) * 0.004
 	var breathe_y: float = 1.0 + sin(shake_phase * 2.2) * 0.012
 	var reaction_scale: Vector2 = Vector2(breathe_x, breathe_y)

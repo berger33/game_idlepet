@@ -103,6 +103,15 @@ def bag(draw: ImageDraw.ImageDraw, s: int) -> None:
     )
 
 
+def rocket_up(draw: ImageDraw.ImageDraw, s: int) -> None:
+    # Seta dupla para cima (melhorias): dois chevrons empilhados + traço base.
+    w = int(s * 0.11)
+    for idx, cy in enumerate((s * 0.38, s * 0.62)):
+        m = s * 0.14 + idx * s * 0.03
+        draw.line([(m, cy), (s / 2, cy - s * 0.20), (s - m, cy)], fill=WHITE, width=w, joint="curve")
+    draw.rectangle([s * 0.30, s * 0.80, s * 0.70, s * 0.90], fill=WHITE)
+
+
 def main() -> None:
     render("missions", star)
     render("collection", heart)
@@ -110,6 +119,7 @@ def main() -> None:
     render("settings", gear)
     render("staff", person)
     render("shop", bag)
+    render("upgrades", rocket_up)
 
 
 if __name__ == "__main__":

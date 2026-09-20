@@ -91,19 +91,34 @@ WMISSION_TIPS,%d/10 gorjetas
 WMISSION_STYLE,%d/12 laços
 WMISSION_VIP,%d/3 clientes VIP
 WMISSION_SPEND,%d/600 investidos
-FAVORITE_HINT,"Toque para tornar seu preferido — ele visita mais"
-FAVORITE_SET,"Pet preferido definido!"
-VOCATION_GROOMER,"Tosador"
-VOCATION_BATHER,"Banhista"
-VOCATION_STYLIST,"Estilista"
-VOCATION_VETERINARY,"Veterinário"
-VOCATION_MASSEUSE,"Massagem"
-VOCATION_PERFECTIONIST,"Perfeccionista"
+FAVORITE_HINT,Toque para tornar seu preferido — ele visita mais
+FAVORITE_SET,Pet preferido definido!
+VOCATION_GROOMER,Tosador
+VOCATION_BATHER,Banhista
+VOCATION_STYLIST,Estilista
+VOCATION_VETERINARY,Veterinário
+VOCATION_MASSEUSE,Massagem
+VOCATION_PERFECTIONIST,Perfeccionista
 MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tudo, Estilista melhora a tosa, Veterinário cura mais rápido, Massagem acalma o cliente e Perfeccionista alarga a janela do perfeito."
-NEIGHBORHOOD,"BAIRRO"
-NEIGHBORHOOD_0,"Vizinho Amigo"
-NEIGHBORHOOD_1,"Pet Shop Confiável"
-NEIGHBORHOOD_2,"Queridinho do Bairro"
-NEIGHBORHOOD_3,"Lenda do Bairro"
-NEIGHBORHOOD_4,"Mitinho Eterno"
-REP_UP,"O bairro está falando bem de você! Nova faixa de reputação"
+NEIGHBORHOOD,BAIRRO
+NEIGHBORHOOD_0,Vizinho Amigo
+NEIGHBORHOOD_1,Pet Shop Confiável
+NEIGHBORHOOD_2,Queridinho do Bairro
+NEIGHBORHOOD_3,Lenda do Bairro
+NEIGHBORHOOD_4,Mitinho Eterno
+REP_UP,O bairro está falando bem de você! Nova faixa de reputação
+UPGRADES_TITLE,MELHORIAS
+UPGRADES_STATION,Estação de banho
+UPGRADES_STATION_LEVEL,Estação nível %d! Recompensa maior.
+UPGRADES_UPGRADE,MELHORAR
+UPGRADES_MAXED,MÁXIMO
+UPGRADES_PER_LEVEL,por nível
+UPGRADES_REWARD,de recompensa
+UPGRADES_LOCKED,Desbloqueia no nível %d
+UPGRADES_MISSING,Faltam %d moedas
+UPGRADES_TOOL_UP,%s melhorado! +4%% de bônus
+TOOL_SOAP,Sabonete
+TOOL_CLIPPER,Máquina de tosa
+TOOL_DRYER,Secador
+TOOL_PERFUME,Perfume
+TOOL_BOW,Laço

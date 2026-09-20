@@ -91,19 +91,34 @@ WMISSION_TIPS,%d/10 tips
 WMISSION_STYLE,%d/12 bows
 WMISSION_VIP,%d/3 VIP clients
 WMISSION_SPEND,%d/600 invested
-FAVORITE_HINT,"Tap to make your favorite — it visits more"
-FAVORITE_SET,"Favorite pet set!"
-VOCATION_GROOMER,"Groomer"
-VOCATION_BATHER,"Bather"
-VOCATION_STYLIST,"Stylist"
-VOCATION_VETERINARY,"Veterinarian"
-VOCATION_MASSEUSE,"Massage"
-VOCATION_PERFECTIONIST,"Perfectionist"
+FAVORITE_HINT,Tap to make your favorite — it visits more
+FAVORITE_SET,Favorite pet set!
+VOCATION_GROOMER,Groomer
+VOCATION_BATHER,Bather
+VOCATION_STYLIST,Stylist
+VOCATION_VETERINARY,Veterinarian
+VOCATION_MASSEUSE,Massage
+VOCATION_PERFECTIONIST,Perfectionist
 MISSION_NOTE,"Staff vocations: Bather speeds up baths, Groomer speeds everything, Stylist improves grooming, Veterinarian soothes faster, Massage calms the client and Perfectionist widens the perfect window."
-NEIGHBORHOOD,"NEIGHBORHOOD"
-NEIGHBORHOOD_0,"Friendly Neighbor"
-NEIGHBORHOOD_1,"Trusted Pet Shop"
-NEIGHBORHOOD_2,"Local Favorite"
-NEIGHBORHOOD_3,"Neighborhood Legend"
-NEIGHBORHOOD_4,"Eternal Icon"
-REP_UP,"The neighborhood is talking! New reputation tier"
+NEIGHBORHOOD,NEIGHBORHOOD
+NEIGHBORHOOD_0,Friendly Neighbor
+NEIGHBORHOOD_1,Trusted Pet Shop
+NEIGHBORHOOD_2,Local Favorite
+NEIGHBORHOOD_3,Neighborhood Legend
+NEIGHBORHOOD_4,Eternal Icon
+REP_UP,The neighborhood is talking! New reputation tier
+UPGRADES_TITLE,UPGRADES
+UPGRADES_STATION,Bath station
+UPGRADES_STATION_LEVEL,Station level %d! Bigger rewards.
+UPGRADES_UPGRADE,UPGRADE
+UPGRADES_MAXED,MAXED
+UPGRADES_PER_LEVEL,per level
+UPGRADES_REWARD,reward
+UPGRADES_LOCKED,Unlocks at level %d
+UPGRADES_MISSING,Missing %d coins
+UPGRADES_TOOL_UP,%s upgraded! +4%% bonus
+TOOL_SOAP,Soap
+TOOL_CLIPPER,Clippers
+TOOL_DRYER,Dryer
+TOOL_PERFUME,Perfume
+TOOL_BOW,Bow

@@ -8,6 +8,7 @@ const ACHIEVEMENTS_PATH: String = "res://data/achievements.json"
 const COSMETICS_PATH: String = "res://data/cosmetics.json"
 const PASS_PATH: String = "res://data/pass.json"
 const WEEKLY_PATH: String = "res://data/weekly_missions.json"
+const SERVICE_LAYOUTS_PATH: String = "res://data/service_layouts.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -21,6 +22,7 @@ var cosmetics_by_id: Dictionary = {}
 var pass_days: Array[Dictionary] = []
 var weekly_missions: Array[Dictionary] = []
 var weekly_by_id: Dictionary = {}
+var service_layouts: Dictionary = {}
 
 
 func _ready() -> void:
@@ -51,6 +53,10 @@ func _ready() -> void:
 		var weekly_id: String = String(weekly.get("id", ""))
 		if not weekly_id.is_empty() and not weekly_by_id.has(weekly_id):
 			weekly_by_id[weekly_id] = weekly
+	for stage: Dictionary in _load_dictionary(SERVICE_LAYOUTS_PATH).get("stages", []):
+		var stage_service: String = String(stage.get("service", ""))
+		if not stage_service.is_empty():
+			service_layouts[stage_service] = stage
 
 
 func cosmetic(id: String) -> Dictionary:
@@ -66,6 +72,14 @@ func pass_day(day: int) -> Dictionary:
 
 func weekly_mission(id: String) -> Dictionary:
 	return weekly_by_id.get(id, {})
+
+
+## Layout de serviço (fonte única: data/service_layouts.json). pet_position
+## é a âncora dos PÉS do pet; shelf_y são os centros verticais dos utensílios.
+func service_layout(service: StringName) -> Dictionary:
+	var fallback: Dictionary = {"pet_position": [540, 1160], "shelf_y": [560, 730, 900, 1070, 1240]}
+	var layout: Dictionary = service_layouts.get(String(service), {}) as Dictionary
+	return layout if not layout.is_empty() else fallback
 
 
 func staff_name(id: String) -> String:

@@ -51,6 +51,7 @@ const GESTURE_HINTS: Dictionary = {
 	&"style": "HINT_STYLE",
 }
 const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
+const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 
 var bath: BathService
 var world: PetShopCanvas
@@ -60,8 +61,8 @@ var review_label: Label
 var instruction_label: Label
 var primary_button: Button
 var share_button: Button
-var upgrade_button: Button
-var tool_upgrade_button: Button
+var upgrades_button: Button
+var upgrades_pulse_time: float = 0.0
 var result_panel: PanelContainer
 var result_title: Label
 var result_detail: Label
@@ -117,6 +118,13 @@ func _process(delta: float) -> void:
 	bubble_sound_gate = maxf(0.0, bubble_sound_gate - delta)
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
+	upgrades_pulse_time += delta
+	if is_instance_valid(upgrades_button):
+		if _upgrades_affordable():
+			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.2)
+			upgrades_button.modulate = Color.WHITE.lerp(Color("d7ffb8"), pulse * 0.55)
+		else:
+			upgrades_button.modulate = Color.WHITE
 	if bath.state == BathService.State.ACTIVE:
 		if bath.tick(delta):
 			_fail(&"timeout")
@@ -199,8 +207,20 @@ func _end_pointer() -> void:
 		_finish_bath()
 
 
+## Alguma melhoria está ao alcance do jogador agora (pulso do botão redondo).
+func _upgrades_affordable() -> bool:
+	if GameState.bath_upgrade_level < GameState.MAX_CAREER_LEVEL:
+		if Economy.upgrade_cost(GameState.bath_upgrade_level) <= GameState.coins:
+			return true
+	for tool_id: StringName in [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]:
+		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
+		if level < 30 and GameState.tool_upgrade_cost(tool_id) <= GameState.coins:
+			return true
+	return false
+
+
 func _pet_hit(point: Vector2) -> bool:
-	return point.distance_to(world.pet_position) < 245.0
+	return point.distance_to(world.pet_focus()) < 245.0
 
 
 func _react_to_pet_touch() -> void:
@@ -574,7 +594,7 @@ func _tutorial_apply() -> void:
 		)
 	elif tutorial_step == 2:
 		tutorial_overlay.show_step(
-			Rect2(world.pet_position - Vector2(250, 250), Vector2(500, 560)),
+			Rect2(world.pet_focus() - Vector2(250, 250), Vector2(500, 560)),
 			"3/3 · " + _gesture_hint(),
 		)
 
@@ -673,33 +693,6 @@ func _available_services() -> Array[StringName]:
 	return result if not result.is_empty() else [&"bath"]
 
 
-func _on_upgrade_pressed() -> void:
-	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
-	if GameState.buy_bath_upgrade():
-		AudioManager.play(&"upgrade")
-		HapticsManager.success()
-		EventBus.toast_requested.emit(
-			"Estação nível %d! Recompensa maior." % GameState.bath_upgrade_level, GREEN
-		)
-	else:
-		EventBus.toast_requested.emit(
-			"Faltam %d moedas" % int(cost - GameState.coins), Color("ef5350")
-		)
-	_refresh_economy()
-
-
-func _on_tool_upgrade_pressed() -> void:
-	var tool_id: StringName = StringName(SERVICE_TOOLS[current_service])
-	var cost: float = GameState.tool_upgrade_cost(tool_id)
-	if GameState.buy_tool_upgrade(tool_id):
-		AudioManager.play(&"upgrade")
-		HapticsManager.success()
-		_show_toast("%s melhorado! +4%% de bônus" % _tool_display_name(tool_id).capitalize(), GREEN)
-	else:
-		_show_toast("Faltam %d moedas" % maxi(0, int(cost - GameState.coins)), Color("ef5350"))
-	_refresh_economy()
-
-
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%d" % int(GameState.coins)
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
@@ -711,27 +704,6 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
 		world.set_cosmetics(GameState.active_cosmetics)
-	var cost: float = Economy.upgrade_cost(GameState.bath_upgrade_level)
-	var station_bonus: float = (
-		(Economy.income_multiplier(GameState.bath_upgrade_level) - 1.0) * 100.0
-	)
-	if GameState.bath_upgrade_level >= GameState.MAX_CAREER_LEVEL:
-		upgrade_button.text = "ESTAÇÃO MÁXIMA\n+%.0f%%" % station_bonus
-		upgrade_button.disabled = true
-	else:
-		upgrade_button.disabled = false
-		upgrade_button.text = (
-			"ESTAÇÃO Nv.%d  +%.1f%%\n⬆ +7,5%% • %d moedas"
-			% [GameState.bath_upgrade_level, station_bonus, int(cost)]
-		)
-	var tool_id: StringName = StringName(SERVICE_TOOLS[current_service])
-	var tool_level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
-	var tool_cost: float = GameState.tool_upgrade_cost(tool_id)
-	tool_upgrade_button.text = (
-		"%s Nv.%d  +%d%%\n⬆ +4%% • %d moedas"
-		% [_tool_display_name(tool_id).capitalize(), tool_level, tool_level * 4, int(tool_cost)]
-	)
-	tool_upgrade_button.disabled = tool_level >= 30
 
 
 func _show_pending_offline_reward() -> void:
@@ -866,15 +838,26 @@ func _build_interface() -> void:
 	)
 	instruction_label.custom_minimum_size = Vector2(990, 72)
 	action_hud.add_child(instruction_label)
-	var upgrades_row: HBoxContainer = HBoxContainer.new()
-	upgrades_row.add_theme_constant_override("separation", 16)
-	action_hud.add_child(upgrades_row)
-	upgrade_button = _button("ESTAÇÃO", Color("29b6d8", 0.94), 487, 112)
-	upgrade_button.pressed.connect(_on_upgrade_pressed)
-	upgrades_row.add_child(upgrade_button)
-	tool_upgrade_button = _button("UTENSÍLIO", Color("b86ad1", 0.94), 487, 112)
-	tool_upgrade_button.pressed.connect(_on_tool_upgrade_pressed)
-	upgrades_row.add_child(tool_upgrade_button)
+	# Painel de melhorias: botão redondo único no canto superior direito
+	# (substitui os dois botões grandes do HUD de ação).
+	upgrades_button = _button("", Color("7ed957", 0.96), 86, 86)
+	upgrades_button.position = Vector2(952, 150)
+	upgrades_button.icon = UPGRADES_ICON
+	upgrades_button.expand_icon = true
+	upgrades_button.tooltip_text = Loc.t("UPGRADES_TITLE")
+	upgrades_button.add_theme_stylebox_override(
+		"normal", _style(Color("7ed957", 0.96), 43, 6, Color.WHITE, 4)
+	)
+	upgrades_button.add_theme_stylebox_override(
+		"hover", _style(Color("8fe46b", 0.98), 43, 6, Color.WHITE, 5)
+	)
+	upgrades_button.add_theme_stylebox_override(
+		"pressed", _style(Color("5fae43", 1.0), 43, 8, Color.WHITE, 4)
+	)
+	add_child(upgrades_button)
+	upgrades_button.pressed.connect(
+		SessionFeedback.open_meta.bind(self, &"upgrades", upgrades_button)
+	)
 
 	meta = MetaPanel.new()
 	meta.refresh_callback = _refresh_economy

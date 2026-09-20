@@ -61,6 +61,37 @@ func _run() -> void:
 		_fail("cliente selecionado sem pet")
 	if String(main.current_pet_name).is_empty():
 		_fail("cliente selecionado sem nome")
+
+	# 4) Contrato espacial: pés ancorados + prateleiras uniformes (HUD V2).
+	if abs(main.world.pet_position.x - 540.0) > 0.5 or abs(main.world.pet_position.y - 1160.0) > 0.5:
+		_fail("pet_position != (540,1160): %s" % [main.world.pet_position])
+	var shelves: Array[float] = main.world.service_shelf_levels
+	if shelves.size() != 5:
+		_fail("service_shelf_levels tamanho %d != 5" % shelves.size())
+	for i: int in 5:
+		if abs(shelves[i] - [560.0, 730.0, 900.0, 1070.0, 1240.0][i]) > 0.5:
+			_fail("shelf_y[%d]=%f fora do contrato" % [i, shelves[i]])
+	var tool_names: Array[String] = ["soap", "clipper", "dryer", "perfume", "bow"]
+	for i: int in 5:
+		var tool_pos: Vector2 = main.world._tool_position(StringName(tool_names[i]))
+		if abs(tool_pos.y - shelves[i]) > 0.5 or abs(tool_pos.x - 910.0) > 0.5:
+			_fail("utensílio %d fora da prancha: %s" % [i, tool_pos])
+
+	# 5) Botão redondo de melhorias abre o painel de melhorias.
+	if not is_instance_valid(main.upgrades_button):
+		_fail("upgrades_button não existe")
+	else:
+		SessionFeedback.open_meta(main, &"upgrades", main.upgrades_button)
+		for i: int in 2:
+			await process_frame
+		if not main.meta.is_open():
+			_fail("painel de melhorias não abriu")
+		elif not main.meta.screen.panel.is_visible_in_tree():
+			_fail("painel de melhorias aberto mas invisível em árvore")
+		main.meta.close()
+		await process_frame
+		if main.meta.is_open():
+			_fail("painel de melhorias não fechou")
 	_finish()
 
 

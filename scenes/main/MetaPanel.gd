@@ -76,6 +76,9 @@ func _rebuild(section: StringName) -> void:
 		&"staff":
 			screen.title_label.text = Loc.t("STAFF_TITLE")
 			_build_staff()
+		&"upgrades":
+			screen.title_label.text = Loc.t("UPGRADES_TITLE")
+			_build_upgrades()
 		&"shop":
 			screen.title_label.text = Loc.t("SHOP_TITLE")
 			_build_shop()
@@ -254,6 +257,96 @@ func _build_collection() -> void:
 			ContentDB.achievements.size(),
 			GameState.unlocked_cosmetics.size(),
 		]
+	)
+
+
+## Painel de melhorias: estação + os cinco utensílios. Tudo que era botão
+## grande no HUD de ação agora vive aqui, comprável com moedas.
+func _build_upgrades() -> void:
+	_note("%s: %d" % [Loc.t("COINS"), int(GameState.coins)], 30, CHARCOAL)
+	var station_level: int = GameState.bath_upgrade_level
+	if station_level >= GameState.MAX_CAREER_LEVEL:
+		var bonus: float = (Economy.income_multiplier(station_level) - 1.0) * 100.0
+		_info_row(
+			Loc.t("UPGRADES_STATION"),
+			"Nv.%d  •  +%.0f%% %s" % [station_level, bonus, Loc.t("UPGRADES_REWARD")],
+			Loc.t("UPGRADES_MAXED"),
+			Color("b0bec5"),
+			false,
+			Callable()
+		)
+	else:
+		var cost: float = Economy.upgrade_cost(station_level)
+		_info_row(
+			Loc.t("UPGRADES_STATION"),
+			"Nv.%d  •  +7,5%% %s  •  %d %s"
+			% [station_level, Loc.t("UPGRADES_PER_LEVEL"), int(cost), Loc.t("COINS")],
+			Loc.t("UPGRADES_UPGRADE"),
+			GREEN,
+			cost <= GameState.coins,
+			func() -> void:
+				if GameState.buy_bath_upgrade():
+					AudioManager.play(&"upgrade")
+					HapticsManager.success()
+					EventBus.toast_requested.emit(
+						Loc.t("UPGRADES_STATION_LEVEL") % GameState.bath_upgrade_level, GREEN
+					)
+				else:
+					_upgrades_missing_toast(cost)
+		)
+	var tools: Array = [
+		{"id": &"soap", "key": "TOOL_SOAP", "level": 1},
+		{"id": &"clipper", "key": "TOOL_CLIPPER", "level": 3},
+		{"id": &"dryer", "key": "TOOL_DRYER", "level": 5},
+		{"id": &"perfume", "key": "TOOL_PERFUME", "level": 7},
+		{"id": &"bow", "key": "TOOL_BOW", "level": 10},
+	]
+	for tool: Dictionary in tools:
+		var tool_id: StringName = StringName(tool["id"])
+		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
+		var locked: bool = GameState.player_level < int(tool["level"])
+		var tool_cost: float = GameState.tool_upgrade_cost(tool_id)
+		if locked:
+			_info_row(
+				Loc.t(String(tool["key"])),
+				Loc.t("UPGRADES_LOCKED") % int(tool["level"]),
+				"",
+				Color("b0bec5"),
+				false,
+				Callable()
+			)
+		elif level >= 30:
+			_info_row(
+				Loc.t(String(tool["key"])),
+				"Nv.%d/30  •  +%d%%" % [level, level * 4],
+				Loc.t("UPGRADES_MAXED"),
+				Color("b0bec5"),
+				false,
+				Callable()
+			)
+		else:
+			_info_row(
+				Loc.t(String(tool["key"])),
+				"Nv.%d/30  •  +4%% %s  •  %d %s"
+				% [level, Loc.t("UPGRADES_PER_LEVEL"), int(tool_cost), Loc.t("COINS")],
+				Loc.t("UPGRADES_UPGRADE"),
+				BLUE,
+				tool_cost <= GameState.coins,
+				func() -> void:
+					if GameState.buy_tool_upgrade(tool_id):
+						AudioManager.play(&"upgrade")
+						HapticsManager.success()
+						EventBus.toast_requested.emit(
+							Loc.t("UPGRADES_TOOL_UP") % Loc.t(String(tool["key"])), GREEN
+						)
+					else:
+						_upgrades_missing_toast(tool_cost)
+			)
+
+
+func _upgrades_missing_toast(cost: float) -> void:
+	EventBus.toast_requested.emit(
+		Loc.t("UPGRADES_MISSING") % maxi(0, int(cost - GameState.coins)), Color("ef5350")
 	)
 
 

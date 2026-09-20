@@ -218,7 +218,19 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('draw_texture_rect(', tool_drawer)
         self.assertIn('var texture: Texture2D = TOOL_TEXTURES[tool]', tool_drawer)
         self.assertNotIn('draw_colored_polygon', tool_drawer)
-        self.assertIn('buy_tool_upgrade', main)
+        # Melhorias saíram do HUD de ação: botão redondo único abre o painel.
+        self.assertIn('upgrades_button', main)
+        self.assertIn('SessionFeedback.open_meta.bind(self, &"upgrades"', main)
+        self.assertNotIn('upgrade_button = _button', main)
+        self.assertNotIn('tool_upgrade_button', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('buy_bath_upgrade', panel)
+        self.assertIn('buy_tool_upgrade', panel)
+        self.assertIn('&"upgrades":', panel)
+        # Mobiliário funcional desenhado por código (alinhamento garantido).
+        self.assertIn('StationArt.draw_shelf_unit(self)', canvas)
+        self.assertIn('StationArt.draw_station(self)', canvas)
+        self.assertIn('StationArt.draw_station_foreground(self)', canvas)
         self.assertIn('upgrade_income_growth": 1.075', Path('autoload/RemoteConfig.gd').read_text())
 
     def test_all_catalogued_pets_have_commercial_art_and_safe_fallback(self):

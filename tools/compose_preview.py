@@ -33,13 +33,15 @@ LARGE_BREEDS = ("são bernardo", "mastim", "terra nova")
 
 
 def _load_pet_positions() -> dict:
-    """Lê SERVICE_PET_POSITIONS de PetShopCanvas.gd (fonte única de verdade)."""
-    source = (ROOT / "core" / "gameplay" / "PetShopCanvas.gd").read_text(encoding="utf-8")
-    block = re.search(r"SERVICE_PET_POSITIONS: Dictionary = \{(.*?)\}", source, re.S)
-    positions = {}
-    for service, x, y in re.findall(r'&"(\w+)": Vector2\((\d+), (\d+)\)', block.group(1)):
-        positions[service] = (int(x), int(y))
-    return positions
+    """Lê pet_position de data/service_layouts.json (fonte única de verdade).
+
+    pet_position é a âncora dos PÉS do pet (superfície da estação).
+    """
+    layouts = json.loads((ROOT / "data" / "service_layouts.json").read_text(encoding="utf-8"))
+    return {
+        stage["service"]: (int(stage["pet_position"][0]), int(stage["pet_position"][1]))
+        for stage in layouts["stages"]
+    }
 
 
 PET_POSITIONS = _load_pet_positions()
@@ -70,9 +72,11 @@ def compose(service: str, pet_id: str, x: int, y: int, size: int, marker: bool) 
     center = (x, y)
     if pet_path.exists():
         pet = Image.open(pet_path).convert("RGBA").resize((size, size), Image.LANCZOS)
-        # draw_texture_rect: sprite centralizado no pet_position; a baseline
-        # (479/512) marca os pés — na prática o sprite cobre center ± size/2.
-        img.alpha_composite(pet, (center[0] - size // 2, center[1] - size // 2))
+        # pet_position é a âncora dos PÉS: o sprite (512 com baseline 479/512)
+        # fica com a base exatamente em y.
+        baseline = PET_BASELINE
+        top = int(round(center[1] - baseline * size))
+        img.alpha_composite(pet, (center[0] - size // 2, top))
     else:
         print(f"AVISO: textura ausente para {pet_id}; desenhando placeholder")
 

@@ -1,5 +1,26 @@
 # Auditoria completa — apoio dos pets, cenários e utensílios
 
+## V2 — mobiliário funcional por código (supera a versão pintada)
+
+**Problema relatado:** com a troca de cenário, pets ficavam fora da banheira e utensílios desalinhados das prateleiras pintadas. Causa raiz: três fontes de posição divergentes (const `SERVICE_PET_POSITIONS` do canvas, `data/service_layouts.json`, e a calibração da auditoria V1) somadas a móveis que mudavam de lugar em cada ilustração.
+
+**Contrato V2 (corrente):**
+
+- **Mobiliário funcional desenhado por código** (`core/gameplay/StationArt.gd`): estante de utensílios (fundo translúcido + pranchas de madeira), cinco estações (banheira com borda frontal que oclui as patas, mesa de tosa, maca de secagem, pedestal de spa, otomana) e placa do título. Geometria determinística — alinhamento garantido por construção em qualquer cenário.
+- **Fonte única de layout:** `data/service_layouts.json` via `ContentDB.service_layout()`; o canvas não tem mais constantes de posição/prateleira.
+- **`pet_position` é a âncora dos PÉS** (baseline 479/512 aplicada no draw): superfície da estação = Y do pet, idêntico nos cinco serviços (540, 1160). Hit test de carinho e spotlight usam `pet_focus()` (centro do corpo, −170px).
+- **Prateleiras uniformes** (centros dos utensílios): 560, 730, 900, 1070, 1240 — mesmos valores nos cinco serviços; a estante desenhada usa exatamente esses Y (+34px de drop da prancha).
+- **Backgrounds regenerados como cenário ambiente** (768×1376): parede direita limpa para a estante (verificação programática de densidade de bordas: 7–37% da densidade global) e piso central livre para a estação. Nenhum mobiliário funcional pintado.
+- **Ordem de desenho:** fundo → placa/título → estante → cosméticos de parede → utensílios → estação → pet → borda frontal da banheira → VFX.
+- **HUD de ação enxugado:** os dois botões grandes de upgrade saíram do HUD; um botão redondo no canto superior direito (ícone procedural `upgrades.png`, pulso quando há melhoria comprável) abre o painel de melhorias do MetaPanel (estação + 5 utensílios, com moedas).
+
+**Defesas de regressão V2:** `tools/smoke_interact.gd` (CI, Godot 4.7.2) afirma o contrato espacial em runtime (pés em 540,1160; 5 prateleiras; utensílio centrado na prancha) e o ciclo do painel de melhorias; testes estáticos exigem as chamadas `StationArt.*` no canvas, o botão `upgrades_button` e proíbem o retorno dos botões grandes; `tools/compose_preview.py` lê o JSON como fonte única (âncora de pés) para mock visual offline.
+
+---
+
+## V1 — histórico (mobiliário pintado nos backgrounds)
+
+
 ## Falha confirmada
 
 Os cenários antigos não compartilhavam um contrato espacial. Banho e tosa possuíam estação, enquanto secagem, perfume e estilo deixavam o pet sobre piso/tapete. A posição global única `(540,930)` não garantia contato com nenhum móvel. Além disso, a coluna de ferramentas usava o mesmo espaçamento em artes cujas prateleiras tinham alturas diferentes. Por fim, os utensílios eram polígonos runtime simples e não atingiam acabamento comercial.
