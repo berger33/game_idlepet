@@ -94,7 +94,9 @@ func _run() -> void:
 	if not is_instance_valid(main.upgrades_button):
 		_fail("upgrades_button não existe")
 	else:
-		SessionFeedback.open_meta(main, &"upgrades", main.upgrades_button)
+		# Sem referência estática a classes que usam autoloads: no contexto --script
+		# elas compilam antes do registro dos singletons e envenenam o Main.
+		main.meta.open(&"upgrades", main.upgrades_button)
 		for i: int in 2:
 			await process_frame
 		if not main.meta.is_open():
