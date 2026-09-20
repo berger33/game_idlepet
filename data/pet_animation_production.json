@@ -37,8 +37,8 @@
     "pets_integrated": 50,
     "generation_attempts": 518,
     "blink_variants_expected": 250,
-    "blink_variants_generated": 245,
-    "blink_fix_duke_husky": "original kept; variants excluded (authored blink misaligned)"
+    "blink_variants_generated": 250,
+    "blink_fix_duke_husky": "fixed: per-state lid compose (blink aligns with state sprites; eyes detected per state, lids scaled and color-graded per eye)"
   },
   "pets": [
     {
@@ -2705,29 +2705,24 @@
       "qa_notes": "9 original generations plus one retake: the first tilt_left was rejected for a centered pose (head-vs-feet lean +3.9 vs base -6.7; approved family range 13-47) and the retake with a geometric brief (nose to lower-left, C-curve) landed at -47.3, with tilt_right as its lossless mirror (pair lean -47.3/+47.3, repo tilt_left=viewer-left convention). messy passed the roughness gate at +185% (gate >= +63%) with the spiky-starburst brief. wet reads as a soaked husky double coat via palette evidence (charcoal 2724 to 6799 px, white 12670 to 3861, slate mask preserved 6241 of 6562) with kept droplets; hue-histogram correlation is a weak identity metric for this pet (base coat is near-neutral white/slate, 0.532 on wet) and palette fractions were used instead. dirty keeps the slate mask with mud/dust on white areas. sad: tail uncurled and fallen (right-half low/up mass ratio 1.62 vs base 1.19), ears flattened sideways (head-zone width 278 vs 200), strong face change (eye-band diff 80). dizzy has ice-blue spiral eyes with no stars; blink preserves the base pose (IoU 0.636) with closed lids; happy_air keeps short motion lines (10 components; grab path chosen because flood dropped them). Ice-blue eyes present in every open-eye state. Both normalization paths tested per frame (differences <1% on the official palette); grab adopted. Standard boundary-ring fringe cleanup; 10 crevice blend pixels kept on wet as anti-aliasing. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
       "blink_variants": {
         "dirty_blink": {
-          "status": "excluded",
-          "method": "none",
-          "reason": "authored blink misaligned (drift nao rigido)"
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
         },
         "wet_blink": {
-          "status": "excluded",
-          "method": "none",
-          "reason": "authored blink misaligned (drift nao rigido)"
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
         },
         "messy_blink": {
-          "status": "excluded",
-          "method": "none",
-          "reason": "authored blink misaligned (drift nao rigido)"
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
         },
         "sad_blink": {
-          "status": "excluded",
-          "method": "none",
-          "reason": "authored blink misaligned (drift nao rigido)"
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
         },
         "dizzy_blink": {
-          "status": "excluded",
-          "method": "none",
-          "reason": "authored blink misaligned (drift nao rigido)"
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
         }
       }
     },

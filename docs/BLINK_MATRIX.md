@@ -23,16 +23,28 @@
   camada), não mais overlay substituto. Piscada de idle saiu da cadeia de overlays.
 - `happy_squash/happy_air` não piscam por cima (olhos já fechados/felizes).
 
-## Lista do que criar — 245 imagens 512×512 RGBA (CRIADAS)
+## Lista do que criar — 250 imagens 512×512 RGBA (CRIADAS)
 
-Para **49 dos 50 pets** (todos exceto `duke_husky`, ver exceção abaixo), cinco
+Para **os 50 pets**, cinco
 variantes cada: `dirty_blink.png`, `wet_blink.png`, `messy_blink.png`,
 `sad_blink.png`, `dizzy_blink.png` em `art/pet_animations/<pet>/`.
 
-### Exceção documentada (1 pet)
-| Pet | Arquivo | Decisão |
-|---|---|---|
-| duke_husky | variantes `*_blink` | **não criadas.** O `blink.png` autoral tem pose trocada (diff 36%, drift não rígido — medido por SAD de janela: offsets batem no teto da busca, alinhamento impossível por composição); geração de imagem devolveu 1024×1024 RGB sem alpha duas vezes. O original foi **mantido** (piscada expressiva aceitável no seco) e o pet ficou fora da matriz de variantes: pisca no seco, não pisca durante estados. Ferramentas tratam a exceção (`EXCLUDED_PETS`). |
+### Caso especial resolvido: duke_husky
+
+O `blink.png` autoral do duke tem diff 36% contra a **referência seca** — a
+exclusão anterior nasceu daí. Reauditoria: o blink **alinha com os sprites de
+estado** (bbox de silhueta idêntico ao dirty, pálpebras ∪ 36x12 em
+(169,176)/(251,176) vs olhos do dirty em (172,166)/(247,166)); quem não alinha
+é a referência seca (bbox 245px vs 325px — pose própria). Como cada estado
+também foi gerado com pose própria, os olhos mudam de posição/tamanho por
+estado. Solução (`compose_duke_state`): olhos localizados por estado por
+análise de pixels (blob escuro/azul + brilho do olho como furo de alpha no
+wet; rastros de lágrima e espiral de tontura no sad/dizzy), pálpebra autoral
+do blink colada **por olho**, escalada para a abertura do olho daquele estado
+(`DUKE_EYES`), grade de cor medido na banda de fronteira da máscara (costura
+contínua por construção) e lágrimas do sad preservadas acima da pálpebra
+fechada. Seam medido na fronteira: 2–24 — dentro da faixa das variantes em
+produção dos outros 49 pets (5,6–31,7).
 
 ### Não criar (decisão documentada)
 - `happy_*_blink`: olhos já fechados/felizes por construção.
@@ -54,6 +66,12 @@ compõe cada variante a partir dos sprites existentes, idempotente e auditável:
    clamp 0.85–1.15 — a pálpebra herda o grading de molhado/sujo/peludo.
 4. Cola o `blink` gradado sobre o estado aberto usando a máscara → alinhamento
    perfeito por construção (mesmos pixels de pose/outline/gotas/sujeira).
+5. **duke_husky** (composição por estado, `compose_duke_state`): por olho, o
+   blink é escalado por (largura/altura da abertura do olho do estado ÷ a do
+   dirty) e transladado para que o arco da pálpebra caia no ponto autoral
+   (centro do olho + (∓3.5,+11)); máscara = elipse 25·sx × 24·sy com feather
+   2.5; grade de cor = banda de fronteira e∈(1.02,1.5) só com pelo claro em
+   ambos os lados (exclui lágrima/íris azul-escura e traço), clamp 0.70–1.35.
 
 ## QA (rodado no lote final)
 

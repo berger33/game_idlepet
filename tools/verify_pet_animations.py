@@ -172,14 +172,13 @@ def verify_catalog_and_files(states_by_pet: dict[str, dict]) -> None:
         pet_dir = anim_root / pet_id
         files = {path.name for path in pet_dir.iterdir() if path.is_file()} if pet_dir.exists() else set()
         expected_files = {f"{state}.png" for state in states_by_pet[pet_id]}
-        if pet_id != "duke_husky":  # exceção documentada no BLINK_MATRIX
-            expected_files |= {f"{variant}.png" for variant in variant_states}
+        expected_files |= {f"{variant}.png" for variant in variant_states}
         require(
             files == expected_files,
             f"{pet_id}: arquivos {sorted(files ^ expected_files)} faltando/extra",
         )
         # Variantes de piscada por estado (BLINK_MATRIX): contrato 512 RGBA.
-        for variant in ([] if pet_id == "duke_husky" else variant_states):
+        for variant in variant_states:
             variant_path = pet_dir / f"{variant}.png"
             require(variant_path.exists(), f"{pet_id}/{variant}: arquivo ausente")
             if not variant_path.exists():

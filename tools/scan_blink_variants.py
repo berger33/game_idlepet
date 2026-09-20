@@ -47,7 +47,6 @@ def diff_ratio(a: Image.Image, b: Image.Image, color_thr: int = 40) -> float:
 
 def main() -> None:
     pets = [p["id"] for p in json.load(open(ROOT / "data/pets.json", encoding="utf-8"))["pets"]]
-    pets = [p for p in pets if p != "duke_husky"]  # exceção documentada
     problems: list[str] = []
     counts = {v: 0 for v in VARIANTS}
     for pet in pets:
@@ -71,7 +70,7 @@ def main() -> None:
             if os.path.exists(dry_blink) and diff_ratio(img, load(dry_blink)) < 0.005:
                 problems.append(f"{pet}/{variant}: identico ao blink seco (nao herdou condicao)")
     total = sum(counts.values())
-    print("progresso variantes: %d/245 (duke_husky excluído)" % total)
+    print("progresso variantes: %d/250" % total)
     for variant in VARIANTS:
         print("  %-12s %2d/50" % (variant, counts[variant]))
     if problems:
