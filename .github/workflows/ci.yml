@@ -82,6 +82,12 @@ jobs:
             done
             status=1
           fi
+          if grep -q "SMOKE_INTERACT FAIL" /tmp/interact.log; then
+            grep "SMOKE_INTERACT FAIL" /tmp/interact.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
           exit $status
       - name: Análise estática de todos os scripts (contexto de projeto, 4.7.2)
         run: |
