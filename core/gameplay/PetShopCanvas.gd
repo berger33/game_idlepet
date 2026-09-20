@@ -33,7 +33,14 @@ const PET_STATE_NAMES: Array[StringName] = [
 	&"happy_air",
 	&"dizzy",
 	&"sad",
-	&"blink"
+	&"blink",
+	# Variantes de piscada por estado: permitem piscar molhado/sujo/peludo/etc.
+	# sem trocar o pet para a versão seca (carregadas só se existirem no disco).
+	&"dirty_blink",
+	&"wet_blink",
+	&"messy_blink",
+	&"sad_blink",
+	&"dizzy_blink"
 ]
 const PET_TEXTURE_BASELINE: float = 479.0 / 512.0
 const UI_TITLE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
@@ -75,6 +82,10 @@ var temperament: StringName = &"happy"
 var rarity: StringName = &"common"
 var reaction_time: float = 0.0
 var reaction_kind: StringName = &"idle"
+## Piscada forçada por reação (carinho/serviço confortável), em segundos.
+var blink_force_time: float = 0.0
+## Desloca a fase da piscada por pet para o elenco não piscar em uníssono.
+var blink_offset: float = 0.0
 var hearts: Array[Dictionary] = []
 var player_level: int = 1
 var active_tool: StringName = &""
@@ -96,6 +107,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	shake_phase += delta
+	blink_force_time = maxf(0.0, blink_force_time - delta)
 	arrival_time = minf(1.0, arrival_time + delta * 2.8)
 	if departure_time >= 0.0:
 		departure_time = minf(1.0, departure_time + delta * 2.4)
@@ -177,6 +189,7 @@ func celebrate(is_special_reward: bool = false) -> void:
 
 func set_pet_profile(profile: Dictionary) -> void:
 	pet_id = String(profile.get("id", "caramelo"))
+	blink_offset = float(int(String(pet_id).hash()) % 47) * 0.1
 	var texture_path: String = "res://art/pets/%s.png" % pet_id
 	pet_texture = null
 	pet_state_textures.clear()
@@ -754,8 +767,9 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		foot_anchor.x += sin(shake_phase * 32.0) * 7.0
 		spin = sin(shake_phase * 18.0) * 0.025
 	elif reaction_kind == &"blink":
-		overlay_state = &"blink"
-		overlay_alpha = minf(1.0, reaction_time * 7.0)
+		# Piscada não substitui mais o estado atual: vira pulso da camada
+		# independente, que escolhe a variante certa (molhado pisca molhado).
+		blink_force_time = maxf(blink_force_time, 0.22)
 	elif reaction_kind == &"love" or reaction_kind == &"excited":
 		overlay_state = &"happy_squash"
 		overlay_alpha = minf(0.88, reaction_time * 4.0)
@@ -792,15 +806,36 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 		elif idle_phase >= 4.6 and idle_phase < 6.2:
 			overlay_state = &"tilt_right"
 			overlay_alpha = sin(PI * (idle_phase - 4.6) / 1.6) * 0.82
-		elif fmod(shake_phase, 4.7) < 0.13:
-			overlay_state = &"blink"
-			overlay_alpha = sin(PI * fmod(shake_phase, 4.7) / 0.13)
+		# A piscada de idle saiu daqui: a camada global de blink cobre o idle.
 
 	# Authored expressions receive a small runtime deformation so weight reads between keyframes.
 	if overlay_state == &"happy_squash":
 		reaction_scale = reaction_scale * Vector2(1.045, 0.94)
 	elif overlay_state == &"happy_air":
 		reaction_scale = reaction_scale * Vector2(0.97, 1.035)
+
+	# Piscada global: camada independente por cima de qualquer estado, com a
+	# variante do estado dominante (pet molhado pisca molhado; seco pisca seco).
+	# Sem variante disponível para o estado ativo, não pisca (evita o flash do
+	# sprite seco por cima do molhado/sujo/peludo).
+	var blink_pulse: float = 0.0
+	if blink_force_time > 0.0:
+		blink_pulse = minf(1.0, blink_force_time * 6.0)
+	elif overlay_state not in [&"happy_squash", &"happy_air"]:
+		var blink_phase: float = fmod(shake_phase + blink_offset, 4.7)
+		if blink_phase < 0.13:
+			blink_pulse = sin(PI * blink_phase / 0.13)
+	var blink_layer: StringName = &"blink"
+	if blink_pulse > 0.0:
+		var dominant: StringName = (
+			overlay_state if overlay_alpha >= second_alpha else second_state
+		)
+		if dominant in [&"wet", &"dirty", &"messy", &"sad", &"dizzy"]:
+			var blink_variant: StringName = StringName(String(dominant) + "_blink")
+			if pet_state_textures.has(blink_variant):
+				blink_layer = blink_variant
+			else:
+				blink_pulse = 0.0
 
 	var tint: Color = Color.WHITE
 	if pet_wet or overlay_state == &"wet" or second_state == &"wet":
@@ -813,6 +848,7 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	_draw_pet_texture_layer(pet_texture, sprite_size, tint)
 	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
 	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
+	_draw_pet_state_layer(blink_layer, blink_pulse, sprite_size, tint)
 	_draw_pet_accessories(Vector2.ZERO, sprite_size / 390.0, true)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
