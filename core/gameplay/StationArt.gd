@@ -67,7 +67,7 @@ static func draw_title_plaque(shop) -> void:
 	shop.draw_style_box(
 		_panel_box(Color(CREAM, 0.94), 26, PINK, 4), Rect2(320, 168, 450, 84)
 	)
-	shop.draw_line(Vector2(340, 178), Vector2(750, 178), Color.WHITE.with_alpha(0.5), 3)
+	shop.draw_line(Vector2(340, 178), Vector2(750, 178), Color(1.0, 1.0, 1.0, 0.5), 3)
 
 
 ## Estação de trabalho (desenhada ANTES do pet): sombra de contato + corpo.
@@ -103,7 +103,7 @@ static func draw_station_foreground(shop) -> void:
 	)
 	shop.draw_line(
 		Vector2(cx - 190.0, surface - 24.0), Vector2(cx + 190.0, surface - 24.0),
-		Color.WHITE.with_alpha(0.55), 4
+		Color(1.0, 1.0, 1.0, 0.55), 4
 	)
 	_ellipse(shop, Vector2(cx, surface + 26.0), 176.0, 12.0, Color(WATER_BLUE, 0.35))
 
@@ -123,7 +123,7 @@ static func _draw_bathtub(shop, cx: float, surface: float) -> void:
 	)
 	shop.draw_line(
 		Vector2(cx - 192.0, surface - 50.0), Vector2(cx + 192.0, surface - 50.0),
-		Color.WHITE.with_alpha(0.6), 4
+		Color(1.0, 1.0, 1.0, 0.6), 4
 	)
 	for foot_x: float in [cx - 150.0, cx + 114.0]:
 		shop.draw_style_box(
@@ -189,7 +189,7 @@ static func _draw_ottoman(shop, cx: float, surface: float) -> void:
 	)
 	shop.draw_line(
 		Vector2(cx - 146.0, surface + 12.0), Vector2(cx + 146.0, surface + 12.0),
-		Color.WHITE.with_alpha(0.4), 4
+		Color(1.0, 1.0, 1.0, 0.4), 4
 	)
 	for tuft_x: float in [cx - 90.0, cx, cx + 90.0]:
 		shop.draw_circle(Vector2(tuft_x, surface + 46.0), 7.0, Color(CHARCOAL, 0.20))
