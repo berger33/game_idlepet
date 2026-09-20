@@ -40,17 +40,39 @@ jobs:
           mv Godot_v4.7.2-stable_linux.x86_64 godot
           chmod +x godot
       - name: Import de assets (valida preload/paths)
-        run: ./godot --headless --import
+        run: |
+          # Godot 4.7 headless tem um crash intermitente (SIGABRT/134) no
+          # caminho de primeiro frame do editor; uma retry absorve o flake.
+          run_import() { ./godot --headless --import 2>&1 | tee /tmp/import.log; return ${PIPESTATUS[0]}; }
+          if ! run_import; then
+            echo "::warning::primeira tentativa de import falhou; nova tentativa em 10s"
+            sleep 10
+            if ! run_import; then
+              echo "::error::import falhou nas duas tentativas"
+              grep -inE "error|abort|assert|exception|signal|script" /tmp/import.log | head -20 | while IFS= read -r line; do
+                echo "::error::${line:0:220}"
+              done
+              exit 1
+            fi
+          fi
       - name: Smoke test — 120 frames da cena principal
-        run: ./godot --headless --quit-after 120
+        run: |
+          if ! output=$(./godot --headless --quit-after 120 2>&1); then
+            echo "::error::smoke test falhou (cena principal não executou 120 frames)"
+            echo "$output" | grep -iE "error|script" | head -20 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            exit 1
+          fi
       - name: Análise estática de todos os scripts (nível editor, 4.7.2)
         run: |
           status=0
           while IFS= read -r script; do
-            output=$(./godot --headless --check-only --script "res://$script" 2>&1)
-            if [ $? -ne 0 ]; then
+            if ! output=$(./godot --headless --check-only --script "res://$script" 2>&1); then
               echo "::error file=$script::análise estática falhou (Godot 4.7.2)"
-              echo "$output"
+              echo "$output" | head -25 | while IFS= read -r line; do
+                echo "::error::[$script] ${line:0:200}"
+              done
               status=1
             fi
           done < <(git ls-files '*.gd')
