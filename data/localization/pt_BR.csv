@@ -122,3 +122,9 @@ TOOL_CLIPPER,Máquina de tosa
 TOOL_DRYER,Secador
 TOOL_PERFUME,Perfume
 TOOL_BOW,Laço
+NOTIFICATIONS,Lembretes de retorno
+TOMORROW,Amanhã
+BUDDY_VISIT,%s sentiu sua falta e veio primeiro!
+BUDDY_TAG,amigo
+FRANCHISE_EXCHANGE,Franquia
+FRANCHISE_DESC,Tokens disponíveis: %d

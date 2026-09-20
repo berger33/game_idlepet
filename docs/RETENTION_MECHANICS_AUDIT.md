@@ -92,7 +92,32 @@ e `docs/ROADMAP.md` (gates). Todas as afirmações citam arquivo/linha.
 - **Baú de fim de semana**: completar as 7 semanais = baú com cosmético rotativo.
 - **Polaroids/álbum** (investimento + share orgânico; detalhe no EXPERIENCE_ROADMAP).
 
-## 4. O que NÃO mexer (está certo e protege o jogador)
+## 4. Executado nesta fase (commit de retenção)
+
+- **Gap 1 fechado:** toggle “Lembretes de retorno” em Ajustes arma o
+  `NotificationManager` (persiste em `settings["notifications"]`, sincroniza no boot
+  do Main antes de `schedule_return_reminders`).
+- **Gap 2 fechado:** sink de prestígio na Loja — 1 `franchise_token` → 5 brasas
+  (`GameState.convert_franchise_token`).
+- **Gap 3 fechado:** conquistas 10 → 30 (`data/achievements.json` +
+  `_check_achievements`), cobrindo combo 50, serviços 100/500/1000, coleção
+  15/30/50, staff, estação 25/50, prestígio, offline 8h, streak 7 (novo
+  `best_streak` persistido), nível 25, afeto 50 (`friend_50`).
+- **Gap 4 fechado:** 3 corações de afeto (10/25/50) desenhados na cena sobre o pet
+  (`PetShopCanvas._draw_affection_hearts`), atualizados no carinho e na seleção;
+  buddy marcado na fila com tag localizada.
+- **Gap 5 fechado:** pill do evento do dia visível na cena (nav) + linha “Amanhã”
+  no painel de missões (`LiveOps.event_name_for`).
+- **Gap 6 fechado:** folga de combo — o primeiro Good de uma sequência não zera
+  (fail zera); `combo_grace_used` por sessão, de propósito não persistido.
+- **Baú semanal:** claimar as 7 semanais paga bônus único por semana
+  (`GameState.check_weekly_chest`).
+- Saudação nominal do buddy no boot da sessão.
+
+Restam (próxima fase, deliberadamente): polaroids/álbum completo e cosméticos
+exclusivos de prestígio além do conversor.
+
+## 5. O que NÃO mexer (está certo e protege o jogador)
 
 - Sem energia/stamina: sessões ilimitadas são a identidade do jogo.
 - Eventos com kill switch + `boost_scale` remoto: dosagem sem hotfix.

@@ -1,12 +1,275 @@
-{"schema_version":1,"achievements":[
-{"id":"first_bath","name":"Primeiro Mergulho","metric":"services_bath","target":1,"reward":{"coins":25}},
-{"id":"perfect_1","name":"Mão de Groomer","metric":"perfect_services","target":1,"reward":{"embers":2}},
-{"id":"perfect_10","name":"Espuma na Medida","metric":"perfect_services","target":10,"reward":{"coins":150}},
-{"id":"combo_5","name":"Banho Quente","metric":"best_combo","target":5,"reward":{"embers":3}},
-{"id":"combo_20","name":"Lenda do Petshop","metric":"best_combo","target":20,"reward":{"cosmetic":"crown_bubbles"}},
-{"id":"earn_500","name":"Pote Cheio","metric":"total_coins","target":500,"reward":{"coins":50}},
-{"id":"upgrade_5","name":"Ducha Poderosa","metric":"bath_upgrade_level","target":5,"reward":{"embers":2}},
-{"id":"reviews_10","name":"Queridinho do Bairro","metric":"five_star_reviews","target":10,"reward":{"coins":120}},
-{"id":"collect_5","name":"Amigo dos Pets","metric":"unique_pets","target":5,"reward":{"embers":4}},
-{"id":"offline_1h","name":"O Negócio Não Para","metric":"offline_seconds_collected","target":3600,"reward":{"coins":100}}
-]}
+{
+  "schema_version": 1,
+  "achievements": [
+    {
+      "id": "first_bath",
+      "name": "Primeiro Mergulho",
+      "metric": "services_bath",
+      "target": 1,
+      "reward": {
+        "coins": 25
+      }
+    },
+    {
+      "id": "perfect_1",
+      "name": "Mão de Groomer",
+      "metric": "perfect_services",
+      "target": 1,
+      "reward": {
+        "embers": 2
+      }
+    },
+    {
+      "id": "perfect_10",
+      "name": "Espuma na Medida",
+      "metric": "perfect_services",
+      "target": 10,
+      "reward": {
+        "coins": 150
+      }
+    },
+    {
+      "id": "combo_5",
+      "name": "Banho Quente",
+      "metric": "best_combo",
+      "target": 5,
+      "reward": {
+        "embers": 3
+      }
+    },
+    {
+      "id": "combo_20",
+      "name": "Lenda do Petshop",
+      "metric": "best_combo",
+      "target": 20,
+      "reward": {
+        "cosmetic": "crown_bubbles"
+      }
+    },
+    {
+      "id": "earn_500",
+      "name": "Pote Cheio",
+      "metric": "total_coins",
+      "target": 500,
+      "reward": {
+        "coins": 50
+      }
+    },
+    {
+      "id": "upgrade_5",
+      "name": "Ducha Poderosa",
+      "metric": "bath_upgrade_level",
+      "target": 5,
+      "reward": {
+        "embers": 2
+      }
+    },
+    {
+      "id": "reviews_10",
+      "name": "Queridinho do Bairro",
+      "metric": "five_star_reviews",
+      "target": 10,
+      "reward": {
+        "coins": 120
+      }
+    },
+    {
+      "id": "collect_5",
+      "name": "Amigo dos Pets",
+      "metric": "unique_pets",
+      "target": 5,
+      "reward": {
+        "embers": 4
+      }
+    },
+    {
+      "id": "offline_1h",
+      "name": "O Negócio Não Para",
+      "metric": "offline_seconds_collected",
+      "target": 3600,
+      "reward": {
+        "coins": 100
+      }
+    },
+    {
+      "id": "combo_50",
+      "name": "Mestre do Ritmo",
+      "metric": "combo_max",
+      "target": 50,
+      "reward": {
+        "embers": 5
+      }
+    },
+    {
+      "id": "perfect_100",
+      "name": "Mãos de Ouro",
+      "metric": "perfect_services",
+      "target": 100,
+      "reward": {
+        "coins": 400
+      }
+    },
+    {
+      "id": "services_100",
+      "name": "Bairro Atendimento",
+      "metric": "services",
+      "target": 100,
+      "reward": {
+        "coins": 200
+      }
+    },
+    {
+      "id": "services_500",
+      "name": "Instituição do Bairro",
+      "metric": "services",
+      "target": 500,
+      "reward": {
+        "embers": 4
+      }
+    },
+    {
+      "id": "services_1000",
+      "name": "Lenda do Pet Shop",
+      "metric": "services",
+      "target": 1000,
+      "reward": {
+        "embers": 8
+      }
+    },
+    {
+      "id": "reviews_50",
+      "name": "Queridinho da Vizinhança",
+      "metric": "five_star_reviews",
+      "target": 50,
+      "reward": {
+        "coins": 300
+      }
+    },
+    {
+      "id": "collect_15",
+      "name": "Família Crescendo",
+      "metric": "pets_unlocked",
+      "target": 15,
+      "reward": {
+        "embers": 3
+      }
+    },
+    {
+      "id": "collect_30",
+      "name": "Casa Cheia",
+      "metric": "pets_unlocked",
+      "target": 30,
+      "reward": {
+        "embers": 5
+      }
+    },
+    {
+      "id": "collect_50",
+      "name": "Todos os Focinhos",
+      "metric": "pets_unlocked",
+      "target": 50,
+      "reward": {
+        "embers": 10
+      }
+    },
+    {
+      "id": "cosmetics_5",
+      "name": "Vitrine de Estilo",
+      "metric": "cosmetics",
+      "target": 5,
+      "reward": {
+        "coins": 200
+      }
+    },
+    {
+      "id": "staff_2",
+      "name": "Equipe de Verdade",
+      "metric": "staff",
+      "target": 2,
+      "reward": {
+        "embers": 2
+      }
+    },
+    {
+      "id": "staff_5",
+      "name": "Elenco Completo",
+      "metric": "staff",
+      "target": 5,
+      "reward": {
+        "embers": 4
+      }
+    },
+    {
+      "id": "upgrade_25",
+      "name": "Estação Renomada",
+      "metric": "station_level",
+      "target": 25,
+      "reward": {
+        "coins": 500
+      }
+    },
+    {
+      "id": "upgrade_50",
+      "name": "Estação dos Sonhos",
+      "metric": "station_level",
+      "target": 50,
+      "reward": {
+        "embers": 6
+      }
+    },
+    {
+      "id": "prestige_1",
+      "name": "Nova Franquia",
+      "metric": "prestige",
+      "target": 1,
+      "reward": {
+        "embers": 5
+      }
+    },
+    {
+      "id": "offline_8h",
+      "name": "Cofre Trabalhador",
+      "metric": "offline_seconds",
+      "target": 28800,
+      "reward": {
+        "coins": 250
+      }
+    },
+    {
+      "id": "rich_5000",
+      "name": "Pote Cheio",
+      "metric": "total_coins",
+      "target": 5000,
+      "reward": {
+        "embers": 3
+      }
+    },
+    {
+      "id": "streak_7",
+      "name": "Semana Perfeita",
+      "metric": "streak",
+      "target": 7,
+      "reward": {
+        "embers": 4
+      }
+    },
+    {
+      "id": "level_25",
+      "name": "Profissional do Bairro",
+      "metric": "player_level",
+      "target": 25,
+      "reward": {
+        "coins": 300
+      }
+    },
+    {
+      "id": "friend_50",
+      "name": "Melhor Amigo",
+      "metric": "affection",
+      "target": 50,
+      "reward": {
+        "embers": 4
+      }
+    }
+  ]
+}

@@ -42,6 +42,10 @@ const UI_TITLE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
 const DEFAULT_SHELF_LEVELS: Array[float] = [560.0, 730.0, 900.0, 1070.0, 1240.0]
 var service_shelf_levels: Array[float] = DEFAULT_SHELF_LEVELS.duplicate()
 
+## Nível de afeto do pet atual (0-50): desenha 3 corações de marcos na cena,
+## tornando visível o investimento emocional (retenção D7).
+var affection_level: int = 0
+
 ## Ancora dos PÉS do pet (a superfície da estação fica neste Y).
 var pet_position: Vector2 = Vector2(540, 1160)
 ## Sala sem cliente (aguardando escolha na fila): não desenha pet.
@@ -437,6 +441,7 @@ func _draw() -> void:
 			draw_circle(body_center, 185.0, Color("ce93d8", 0.16))
 		_draw_pet(pet_center)
 		StationArt.draw_station_foreground(self)
+		_draw_affection_hearts(body_center)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:
@@ -903,6 +908,20 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = 
 	if is_dragged:
 		draw_arc(Vector2.ZERO, draw_size * 0.48, -2.7, -0.45, 20, Color("ffffff", 0.38), 4.0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## Três corações de marcos de afeto (10/25/50) flutuando sobre o pet: o jogador
+## vê o laço crescer na própria cena, não só num toast.
+func _draw_affection_hearts(body_center: Vector2) -> void:
+	var thresholds: Array[int] = [10, 25, 50]
+	for i: int in 3:
+		var filled: bool = affection_level >= thresholds[i]
+		var heart_center: Vector2 = (
+			body_center + Vector2(float(i - 1) * 62.0, -268.0)
+		)
+		_draw_heart(
+			heart_center, 20.0, Color("ff8fb1") if filled else Color("263238", 0.18)
+		)
 
 
 func _draw_heart(center: Vector2, radius: float, color: Color) -> void:

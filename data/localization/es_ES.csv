@@ -122,3 +122,9 @@ TOOL_CLIPPER,Máquina de corte
 TOOL_DRYER,Secador
 TOOL_PERFUME,Perfume
 TOOL_BOW,Lazo
+NOTIFICATIONS,Recordatorios de regreso
+TOMORROW,Mañana
+BUDDY_VISIT,¡%s te extrañó y llegó primero!
+BUDDY_TAG,amigo
+FRANCHISE_EXCHANGE,Franquicia
+FRANCHISE_DESC,Tokens disponibles: %d

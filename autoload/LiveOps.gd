@@ -35,6 +35,11 @@ func current_event_name() -> String:
 	return Loc.t("EVENT_%d" % weekday())
 
 
+## Nome do evento de um dia específico (0-6) — usado no cartão "até amanhã".
+func event_name_for(day: int) -> String:
+	return Loc.t("EVENT_%d" % clampi(day, 0, 6))
+
+
 func multiplier_for(service_id: StringName) -> float:
 	if not events_on():
 		return 1.0

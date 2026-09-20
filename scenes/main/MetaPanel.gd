@@ -154,6 +154,15 @@ func _build_missions() -> void:
 		26,
 		CHARCOAL
 	)
+	# Gancho de retorno: o jogador vê o amanhã (evento + streak) antes de sair.
+	_info_row(
+		Loc.t("TOMORROW"),
+		LiveOps.event_name_for((LiveOps.weekday() + 1) % 7),
+		"%d/7" % GameState.daily_streak,
+		Color("4fc3f7"),
+		false,
+		Callable()
+	)
 	var pass_ready: bool = GameState.pass_day_claimed < GameState.pass_day_unlocked
 	var pass_reward: Dictionary = ContentDB.pass_day(GameState.pass_day_claimed + 1)
 	_info_row(
@@ -194,6 +203,7 @@ func _build_missions() -> void:
 			func(claimed_id: String = weekly_id) -> void:
 				if GameState.claim_weekly(claimed_id):
 					AudioManager.play(&"coin")
+					GameState.check_weekly_chest()
 					_rebuild(_current_section())
 	)
 	_note(Loc.t("WEEKLY_NOTE"))
@@ -423,6 +433,18 @@ func _build_shop() -> void:
 				else:
 					AudioManager.play(&"error_soft")
 		)
+	# Sink de prestígio: token de franquia (ganho no prestige) vira brasas.
+	_info_row(
+		Loc.t("FRANCHISE_EXCHANGE"),
+		Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens,
+		"1 → 5 %s" % Loc.t("EMBERS"),
+		GREEN if GameState.franchise_tokens > 0 else Color("b0bec5"),
+		GameState.franchise_tokens > 0,
+		func() -> void:
+			if GameState.convert_franchise_token():
+				AudioManager.play(&"coin")
+				_rebuild(&"shop")
+	)
 	# Rewarded ads honesto: fachada avisa indisponível offline; o adapter real
 	# chamará o callback de recompensa apenas em conclusão verificada.
 	_info_row(
@@ -501,6 +523,7 @@ func _build_settings() -> void:
 	_add_slider(Loc.t("MUSIC_VOLUME"), "music", 0.7)
 	_add_toggle(Loc.t("HAPTICS"), "haptics", true)
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
+	_add_toggle(Loc.t("NOTIFICATIONS"), "notifications", false)
 	var lang_row: HBoxContainer = HBoxContainer.new()
 	lang_row.add_theme_constant_override("separation", 12)
 	screen.content_box.add_child(lang_row)
@@ -545,7 +568,13 @@ func _add_toggle(caption: String, setting_key: String, default_value: bool) -> v
 		GameState.settings[setting_key] = now
 		if setting_key == "eco_mode":
 			GameState.settings["reduced_particles"] = now
+		if setting_key == "notifications":
+			# Retenção: liga o gatilho externo que já existia mas nunca era armado.
+			NotificationManager.permission_granted = now
+			if now:
+				NotificationManager.schedule_return_reminders(GameState.last_seen_unix)
 		SaveManager.request_save()
+		_rebuild(&"settings")
 	)
 
 

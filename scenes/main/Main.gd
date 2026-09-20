@@ -105,7 +105,15 @@ func _ready() -> void:
 	_refresh_economy()
 	_show_pending_offline_reward()
 	SessionFeedback.show_comeback(self)
+	# Retenção: o opt-in de lembretes persiste nos ajustes; sincroniza antes de
+	# agendar (sem isso o gatilho externo nunca era armado).
+	NotificationManager.permission_granted = bool(
+		GameState.settings.get("notifications", false)
+	)
 	NotificationManager.schedule_return_reminders(GameState.last_seen_unix)
+	if GameState.tutorial_complete and GameState.unlocked_pets.has(GameState.favorite_pet):
+		var buddy_name: String = String(ContentDB.pet(GameState.favorite_pet).get("name", "Pet"))
+		_show_toast(Loc.t("BUDDY_VISIT") % buddy_name, PINK)
 	if GameState.tutorial_complete:
 		var deep_section: StringName = NotificationManager.deep_link_section()
 		if deep_section != &"":
@@ -229,6 +237,7 @@ func _react_to_pet_touch() -> void:
 	pet_touch_gate = 0.35
 	var message: String = world.react_to_touch()
 	var affection: int = GameState.register_pet_interaction(current_pet_id)
+	world.affection_level = affection
 	AudioManager.play(&"pet_happy")
 	HapticsManager.light()
 	_show_toast("%s  •  carinho %d/50" % [message, affection], PINK)
@@ -496,6 +505,7 @@ func _on_queue_pressed(slot: int) -> void:
 	_configure_current_service()
 	world.set_service_layout(current_service)
 	world.set_pet_profile(profile)
+	world.affection_level = int(GameState.pet_affection.get(current_pet_id, 0))
 	world.arrive()
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
@@ -643,6 +653,9 @@ func _update_queue_ui() -> void:
 			)
 			if bool(client["vip"]):
 				client_name = "VIP " + client_name
+			if String(client["pet"]) == GameState.favorite_pet:
+				# Buddy na fila: marcador localizado (investimento emocional visível).
+				client_name += " • " + Loc.t("BUDDY_TAG")
 			queue_name_labels[slot].text = client_name
 			queue_service_labels[slot].text = String(
 				SERVICE_LABELS.get(StringName(client["service"]), "cuidado")
@@ -820,6 +833,11 @@ func _build_interface() -> void:
 			SessionFeedback.open_meta.bind(self, StringName(item["id"]), nav_button)
 		)
 		nav.add_child(nav_button)
+	# Evento do dia visível NA cena (antes só aparecia dentro do painel):
+	# gatilho interno de retorno ("hoje paga 2×").
+	var event_pill: Label = _pill(nav, LiveOps.current_event_name(), Color("4fc3f7"), 250)
+	event_pill.add_theme_font_size_override("font_size", 22)
+	event_pill.custom_minimum_size = Vector2(250, 60)
 
 	# HUD flutuante sem rodapé sólido: cenário continua visível até a borda inferior.
 	var action_hud: VBoxContainer = VBoxContainer.new()

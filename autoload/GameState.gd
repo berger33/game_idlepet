@@ -22,6 +22,11 @@ var bath_upgrade_level: int = 0
 var tool_upgrade_levels: Dictionary = {"soap": 0, "clipper": 0, "dryer": 0, "perfume": 0, "bow": 0}
 var combo: int = 0
 var best_combo: int = 0
+var best_streak: int = 0
+var weekly_chest_week: String = ""
+# Folga de combo da sessão: o primeiro Good de uma sequência não zera o combo
+# (fail sempre zera). Não persiste de propósito — é alívio de flow, não meta.
+var combo_grace_used: bool = false
 var services_completed: int = 0
 var player_level: int = 1
 var player_xp: int = 0
@@ -307,6 +312,8 @@ func to_dictionary() -> Dictionary:
 		"week_start": week_start,
 		"last_daily_claim": last_daily_claim,
 		"daily_streak": daily_streak,
+		"best_streak": best_streak,
+		"weekly_chest_week": weekly_chest_week,
 		"streak_freezes": streak_freezes,
 		"pass_day_unlocked": pass_day_unlocked,
 		"pass_day_claimed": pass_day_claimed,
@@ -373,6 +380,8 @@ func apply_dictionary(data: Dictionary) -> void:
 	_refresh_daily_missions()
 	last_daily_claim = String(data.get("last_daily_claim", ""))
 	daily_streak = clampi(int(data.get("daily_streak", 0)), 0, 7)
+	best_streak = clampi(int(data.get("best_streak", 0)), daily_streak, 7)
+	weekly_chest_week = String(data.get("weekly_chest_week", ""))
 	streak_freezes = clampi(int(data.get("streak_freezes", 1)), 0, 99)
 	pass_day_unlocked = clampi(int(data.get("pass_day_unlocked", 0)), 0, 28)
 	pass_day_claimed = clampi(
@@ -484,6 +493,7 @@ func claim_daily_reward() -> int:
 			else:
 				daily_streak = 0
 	daily_streak = daily_streak % 7 + 1
+	best_streak = maxi(best_streak, daily_streak)
 	last_daily_claim = today
 	var reward: int = 25 * daily_streak
 	if daily_streak == 7 and not unlocked_pets.has("mel_golden"):
@@ -573,6 +583,42 @@ func claim_weekly(mission_id: StringName) -> bool:
 	return true
 
 
+## Sink de prestige (auditoria de retenção): 1 token de franquia vira 5 brasas.
+## Fecha o loop da moeda órfã sem criar paywall nem segunda economia dura.
+func convert_franchise_token() -> bool:
+	if franchise_tokens <= 0:
+		return false
+	franchise_tokens -= 1
+	embers += 5
+	EventBus.currency_changed.emit(&"embers", float(embers))
+	EventBus.toast_requested.emit("Token de franquia convertido: +5 Brasas", Color("ffd54f"))
+	Analytics.track(&"currency_spent", {"currency": "franchise_tokens", "amount": 1})
+	SaveManager.request_save()
+	return true
+
+
+## Baú semanal: completar E claimar as 7 semanais paga um bônus único por
+## semana. Chamado após cada claim semanal.
+func check_weekly_chest() -> bool:
+	_refresh_weekly_missions()
+	if weekly_chest_week == week_start:
+		return false
+	for weekly: Dictionary in ContentDB.weekly_missions:
+		if not claimed_weeklies.has(String(weekly["id"])):
+			return false
+	weekly_chest_week = week_start
+	embers += 3
+	add_coins(200.0, &"weekly_chest")
+	EventBus.currency_changed.emit(&"embers", float(embers))
+	EventBus.toast_requested.emit(
+		"Baú da semana! Todas as missões semanais: +200 moedas e +3 Brasas",
+		Color("ffd54f"),
+	)
+	Analytics.track(&"weekly_mission_complete", {"id": "weekly_chest"})
+	SaveManager.request_save()
+	return true
+
+
 ## Pass de 28 dias: um dia destravado por ciclo diário completo (3 missões).
 func _advance_pass() -> void:
 	var today: String = Time.get_date_string_from_system()
@@ -629,7 +675,15 @@ func _on_service_completed(_service_id: StringName, quality: StringName, reward:
 		mission_progress["perfect"] = int(mission_progress.get("perfect", 0)) + 1
 		weekly_progress["perfect"] = int(weekly_progress.get("perfect", 0)) + 1
 		total_perfect_services += 1
-	combo = combo + 1 if quality == &"perfect" else 0
+	if quality == &"perfect":
+		combo += 1
+		combo_grace_used = false
+	elif quality == &"good" and combo > 0 and not combo_grace_used:
+		# Folga: o primeiro Good de uma sequência preserva o ritmo; fail zera.
+		combo_grace_used = true
+	else:
+		combo = 0
+		combo_grace_used = false
 	best_combo = maxi(best_combo, combo)
 	weekly_progress["combo_max"] = maxi(int(weekly_progress.get("combo_max", 0)), combo)
 	if services_completed >= 8 and not hired_staff.has("bia"):
@@ -755,6 +809,49 @@ func _check_achievements() -> void:
 		_unlock_achievement("collect_5", 0, 4)
 	if offline_seconds_collected >= 3600.0:
 		_unlock_achievement("offline_1h", 100)
+	# Leva D7/D30 (auditoria de retenção): metas longas com recompensa variada.
+	if best_combo >= 50:
+		_unlock_achievement("combo_50", 0, 5)
+	if total_perfect_services >= 100:
+		_unlock_achievement("perfect_100", 400)
+	if services_completed >= 100:
+		_unlock_achievement("services_100", 200)
+	if services_completed >= 500:
+		_unlock_achievement("services_500", 0, 4)
+	if services_completed >= 1000:
+		_unlock_achievement("services_1000", 0, 8)
+	if five_star_reviews >= 50:
+		_unlock_achievement("reviews_50", 300)
+	if unlocked_pets.size() >= 15:
+		_unlock_achievement("collect_15", 0, 3)
+	if unlocked_pets.size() >= 30:
+		_unlock_achievement("collect_30", 0, 5)
+	if unlocked_pets.size() >= 50:
+		_unlock_achievement("collect_50", 0, 10)
+	if unlocked_cosmetics.size() >= 5:
+		_unlock_achievement("cosmetics_5", 200)
+	if hired_staff.size() >= 3:
+		_unlock_achievement("staff_2", 0, 2)
+	if hired_staff.size() >= 6:
+		_unlock_achievement("staff_5", 0, 4)
+	if bath_upgrade_level >= 25:
+		_unlock_achievement("upgrade_25", 500)
+	if bath_upgrade_level >= 50:
+		_unlock_achievement("upgrade_50", 0, 6)
+	if prestige_level >= 1:
+		_unlock_achievement("prestige_1", 0, 5)
+	if offline_seconds_collected >= 28800.0:
+		_unlock_achievement("offline_8h", 250)
+	if total_coins >= 5000.0:
+		_unlock_achievement("rich_5000", 0, 3)
+	if best_streak >= 7:
+		_unlock_achievement("streak_7", 0, 4)
+	if player_level >= 25:
+		_unlock_achievement("level_25", 300)
+	for touches: Variant in pet_affection.values():
+		if int(touches) >= 50:
+			_unlock_achievement("friend_50", 0, 4)
+			break
 
 
 func register_offline_collection(seconds: float) -> void:

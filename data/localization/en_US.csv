@@ -122,3 +122,9 @@ TOOL_CLIPPER,Clippers
 TOOL_DRYER,Dryer
 TOOL_PERFUME,Perfume
 TOOL_BOW,Bow
+NOTIFICATIONS,Return reminders
+TOMORROW,Tomorrow
+BUDDY_VISIT,%s missed you and came first!
+BUDDY_TAG,buddy
+FRANCHISE_EXCHANGE,Franchise
+FRANCHISE_DESC,Tokens available: %d
