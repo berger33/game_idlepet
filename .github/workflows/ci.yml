@@ -64,18 +64,31 @@ jobs:
             done
             exit 1
           fi
-      - name: Análise estática de todos os scripts (nível editor, 4.7.2)
+      - name: Análise estática de todos os scripts (contexto de projeto, 4.7.2)
         run: |
           status=0
-          while IFS= read -r script; do
-            if ! output=$(./godot --headless --check-only --script "res://$script" 2>&1); then
-              echo "::error file=$script::análise estática falhou (Godot 4.7.2)"
-              echo "$output" | head -25 | while IFS= read -r line; do
-                echo "::error::[$script] ${line:0:200}"
-              done
-              status=1
-            fi
-          done < <(git ls-files '*.gd')
+          # Autoteste do detector: um script com colisão var/func DEVE falhar.
+          printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
+          printf 'res://probe_collision_selftest.gd\n' > script_list.txt
+          if ./godot --headless --script tools/check_scripts.gd > /dev/null 2>&1; then
+            echo "::error::detector de análise não registrou a colisão de teste"
+            status=1
+          else
+            echo "detector validado: script de teste com colisão falhou como esperado"
+          fi
+          rm -f probe_collision_selftest.gd
+          # Análise de todos os scripts com autoloads registrados (como no editor).
+          git ls-files '*.gd' | sed 's|^|res://|' > script_list.txt
+          ./godot --headless --script tools/check_scripts.gd 2>&1 | tee /tmp/check.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "::error::análise de scripts falhou (Godot 4.7.2)"
+            grep -E "SCRIPT ERROR|Compile Error|Parse Error|FALHARAM" /tmp/check.log | head -20 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          rm -f script_list.txt
+          exit $status
           # Autoteste do detector: um script com colisão var/func DEVE falhar.
           printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
           if ./godot --headless --check-only --script res://probe_collision_selftest.gd > /dev/null 2>&1; then

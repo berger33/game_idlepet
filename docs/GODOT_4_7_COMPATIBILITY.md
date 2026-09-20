@@ -23,7 +23,7 @@
 - Novo teste `test_no_gdscript_name_collisions` varre **todos** os `.gd` do projeto por declarações duplicadas de nome (var/const/signal/enum/func/static func) — guarda permanente para a classe inteira de erro, independente da versão do Godot do CI.
 - Novo teste `test_no_orphan_private_method_references` varre todos os `.gd` por chamadas/handlers `_privados` sem declaração no arquivo (a classe do `_show_comeback`/`_on_share_pressed`).
 - O job de runtime do CI foi migrado de Godot 4.3 para **4.7.2**, a versão alvo do projeto: `--headless --import` + smoke test agora validam o parse na mesma versão que o usuário executa.
-- O CI também executa `--check-only` (análise em nível de editor) em **todos** os scripts no 4.7.2 — o import/smoke sozinhos não falham com erro de script — com autoteste que garante que o detector enxerga colisões de nome.
+- O CI também executa `tools/check_scripts.gd` (análise em **contexto de projeto completo**, com autoloads registrados — igual ao editor) sobre **todos** os scripts no 4.7.2 — o import/smoke sozinhos não falham com erro de script — com autoteste que garante que o detector enxerga colisões de nome. (O `--check-only` por script isolado foi avaliado e descartado: não resolve identificadores de autoload fora do contexto do projeto.)
 
 ## Validação esperada no Windows
 
