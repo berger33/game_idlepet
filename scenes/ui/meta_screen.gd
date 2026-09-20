@@ -20,5 +20,8 @@ func _ready() -> void:
 	panel.add_theme_stylebox_override(
 		"panel", StyleFactory.box(Color("fffaf3", 0.98), 50, 42, Color("ff8fb1"), 7)
 	)
-	hide()
+	# O estado "aberto" do MetaPanel é screen.panel.visible: os nós de estado
+	# precisam nascer escondidos individualmente. Esconder só a raiz deixaria
+	# panel.visible == true (is_open() true) e o open() nunca re-exibiria a raiz.
+	panel.hide()
 	backdrop.hide()

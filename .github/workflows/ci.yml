@@ -71,6 +71,18 @@ jobs:
             done
             exit 1
           fi
+      - name: Interação — seleção de cliente e painéis (headless)
+        run: |
+          ./godot --headless --script tools/smoke_interact.gd 2>&1 | tee /tmp/interact.log
+          status=${PIPESTATUS[0]}
+          if grep -q "SCRIPT ERROR" /tmp/interact.log; then
+            echo "::error::erro(s) de script durante a interação"
+            grep -E "SCRIPT ERROR|at:" /tmp/interact.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          exit $status
       - name: Análise estática de todos os scripts (contexto de projeto, 4.7.2)
         run: |
           status=0

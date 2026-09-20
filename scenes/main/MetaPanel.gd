@@ -29,6 +29,10 @@ func is_open() -> bool:
 func build(root: Control) -> void:
 	screen = META_SCREEN.instantiate()
 	root.add_child(screen)
+	# Defesa contra regressão do estado inicial: o painel meta nasce fechado
+	# (is_open() lê screen.panel.visible; esconder apenas a raiz não basta).
+	screen.panel.hide()
+	screen.backdrop.hide()
 	screen.close_button.pressed.connect(close)
 	_style_button(screen.close_button, PINK)
 

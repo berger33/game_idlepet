@@ -366,6 +366,17 @@ class FoundationTests(unittest.TestCase):
         # sem afetar o exit code do smoke). O acesso ao painel é mediado.
         self.assertIn('SessionFeedback.open_meta.bind(self', main)
         self.assertNotIn('meta.open.bind', main)
+        # 4.7.2 runtime: o painel meta nascia "aberto" — is_open() lê
+        # screen.panel.visible, mas o _ready escondia só a raiz (panel.visible
+        # continua true) → cartões da fila desabilitados para sempre e painéis
+        # que não renderizavam ao abrir (open() não re-exibia a raiz).
+        screen = Path('scenes/ui/meta_screen.gd').read_text(encoding='utf8')
+        self.assertIn('panel.hide()', screen)
+        self.assertIn('backdrop.hide()', screen)
+        self.assertNotIn('\n\thide()\n', screen)
+        metapanel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('screen.panel.hide()', metapanel)
+        self.assertIn('screen.backdrop.hide()', metapanel)
         self.assertNotIn('FILA  2', canvas)
         self.assertNotIn('bottom.offset_top', main)
         self.assertIn('action_hud.position = Vector2(45, 1350)', main)
@@ -420,18 +431,23 @@ class FoundationTests(unittest.TestCase):
             if '.git' in path.parts:
                 continue
             text = path.read_text(encoding='utf8')
-            defined = set(re.findall(r'^\t?(?:static\s+)?func\s+(_?[A-Za-z_][A-Za-z0-9_]*)', text, re.MULTILINE))
-            for match in call_pattern.finditer(text):
+            # Escaneia só código: strings e comentários não são chamadas
+            # (mensagens de erro podem citar nomes de métodos).
+            code_only = re.sub(r'"[^"\n]*"', '""', text)
+            code_only = re.sub(r"'[^'\n]*'", "''", code_only)
+            code_only = re.sub(r'#.*', '', code_only)
+            defined = set(re.findall(r'^\t?(?:static\s+)?func\s+(_?[A-Za-z_][A-Za-z0-9_]*)', code_only, re.MULTILINE))
+            for match in call_pattern.finditer(code_only):
                 name = match.group(1)
                 if name in defined or name in lifecycle:
                     continue
-                line = text[:match.start()].count('\n') + 1
+                line = code_only[:match.start()].count('\n') + 1
                 self.fail(f'{path}:{line}: chamada órfã {name}() — método não declarado no arquivo')
-            for match in connect_pattern.finditer(text):
+            for match in connect_pattern.finditer(code_only):
                 name = match.group(1)
                 if name in defined:
                     continue
-                line = text[:match.start()].count('\n') + 1
+                line = code_only[:match.start()].count('\n') + 1
                 self.fail(f'{path}:{line}: connect({name}) referencia handler não declarado')
 
     def test_professional_backgrounds_exist_and_are_reasonable(self):
