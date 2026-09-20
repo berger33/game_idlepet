@@ -4,7 +4,7 @@ extends Node
 ## (Gameplay/Main/autoloads), por isso o aviso unused_signal — que só enxerga
 ## a própria classe — é suprimido na região de declaração abaixo.
 
-@warning_ignore_start(unused_signal)
+@warning_ignore_start("unused_signal")
 signal currency_changed(currency: StringName, amount: float)
 signal service_started(service_id: StringName)
 signal service_progress(value: float)
@@ -17,4 +17,4 @@ signal upgrade_purchased(upgrade_id: StringName, level: int)
 signal save_completed
 signal toast_requested(message: String, color: Color)
 signal settings_changed
-@warning_ignore_restore(unused_signal)
+@warning_ignore_restore("unused_signal")
