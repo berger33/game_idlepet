@@ -2,8 +2,8 @@ extends SceneTree
 ## Verificação de compilação/análise de TODOS os scripts em contexto de
 ## projeto (autoloads registrados) — o mesmo analisador do editor, sem os
 ## falsos positivos do --check-only isolado (que não resolve autoloads).
-## Execute: godot --headless --path . --script tools/check_scripts.gd -- res://a.gd res://b.gd
-## Os caminhos entram pela linha de usuário (após "--").
+## Execute: godot --headless --path . --script tools/check_scripts.gd -- <caminhos>
+## Os caminhos dos scripts entram pela linha de usuário (após "--").
 
 
 var failed: PackedStringArray = []
@@ -16,7 +16,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var paths: PackedStringArray = OS.get_cmdline_user_args()
 	if paths.is_empty():
-		push_error("check_scripts: passe os caminhos res:// após '--' na linha de comando")
+		push_error("check_scripts: passe os caminhos dos scripts após '--' na linha de comando")
 		quit(1)
 		return
 	var checked: int = 0
