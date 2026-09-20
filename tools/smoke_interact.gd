@@ -13,7 +13,8 @@ func _initialize() -> void:
 
 func _run() -> void:
 	print("INTERACT: boot")
-	var watchdog: SceneTreeTimer = get_tree().create_timer(120.0)
+	# extends SceneTree: self É a tree — get_tree() não existe aqui.
+	var watchdog: SceneTreeTimer = create_timer(120.0)
 	watchdog.timeout.connect(
 		func() -> void:
 			push_error("smoke_interact TIMEOUT: coroutine morreu sem _finish (erro de runtime acima?)")
