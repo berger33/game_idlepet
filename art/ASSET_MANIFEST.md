@@ -14,7 +14,7 @@
 | `stations/station_drying_table.png` | secagem, mesa acolchoada com bocal de ar | ilustração original gerada e recortada/curada | 420×169 RGBA | topo ancorado na superfície do pet |
 | `stations/station_spa_pedestal.png` | spa, pedestal com almofada | ilustração original gerada e recortada/curada | 300×179 RGBA | topo ancorado na superfície do pet |
 | `stations/station_ottoman.png` | estilo, pufe rosa com botões | ilustração original gerada e recortada/curada | 340×110 RGBA | topo ancorado na superfície do pet |
-| `stations/shelf_unit.png` | estante de utensílios, 5 pranchas de madeira | ilustração original gerada e recortada/curada | 216×780 RGBA | pranchas medidas e mapeadas em data/service_layouts.json (dados seguem a arte) |
+| `stations/shelf_unit.png` | estante de utensílios, 5 pranchas de madeira | ilustração original gerada e recortada/curada | 216×780 RGBA | pranchas medidas e mapeadas em data/service_layouts.json (dados seguem a arte; snap uniforme 122px, desvio ≤3px) |
 | `pets/*.png` coleção completa (50) | todos os 25 cães e 25 gatos do catálogo | ilustrações originais geradas e recortadas/curadas para este projeto | 512×512 RGBA | raça individualizada, transparência real; referências anexadas não foram incorporadas |
 | fallback de segurança | runtime | desenho vetorial procedural original em GDScript | escalável | mantido apenas para defesa contra recurso ausente/corrompido |
 | SFX/BGM | runtime | síntese procedural original | 22.050 Hz mono | sem arquivo/licença externa |

@@ -81,7 +81,7 @@ func _run() -> void:
 	if shelves.size() != 5:
 		_fail("service_shelf_levels tamanho %d != 5" % shelves.size())
 	for i: int in 5:
-		if abs(shelves[i] - [560.0, 730.0, 900.0, 1070.0, 1240.0][i]) > 0.5:
+		if abs(shelves[i] - [679.0, 801.0, 923.0, 1045.0, 1167.0][i]) > 0.5:
 			_fail("shelf_y[%d]=%f fora do contrato" % [i, shelves[i]])
 	var tool_names: Array[String] = ["soap", "clipper", "dryer", "perfume", "bow"]
 	for i: int in 5:
