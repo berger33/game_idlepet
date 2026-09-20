@@ -351,10 +351,16 @@ class FoundationTests(unittest.TestCase):
         self.assertNotIn('func draw_ellipse(', canvas)
         self.assertIn('func _draw_pet_ellipse(', canvas)
         # 4.7.2: `func staff` colidia com `var staff` (erro de parse que impede
-        # a inicialização; o Godot 4.3 do CI tolerava a colisão).
+        # a inicialização; o Godot 4.3 do CI tolerava a colisão). O rename
+        # precisa ser COMPLETO: atribuição/iteração pela `staff` órfã resolvem
+        # para o método e viram "assign to constant"/"iterate Callable".
         self.assertIn('var staff_members:', content_db)
         self.assertNotIn('var staff:', content_db)
         self.assertIn('func staff(', content_db)
+        self.assertIn('staff_members = _load_array(STAFF_PATH', content_db)
+        self.assertIn('for member: Dictionary in staff_members:', content_db)
+        self.assertNotIn('\n\tstaff = ', content_db)
+        self.assertNotIn(' in staff:', content_db)
         self.assertNotIn('FILA  2', canvas)
         self.assertNotIn('bottom.offset_top', main)
         self.assertIn('action_hud.position = Vector2(45, 1350)', main)

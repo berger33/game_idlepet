@@ -30,8 +30,8 @@ func _ready() -> void:
 		if not id.is_empty() and not pets_by_id.has(id):
 			pets_by_id[id] = pet
 	career = _load_dictionary(CAREER_PATH)
-	staff = _load_array(STAFF_PATH, "staff")
-	for member: Dictionary in staff:
+	staff_members = _load_array(STAFF_PATH, "staff")
+	for member: Dictionary in staff_members:
 		var member_id: String = String(member.get("id", ""))
 		if not member_id.is_empty() and not staff_by_id.has(member_id):
 			staff_by_id[member_id] = member

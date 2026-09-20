@@ -2,8 +2,8 @@ extends SceneTree
 ## Verificação de compilação/análise de TODOS os scripts em contexto de
 ## projeto (autoloads registrados) — o mesmo analisador do editor, sem os
 ## falsos positivos do --check-only isolado (que não resolve autoloads).
-## Execute: godot --headless --path . --script tools/check_scripts.gd
-## A lista de scripts vem de res://script_list.txt (um caminho por linha).
+## Execute: godot --headless --path . --script tools/check_scripts.gd -- res://a.gd res://b.gd
+## Os caminhos entram pela linha de usuário (após "--").
 
 
 var failed: PackedStringArray = []
@@ -14,20 +14,20 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	if not FileAccess.file_exists("res://script_list.txt"):
-		push_error("check_scripts: res://script_list.txt ausente")
+	var paths: PackedStringArray = OS.get_cmdline_user_args()
+	if paths.is_empty():
+		push_error("check_scripts: passe os caminhos res:// após '--' na linha de comando")
 		quit(1)
 		return
-	var file: FileAccess = FileAccess.open("res://script_list.txt", FileAccess.READ)
 	var checked: int = 0
-	while not file.eof_reached():
-		var path: String = file.get_line().strip_edges()
-		if path.is_empty() or path == "res://tools/check_scripts.gd":
+	for path: String in paths:
+		var clean: String = path.strip_edges()
+		if clean.is_empty() or clean == "res://tools/check_scripts.gd":
 			continue
 		checked += 1
-		var script: GDScript = load(path) as GDScript
+		var script: GDScript = load(clean) as GDScript
 		if script == null or not script.can_instantiate():
-			failed.append(path)
+			failed.append(clean)
 	if failed.is_empty():
 		print("check_scripts: %d scripts analisados, 0 falhas" % checked)
 		quit(0)
