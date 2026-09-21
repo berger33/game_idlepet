@@ -240,6 +240,7 @@ func _process(delta: float) -> void:
 		perfume_hold_time = 0.0
 	world.tool_levels = GameState.tool_upgrade_levels
 	world.rush_active = rush_active
+	world.vip_active = current_vip
 	_update_rush(delta)
 	_process_queue(delta)
 func _input(event: InputEvent) -> void:
@@ -698,6 +699,7 @@ func _on_queue_pressed(slot: int) -> void:
 		and GameState.unlocked_pets.has(GameState.favorite_pet)
 	)
 	world.buddy_pet_id = GameState.favorite_pet
+	world.vip_active = current_vip
 	world.arrive()
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])

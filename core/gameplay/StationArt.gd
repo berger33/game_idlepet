@@ -125,12 +125,18 @@ static func draw_title_plaque(shop) -> void:
 ## A banheira acompanha o capítulo do estabelecimento: rústica no quintal
 ## (tier 1) e porcelana dourada a partir do tier 2.
 ## Endgame Rede Regional (P1): segunda estação visual quando tier>=6 ou level>=10.
-static func draw_station(shop) -> void:
+## 10/10 vivo: sombra reativa (squash/stretch + salto) via jump_height/reaction_scale.
+static func draw_station(shop, jump_height: float = 0.0, reaction_scale: Vector2 = Vector2.ONE, celebration: float = 0.0, empty_time: float = 0.0) -> void:
 	if shop.room_empty:
 		return
 	var surface: float = shop.pet_position.y
 	var cx: float = shop.pet_position.x
-	_ellipse(shop, Vector2(cx, surface + 10), 216.0, 26.0, Color(CHARCOAL, 0.16))
+	# sombra reativa 10/10
+	var shadow_sc: Vector2 = PetAnimationTuning.shadow_scale(reaction_scale, jump_height, false, celebration, empty_time)
+	var shadow_alpha: float = PetAnimationTuning.shadow_alpha(jump_height, celebration)
+	var shadow_rx: float = 216.0 * shadow_sc.x
+	var shadow_ry: float = 26.0 * shadow_sc.y
+	_ellipse(shop, Vector2(cx, surface + 10), shadow_rx, shadow_ry, Color(CHARCOAL, shadow_alpha))
 	var key: StringName = _station_key(shop)
 	var texture: Texture2D = _art_texture(key) if key != &"" else null
 	if texture != null:
@@ -250,18 +256,37 @@ static func _draw_station_evolution(shop, cx: float, surface: float) -> void:
 ## (fatia da MESMA textura) oclui as patas e vende a leitura "pet dentro
 ## da banheira"; uma elipse de água translúcida na linha do aro molha as
 ## patinhas que ficam visíveis.
-static func draw_station_foreground(shop) -> void:
-	if shop.room_empty or shop.service_mode != &"bath":
+## 10/10 vivo: reflexo sutil do pet na água + água pulsante com beat.
+static func draw_station_foreground(shop, pet_tex: Texture2D = null, pet_states: Dictionary = {}, body_center: Vector2 = Vector2.ZERO, pet_wet: bool = false, celebration: float = 0.0) -> void:
+	if shop.room_empty:
+		# ainda desenha fallback se não for banho? manter compat
+		if shop.service_mode != &"bath":
+			return
+	if shop.service_mode != &"bath":
 		return
 	var surface: float = shop.pet_position.y
 	var cx: float = shop.pet_position.x
 	var key: StringName = _station_key(shop)
 	var texture: Texture2D = _art_texture(key) if key != &"" else null
+	var rim_y: float = surface + RIM_LINE_OFFSET
+	# água pulsante com beat
+	var beat: float = 0.0
+	if Engine.has_singleton("AudioManager") or true:
+		# usa shake_phase como fallback se AudioManager não disponível
+		beat = sin(shop.shake_phase * 2.0) * 0.06 + 0.35
+	else:
+		beat = 0.35
+	_ellipse(shop, Vector2(cx, rim_y + 6.0), 168.0 + beat * 10.0, 14.0 + beat * 2.0, Color(WATER_BLUE, beat))
+	# reflexo sutil do pet na água (10/10)
+	if pet_tex != null and body_center != Vector2.ZERO and pet_wet:
+		var refl_alpha: float = 0.08 + 0.02 * sin(shop.shake_phase * 1.5)
+		var refl_size: float = 120.0
+		# desenha elipse colorida como reflexo simplificado + textura espelhada vertical se possível
+		_ellipse(shop, Vector2(cx, rim_y + 18.0), 90.0, 22.0, Color(WATER_BLUE, refl_alpha * 2.0))
+		# se tiver textura, desenha versão flip vertical com alpha baixo
+		# flip via rect com altura negativa não é suportado em draw_texture_rect, então usamos tint
+		shop.draw_texture_rect(pet_tex, Rect2(cx - refl_size * 0.5, rim_y - 10, refl_size, refl_size * 0.5), false, Color(1, 1, 1, refl_alpha))
 	if texture != null:
-		var rim_y: float = surface + RIM_LINE_OFFSET
-		_ellipse(
-			shop, Vector2(cx, rim_y + 6.0), 168.0, 14.0, Color(WATER_BLUE, 0.35)
-		)
 		var box: Rect2 = _station_box(shop, key)
 		var frac: float = BATHTUB_RIM_FRACS[key]
 		var tex_h: float = float(texture.get_height())

@@ -131,21 +131,30 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 	# texture_local: coordenadas locais ao pivô dos pés do sprite texturizado.
 	var accessory: String = String(shop.room_cosmetics.get("pet_accessory", ""))
 	var texture: Texture2D = _cosmetic_texture(accessory) if accessory != "" else null
+	var sway: Vector2 = Vector2.ZERO
+	if shop.has_method("get") or true:
+		# acessório flutter 10/10
+		var jump_h: float = 0.0
+		if shop.get("celebration") != null and float(shop.celebration) > 0.0:
+			var c_ph: float = 1.0 - float(shop.celebration) / 1.8
+			if c_ph >= 0.2 and c_ph < 0.72:
+				jump_h = sin(PI * (c_ph - 0.2) / 0.52) * 72.0
+		sway = PetAnimationTuning.accessory_sway(shop.shake_phase, jump_h, fit)
 	if texture != null:
 		var spec: Dictionary = ACCESSORY_TEXTURE_SPEC[accessory]
 		var h: float = float(spec.h) * fit
 		var w: float = h * float(texture.get_width()) / float(texture.get_height())
-		var anchor: Vector2 = _accessory_anchor(shop, accessory, center, fit, texture_local)
+		var anchor: Vector2 = _accessory_anchor(shop, accessory, center, fit, texture_local) + sway
 		var sprite_center: Vector2 = anchor + Vector2(0.0, float(spec.dy) * fit)
 		shop.draw_texture_rect(
 			texture, Rect2(sprite_center.x - w * 0.5, sprite_center.y - h * 0.5, w, h), false
 		)
 		return
-	_draw_accessory_polygons(shop, accessory, center, fit, texture_local)
+	_draw_accessory_polygons(shop, accessory, center, fit, texture_local, sway)
 
 
 static func _draw_accessory_polygons(
-	shop, accessory: String, center: Vector2, fit: float, texture_local: bool
+	shop, accessory: String, center: Vector2, fit: float, texture_local: bool, sway: Vector2 = Vector2.ZERO
 ) -> void:
 	if accessory == "bandana_blue" or accessory == "bandana_red":
 		var bandana_colors: Dictionary = {
@@ -155,11 +164,11 @@ static func _draw_accessory_polygons(
 		var pair: Array = bandana_colors[accessory]
 		var neck: Vector2 = (
 			Vector2(0.0, -140.0 * fit) if texture_local else center + Vector2(0, 98)
-		)
+		) + sway
 		var half: float = 68.0 * fit
 		shop.draw_colored_polygon(
 			PackedVector2Array(
-				[neck + Vector2(-half, 0), neck + Vector2(half, 0), neck + Vector2(0, 84 * fit)]
+				[neck + Vector2(-half, 0), neck + Vector2(half, 0), neck + Vector2(0, 84 * fit + sway.y)]
 			),
 			Color(String(pair[0]))
 		)
@@ -168,7 +177,7 @@ static func _draw_accessory_polygons(
 	elif accessory == "scarf_caramel":
 		var neck: Vector2 = (
 			Vector2(0.0, -140.0 * fit) if texture_local else center + Vector2(0, 98)
-		)
+		) + sway
 		var half: float = 66.0 * fit
 		var scarf: Color = Color("c98b5b")
 		var shade: Color = Color("8d5a33")
@@ -188,7 +197,7 @@ static func _draw_accessory_polygons(
 				[
 					neck + Vector2(-half * 0.55, 24.0 * fit),
 					neck + Vector2(-half * 0.05, 24.0 * fit),
-					neck + Vector2(-half * 0.25, 132.0 * fit)
+					neck + Vector2(-half * 0.25, 132.0 * fit + sway.y * 1.5)
 				]
 			),
 			scarf
@@ -211,7 +220,7 @@ static func _draw_accessory_polygons(
 			Vector2(0.0, -390.0 * fit * shop.PET_TEXTURE_BASELINE - 16.0 * fit)
 			if texture_local
 			else center + Vector2(0, -164)
-		)
+		) + sway * 0.5
 		var width: float = 72.0 * fit
 		var band_h: float = 18.0 * fit
 		var tip_h: float = 58.0 * fit
@@ -232,7 +241,7 @@ static func _draw_accessory_polygons(
 					[
 						crown + Vector2(point_x - 16.0 * fit, -band_h),
 						crown + Vector2(point_x + 16.0 * fit, -band_h),
-						crown + Vector2(point_x, -tip_h)
+						crown + Vector2(point_x, -tip_h + sway.y * 0.3)
 					]
 				),
 				Color(String(gems[0]))

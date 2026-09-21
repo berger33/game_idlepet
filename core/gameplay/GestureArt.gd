@@ -185,7 +185,7 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 				shop.draw_circle(target, 6.0, Color("ffffff", 0.85))
 
 
-## Banheira dupla (Onda 3): o buddy é atendido em paralelo no cantinho da cena.
+## Banheira dupla (Onda 3) — 10/10 vivo: buddy respira, olha main pet, salta sincronizado no perfect.
 static func draw_buddy(shop) -> void:
 	if not shop.buddy_active or shop.room_empty or shop.buddy_pet_id.is_empty():
 		return
@@ -201,22 +201,51 @@ static func draw_buddy(shop) -> void:
 		return
 	var size: float = 170.0
 	var feet: Vector2 = Vector2(196.0, 1198.0)
-	var top: float = feet.y - 479.0 / 512.0 * size
-	# Espuminha do atendimento em paralelo.
-	shop.draw_circle(feet + Vector2(0.0, -14.0), 74.0, Color("e1f5fe", 0.55))
-	shop.draw_arc(feet + Vector2(0.0, -14.0), 74.0, 0.0, TAU, 24, Color("b3e5fc", 0.9), 5.0)
+	var jump: float = float(shop.get("buddy_jump_height", 0.0))
+	var eye_off: Vector2 = shop.get("buddy_eye_offset", Vector2.ZERO)
+	var celebration: float = float(shop.get("buddy_celebration", 0.0))
+	# breathing buddy
+	var breathe: float = sin(shop.shake_phase * 2.2) * 0.008
+	var scale_y: float = 1.0 + breathe
+	var top: float = feet.y - 479.0 / 512.0 * size - jump
+	# Espuminha animada
+	var foam_r: float = 74.0 + sin(shop.shake_phase * 3.0) * 4.0
+	var foam_alpha: float = 0.55 + 0.1 * sin(shop.shake_phase * 2.0)
+	shop.draw_circle(feet + Vector2(0.0, -14.0), foam_r, Color("e1f5fe", foam_alpha))
+	shop.draw_arc(feet + Vector2(0.0, -14.0), foam_r, 0.0, TAU, 24, Color("b3e5fc", 0.9), 5.0)
+	# bolhas buddy quando celebra
+	if celebration > 0.0:
+		for i: int in 3:
+			var ang: float = TAU * float(i) / 3.0 + shop.shake_phase * 2.0
+			var bp: Vector2 = feet + Vector2(cos(ang), sin(ang)) * 20.0 + Vector2(0, -30 - jump * 0.5)
+			shop.draw_circle(bp, 6.0 + sin(shop.shake_phase * 4.0 + i) * 2.0, Color("ffffff", 0.6))
+	shop.draw_set_transform(Vector2(feet.x, feet.y - jump), 0.0, Vector2(1.0, scale_y))
 	shop.draw_texture_rect(
-		shop.buddy_texture, Rect2(feet.x - size * 0.5, top, size, size), false
+		shop.buddy_texture, Rect2(-size * 0.5, top - feet.y + jump, size, size), false
 	)
+	shop.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# eye tracking buddy olha main pet
+	if eye_off != Vector2.ZERO:
+		var eye_center: Vector2 = feet + Vector2(0, -80) + Vector2(-18, -12)
+		shop.draw_circle(eye_center + eye_off, 4.0, Color("ffffff", 0.85))
+		shop.draw_circle(eye_center + Vector2(36, 0) + eye_off, 4.0, Color("ffffff", 0.85))
+	# +40% pulsa com beat quando celebra
+	var beat_pulse: float = 1.0
+	if shop.get("celebration") != null:
+		beat_pulse = 1.0 + sin(shop.shake_phase * 5.0) * 0.15 * (1.0 if celebration > 0.0 else 0.0)
+	var label_size: float = 24.0 * beat_pulse
+	var label_alpha: float = 0.65 + 0.25 * sin(shop.shake_phase * 3.0) if celebration > 0.0 else 0.65
 	shop.draw_string(
 		shop.UI_TITLE_FONT,
-		feet + Vector2(-64.0, -150.0),
+		feet + Vector2(-64.0, -150.0 - jump),
 		"+40%",
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1,
-		24,
-		Color("263238", 0.65)
+		int(label_size),
+		Color("263238", label_alpha)
 	)
+	if celebration > 0.0:
+		shop.draw_string(shop.UI_TITLE_FONT, feet + Vector2(-28, -170 - jump), "✨", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("ffd54f", 0.9))
 
 
 ## Snapshot por frame do estado do gesto para o canvas desenhar (Onda 1):
