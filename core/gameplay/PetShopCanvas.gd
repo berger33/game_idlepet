@@ -506,15 +506,14 @@ func _draw() -> void:
 		Rect2(0.0, 0.0, float(background.get_width()), source_height)
 	)
 	ChapterArt.draw_wall(self)
-	var room_title: String = (
+	var room_title: String = Loc.t(
 		{
-			&"bath": "BANHO & ESPUMA",
-			&"groom": "TOSA & APARO",
-			&"dry": "SECAGEM ACONCHEGANTE",
-			&"perfume": "SPA PERFUMADO",
-			&"style": "ATELIÊ DE LAÇOS",
-		}
-		. get(service_mode, "PET SHOP")
+			&"bath": "ROOM_BATH",
+			&"groom": "ROOM_GROOM",
+			&"dry": "ROOM_DRY",
+			&"perfume": "ROOM_PERFUME",
+			&"style": "ROOM_STYLE",
+		}.get(service_mode, "ROOM_BATH")
 	)
 	var establishment_name: String = ContentDB.establishment_name(clampi(establishment_tier, 1, 10))
 	var shop_name: String = String(GameState.settings.get("shop_name", ""))

@@ -12,7 +12,7 @@ const NAV_ICONS: Dictionary = {
 }
 const PINK: Color = Color("ff8fb1")
 const BLUE: Color = Color("4fc3f7")
-const GREEN: Color = Color("43a047")
+const GREEN: Color = Color("2e7d32") # WCAG AA 5.13:1 com branco (antes 43a047 3.30:1)
 const CREAM: Color = Color("fff3e0")
 const CHARCOAL: Color = Color("263238")
 const SERVICE_TOOLS: Dictionary = {
@@ -26,12 +26,14 @@ const SERVICE_UNLOCK_LEVELS: Dictionary = {
 	&"bath": 1, &"groom": 3, &"dry": 5, &"perfume": 7, &"style": 10
 }
 const SERVICE_LABELS: Dictionary = {
-	&"bath": "ensaboar",
-	&"groom": "tosar",
-	&"dry": "secar",
-	&"perfume": "perfumar",
-	&"style": "colocar lacinho"
+	&"bath": "SERVICE_VERB_BATH",
+	&"groom": "SERVICE_VERB_GROOM",
+	&"dry": "SERVICE_VERB_DRY",
+	&"perfume": "SERVICE_VERB_PERFUME",
+	&"style": "SERVICE_VERB_STYLE"
 }
+func _service_verb(service: StringName) -> String:
+	return Loc.t(String(SERVICE_LABELS.get(service, "SERVICE_VERB_BATH")))
 const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
 const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 var bath: BathService
@@ -581,7 +583,7 @@ func _fail(reason: StringName) -> void:
 	instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.9), 34, 14, Color.WHITE, 4))
 	result_title.text = Loc.t("RESULT_ALMOST")
 	result_title.modulate = Color("ef5350")
-	var action_name: String = String(SERVICE_LABELS.get(current_service, "cuidado"))
+	var action_name: String = _service_verb(current_service)
 	var hint: String
 	if reason == &"timeout":
 		hint = Loc.t("FAIL_TIMEOUT")
@@ -691,7 +693,7 @@ func _offer_special(
 ) -> void:
 	pending_special = offered
 	pending_special_result = {"quality": quality, "reward": reward, "stars": stars}
-	var service_name: String = String(SERVICE_LABELS.get(offered, "cuidado")).capitalize()
+	var service_name: String = _service_verb(offered).capitalize()
 	upsell_label.text = (
 		"%s adoraria também um %s!\nAceitar o pedido?" % [current_pet_name, service_name]
 	)
@@ -851,7 +853,7 @@ func _update_queue_ui() -> void:
 			if slot == 0 and GameState.services_completed == 0:
 				client_name = "⭐ " + client_name
 			queue_name_labels[slot].text = client_name
-			var service_text: String = String(SERVICE_LABELS.get(StringName(client["service"]), "cuidado")).capitalize()
+			var service_text: String = _service_verb(StringName(client["service"])).capitalize()
 			if StringName(client.get("special", &"")) != &"":
 				service_text += " + ★"
 			if slot == 0 and GameState.services_completed == 0:
@@ -1223,12 +1225,23 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	)
 	parent.add_child(label)
 	return label
+func _relative_luminance(c: Color) -> float:
+	var rs: float = c.r; var gs: float = c.g; var bs: float = c.b
+	rs = rs / 12.92 if rs <= 0.04045 else pow((rs + 0.055) / 1.055, 2.4)
+	gs = gs / 12.92 if gs <= 0.04045 else pow((gs + 0.055) / 1.055, 2.4)
+	bs = bs / 12.92 if bs <= 0.04045 else pow((bs + 0.055) / 1.055, 2.4)
+	return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+func _ideal_text_color(bg: Color) -> Color:
+	var lb: float = _relative_luminance(bg); var lw: float = 1.0; var lc: float = _relative_luminance(CHARCOAL)
+	var cr_white: float = (maxf(lb, lw) + 0.05) / (minf(lb, lw) + 0.05)
+	var cr_char: float = (maxf(lb, lc) + 0.05) / (minf(lb, lc) + 0.05)
+	return CHARCOAL if cr_char > cr_white else Color.WHITE
 func _button(text: String, color: Color, width: float, height: float) -> Button:
 	var button: Button = Button.new(); button.text = text
 	button.custom_minimum_size = Vector2(width if width>0 else 0, maxf(height,64.0) if height>0 else 64.0)
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; button.clip_text=false
 	var fs: float = SalonTuning.font_scale(); button.add_theme_font_size_override("font_size", int(30*fs))
-	var tc: Color = CHARCOAL if color.get_luminance()>0.65 or color==Color("ffd54f") else Color.WHITE
+	var tc: Color = _ideal_text_color(color)
 	for k: String in ["font_color","font_pressed_color","font_hover_color"]: button.add_theme_color_override(k, tc)
 	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
 	button.add_theme_stylebox_override("normal", _style(color,32,14)); button.add_theme_stylebox_override("hover", _style(color.lightened(0.10),32,14,Color.WHITE,2))

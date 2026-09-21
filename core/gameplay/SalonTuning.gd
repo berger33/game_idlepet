@@ -105,7 +105,7 @@ static func apply(
 	)
 	# --- C1: marcos de maestria — upgrades que mudam a ação ---
 	var tool: StringName = StringName(
-		{"bath": "soap", "groom": "clipper", "dry": "dryer", "style": "bow"}.get(service, "")
+		{"bath": "soap", "groom": "clipper", "dry": "dryer", "perfume": "perfume", "style": "bow"}.get(service, "")
 	)
 	if tool != &"" and int(levels.get(String(tool), 0)) >= milestone_level(tool):
 		match tool:
@@ -119,6 +119,9 @@ static func apply(
 			&"dryer":
 				bath.zone_speed *= 0.75 # antes 0.70 — menos aceleração com maestria
 				bath.hold_rate = clampf(bath.hold_rate * 1.30, 0.0, 0.5) # antes 1.5
+			&"perfume":
+				# Perfume maestria: janela de acerto 30% mais larga — borrifada menos punitiva.
+				bath.pulse_window = clampf(bath.pulse_window * 1.30, 0.12, 0.8)
 			&"bow":
 				bath.drop_radius *= 1.30 # antes 1.4 — bônus contido
 	# --- A3: exagero (overwashed) estreita a próxima janela até um acerto ---
