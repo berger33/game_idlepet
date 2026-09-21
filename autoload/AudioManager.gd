@@ -29,6 +29,13 @@ extends Node
 const SAMPLE_RATE: int = 22050
 ## WAVs de SFX versionados (gerados por tools/gen_sfx.py).
 const SFX_DIR: String = "res://audio/sfx/"
+## Trilhas por capítulo (tools/gen_bgm.py, 96 BPM, loop de 16 compassos):
+## quintal (tiers 1–3), clínica (4–6) e império (7–10). Sem o arquivo, o loop
+## procedural antigo entra como fallback — a música nunca falta.
+const BGM_DIR: String = "res://audio/bgm/"
+const BGM_BY_TIER: Array[StringName] = [&"bgm_quintal", &"bgm_clinica", &"bgm_imperio"]
+## Ganho das trilhas (pico 0,6 / RMS ~-17 dBFS) vs. o loop procedural antigo.
+const BGM_GAIN: float = 0.34
 ## Âncora de sincronia: VFX pulsam no compasso da música REAL em execução
 ## (get_playback_position), não em relógio próprio.
 const MUSIC_BPM: float = 96.0
@@ -45,6 +52,7 @@ var voices: Array[AudioStreamPlayer] = []
 var voice_index: int = 0
 var music_player: AudioStreamPlayer
 var energy_player: AudioStreamPlayer
+var current_bgm: StringName = &""
 var energy_target_db: float = ENERGY_OFF_DB
 var cache: Dictionary = {}
 var tick_counter: Dictionary = {}
@@ -62,11 +70,14 @@ func _ready() -> void:
 	_build_sfx_cache()
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Master"
-	music_player.stream = _ambient_loop()
-	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
-	music_player.volume_db = linear_to_db(music_volume * 0.22)
 	add_child(music_player)
-	music_player.play()
+	play_bgm_for_tier(GameState.establishment_tier)
+	# Novo capítulo = nova trilha (crossfade curto), sem tocar no Main.
+	EventBus.reveal_requested.connect(
+		func(kind: StringName, payload: Dictionary) -> void:
+			if kind == &"chapter":
+				play_bgm_for_tier(int(payload.get("tier", 1)))
+	)
 	# Camada de energia: percussão entra durante o serviço e sai suave no fim.
 	energy_player = AudioStreamPlayer.new()
 	energy_player.bus = &"Master"
@@ -223,8 +234,57 @@ func apply_volumes() -> void:
 	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
 	for voice: AudioStreamPlayer in voices:
 		voice.volume_db = linear_to_db(sfx_volume)
+	music_player.volume_db = _music_db()
+
+
+## Trilha do capítulo: troca com fade quando o tier muda de faixa; a posição
+## reinicia no tempo 1 (beat_phase continua ancorada na música real).
+func play_bgm_for_tier(tier: int) -> void:
+	var band: int = 0 if tier < 4 else (1 if tier < 7 else 2)
+	var name: StringName = BGM_BY_TIER[band]
+	if name == current_bgm and music_player.playing:
+		return
+	var stream: AudioStreamWAV = _load_bgm(name)
+	if stream == null:
+		stream = _ambient_loop()
+	current_bgm = name
+	if music_player.playing:
+		var fade: Tween = create_tween()
+		fade.tween_property(music_player, "volume_db", -40.0, 0.6)
+		fade.tween_callback(
+			func() -> void:
+				music_player.stream = stream
+				music_player.play()
+		)
+		fade.tween_property(music_player, "volume_db", _music_db(), 0.8)
+		return
+	music_player.stream = stream
+	music_player.volume_db = _music_db()
+	music_player.play()
+
+
+func _music_db() -> float:
 	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
-	music_player.volume_db = linear_to_db(music_volume * 0.22)
+	var gain: float = BGM_GAIN if current_bgm != &"" else 0.22
+	return linear_to_db(music_volume * gain)
+
+
+## WAV da trilha (importado) com loop forçado — o importador não sabe que é loop.
+func _load_bgm(name: StringName) -> AudioStreamWAV:
+	var path: String = BGM_DIR + String(name) + ".wav"
+	if not ResourceLoader.exists(path):
+		push_warning("AudioManager: BGM ausente: " + path)
+		return null
+	var stream: AudioStreamWAV = load(path) as AudioStreamWAV
+	if stream == null:
+		return null
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	var bytes_per_frame: int = 2 if stream.format == AudioStreamWAV.FORMAT_16_BITS else 1
+	if stream.stereo:
+		bytes_per_frame *= 2
+	stream.loop_end = int(stream.data.size() / bytes_per_frame)
+	return stream
 
 
 ## Registra os N degraus de uma escada (um WAV por degrau) + o fallback no

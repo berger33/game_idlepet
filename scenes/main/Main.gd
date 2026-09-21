@@ -888,13 +888,14 @@ func _build_interface() -> void:
 	combo_label = _pill(top_bar, "COMBO ×1", GREEN, 300)
 	rush_label = _pill(top_bar, "", Color("ff8f00"), 210)
 
-	# Meta visível: "o que vem a seguir e a que distância" (Goals.hud_line).
+	# Meta visível: "o que vem a seguir e a que distância" (Goals.hud_line),
+	# logo abaixo da fila e à direita do selo da estação (não cobre a placa).
 	var goal_row: HBoxContainer = HBoxContainer.new()
-	goal_row.position = Vector2(45, 248)
+	goal_row.position = Vector2(340, 492)
 	add_child(goal_row)
-	goal_label = _pill(goal_row, "", Color("ce93d8"), 990)
-	goal_label.custom_minimum_size = Vector2(990, 52)
-	goal_label.add_theme_font_size_override("font_size", 22)
+	goal_label = _pill(goal_row, "", Color("ce93d8"), 695)
+	goal_label.custom_minimum_size = Vector2(695, 48)
+	goal_label.add_theme_font_size_override("font_size", 20)
 	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
 	queue_row = HBoxContainer.new()
 	queue_row.position = Vector2(45, 310)

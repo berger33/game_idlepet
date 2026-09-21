@@ -417,6 +417,7 @@ func _draw() -> void:
 		Rect2(Vector2.ZERO, size),
 		Rect2(0.0, 0.0, float(background.get_width()), source_height)
 	)
+	ChapterArt.draw_wall(self)  # mural que cresce com o capítulo (tier).
 	# A placa da ilustração permanece sem texto; o título é localizado em runtime.
 	# O nome da sala é neutro; a localização vem do capítulo do estabelecimento
 	# (quintal humilde no início → império no fim) exibida logo abaixo.

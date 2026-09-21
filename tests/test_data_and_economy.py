@@ -1187,4 +1187,37 @@ class DiscoveryAndContentTests(unittest.TestCase):
                 self.assertIn(key, table)
 
 
+class ChapterPresentationTests(unittest.TestCase):
+    """§3 do plano: progresso visível por capítulo (mural) e música real por fase."""
+
+    def test_chapters_change_the_room(self):
+        art = Path('core/gameplay/ChapterArt.gd').read_text(encoding='utf8')
+        self.assertIn('static func draw_wall', art)
+        self.assertIn('static func tint_for', art)
+        for tier in (2, 4, 6, 8, 10):
+            self.assertIn('if tier >= %d:' % tier, art, 'capítulo %d sem mudança visual' % tier)
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        self.assertIn('ChapterArt.draw_wall(self)', canvas)
+
+    def test_bgm_tracks_ship_and_follow_the_chapter(self):
+        import wave
+        sys.path.insert(0, 'tools')
+        from gen_bgm import BPM, LOOP_FRAMES, SR, TRACKS, validate
+        self.assertEqual(BPM, 96.0)
+        audio = Path('autoload/AudioManager.gd').read_text(encoding='utf8')
+        self.assertIn('const MUSIC_BPM: float = %.1f' % BPM, audio, 'pulso visual e trilha no mesmo BPM')
+        for name in TRACKS:
+            path = Path('audio/bgm') / f'{name}.wav'
+            self.assertEqual(validate(path), [], name)
+            with wave.open(str(path)) as handle:
+                self.assertEqual(handle.getnframes(), LOOP_FRAMES)
+                self.assertEqual(handle.getframerate(), SR)
+            self.assertIn('&"%s"' % name, audio)
+        for token in ('func play_bgm_for_tier', 'LOOP_FORWARD', '_ambient_loop()',
+                      'kind == &"chapter"', 'func _load_bgm'):
+            self.assertIn(token, audio)
+        workflow = Path('.github/workflows/ci.yml').read_text(encoding='utf8')
+        self.assertIn('gen_bgm.py --check', workflow)
+
+
 if __name__=='__main__': unittest.main()
