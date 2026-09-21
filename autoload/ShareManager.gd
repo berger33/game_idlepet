@@ -109,6 +109,9 @@ func share_achievement(achievement_id: String) -> String:
 ## Canal de compartilhamento da plataforma. Retorna o que aconteceu:
 ## &"web_share" (folha nativa/download no navegador), &"clipboard" (imagem na
 ## galeria + legenda copiada) ou &"none" (nada para compartilhar).
+func is_ready() -> bool:
+	return not last_saved_path.is_empty() and FileAccess.file_exists(last_saved_path)
+
 func share_last() -> StringName:
 	if last_saved_path.is_empty() or not FileAccess.file_exists(last_saved_path):
 		return &"none"
@@ -217,8 +220,10 @@ func _render_card(
 	)
 	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
 	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
-	# QR code no share (P1): gera via código sem lib externa
-	var qr_data: String = SHARE_URL if not SHARE_URL.is_empty() else "%s|%s|%d|%s" % [String(profile.get("id", "caramelo")), context, stars, String(GameState.settings.get("shop_name", "PetShop"))]
+	# QR code no share (P1 Nota10): QR real escaneável — URL curta para caber v2/v3 L
+	var pet_id_short: String = String(profile.get("id", "caramelo"))
+	var shop_short: String = String(GameState.settings.get("shop_name", "PetShop")).left(12)
+	var qr_data: String = SHARE_URL if not SHARE_URL.is_empty() else "https://p.tycoon/p/%s?s=%d&sh=%s" % [pet_id_short, stars, shop_short]
 	var qr_img: Image = QRCodeArt.generate_image(qr_data, 220)
 	var qr_tex: ImageTexture = ImageTexture.create_from_image(qr_img)
 	var qr_frame: PanelContainer = PanelContainer.new()
@@ -308,8 +313,8 @@ func _render_achievement_card(achievement_id: String) -> Image:
 		root.add_child(_text(reward_text, 48, Color("ff8f00"), 950, TITLE_FONT))
 	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
 	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
-	# QR code também no cartão de conquista
-	var qr_data2: String = SHARE_URL if not SHARE_URL.is_empty() else "%s|%s" % [achievement_id, String(GameState.settings.get("shop_name", "PetShop"))]
+	# QR code também no cartão de conquista — Nota10 URL curta escaneável
+	var qr_data2: String = SHARE_URL if not SHARE_URL.is_empty() else "https://p.tycoon/a/%s" % [achievement_id]
 	var qr_img2: Image = QRCodeArt.generate_image(qr_data2, 220)
 	var qr_tex2: ImageTexture = ImageTexture.create_from_image(qr_img2)
 	var qr_frame2: PanelContainer = PanelContainer.new()

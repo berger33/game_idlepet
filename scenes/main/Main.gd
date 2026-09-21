@@ -72,6 +72,7 @@ var current_visitor: bool = false
 var last_tip_percent: int = 0
 var tutorial_overlay: Control
 var tutorial_skip_button: Button
+var missions_button: Button
 var tutorial := TutorialFlow.new()
 var recovery_penalty: bool = false
 var consecutive_perfects: int = 0
@@ -502,14 +503,23 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 			fill.custom_minimum_size.x = xp_bar.custom_minimum_size.x * before_ratio
 			var tween: Tween = xp_bar.create_tween()
 			tween.tween_property(fill, "custom_minimum_size:x", xp_bar.custom_minimum_size.x * after_ratio, 0.6).set_trans(Tween.TRANS_QUAD)
-	ShareManager.finish_snapshot(get_viewport(), String(current_service), {"pet_id": current_pet_id, "stars": stars})
-	share_button.visible = true
+	# Nota10 P2-12: share race fix — botão disabled até path pronto, await snapshot
+	share_button.visible = false
+	share_button.disabled = true
 	_pop_panel(result_panel)
 	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
 	primary_button.disabled = false
 	primary_button.show()
 	_animate_coin_fly(int(reward))
 	_refresh_economy()
+	# Aguarda snapshot assíncrono (frame_post_draw) e só então habilita share
+	var saved_path: String = await ShareManager.finish_snapshot(get_viewport(), String(current_service), {"pet_id": current_pet_id, "stars": stars})
+	if not saved_path.is_empty() and is_instance_valid(share_button):
+		share_button.visible = true
+		share_button.disabled = false
+	else:
+		if is_instance_valid(share_button):
+			share_button.visible = false
 func _fail(reason: StringName) -> void:
 	bath.state = BathService.State.FAILED
 	dragging = false
@@ -588,7 +598,10 @@ func _dismiss_result() -> void:
 		if not daily_shown:
 			get_tree().create_timer(2.5).timeout.connect(func(): if not meta.is_open() and not result_panel.visible and not upsell_panel.visible: meta.open(&"settings"), CONNECT_ONE_SHOT)
 func _refill_delay() -> float:
-	return 0.35 if rush_active else 1.1
+	var base: float = 0.35 if rush_active else 1.1
+	if GameState.establishment_tier >= 6:
+		base *= 0.5 # Nota10: segunda sala funcional fila 2x mais rápida
+	return base
 func _update_rush(delta: float) -> void:
 	if rush_active:
 		rush_left -= delta
@@ -728,6 +741,8 @@ func _process_queue(delta: float) -> void:
 				patience_drain *= 0.5
 			if mood_buff_clients > 0:
 				patience_drain *= 0.9
+			if GameState.establishment_tier >= 6:
+				patience_drain *= 0.85 # Nota10: segunda sala funcional
 			queue[slot]["wait_left"] = float(queue[slot]["wait_left"]) - patience_drain
 			if float(queue[slot]["wait_left"]) <= 0.0:
 				_client_left(slot)
@@ -840,7 +855,11 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 	else:
 		review_label.text = "★ %.1f" % GameState.review_average()
 	if is_instance_valid(goal_label):
-		goal_label.text = Goals.hud_line()
+		var base_goal: String = Goals.hud_line()
+		# Nota10 P2-14: tip odds visível no HUD quando tier>=3
+		if GameState.player_level >= 3:
+			base_goal += " • " + SalonTuning.tip_odds_text() if SalonTuning.has_method("tip_odds_text") else ""
+		goal_label.text = base_goal
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
@@ -937,6 +956,8 @@ func _build_interface() -> void:
 		nav.add_child(col)
 		var nav_button: Button = _button("🔒" if locked else "", CHARCOAL if not locked else Color("90a4ae"), 72, 72)
 		nav_button.name = "Nav_%s" % String(sid)
+		if sid == &"missions":
+			missions_button = nav_button
 		if not locked:
 			nav_button.icon = NAV_ICONS[sid]
 		nav_button.tooltip_text = tip if not locked else "%s • %s" % [tip, Loc.t("NAV_LOCKED") % unlock_lv]
@@ -1025,8 +1046,8 @@ func _build_interface() -> void:
 	tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tutorial_overlay.visible = false
 	add_child(tutorial_overlay)
-	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 300, 68)
-	tutorial_skip_button.position = Vector2(45, 145 + safe_top)
+	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 220, 56)
+	tutorial_skip_button.position = Vector2(750, 145 + safe_top) # Nota10: reposicionado direita para não sobrepor nav (30,145)
 	tutorial_skip_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88), 34, 12, Color("ffffff", 0.6), 2))
 	tutorial_skip_button.pressed.connect(tutorial.skip)
 	tutorial_skip_button.visible = false

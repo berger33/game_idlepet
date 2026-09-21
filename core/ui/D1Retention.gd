@@ -80,6 +80,10 @@ static func missions_has_badge() -> bool:
 	return DailySpin.can_spin() or not GameState.is_daily_claimed_today()
 
 static func _find_missions_button(main) -> Button:
+	# Nota10 P2-13: ref robusta via Main.missions_button, fallback busca frágil
+	if "missions_button" in main and is_instance_valid(main.missions_button):
+		return main.missions_button as Button
+	# Fallback legado
 	for child in main.get_children():
 		if child is HBoxContainer:
 			for col in child.get_children():

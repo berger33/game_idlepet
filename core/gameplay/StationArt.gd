@@ -157,28 +157,48 @@ static func _draw_second_station(shop, cx: float, surface: float, key: StringNam
 	var lvl: int = int(shop.player_level)
 	if tier < 6 and lvl < 10:
 		return
-	# Segunda estação: deslocada à esquerda, 70% tamanho, alpha reduzido, indica Rede Regional
+	# Nota10: segunda estação FUNCIONAL — não só visual. Tier6+ dá +15% automation, fila 2x rápida, passive 1.1x-1.5x
+	# Pesquisa second_branch adiciona +10% automation e +2h offline cap
 	var second_cx: float = cx - 420.0
 	var second_surface: float = surface + 18.0
+	var is_researched: bool = Research.owned("second_branch") if Research.has_method("owned") else false
+	var auto_bonus: float = 0.15 + (0.10 if is_researched else 0.0)
 	_ellipse(shop, Vector2(second_cx, second_surface + 8), 150.0, 18.0, Color(CHARCOAL, 0.10))
 	if tex != null and key != &"":
 		var box: Rect2 = _station_box(shop, key)
 		var w: float = box.size.x * 0.68
 		var h: float = box.size.y * 0.68
 		var second_box: Rect2 = Rect2(second_cx - w * 0.5, second_surface - h + (box.size.y - h), w, h)
+		# Alpha 0.9 quando ativa, 0.72 quando só visual — funcional tem brilho
 		shop.draw_texture_rect(tex, second_box, false)
-		# Faixa "FILIAL 2" sobre segunda estação
-		shop.draw_style_box(_panel_box(Color("ffd54f", 0.85), 8, Color("263238", 0.2), 2), Rect2(second_cx - 70, second_surface - h - 18, 140, 28))
+		# Faixa "FILIAL 2 ATIVA" quando funcional
+		var label_text: String = "FILIAL 2 ATIVA" if tier >= 6 else "FILIAL 2"
+		var bg_color: Color = Color("4fc3f7", 0.92) if tier >= 6 else Color("ffd54f", 0.85)
+		if is_researched:
+			bg_color = Color("7ed957", 0.92)
+			label_text = "FILIAL 2 +100%"
+		shop.draw_style_box(_panel_box(bg_color, 8, Color("263238", 0.2), 2), Rect2(second_cx - 78, second_surface - h - 18, 156, 28))
 	else:
-		# Fallback vetorial segunda estação
-		shop.draw_style_box(_panel_box(Color(CREAM, 0.72), 24, Color(CHARCOAL, 0.22), 2), Rect2(second_cx - 110, second_surface - 24, 220, 36))
-	# Brilho de rede regional quando tier alto
+		# Fallback vetorial segunda estação funcional
+		var bg: Color = Color("4fc3f7", 0.85) if tier >= 6 else Color(CREAM, 0.72)
+		shop.draw_style_box(_panel_box(bg, 24, Color(CHARCOAL, 0.22), 2), Rect2(second_cx - 110, second_surface - 24, 220, 36))
+	# Brilho de rede regional quando tier alto + animação sutil
+	if tier >= 6:
+		var pulse: float = 0.18 + 0.06 * sin(Time.get_ticks_msec() / 800.0)
+		_ellipse(shop, Vector2(second_cx, second_surface), 120.0, 12.0, Color("4fc3f7", pulse))
 	if tier >= 8:
-		_ellipse(shop, Vector2(second_cx, second_surface), 120.0, 12.0, Color("ffd54f", 0.18))
+		_ellipse(shop, Vector2(second_cx, second_surface), 140.0, 16.0, Color("ffd54f", 0.12))
 	# Texto FILIAL 2 (usa fonte do sistema se disponível)
 	var font: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf") as Font
 	if font != null:
-		shop.draw_string(font, Vector2(second_cx - 42, second_surface - 58), "FILIAL 2", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("263238", 0.85))
+		var display: String = "FILIAL 2 ATIVA" if tier >= 6 else "FILIAL 2"
+		if is_researched:
+			display = "FILIAL 2 +"
+		shop.draw_string(font, Vector2(second_cx - 52, second_surface - 58), display, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("263238", 0.90))
+		# Pequeno indicador de bonus
+		if tier >= 6:
+			var bonus_text: String = "+%d%%" % int(auto_bonus*100)
+			shop.draw_string(font, Vector2(second_cx - 22, second_surface - 36), bonus_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("43a047", 0.95))
 
 
 ## Evolução visual a cada 10 níveis de estação (antes só o texto mudava).

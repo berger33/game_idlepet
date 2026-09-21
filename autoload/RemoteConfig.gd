@@ -9,8 +9,8 @@ const DEFAULTS: Dictionary = {
 	"upgrade_cost_base": 25.0,
 	"upgrade_cost_growth": 1.18,
 	"upgrade_income_growth": 1.075,
-	"offline_rate": 0.15,  # parcela da renda ativa que o cofre rende fechado
-	"offline_cap_hours": 2.0,
+	"offline_rate": 0.18,  # parcela da renda ativa que o cofre rende fechado (Nota10: 0.15→0.18 base)
+	"offline_cap_hours": 4.0, # Nota10: 2h→4h base + 8h primeira noite generosa
 	"autosave_seconds": 15.0,
 	"rewarded_daily_cap": 8,
 	"rewarded_cooldown_seconds": 180,

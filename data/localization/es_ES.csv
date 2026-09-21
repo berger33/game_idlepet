@@ -457,3 +457,26 @@ WMISSION_SPEND,%d/600 invertido
 WMISSION_STYLE,%d/12 lazos
 WMISSION_TIPS,%d/10 propinas
 WMISSION_VIP,%d/3 clientes VIP
+RESEARCH_EFFECT_offline_cap,cap offline +%dh
+RESEARCH_EFFECT_vip_chance,chance VIP +%d%%
+RESEARCH_EFFECT_tip_bonus,propinas +%d%%
+RESEARCH_EFFECT_combo_protection,protección de combo
+RESEARCH_EFFECT_mastery_bonus,bono maestría +%d%%
+RESEARCH_EFFECT_automation,automatización +%d%%
+RESEARCH_EFFECT_prestige_bonus,bono prestigio +%d%%
+RESEARCH_QUICK_HANDS,Manos Ágiles
+RESEARCH_TIP_TRAINING,Entrenamiento Propinas
+RESEARCH_VIP_MARKETING,Marketing VIP
+RESEARCH_SECOND_BRANCH,Segunda Sucursal
+RESEARCH_COMBO_SHIELD,Escudo Combo
+RESEARCH_MASTER_TOOLS,Herramientas Maestro
+RESEARCH_AUTO_GROOMER,Tosador Automático
+RESEARCH_FRANCHISE_NETWORK,Red Franquicias
+RESEARCH_ELITE_CLIENTS,Clientes Elite
+RESEARCH_EMPIRE_LEGACY,Legado Imperio
+GHOST_AUTO_OFF,Fantasma desactivado — ¡ya eres pro!
+TIP_ODDS,Propinas: 60% 0% • 25% +15% • 10% +30% • 5% +60% (+barrio+investigación)
+SECOND_BRANCH_ACTIVE,SUCURSAL 2 ACTIVA • +15% automatización • cola 2x más rápida
+WEEKLY_LAST_DAY,⏰ ¡ÚLTIMO DÍA! %d/%d misiones • %dh restantes
+DAILY_FEATURED,Destacado del Día
+DAILY_FEATURED_DESC,¡Solo hoy con descuento!

@@ -194,17 +194,18 @@ func _migrate(data: Dictionary) -> Dictionary:
 func _grant_offline_reward() -> void:
 	var elapsed_seconds: float = TimeManager.offline_elapsed(GameState.last_seen_unix)
 	# Primeira noite generosa D1: cap mínimo 8h + dobro se primeira coleta (evita frustração sono)
+	# Nota10 fix: bug anterior maxf(elapsed, minf(elapsed,8h)) = elapsed, não dava 8h mínimo. Agora cap 8h via param is_first
 	var is_first: bool = GameState.offline_seconds_collected == 0.0 and GameState.services_completed >= 1
-	var effective_elapsed: float = elapsed_seconds
-	if is_first:
-		effective_elapsed = maxf(elapsed_seconds, minf(elapsed_seconds, 8.0 * 3600.0))
-	# Cofre relevante (auditoria): renda ATIVA estimada × parcela offline (+ equipe).
+	# Cofre relevante (auditoria Nota10): renda ATIVA estimada × parcela offline (+ equipe + pesquisa).
+	# Base 4h + prestige + research_cap, primeira noite 8h mínimo + 2x
 	var reward: float = Economy.offline_earnings(
 		Rewards.income_per_second(),
-		effective_elapsed,
+		elapsed_seconds,
 		GameState.prestige_level,
 		Research.bonus(&"offline_rate"),
-		Rewards.automation_share()
+		Rewards.automation_share(),
+		Research.bonus(&"offline_cap"),
+		is_first
 	)
 	if is_first and reward > 0.0:
 		reward *= 2.0

@@ -42,12 +42,24 @@ static func next_unlock(level: int) -> Dictionary:
 
 
 ## Linha do HUD: "PRÓXIMO: Nina • Nv.20 (62%)". No topo da carreira, prestígio.
+## Nota10 P1-9: urgência semanal domingo
 static func hud_line() -> String:
 	var level: int = GameState.player_level
 	var goal: Dictionary = next_unlock(level)
+	var base: String = ""
 	if goal.is_empty():
-		return Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()
-	var percent: int = int(100.0 * GameState.player_xp / maxf(1.0, GameState.xp_to_next_level()))
-	if int(goal["level"]) == level + 1:
-		return Loc.t("GOAL_NEXT_LEVEL") % [String(goal["text"]), percent]
-	return Loc.t("GOAL_LINE") % [String(goal["text"]), int(goal["level"]), percent]
+		base = Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()
+	else:
+		var percent: int = int(100.0 * GameState.player_xp / maxf(1.0, GameState.xp_to_next_level()))
+		if int(goal["level"]) == level + 1:
+			base = Loc.t("GOAL_NEXT_LEVEL") % [String(goal["text"]), percent]
+		else:
+			base = Loc.t("GOAL_LINE") % [String(goal["text"]), int(goal["level"]), percent]
+	# Nota10: domingo último dia semanal
+	if LiveOps.weekly_is_last_day() if LiveOps.has_method("weekly_is_last_day") else false:
+		var summary: Dictionary = LiveOps.weekly_progress_summary() if LiveOps.has_method("weekly_progress_summary") else {}
+		var done: int = int(summary.get("done", 0))
+		var total: int = int(summary.get("total", 7))
+		if done < total:
+			base += " • ⏰ %d/%d" % [done, total]
+	return base

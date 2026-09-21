@@ -139,9 +139,34 @@ func weekly_reset_label() -> String:
 	var days_left: int = (8 - w) % 7
 	if days_left == 0:
 		days_left = 7
+	# Nota10: urgência domingo + horas restantes
 	if days_left == 1:
+		var hours_left: int = 24 - int(Time.get_datetime_dict_from_system().get("hour", 12))
+		# Se domingo e progresso baixo, mensagem de urgência
+		if w == 0:
+			return Loc.t("WEEKLY_LAST_DAY") % [0, 7, hours_left] if not Loc.t("WEEKLY_LAST_DAY").begins_with("WEEKLY") else "⏰ ÚLTIMO DIA! %dh restantes" % hours_left
 		return Loc.t("WEEKLY_RESET_TOMORROW")
 	return Loc.t("WEEKLY_RESET_DAYS") % days_left
+
+func weekly_hours_remaining() -> int:
+	var now: Dictionary = Time.get_datetime_dict_from_system()
+	var w: int = weekday()
+	var days_left: int = (8 - w) % 7
+	if days_left == 0:
+		days_left = 7
+	var hours_today: int = 24 - int(now.get("hour", 12))
+	return (days_left - 1) * 24 + hours_today
+
+func weekly_is_last_day() -> bool:
+	return weekday() == 0 # Domingo = último dia (reset segunda)
+
+func weekly_progress_summary() -> Dictionary:
+	var done: int = 0
+	for weekly in ContentDB.weekly_missions:
+		if GameState.claimed_weeklies.has(String(weekly.get("id", ""))):
+			done += 1
+	var total: int = ContentDB.weekly_missions.size()
+	return {"done": done, "total": total, "hours_left": weekly_hours_remaining(), "is_last": weekly_is_last_day()}
 
 
 ## Presente de temporada: o cosmético da temporada ativa entra na coleção no

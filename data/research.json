@@ -1,10 +1,20 @@
 {
-  "schema_version":1,
-  "nodes":[
+  "schema_version": 2,
+  "nodes": [
     {"id":"clean_water","name":"Água Purificada","tier":1,"cost":1,"currency":"franchise_token","requires":[],"effect":{"bath_income":0.1}},
     {"id":"gentle_formula","name":"Fórmula Suave","tier":1,"cost":1,"currency":"franchise_token","requires":[],"effect":{"satisfaction":0.05}},
+    {"id":"quick_hands","name":"Mãos Ágeis","tier":1,"cost":1,"currency":"franchise_token","requires":[],"effect":{"service_speed":0.04}},
     {"id":"fast_dryer","name":"Secagem Eficiente","tier":2,"cost":2,"currency":"franchise_token","requires":["clean_water"],"effect":{"service_speed":0.06}},
     {"id":"calm_pets","name":"Comportamento Animal","tier":2,"cost":2,"currency":"franchise_token","requires":["gentle_formula"],"effect":{"patience":0.08}},
-    {"id":"mobile_clinic","name":"Clínica Móvel","tier":3,"cost":4,"currency":"franchise_token","requires":["fast_dryer","calm_pets"],"effect":{"offline_rate":0.05}}
+    {"id":"tip_training","name":"Treino de Gorjetas","tier":2,"cost":2,"currency":"franchise_token","requires":["gentle_formula"],"effect":{"tip_bonus":0.05}},
+    {"id":"vip_marketing","name":"Marketing VIP","tier":2,"cost":2,"currency":"franchise_token","requires":["quick_hands"],"effect":{"vip_chance":0.05}},
+    {"id":"mobile_clinic","name":"Clínica Móvel","tier":3,"cost":3,"currency":"franchise_token","requires":["fast_dryer","calm_pets"],"effect":{"offline_rate":0.05}},
+    {"id":"second_branch","name":"Segunda Filial","tier":3,"cost":3,"currency":"franchise_token","requires":["fast_dryer","vip_marketing"],"effect":{"offline_cap":2.0,"automation":0.10}},
+    {"id":"combo_shield","name":"Escudo de Combo","tier":3,"cost":3,"currency":"franchise_token","requires":["calm_pets","tip_training"],"effect":{"combo_protection":1.0,"satisfaction":0.03}},
+    {"id":"master_tools","name":"Ferramentas de Mestre","tier":3,"cost":3,"currency":"franchise_token","requires":["tip_training","vip_marketing"],"effect":{"mastery_bonus":0.05,"service_speed":0.03}},
+    {"id":"auto_groomer","name":"Tosador Automático","tier":3,"cost":3,"currency":"franchise_token","requires":["quick_hands","fast_dryer"],"effect":{"automation":0.12,"service_speed":0.02}},
+    {"id":"franchise_network","name":"Rede de Franquias","tier":4,"cost":4,"currency":"franchise_token","requires":["mobile_clinic","second_branch"],"effect":{"offline_cap":4.0,"offline_rate":0.08}},
+    {"id":"elite_clients","name":"Clientes Elite","tier":4,"cost":4,"currency":"franchise_token","requires":["combo_shield","master_tools"],"effect":{"vip_chance":0.08,"tip_bonus":0.08}},
+    {"id":"empire_legacy","name":"Legado do Império","tier":4,"cost":5,"currency":"franchise_token","requires":["franchise_network","elite_clients","auto_groomer"],"effect":{"offline_cap":6.0,"offline_rate":0.10,"prestige_bonus":0.10,"automation":0.08}}
   ]
 }

@@ -104,32 +104,253 @@ const PET_MEMORIES: Dictionary = {
 		"%s te trouxe uma bolinha do quintal! Vocês são amigos de verdade agora.",
 		"%s dormiu na sua banheira e te considera família para sempre. 50 carinhos!",
 	],
-	"luna": [
+	"luna_shih_tzu": [
 		"Luna chegou tímida, mas seu perfume acalmou ela no primeiro banho.",
 		"Luna agora pede colo toda vez que te vê — 15 carinhos de confiança.",
 		"Luna te deu um lacinho que ela mesma escolheu. Amizade eterna!",
 	],
-	"thor": [
+	"mingau_srd": [
+		"Primeiro encontro! %s deitou tranquilo da vila, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou querido da vizinhança.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Gato SRD branco feliz!",
+	],
+	"thor_pinscher": [
 		"Thor rosnou no primeiro encontro, mas seu carinho quebrou o gelo.",
 		"Thor te protege na rua — 20 carinhos e ele late se alguém chega perto.",
 		"Thor é seu guardião oficial do pet shop. 50 carinhos de lealdade!",
-	],
-	"mimi": [
-		"Mimi te olhou de cima a baixo antes de aceitar o carinho.",
-		"Mimi ronrona só para você agora — 15 carinhos de aprovação felina.",
-		"Mimi trouxe um ratinho de brinquedo. Presente raro de gato!",
-	],
-	"bob": [
-		"Bob chegou pulando sem parar, quase derrubou a banheira.",
-		"Bob agora senta e espera o banho — 20 carinhos de disciplina.",
-		"Bob te considera seu humano favorito. 50 carinhos de energia infinita!",
 	],
 	"mel_golden": [
 		"Mel te encontrou no Dia 7 e nunca mais saiu do seu lado.",
 		"Mel nada no quintal e te traz folhas como presente — 25 carinhos.",
 		"Mel é a mascote lendária do seu império. História completa!",
 	],
+	"frajola": [
+		"Primeiro encontro! %s pulou na banheira do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou querido da vizinhança.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Gato frajola feliz!",
+	],
+	"fred_poodle": [
+		"Primeiro encontro! %s precisava de carinho do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Pelos embaraçados precisando de tosa e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Poodle feliz!",
+	],
+	"amora_siames": [
+		"Primeiro encontro! %s olhar de diva do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Siamês feliz!",
+	],
+	"nina_yorkshire": [
+		"Primeiro encontro! %s tremia um pouquinho do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Pelos embaraçados precisando de tosa e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Yorkshire feliz!",
+	],
+	"tigrinho_tabby": [
+		"Primeiro encontro! %s trouxe bolinha do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Voltou da chuva todo sujo e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Gato tigrado feliz!",
+	],
+	"bob_bulldog": [
+		"Bob chegou pulando sem parar, quase derrubou a banheira.",
+		"Bob agora senta e espera o banho — 20 carinhos de disciplina.",
+		"Bob te considera seu humano favorito. 50 carinhos de energia infinita!",
+	],
+	"neve_angora": [
+		"Primeiro encontro! %s deitou tranquilo do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Angorá feliz!",
+	],
+	"sol_border": [
+		"Primeiro encontro! %s pulou de alegria da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da metrópole conhecem!",
+	],
+	"cafe_bombay": [
+		"Primeiro encontro! %s cheirava tudo curioso da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Bombaim feliz!",
+	],
+	"jade_spitz": [
+		"Primeiro encontro! %s precisava de carinho da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da metrópole conhecem!",
+	],
+	"pitanga_abissinio": [
+		"Primeiro encontro! %s correu pelo quintal da praia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Voltou da chuva todo sujo e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Abissínio feliz!",
+	],
+	"bento_beagle": [
+		"Primeiro encontro! %s trouxe bolinha da praia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Beagle feliz!",
+	],
+	"azul_russian": [
+		"Primeiro encontro! %s respirou fundo zen da praia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da praia conhecem!",
+	],
+	"paçoca_dachshund": [
+		"Primeiro encontro! %s fuçava o salão da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Dachshund feliz!",
+	],
+	"lua_maine_coon": [
+		"Primeiro encontro! %s pediu carinho gentil da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da serra conhecem!",
+	],
+	"kiko_pug": [
+		"Primeiro encontro! %s chegou abanando o rabo da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Voltou da chuva todo sujo e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Pug feliz!",
+	],
+	"sushi_japanese": [
+		"Primeiro encontro! %s trouxe bolinha da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da serra conhecem!",
+	],
+	"cacau_labrador": [
+		"Primeiro encontro! %s é um doce da Amazônia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da Amazônia conhecem!",
+	],
+	"onca_bengal": [
+		"Primeiro encontro! %s late animado da Amazônia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da Amazônia conhecem!",
+	],
+	"tupa_mane_wolf": [
+		"Primeiro encontro! %s chegou calmo observando da Amazônia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"aurora_ragdoll": [
+		"Primeiro encontro! %s pediu carinho gentil exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"gaia_samoyed": [
+		"Primeiro encontro! %s sorriu com os olhos exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"nox_sphynx": [
+		"Primeiro encontro! %s explorou cada canto exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Voltou da chuva todo sujo e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"rio_savannah": [
+		"Primeiro encontro! %s não parava quieto exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Pelos embaraçados precisando de tosa e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"estrela_khao": [
+		"Primeiro encontro! %s entrou como modelo exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"pipoca_corgi": [
+		"Primeiro encontro! %s queria brincar sem parar da vila, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Welsh Corgi feliz!",
+	],
+	"zeca_schnauzer": [
+		"Primeiro encontro! %s cheirava tudo curioso do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Schnauzer miniatura feliz!",
+	],
+	"belinha_maltes": [
+		"Primeiro encontro! %s encostou a cabeça suave do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Maltês feliz!",
+	],
+	"duke_husky": [
+		"Primeiro encontro! %s late animado do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Husky Siberiano feliz!",
+	],
+	"lola_boxer": [
+		"Primeiro encontro! %s chegou abanando o rabo do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Boxer feliz!",
+	],
+	"nico_aussie": [
+		"Primeiro encontro! %s correu pelo quintal da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Pastor Australiano feliz!",
+	],
+	"maya_akita": [
+		"Primeiro encontro! %s chegou calmo observando da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Akita Inu feliz!",
+	],
+	"otto_basset": [
+		"Primeiro encontro! %s encostou a cabeça suave da praia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da praia conhecem!",
+	],
+	"kiara_doberman": [
+		"Primeiro encontro! %s pose de capa da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da serra conhecem!",
+	],
+	"apolo_bernese": [
+		"Primeiro encontro! %s pediu carinho gentil da Amazônia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"mimi_persa": [
+		"Mimi te olhou de cima a baixo antes de aceitar o carinho.",
+		"Mimi ronrona só para você agora — 15 carinhos de aprovação felina.",
+		"Mimi trouxe um ratinho de brinquedo. Presente raro de gato!",
+	],
+	"yuki_scottish": [
+		"Primeiro encontro! %s encostou a cabeça suave do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou conhecido no bairro.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Scottish Fold feliz!",
+	],
+	"olivia_calico": [
+		"Primeiro encontro! %s queria brincar sem parar do subúrbio, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Voltou da chuva todo sujo e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Calico feliz!",
+	],
+	"simba_noruegues": [
+		"Primeiro encontro! %s late animado do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Pelos embaraçados precisando de tosa e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Norueguês da Floresta feliz!",
+	],
+	"lilo_munchkin": [
+		"Primeiro encontro! %s explorou cada canto do centro, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Cheio de folhas do quintal e virou raro e especial.",
+		"%s te considera melhor amigo! 50 carinhos, história completa de amizade e Munchkin feliz!",
+	],
+	"zara_oriental": [
+		"Primeiro encontro! %s olhar de diva da metrópole, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Tosa atrasada, pelo nos olhos e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da metrópole conhecem!",
+	],
+	"cosmo_birman": [
+		"Primeiro encontro! %s pediu carinho gentil da praia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da praia conhecem!",
+	],
+	"iris_cornish": [
+		"Primeiro encontro! %s não parava quieto da serra, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou épico, todos admiram.",
+		"%s te trouxe um presente raro! 50 carinhos, amigo épico que todos no da serra conhecem!",
+	],
+	"odin_nebelung": [
+		"Primeiro encontro! %s respirou fundo zen da Amazônia, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Queria ficar elegante e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
+	"cleo_egyptian": [
+		"Primeiro encontro! %s pose de capa exótico, ainda desconfiado.",
+		"%s já te espera na porta — 15 carinhos! Precisava de banho urgente, rolou na lama e virou lendário, mascote do império.",
+		"%s dormiu na sua banheira e te considera família para sempre! 50 carinhos, lenda viva do seu império!",
+	],
 }
+
 
 const GENERIC_MEMORIES_PT: Array[String] = [
 	"Primeiro carinho! %s ainda te cheira desconfiado.",

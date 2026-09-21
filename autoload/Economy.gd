@@ -49,11 +49,13 @@ func neighborhood_tier(reputation: int) -> int:
 
 
 func vip_chance(reputation: int) -> float:
-	return minf(0.35, VIP_CHANCE + neighborhood_tier(reputation) * NEIGHBORHOOD_VIP_BONUS)
+	var research_vip: float = Research.bonus(&"vip_chance")
+	return minf(0.50, VIP_CHANCE + neighborhood_tier(reputation) * NEIGHBORHOOD_VIP_BONUS + research_vip)
 
 
 func tip_bonus(reputation: int) -> float:
-	return neighborhood_tier(reputation) * NEIGHBORHOOD_TIP_BONUS
+	var research_tip: float = Research.bonus(&"tip_bonus")
+	return neighborhood_tier(reputation) * NEIGHBORHOOD_TIP_BONUS + research_tip
 
 
 func prestige_coin_multiplier(prestige_level: int) -> float:
@@ -88,21 +90,27 @@ func service_reward(
 
 
 ## Cofre offline. rate_per_second = renda ATIVA estimada (Rewards.income_per_second);
-## offline_rate (remoto) é a parcela dela que o salão rende fechado (0,15 = 2h
-## fora ≈ 18 min de jogo), automation_share soma a equipe contratada e
-## research_bonus é a pesquisa "Clínica Móvel". Cap em horas cresce com o prestígio.
+## offline_rate (remoto) é a parcela dela que o salão rende fechado (0,15 base 4h + pesquisa,
+## 8h primeira noite generosa). automation_share soma equipe, research_bonus é "Clínica Móvel",
+## research_cap_bonus soma horas de pesquisa (second_branch, franchise_network, empire_legacy).
+## is_first garante 8h cap mínimo D1.
 func offline_earnings(
 	rate_per_second: float,
 	elapsed_seconds: float,
 	prestige_level: int,
 	research_bonus: float = 0.0,
-	automation_share: float = 0.0
+	automation_share: float = 0.0,
+	research_cap_bonus: float = 0.0,
+	is_first: bool = false
 ) -> float:
 	var base_cap: float = RemoteConfig.get_float("offline_cap_hours")
 	var cap_scale: float = RemoteConfig.get_float("offline_cap_scale")
 	if cap_scale <= 0.0:
 		cap_scale = 1.0
-	var cap_hours: float = minf(24.0, (base_cap + prestige_level) * cap_scale)
+	var cap_hours: float = (base_cap + prestige_level + research_cap_bonus) * cap_scale
+	if is_first:
+		cap_hours = maxf(cap_hours, 8.0)
+	cap_hours = minf(24.0, cap_hours)
 	var clamped_seconds: float = clampf(elapsed_seconds, 0.0, cap_hours * 3600.0)
 	var share: float = RemoteConfig.get_float("offline_rate") + clampf(automation_share, 0.0, 0.6)
 	return floor(
@@ -117,4 +125,12 @@ func offline_earnings(
 
 
 func prestige_tokens(total_coins: float) -> int:
-	return int(floor(sqrt(maxf(0.0, total_coins) / 1000000.0)))
+	# Rebalanceado Nota 10: sqrt(total/250k) + garantia 1 token em 20k para Nv15
+	# Antes: sqrt(total/1M) → 1 token só em 1M (Nv45+), 10 tokens em 100M (40h)
+	# Agora: 20k→1, 250k→1, 1M→2, 4M→4, 10M→6, 25M→10, 100M→20 (D30 viável)
+	var t: float = maxf(0.0, total_coins)
+	var tokens: int = int(floor(sqrt(t / 250000.0)))
+	if tokens == 0 and t >= 20000.0:
+		tokens = 1
+	tokens += int(floor(t / 5000000.0))
+	return tokens

@@ -98,7 +98,7 @@ var settings: Dictionary = {
 	"eco_mode": false,
 	"font_scale": 1.0,
 	"left_handed": false,
-	"training_ghost": false,
+	"training_ghost": true, # Nota10: ghost ON por padrão D0-D3, auto-off após 10 perfects
 	"colorblind": false,
 	"assist_window": false,
 	"analytics_consent": false,
@@ -114,15 +114,19 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	active_play_seconds += delta
-	if hired_staff.size() <= 1:
+	if hired_staff.size() <= 1 and establishment_tier < 6:
 		return
 	# Equipe como automação (idle de verdade): cada contratado rende uma fração
 	# da renda ativa estimada sozinho (staff.json "automation"), a cada 5 s.
+	# Nota10: segunda sala funcional tier>=6 dá +15% automation + 1.1x-1.5x passive
 	passive_accumulator += delta
 	if passive_accumulator >= 5.0:
 		var cycles: int = int(passive_accumulator / 5.0)
 		passive_accumulator -= cycles * 5.0
 		var passive: float = Rewards.passive_income_per_second() * 5.0 * float(cycles)
+		if establishment_tier >= 6:
+			var tier_bonus: float = 1.0 + 0.5 * float(establishment_tier - 5) / 5.0
+			passive *= tier_bonus
 		if passive >= 1.0:
 			add_coins(floor(passive), &"staff_idle")
 
@@ -556,7 +560,7 @@ func _sanitize_settings() -> void:
 	settings["analytics_consent"] = bool(settings.get("analytics_consent", false))
 	settings["font_scale"] = clampf(float(settings.get("font_scale", 1.0)), 0.8, 1.4)
 	settings["left_handed"] = bool(settings.get("left_handed", false))
-	settings["training_ghost"] = bool(settings.get("training_ghost", false))
+	settings["training_ghost"] = bool(settings.get("training_ghost", true))
 	settings["shop_name"] = String(settings.get("shop_name", "")).strip_edges().left(18)
 
 
@@ -815,12 +819,19 @@ func _on_service_completed(service_id: StringName, quality: StringName, reward: 
 		mission_progress["perfect"] = int(mission_progress.get("perfect", 0)) + 1
 		weekly_progress["perfect"] = int(weekly_progress.get("perfect", 0)) + 1
 		total_perfect_services += 1
+		# Nota10: ghost auto-off após 10 perfects — jogador já é craque
+		if total_perfect_services == 10 and bool(settings.get("training_ghost", true)):
+			settings["training_ghost"] = false
+			EventBus.toast_requested.emit(Loc.t("GHOST_AUTO_OFF") if Loc.has_method("t") else "Fantasma de treino desativado — você já é craque!", Color("4fc3f7"))
+			SaveManager.request_save()
 	if quality == &"perfect":
 		combo += 1
 		combo_grace_used = false
-	elif quality == &"good" and combo > 0 and not combo_grace_used:
+	elif quality == &"good" and combo > 0 and (not combo_grace_used or Research.bonus(&"combo_protection") >= 1.0):
 		# Folga: o primeiro Good de uma sequência preserva o ritmo; fail zera.
-		combo_grace_used = true
+		# Nota10: pesquisa combo_shield dá proteção permanente (Good nunca quebra)
+		if Research.bonus(&"combo_protection") < 1.0:
+			combo_grace_used = true
 	else:
 		combo = 0
 		combo_grace_used = false
@@ -841,6 +852,8 @@ func _on_service_completed(service_id: StringName, quality: StringName, reward: 
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
 		EventBus.toast_requested.emit(Loc.t("BIA_HIRED"), Color("43a047"))
+		# Nota10: celebração Bia explicando automação
+		EventBus.reveal_requested.emit(&"staff", {"id": "bia"})
 	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
 	_check_achievements()
@@ -939,6 +952,8 @@ func _check_achievements() -> void:
 		_unlock_achievement("combo_20")
 		if not unlocked_cosmetics.has("crown_bubbles"):
 			unlocked_cosmetics.append("crown_bubbles")
+		if not unlocked_cosmetics.has("crown_silver"):
+			unlocked_cosmetics.append("crown_silver")
 	if total_coins >= 500.0:
 		_unlock_achievement("earn_500", 50)
 	if bath_upgrade_level >= 5:
@@ -970,6 +985,8 @@ func _check_achievements() -> void:
 		_unlock_achievement("collect_50", 0, 10)
 	if unlocked_cosmetics.size() >= 5:
 		_unlock_achievement("cosmetics_5", 200)
+		if not unlocked_cosmetics.has("wall_achievement"):
+			unlocked_cosmetics.append("wall_achievement")
 	if hired_staff.size() >= 3:
 		_unlock_achievement("staff_2", 0, 2)
 	if hired_staff.size() >= 6:

@@ -228,6 +228,7 @@ static func tool_display_name(tool: StringName) -> String:
 ## Recompensa total de um atendimento (bônus de bairro + evento + carinho +
 ## gorjeta + VIP + buddy + maestria + pedido especial). `rand` é o roll da
 ## gorjeta (passado pelo Main para manter o random global do jogo).
+## Nota10: inclui mastery_bonus, prestige_bonus, combo_protection pesquisa
 static func compute_reward(ctx: Dictionary) -> Dictionary:
 	var service: StringName = ctx["service"]
 	var quality: StringName = ctx["quality"]
@@ -244,9 +245,10 @@ static func compute_reward(ctx: Dictionary) -> Dictionary:
 	var vip_multiplier: float = Economy.VIP_REWARD_MULTIPLIER if bool(ctx["vip"]) else 1.0
 	# Banheira dupla (C1): o buddy é atendido em paralelo (+40%).
 	var buddy_multiplier: float = 1.4 if bool(ctx["buddy"]) else 1.0
-	var mastery_multiplier: float = 1.0 + float(ctx["mastery"])
+	var mastery_multiplier: float = 1.0 + float(ctx["mastery"]) + Research.bonus(&"mastery_bonus")
 	# Pesquisa "Água Purificada" (research.json): banho rende +10% para sempre.
-	var research_multiplier: float = 1.0
+	# Nota10: prestige_bonus e bath_income somados
+	var research_multiplier: float = 1.0 + Research.bonus(&"prestige_bonus")
 	if service == &"bath":
 		research_multiplier += Research.bonus(&"bath_income")
 	var reward: float = (
@@ -382,6 +384,10 @@ static func draw_pet(unlocked: Array[String], bias: float) -> String:
 			return unlocked[index]
 	return unlocked[unlocked.size() - 1]
 
+
+## Texto de odds de gorjeta para HUD (P2-14 transparência)
+static func tip_odds_text() -> String:
+	return "Gorjetas: 60% 0%% • 25% +15%% • 10% +30%% • 5% +60%% (+bairro+pesquisa)"
 
 ## Bônus de maestria no pagamento (C2): +2% por selo (até +6%).
 static func mastery_bonus(uses: int) -> float:

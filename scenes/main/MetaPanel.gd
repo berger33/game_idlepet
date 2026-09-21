@@ -224,6 +224,15 @@ func _build_missions() -> void:
 				AudioManager.play(&"coin")
 	)
 	_note(Loc.t("MISSIONS_NO_ADS"))
+	# Nota10 P1-9: urgência semanal domingo + timer horas
+	if LiveOps.weekly_is_last_day():
+		var summary: Dictionary = LiveOps.weekly_progress_summary() if LiveOps.has_method("weekly_progress_summary") else {}
+		var done_last: int = int(summary.get("done", 0))
+		var total_last: int = int(summary.get("total", 7))
+		var hours_left: int = int(summary.get("hours_left", 24))
+		if done_last < total_last:
+			var urgent_text: String = Loc.t("WEEKLY_LAST_DAY") % [done_last, total_last, hours_left] if not Loc.t("WEEKLY_LAST_DAY").begins_with("WEEKLY") else "⏰ ÚLTIMO DIA! %d/%d missões • %dh restantes" % [done_last, total_last, hours_left]
+			_note(urgent_text, 28, Color("ef5350"), true)
 	# Progresso dotado + escassez: pílula de progresso semanal e timer
 	var weekly_done_count: int = 0
 	for w: Dictionary in ContentDB.weekly_missions:
@@ -568,8 +577,27 @@ func _build_shop() -> void:
 		)
 		shop_filter_row.add_child(btn)
 
-	# Rotativo semanal (LiveOps sem build): cosmético em destaque da semana
+	# Rotativo semanal + diário (LiveOps sem build): Nota10 P1-8 rotação diária além da semanal
 	var featured_id: String = ContentDB.weekly_featured_cosmetic()
+	var daily_id: String = ContentDB.daily_featured_cosmetic() if ContentDB.has_method("daily_featured_cosmetic") else ""
+	if not daily_id.is_empty() and daily_id != featured_id:
+		var daily_feat: Dictionary = ContentDB.cosmetic(daily_id)
+		if not daily_feat.is_empty():
+			var d_price: Dictionary = daily_feat.get("price", {})
+			var d_price_text: String = "%d %s" % [Rewards.cosmetic_price(daily_id), Loc.t("COINS")] if d_price.has("coins") else "%d %s" % [int(d_price.get("embers", 0)), Loc.t("EMBERS")]
+			_info_row(
+				"☀️ %s • %s" % [Loc.t("DAILY_FEATURED") if Loc.t("DAILY_FEATURED") != "DAILY_FEATURED" else "Destaque do Dia", ContentDB.cosmetic_name(daily_id)],
+				Loc.t("DAILY_FEATURED_DESC") if Loc.t("DAILY_FEATURED_DESC") != "DAILY_FEATURED_DESC" else "Só hoje com desconto!",
+				d_price_text,
+				Color("4fc3f7"),
+				not GameState.unlocked_cosmetics.has(daily_id),
+				func(fid: String = daily_id) -> void:
+					if GameState.unlocked_cosmetics.has(fid):
+						GameState.equip_cosmetic(fid)
+					elif GameState.buy_cosmetic(fid):
+						GameState.equip_cosmetic(fid)
+						AudioManager.play(&"coin")
+			)
 	if not featured_id.is_empty():
 		var featured: Dictionary = ContentDB.cosmetic(featured_id)
 		if not featured.is_empty():

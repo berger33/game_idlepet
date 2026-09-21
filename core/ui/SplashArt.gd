@@ -42,15 +42,16 @@ static func make_splash(parent: Control) -> Dictionary:
 	tip.add_theme_font_size_override("font_size", 26)
 	tip.add_theme_color_override("font_color", Color("8d5a77"))
 	center.add_child(tip)
-	return {"layer": layer, "root": root, "bar": bar, "bar_bg": bar_bg, "title": title, "tip": tip, "elapsed": 0.0, "visible": false}
+	return {"layer": layer, "root": root, "bar": bar, "bar_bg": bar_bg, "title": title, "tip": tip, "elapsed": 0.0, "visible": false, "visible_since": 0.0, "min_visible": 0.8}
 
 static func update_splash(splash: Dictionary, delta: float, loading_progress: float) -> bool:
-	# Retorna true se ainda está carregando
+	# Retorna true se ainda está carregando — Nota10: garante 0.8s visível mínimo
 	splash["elapsed"] = float(splash["elapsed"]) + delta
 	var elapsed: float = float(splash["elapsed"])
-	# Só mostra se >1s (requisito)
+	# Só mostra se >1s (requisito) — mas garante min_visible após aparecer
 	if elapsed > 1.0 and not bool(splash["visible"]):
 		splash["visible"] = true
+		splash["visible_since"] = elapsed
 		var root: ColorRect = splash["root"] as ColorRect
 		if is_instance_valid(root):
 			root.visible = true
@@ -59,9 +60,17 @@ static func update_splash(splash: Dictionary, delta: float, loading_progress: fl
 		if is_instance_valid(bar):
 			var target_w: float = 800.0 * clampf(loading_progress, 0.0, 1.0)
 			bar.size.x = lerpf(bar.size.x, target_w, delta * 6.0)
-	# Se progresso 100% e já passou 1s, pode esconder
-	if loading_progress >= 1.0 and elapsed > 0.5:
-		return false
+	# Se progresso 100% e já passou min_visible desde que ficou visível
+	if loading_progress >= 1.0:
+		if not bool(splash["visible"]):
+			# Nunca ficou visível (carregamento rápido <1s) — pode esconder após 0.5s
+			if elapsed > 0.5:
+				return false
+		else:
+			var visible_for: float = elapsed - float(splash.get("visible_since", elapsed))
+			var min_vis: float = float(splash.get("min_visible", 0.8))
+			if visible_for >= min_vis and elapsed > 0.5:
+				return false
 	return true
 
 static func hide_splash(splash: Dictionary) -> void:

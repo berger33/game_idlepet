@@ -457,3 +457,26 @@ WMISSION_SPEND,%d/600 investidos
 WMISSION_STYLE,%d/12 laços
 WMISSION_TIPS,%d/10 gorjetas
 WMISSION_VIP,%d/3 clientes VIP
+RESEARCH_EFFECT_offline_cap,cap offline +%dh
+RESEARCH_EFFECT_vip_chance,chance VIP +%d%%
+RESEARCH_EFFECT_tip_bonus,gorjetas +%d%%
+RESEARCH_EFFECT_combo_protection,proteção de combo
+RESEARCH_EFFECT_mastery_bonus,bônus maestria +%d%%
+RESEARCH_EFFECT_automation,automação +%d%%
+RESEARCH_EFFECT_prestige_bonus,bônus prestígio +%d%%
+RESEARCH_QUICK_HANDS,Mãos Ágeis
+RESEARCH_TIP_TRAINING,Treino de Gorjetas
+RESEARCH_VIP_MARKETING,Marketing VIP
+RESEARCH_SECOND_BRANCH,Segunda Filial
+RESEARCH_COMBO_SHIELD,Escudo de Combo
+RESEARCH_MASTER_TOOLS,Ferramentas de Mestre
+RESEARCH_AUTO_GROOMER,Tosador Automático
+RESEARCH_FRANCHISE_NETWORK,Rede de Franquias
+RESEARCH_ELITE_CLIENTS,Clientes Elite
+RESEARCH_EMPIRE_LEGACY,Legado do Império
+GHOST_AUTO_OFF,Fantasma de treino desativado — você já é craque!
+TIP_ODDS,Gorjetas: 60% 0% • 25% +15% • 10% +30% • 5% +60% (+bairro+pesquisa)
+SECOND_BRANCH_ACTIVE,FILIAL 2 ATIVA • +15% automação • fila 2x mais rápida
+WEEKLY_LAST_DAY,⏰ ÚLTIMO DIA! %d/%d missões • %dh restantes
+DAILY_FEATURED,Destaque do Dia
+DAILY_FEATURED_DESC,Só hoje com desconto!

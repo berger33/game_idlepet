@@ -457,3 +457,26 @@ WMISSION_SPEND,%d/600 invested
 WMISSION_STYLE,%d/12 bows
 WMISSION_TIPS,%d/10 tips
 WMISSION_VIP,%d/3 VIP clients
+RESEARCH_EFFECT_offline_cap,offline cap +%dh
+RESEARCH_EFFECT_vip_chance,VIP chance +%d%%
+RESEARCH_EFFECT_tip_bonus,tips +%d%%
+RESEARCH_EFFECT_combo_protection,combo protection
+RESEARCH_EFFECT_mastery_bonus,mastery bonus +%d%%
+RESEARCH_EFFECT_automation,automation +%d%%
+RESEARCH_EFFECT_prestige_bonus,prestige bonus +%d%%
+RESEARCH_QUICK_HANDS,Quick Hands
+RESEARCH_TIP_TRAINING,Tip Training
+RESEARCH_VIP_MARKETING,VIP Marketing
+RESEARCH_SECOND_BRANCH,Second Branch
+RESEARCH_COMBO_SHIELD,Combo Shield
+RESEARCH_MASTER_TOOLS,Master Tools
+RESEARCH_AUTO_GROOMER,Auto Groomer
+RESEARCH_FRANCHISE_NETWORK,Franchise Network
+RESEARCH_ELITE_CLIENTS,Elite Clients
+RESEARCH_EMPIRE_LEGACY,Empire Legacy
+GHOST_AUTO_OFF,Training ghost disabled — you're a pro!
+TIP_ODDS,Tips: 60% 0% • 25% +15% • 10% +30% • 5% +60% (+neighborhood+research)
+SECOND_BRANCH_ACTIVE,BRANCH 2 ACTIVE • +15% automation • queue 2x faster
+WEEKLY_LAST_DAY,⏰ LAST DAY! %d/%d missions • %dh left
+DAILY_FEATURED,Daily Featured
+DAILY_FEATURED_DESC,Only today with discount!

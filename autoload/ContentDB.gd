@@ -296,6 +296,23 @@ func weekly_featured_cosmetic() -> String:
 		return ""
 	return list[week_key % list.size()]
 
+func daily_featured_cosmetic() -> String:
+	# Nota10 P1-8: rotação diária além da semanal
+	var day_key: int = int(Time.get_unix_time_from_system() / 86400.0)
+	var list: Array[String] = []
+	for c: Dictionary in cosmetics:
+		var cid: String = String(c.get("id", ""))
+		if not cid.is_empty() and c.has("price"):
+			list.append(cid)
+	if list.is_empty():
+		return ""
+	# Evita repetir o semanal no mesmo dia
+	var weekly: String = weekly_featured_cosmetic()
+	var daily: String = list[day_key % list.size()]
+	if daily == weekly and list.size() > 1:
+		daily = list[(day_key + 1) % list.size()]
+	return daily
+
 
 func _load_array(path: String, key: String) -> Array[Dictionary]:
 	var payload: Dictionary = _load_dictionary(path)

@@ -1,6 +1,6 @@
 {
-  "schema_version":1,
-  "cosmetics":[
+  "schema_version": 2,
+  "cosmetics": [
     {"id":"tub_pink","name":"Banheira Rosa Shampoo","slot":"bath","rarity":"common","price":{"coins":300},"foam":"ffd1e0"},
     {"id":"tub_ocean","name":"Banheira Oceano","slot":"bath","rarity":"rare","price":{"embers":20},"foam":"a5e6f2"},
     {"id":"bandana_blue","name":"Bandana Azul","slot":"pet_accessory","rarity":"common","price":{"coins":150}},
@@ -23,6 +23,28 @@
     {"id":"wall_garden","name":"Parede Jardim","slot":"wall","rarity":"common","price":{"coins":900}},
     {"id":"wall_stars","name":"Parede Estrelada","slot":"wall","rarity":"rare","price":{"embers":45}},
     {"id":"wall_carnaval","name":"Parede de Confete","slot":"wall","rarity":"seasonal","source":"carnaval"},
-    {"id":"wall_natal","name":"Parede de Luzinhas","slot":"wall","rarity":"seasonal","source":"natal"}
+    {"id":"wall_natal","name":"Parede de Luzinhas","slot":"wall","rarity":"seasonal","source":"natal"},
+    {"id":"tub_neon","name":"Banheira Neon","slot":"bath","rarity":"rare","price":{"embers":35},"foam":"ff6bff"},
+    {"id":"tub_marble","name":"Banheira Mármore","slot":"bath","rarity":"common","price":{"coins":1000},"foam":"f0f0f0"},
+    {"id":"tub_candy","name":"Banheira Doce","slot":"bath","rarity":"common","price":{"coins":1200},"foam":"ffb3e6"},
+    {"id":"tub_midnight","name":"Banheira Meia-Noite","slot":"bath","rarity":"epic","price":{"embers":80},"foam":"1a1a2e"},
+    {"id":"tub_rainbow","name":"Banheira Arco-Íris","slot":"bath","rarity":"epic","price":{"embers":90},"foam":"ffccff"},
+    {"id":"tub_vintage","name":"Banheira Vintage","slot":"bath","rarity":"rare","price":{"embers":50},"foam":"d7ccc8"},
+    {"id":"wall_forest","name":"Parede Floresta","slot":"wall","rarity":"common","price":{"coins":1100}},
+    {"id":"wall_city","name":"Parede Cidade","slot":"wall","rarity":"rare","price":{"embers":40}},
+    {"id":"wall_space","name":"Parede Espacial","slot":"wall","rarity":"epic","price":{"embers":65}},
+    {"id":"wall_retro","name":"Parede Retrô","slot":"wall","rarity":"common","price":{"coins":1300}},
+    {"id":"wall_ocean","name":"Parede Oceano","slot":"wall","rarity":"rare","price":{"embers":55}},
+    {"id":"wall_sunset","name":"Parede Pôr do Sol","slot":"wall","rarity":"common","price":{"coins":1500}},
+    {"id":"bandana_green","name":"Bandana Verde","slot":"pet_accessory","rarity":"common","price":{"coins":300}},
+    {"id":"bow_tie","name":"Gravata Borboleta","slot":"pet_accessory","rarity":"rare","price":{"embers":30}},
+    {"id":"glasses_cool","name":"Óculos Descolado","slot":"pet_accessory","rarity":"epic","price":{"embers":50}},
+    {"id":"hat_party","name":"Chapéu de Festa","slot":"pet_accessory","rarity":"rare","price":{"embers":45}},
+    {"id":"collar_gold","name":"Coleira Dourada","slot":"pet_accessory","rarity":"epic","price":{"embers":75}},
+    {"id":"scarf_winter","name":"Cachecol de Inverno","slot":"pet_accessory","rarity":"common","price":{"coins":800}},
+    {"id":"flower_crown","name":"Coroa de Flores","slot":"pet_accessory","rarity":"rare","price":{"embers":60}},
+    {"id":"bandana_pink","name":"Bandana Rosa","slot":"pet_accessory","rarity":"common","price":{"coins":400}},
+    {"id":"crown_silver","name":"Coroa Prateada","slot":"pet_accessory","rarity":"rare","price":{"embers":40},"source":"achievement"},
+    {"id":"wall_achievement","name":"Parede de Troféus","slot":"wall","rarity":"epic","source":"achievement"}
   ]
 }

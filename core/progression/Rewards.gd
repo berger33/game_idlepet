@@ -117,11 +117,15 @@ static func hire_price(staff_id: String, floor_cost: int) -> int:
 
 ## Fração da renda ativa que a equipe contratada produz sozinha
 ## (staff.json "automation"): renda passiva em jogo e taxa do cofre offline.
+## Nota10: + pesquisa automation + segunda sala tier>=6 +0.15
 static func automation_share() -> float:
 	var total: float = 0.0
 	for staff_id: String in GameState.hired_staff:
 		total += float(ContentDB.staff(staff_id).get("automation", 0.0))
-	return clampf(total, 0.0, 0.6)
+	total += Research.bonus(&"automation")
+	if GameState.establishment_tier >= 6:
+		total += 0.15
+	return clampf(total, 0.0, 0.8)
 
 
 ## Renda passiva por segundo (equipe trabalhando enquanto você joga).
