@@ -28,6 +28,70 @@ static func is_showing() -> bool:
 	return _active
 
 
+## Cartão pronto por tipo de evento (GameState/LiveOps emitem
+## EventBus.reveal_requested; o Main só encaminha para cá).
+static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -> void:
+	var spec: Dictionary = {"primary": Loc.t("REVEAL_OK"), "color": main.PINK}
+	match kind:
+		&"pet":
+			var pet_id: String = String(payload.get("id", ""))
+			var profile: Dictionary = ContentDB.pet(pet_id)
+			var rarity: String = String(profile.get("rarity", "common"))
+			spec["title"] = Loc.t("REVEAL_PET_TITLE")
+			spec["image"] = "res://art/pets/%s.png" % pet_id
+			spec["body"] = "%s • %s\n%s • %s\n\n%s" % [
+				String(profile.get("name", pet_id)),
+				String(profile.get("breed", "")),
+				Loc.t("RARITY_" + rarity),
+				String(profile.get("city", "")),
+				Loc.t("REVEAL_PET_HINT"),
+			]
+			spec["color"] = SalonTuning.queue_border(profile)["color"]
+			spec["sound"] = &"pet_surprise"
+		&"chapter":
+			var tier: int = int(payload.get("tier", 1))
+			spec["title"] = Loc.t("REVEAL_CHAPTER_TITLE")
+			spec["body"] = "%s\n%s" % [
+				ContentDB.establishment_name(tier), Loc.t("REVEAL_CHAPTER_BODY") % tier
+			]
+			spec["color"] = Color("ffd54f")
+			spec["sound"] = &"prestige"
+		&"achievement":
+			var reward: String = ""
+			if int(payload.get("coins", 0)) > 0:
+				reward = "+%d %s" % [int(payload["coins"]), Loc.t("COINS")]
+			elif int(payload.get("embers", 0)) > 0:
+				reward = "+%d %s" % [int(payload["embers"]), Loc.t("EMBERS")]
+			spec["title"] = Loc.t("REVEAL_ACHIEVEMENT_TITLE")
+			spec["body"] = "%s\n%s" % [
+				ContentDB.achievement_name(String(payload.get("id", ""))), reward
+			]
+			spec["color"] = Color("ffd54f")
+			spec["sound"] = &"level_up"
+		&"service":
+			var service: StringName = StringName(String(payload.get("service", "bath")))
+			spec["title"] = Loc.t("REVEAL_SERVICE_TITLE")
+			spec["body"] = "%s\n\n%s" % [
+				Loc.t(String(Goals.SERVICE_LABEL_KEY.get(String(service), "SERVICE_BATH"))),
+				SalonTuning.hint(service),
+			]
+			spec["color"] = main.BLUE
+			spec["sound"] = &"upgrade"
+		&"cosmetic":
+			var cosmetic_id: String = String(payload.get("id", ""))
+			spec["title"] = Loc.t("REVEAL_COSMETIC_TITLE")
+			spec["image"] = "res://art/cosmetics/%s.png" % cosmetic_id
+			spec["body"] = "%s\n%s" % [
+				String(ContentDB.cosmetic(cosmetic_id).get("name", cosmetic_id)),
+				String(payload.get("detail", "")),
+			]
+			spec["color"] = Color("ffd54f")
+			spec["sound"] = &"pass_claim"
+		_:
+			return
+	enqueue(main, spec)
+
+
 static func _show_next(main: Control) -> void:
 	if _queue.is_empty() or not is_instance_valid(main):
 		_active = false

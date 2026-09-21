@@ -795,16 +795,11 @@ func _add_xp(amount: int) -> void:
 		)
 		AudioManager.play(&"level_up")
 		HapticsManager.success()
-		var tool_unlocks: Dictionary = {
-			3: "Máquina de tosa + Sala de Tosa",
-			5: "Secador + Sala de Secagem",
-			7: "Perfume + Spa",
-			10: "Lacinho + Ateliê de Estilo",
-		}
-		if tool_unlocks.has(player_level):
-			EventBus.toast_requested.emit(
-				"NOVO! " + String(tool_unlocks[player_level]), Color("ff8fb1")
-			)
+		# Serviço novo (gates em service_layouts.json): cartão com o gesto, não toast.
+		for service: String in ContentDB.service_layouts:
+			var layout: Dictionary = ContentDB.service_layouts[service]
+			if int(layout.get("unlock_level", 1)) == player_level:
+				EventBus.reveal_requested.emit(&"service", {"service": service, "level": player_level})
 		Analytics.track(&"level_up", {"level": player_level})
 		_reconcile_career_unlocks(true)
 
@@ -848,19 +843,14 @@ func _reconcile_career_unlocks(show_feedback: bool) -> void:
 		unlocked_pets.append(pet_id)
 		if show_feedback:
 			var profile: Dictionary = ContentDB.pet(pet_id)
-			EventBus.toast_requested.emit(
-				"Novo pet: %s, %s!" % [profile.get("name", pet_id), profile.get("breed", "")],
-				Color("ff8fb1")
-			)
+			EventBus.reveal_requested.emit(&"pet", {"id": pet_id})
 			Analytics.track(
 				&"collection_unlock",
 				{"id": pet_id, "category": "pet", "rarity": profile.get("rarity", "common")}
 			)
 	var new_tier: int = ContentDB.establishment_for_level(player_level)
 	if new_tier > establishment_tier and show_feedback:
-		EventBus.toast_requested.emit(
-			"Novo capítulo: %s!" % ContentDB.establishment_name(new_tier), Color("ffd54f")
-		)
+		EventBus.reveal_requested.emit(&"chapter", {"tier": new_tier})
 	establishment_tier = new_tier
 
 
@@ -947,12 +937,9 @@ func _unlock_achievement(id: String, coins_reward: int = 0, embers_reward: int =
 	if embers_reward > 0:
 		embers += embers_reward
 	Analytics.track(&"collection_unlock", {"id": id, "category": "achievement"})
-	var reward_text: String = ""
-	if scaled_coins > 0:
-		reward_text = " +%d %s" % [scaled_coins, Loc.t("COINS")]
-	elif embers_reward > 0:
-		reward_text = " +%d %s" % [embers_reward, Loc.t("EMBERS")]
-	EventBus.toast_requested.emit(Loc.t("ACHIEVEMENT_TOAST") + reward_text, Color("ffd54f"))
+	EventBus.reveal_requested.emit(
+		&"achievement", {"id": id, "coins": scaled_coins, "embers": embers_reward}
+	)
 
 
 func _on_service_failed(_service_id: StringName, _reason: StringName) -> void:

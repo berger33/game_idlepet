@@ -181,3 +181,27 @@ MISSION_METRIC_perfect_services,PERFECTS %d/%d
 MISSION_METRIC_upgrades,MEJORAS %d/%d
 MISSION_METRIC_four_plus_reviews,RESEÑAS 4★+ %d/%d
 MISSION_METRIC_combo_reached,COMBO %d/%d
+REVEAL_OK,CONTINUAR
+REVEAL_PET_TITLE,¡Nueva mascota en la colección!
+REVEAL_PET_HINT,Toca la mascota durante la atención para acariciarla.
+RARITY_common,Común
+RARITY_uncommon,Poco común
+RARITY_rare,Rara
+RARITY_epic,Épica
+RARITY_legendary,Legendaria
+REVEAL_CHAPTER_TITLE,¡Nuevo capítulo!
+REVEAL_CHAPTER_BODY,Establecimiento nivel %d — todo el barrio lo notó.
+REVEAL_ACHIEVEMENT_TITLE,¡Logro desbloqueado!
+REVEAL_SERVICE_TITLE,¡Nuevo servicio desbloqueado!
+REVEAL_COSMETIC_TITLE,¡Regalo de temporada!
+SERVICE_BATH,Baño
+SERVICE_GROOM,Tosa
+SERVICE_DRY,Secado
+SERVICE_PERFUME,Perfume
+SERVICE_STYLE,Lazo
+GOAL_PET,mascota %s
+GOAL_SERVICE,servicio %s
+GOAL_CHAPTER,capítulo %s
+GOAL_LINE,PRÓXIMO: %s en Nv.%d • nivel actual %d%%
+GOAL_NEXT_LEVEL,EL PRÓXIMO NIVEL LIBERA: %s • %d%%
+GOAL_PRESTIGE,Carrera al máximo • %d token(s) de franquicia disponibles

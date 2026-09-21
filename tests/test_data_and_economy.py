@@ -1022,4 +1022,54 @@ class EconomyScalingTests(unittest.TestCase):
         self.assertEqual(new_granted, tokens(25e6))
 
 
+class MomentsAndGoalsTests(unittest.TestCase):
+    """§3 do plano: momentos de revelação em vez de toast e meta visível no HUD."""
+
+    def test_reveal_cards_replace_toasts_for_big_moments(self):
+        bus = Path('autoload/EventBus.gd').read_text(encoding='utf8')
+        self.assertIn('signal reveal_requested(kind: StringName, payload: Dictionary)', bus)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for kind in ('&"pet"', '&"chapter"', '&"achievement"', '&"service"'):
+            self.assertIn('EventBus.reveal_requested.emit(%s' % kind, state,
+                          'momento %s ainda não é um cartão' % kind)
+        for stale in ('"Novo pet: %s, %s!"', '"Novo capítulo: %s!"', '"NOVO! "',
+                      'ACHIEVEMENT_TOAST'):
+            self.assertNotIn(stale, state)
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        self.assertIn('EventBus.reveal_requested.emit(', liveops)
+        card = Path('core/ui/RevealCard.gd').read_text(encoding='utf8')
+        self.assertIn('static func enqueue_kind', card)
+        for kind in ('&"pet":', '&"chapter":', '&"achievement":', '&"service":', '&"cosmetic":'):
+            self.assertIn(kind, card)
+        self.assertIn('res://art/pets/%s.png', card)
+        self.assertIn('SalonTuning.hint(service)', card, 'serviço novo ensina o gesto')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('RevealCard.enqueue_kind(self, kind, payload)', main)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('REVEAL_OK', 'REVEAL_PET_TITLE', 'REVEAL_CHAPTER_TITLE',
+                        'REVEAL_ACHIEVEMENT_TITLE', 'REVEAL_SERVICE_TITLE', 'REVEAL_COSMETIC_TITLE',
+                        'RARITY_common', 'RARITY_legendary', 'SERVICE_BATH', 'SERVICE_STYLE'):
+                self.assertIn(key, table)
+
+    def test_hud_shows_the_next_goal(self):
+        goals = Path('core/progression/Goals.gd').read_text(encoding='utf8')
+        self.assertIn('static func next_unlock', goals)
+        self.assertIn('static func hud_line', goals)
+        for source in ('ContentDB.pets', 'ContentDB.service_layouts', 'ContentDB.career'):
+            self.assertIn(source, goals, 'meta deve considerar pets, serviços e capítulos')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('goal_label.text = Goals.hud_line()', main)
+        self.assertIn('var goal_label: Label', main)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('GOAL_LINE', 'GOAL_NEXT_LEVEL', 'GOAL_PRESTIGE', 'GOAL_PET',
+                        'GOAL_SERVICE', 'GOAL_CHAPTER'):
+                self.assertIn(key, table)
+            self.assertEqual(table['GOAL_LINE'].count('%'), 4)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('var buddy_chance: float = 0.25 + 0.15', salon)
+        self.assertNotIn('randf() < 0.4:', salon)
+
+
 if __name__=='__main__': unittest.main()

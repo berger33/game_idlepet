@@ -181,3 +181,27 @@ MISSION_METRIC_perfect_services,PERFECTS %d/%d
 MISSION_METRIC_upgrades,MELHORIAS %d/%d
 MISSION_METRIC_four_plus_reviews,AVALIAÇÕES 4★+ %d/%d
 MISSION_METRIC_combo_reached,COMBO %d/%d
+REVEAL_OK,CONTINUAR
+REVEAL_PET_TITLE,Novo pet na coleção!
+REVEAL_PET_HINT,Toque no pet durante o atendimento para fazer carinho.
+RARITY_common,Comum
+RARITY_uncommon,Incomum
+RARITY_rare,Raro
+RARITY_epic,Épico
+RARITY_legendary,Lendário
+REVEAL_CHAPTER_TITLE,Novo capítulo!
+REVEAL_CHAPTER_BODY,Estabelecimento nível %d — o bairro inteiro percebeu.
+REVEAL_ACHIEVEMENT_TITLE,Conquista desbloqueada!
+REVEAL_SERVICE_TITLE,Novo serviço liberado!
+REVEAL_COSMETIC_TITLE,Presente de temporada!
+SERVICE_BATH,Banho
+SERVICE_GROOM,Tosa
+SERVICE_DRY,Secagem
+SERVICE_PERFUME,Perfume
+SERVICE_STYLE,Laço
+GOAL_PET,pet %s
+GOAL_SERVICE,serviço %s
+GOAL_CHAPTER,capítulo %s
+GOAL_LINE,PRÓXIMO: %s no Nv.%d • nível atual %d%%
+GOAL_NEXT_LEVEL,PRÓXIMO NÍVEL LIBERA: %s • %d%%
+GOAL_PRESTIGE,Carreira no topo • %d token(s) de franquia disponíveis

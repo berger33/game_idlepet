@@ -16,5 +16,8 @@ signal combo_changed(value: int)
 signal upgrade_purchased(upgrade_id: StringName, level: int)
 signal save_completed
 signal toast_requested(message: String, color: Color)
+## Momento de revelação (cartão modal, ver RevealCard): "pet" | "chapter" |
+## "achievement" | "service" | "cosmetic"; payload depende do tipo.
+signal reveal_requested(kind: StringName, payload: Dictionary)
 signal settings_changed
 @warning_ignore_restore("unused_signal")

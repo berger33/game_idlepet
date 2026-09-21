@@ -181,3 +181,27 @@ MISSION_METRIC_perfect_services,PERFECTS %d/%d
 MISSION_METRIC_upgrades,UPGRADES %d/%d
 MISSION_METRIC_four_plus_reviews,4★+ REVIEWS %d/%d
 MISSION_METRIC_combo_reached,COMBO %d/%d
+REVEAL_OK,CONTINUE
+REVEAL_PET_TITLE,New pet in your collection!
+REVEAL_PET_HINT,Tap the pet during a service to pet it.
+RARITY_common,Common
+RARITY_uncommon,Uncommon
+RARITY_rare,Rare
+RARITY_epic,Epic
+RARITY_legendary,Legendary
+REVEAL_CHAPTER_TITLE,New chapter!
+REVEAL_CHAPTER_BODY,Establishment tier %d — the whole neighborhood noticed.
+REVEAL_ACHIEVEMENT_TITLE,Achievement unlocked!
+REVEAL_SERVICE_TITLE,New service unlocked!
+REVEAL_COSMETIC_TITLE,Season gift!
+SERVICE_BATH,Bath
+SERVICE_GROOM,Grooming
+SERVICE_DRY,Drying
+SERVICE_PERFUME,Perfume
+SERVICE_STYLE,Bow
+GOAL_PET,pet %s
+GOAL_SERVICE,service %s
+GOAL_CHAPTER,chapter %s
+GOAL_LINE,NEXT: %s at Lv.%d • current level %d%%
+GOAL_NEXT_LEVEL,NEXT LEVEL UNLOCKS: %s • %d%%
+GOAL_PRESTIGE,Career maxed • %d franchise token(s) available

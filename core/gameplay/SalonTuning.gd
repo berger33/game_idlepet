@@ -272,8 +272,11 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 	var pet_id: String = draw_pet(unlocked, rare_bias)
 	if rare_bias > 1.0 and rarity_rank(pet_id) >= 2:
 		Analytics.track(&"event_client", {"rare_pet": pet_id})
-	# O pet preferido (buddy) visita com prioridade: 40% de chance de vir.
-	if pet_id != GameState.favorite_pet and randf() < 0.4:
+	# O pet preferido (buddy) visita com prioridade: 25% + até 15% pelo afeto
+	# (antes 40% fixo: o mesmo pet dominava a fila e a coleção perdia novidade).
+	var buddy_affection: float = float(GameState.pet_affection.get(GameState.favorite_pet, 0))
+	var buddy_chance: float = 0.25 + 0.15 * clampf(buddy_affection / 50.0, 0.0, 1.0)
+	if pet_id != GameState.favorite_pet and randf() < buddy_chance:
 		pet_id = GameState.favorite_pet
 		Analytics.track(&"buddy_spawned", {"pet_id": pet_id})
 	var service: StringName = services[randi() % services.size()]

@@ -41,6 +41,7 @@ var bath: BathService
 var world: PetShopCanvas
 var coin_label: Label
 var combo_label: Label
+var goal_label: Label
 var review_label: Label
 var instruction_label: Label
 var primary_button: Button
@@ -838,6 +839,8 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		"NV.%d %d%% • ×%d" % [GameState.player_level, xp_percent, maxi(1, GameState.combo)]
 	)
 	review_label.text = "★ %.1f" % GameState.review_average()
+	if is_instance_valid(goal_label):
+		goal_label.text = Goals.hud_line()
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
@@ -866,6 +869,10 @@ func _connect_events() -> void:
 	EventBus.currency_changed.connect(_refresh_economy)
 	EventBus.combo_changed.connect(func(_value: int) -> void: _refresh_economy())
 	EventBus.toast_requested.connect(_show_toast)
+	EventBus.reveal_requested.connect(
+		func(kind: StringName, payload: Dictionary) -> void:
+			RevealCard.enqueue_kind(self, kind, payload)
+	)
 
 
 func _build_interface() -> void:
@@ -883,6 +890,13 @@ func _build_interface() -> void:
 	combo_label = _pill(top_bar, "COMBO ×1", GREEN, 300)
 	rush_label = _pill(top_bar, "", Color("ff8f00"), 210)
 
+	# Meta visível: "o que vem a seguir e a que distância" (Goals.hud_line).
+	var goal_row: HBoxContainer = HBoxContainer.new()
+	goal_row.position = Vector2(45, 248)
+	add_child(goal_row)
+	goal_label = _pill(goal_row, "", Color("ce93d8"), 990)
+	goal_label.custom_minimum_size = Vector2(990, 52)
+	goal_label.add_theme_font_size_override("font_size", 22)
 	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
 	queue_row = HBoxContainer.new()
 	queue_row.position = Vector2(45, 310)

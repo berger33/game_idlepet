@@ -116,11 +116,15 @@ func claim_seasonal_gift() -> bool:
 	Analytics.track(
 		&"collection_unlock", {"id": cosmetic_id, "category": "cosmetic", "source": season_id}
 	)
-	EventBus.toast_requested.emit(
-		Loc.t("SEASON_GIFT") % [
-			seasonal_name(season_id), String(ContentDB.cosmetic(cosmetic_id).get("name", cosmetic_id))
-		],
-		GIFT_COLOR
+	EventBus.reveal_requested.emit(
+		&"cosmetic",
+		{
+			"id": cosmetic_id,
+			"detail": Loc.t("SEASON_GIFT") % [
+				seasonal_name(season_id),
+				String(ContentDB.cosmetic(cosmetic_id).get("name", cosmetic_id))
+			],
+		}
 	)
 	SaveManager.request_save()
 	return true
