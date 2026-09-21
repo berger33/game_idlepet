@@ -73,7 +73,7 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('static func show_comeback(', feedback)
         self.assertIn('static func on_share_pressed(', feedback)
         self.assertIn('GameState.check_return_bonus()', feedback)
-        self.assertIn('ShareManager.last_saved_path', feedback)
+        self.assertIn('ShareManager.share_last()', feedback)
 
     def test_localization_parity_across_languages(self):
         import csv
@@ -1071,6 +1071,46 @@ class MomentsAndGoalsTests(unittest.TestCase):
         salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
         self.assertIn('var buddy_chance: float = 0.25 + 0.15', salon)
         self.assertNotIn('randf() < 0.4:', salon)
+
+
+class ViralityTests(unittest.TestCase):
+    """§6 do plano: artefato de share 9:16 com marca que sai do aparelho e canal Web."""
+
+    def test_share_card_is_branded_and_reaches_the_user(self):
+        share = Path('autoload/ShareManager.gd').read_text(encoding='utf8')
+        self.assertIn('const CARD_SIZE: Vector2i = Vector2i(1080, 1920)', share)
+        self.assertIn('SubViewport', share, 'cartão com texto exige render, Image não desenha texto')
+        for token in ('func begin_snapshot(viewport: Viewport, focus: Vector2',
+                      'func share_directory', 'OS.SYSTEM_DIR_PICTURES', 'navigator.share',
+                      'navigator.canShare', 'DisplayServer.clipboard_set', 'func caption_for',
+                      'get_final_transform()', 'Loc.t("GAME_TITLE")', 'SHARE_BEFORE', 'SHARE_AFTER'):
+            self.assertIn(token, share)
+        # Nunca inventar URL: o link só entra na legenda quando existir.
+        self.assertIn('const SHARE_URL: String = ""', share)
+        self.assertIn('if not SHARE_URL.is_empty():', share)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('ShareManager.begin_snapshot(get_viewport(), world.pet_focus())', main)
+        self.assertIn('{"pet_id": current_pet_id, "stars": stars}', main)
+        feedback = Path('core/ui/SessionFeedback.gd').read_text(encoding='utf8')
+        for token in ('&"web_share"', 'SHARE_SAVED_GALLERY', 'SHARE_WEB'):
+            self.assertIn(token, feedback)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('SHARE_CAPTION', 'SHARE_HEADLINE', 'SHARE_BEFORE', 'SHARE_AFTER',
+                        'SHARE_HASHTAG', 'SHARE_SAVED_GALLERY', 'SHARE_WEB'):
+                self.assertIn(key, table)
+            for service in ('BATH', 'GROOM', 'DRY', 'PERFUME', 'STYLE'):
+                self.assertIn('SHARE_SERVICE_' + service, table)
+            self.assertEqual(table['SHARE_CAPTION'].count('%s'), 2)
+
+    def test_web_channel_is_publishable_on_static_hosting(self):
+        preset = Path('export_presets.cfg').read_text(encoding='utf8')
+        self.assertIn('name="Web Preview"', preset)
+        self.assertIn('variant/thread_support=false', preset, 'Pages/itch não enviam COOP/COEP')
+        workflow = Path('.github/workflows/web-pages.yml').read_text(encoding='utf8')
+        for token in ('workflow_dispatch', '--export-release "Web Preview"',
+                      'actions/deploy-pages', 'export_templates', 'actions/cache'):
+            self.assertIn(token, workflow)
 
 
 if __name__=='__main__': unittest.main()

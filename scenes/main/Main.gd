@@ -312,7 +312,7 @@ func _on_primary_pressed() -> void:
 func _start_bath() -> void:
 	bath.start_service()
 	world.begin_service()
-	ShareManager.begin_snapshot(get_viewport())
+	ShareManager.begin_snapshot(get_viewport(), world.pet_focus())
 	instruction_label.text = SalonTuning.hint(current_service)
 	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
@@ -448,7 +448,9 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 			extra_line,
 		]
 	)
-	ShareManager.finish_snapshot(get_viewport(), String(current_service))
+	ShareManager.finish_snapshot(
+		get_viewport(), String(current_service), {"pet_id": current_pet_id, "stars": stars}
+	)
 	share_button.visible = true
 	_pop_panel(result_panel)
 	primary_button.text = "✓  CONTINUAR"
@@ -848,21 +850,7 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 
 
 func _show_toast(message: String, color: Color) -> void:
-	var label: Label = Label.new()
-	label.text = message
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 34)
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_stylebox_override("normal", _style(color, 24, 16))
-	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	label.position = Vector2(-360, 120)
-	label.size = Vector2(720, 78)
-	toast_layer.add_child(label)
-	var tween: Tween = create_tween()
-	tween.tween_property(label, "position:y", 165.0, 0.22).set_trans(Tween.TRANS_BACK)
-	tween.tween_interval(1.4)
-	tween.tween_property(label, "modulate:a", 0.0, 0.3)
-	tween.tween_callback(label.queue_free)
+	SessionFeedback.toast(self, message, color)
 
 
 func _connect_events() -> void:

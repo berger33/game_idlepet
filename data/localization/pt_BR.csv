@@ -205,3 +205,15 @@ GOAL_CHAPTER,capítulo %s
 GOAL_LINE,PRÓXIMO: %s no Nv.%d • nível atual %d%%
 GOAL_NEXT_LEVEL,PRÓXIMO NÍVEL LIBERA: %s • %d%%
 GOAL_PRESTIGE,Carreira no topo • %d token(s) de franquia disponíveis
+SHARE_CAPTION,Antes e depois de %s no PetShop Tycoon! %s #PetShopTycoon
+SHARE_HEADLINE,antes & depois no banho e tosa
+SHARE_BEFORE,ANTES
+SHARE_AFTER,DEPOIS
+SHARE_SERVICE_BATH,saiu limpinho do banho!
+SHARE_SERVICE_GROOM,ganhou um corte novo!
+SHARE_SERVICE_DRY,ficou sequinho e fofo!
+SHARE_SERVICE_PERFUME,ficou muito cheiroso!
+SHARE_SERVICE_STYLE,amou o novo lacinho!
+SHARE_HASHTAG,#PetShopTycoon
+SHARE_SAVED_GALLERY,Foto salva em Imagens/PetShopTycoon • legenda copiada
+SHARE_WEB,Abrindo o compartilhamento…

@@ -205,3 +205,15 @@ GOAL_CHAPTER,chapter %s
 GOAL_LINE,NEXT: %s at Lv.%d • current level %d%%
 GOAL_NEXT_LEVEL,NEXT LEVEL UNLOCKS: %s • %d%%
 GOAL_PRESTIGE,Career maxed • %d franchise token(s) available
+SHARE_CAPTION,Before and after of %s in PetShop Tycoon! %s #PetShopTycoon
+SHARE_HEADLINE,before & after at the pet salon
+SHARE_BEFORE,BEFORE
+SHARE_AFTER,AFTER
+SHARE_SERVICE_BATH,squeaky clean after the bath!
+SHARE_SERVICE_GROOM,got a brand new cut!
+SHARE_SERVICE_DRY,dry and fluffy!
+SHARE_SERVICE_PERFUME,smells amazing!
+SHARE_SERVICE_STYLE,loved the new bow!
+SHARE_HASHTAG,#PetShopTycoon
+SHARE_SAVED_GALLERY,Photo saved to Pictures/PetShopTycoon • caption copied
+SHARE_WEB,Opening share…

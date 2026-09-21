@@ -60,22 +60,45 @@ static func show_offline_card(main) -> void:
 	RevealCard.enqueue(main, spec)
 
 
+## Toast curto no topo (EventBus.toast_requested → Main._show_toast → aqui).
+static func toast(main, message: String, color: Color) -> void:
+	var label: Label = Label.new()
+	label.text = message
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 34)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	label.add_theme_stylebox_override("normal", main._style(color, 24, 16))
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.position = Vector2(-360, 120)
+	label.size = Vector2(720, 78)
+	main.toast_layer.add_child(label)
+	var tween: Tween = main.create_tween()
+	tween.tween_property(label, "position:y", 165.0, 0.22).set_trans(Tween.TRANS_BACK)
+	tween.tween_interval(1.4)
+	tween.tween_property(label, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(label.queue_free)
+
+
 ## Abre uma seção do painel meta. Mediado porque os botões de navegação são
 ## criados antes do MetaPanel existir; o acesso ao painel acontece só no clique.
 static func open_meta(main, section: StringName, origin: Control) -> void:
 	main.meta.open(section, origin)
 
 
-## Compartilhar o antes/depois: o PNG composto é salvo pelo ShareManager ao
-## concluir o serviço. Sem adapter de rede social nesta build, o toast indica
-## o arquivo salvo em disco (contrato do ShareManager; não prometer rede social).
+## Compartilhar o antes/depois: o cartão 9:16 é gerado pelo ShareManager ao
+## concluir o serviço. Web abre a folha nativa/download; nas demais plataformas
+## a foto já está na galeria e a legenda vai para o clipboard (toast diz isso).
 static func on_share_pressed(main) -> void:
-	var path: String = ShareManager.last_saved_path
-	if path.is_empty():
+	var channel: StringName = ShareManager.share_last()
+	if channel == &"none":
 		main.share_button.visible = false
+		main._show_toast(Loc.t("SHARE_FAILED"), Color("b0bec5"))
 		return
 	AudioManager.play(&"share_saved")
 	HapticsManager.success()
-	main._show_toast(
-		"Antes/depois salvo em %s" % ProjectSettings.globalize_path(path), main.BLUE
-	)
+	if channel == &"web_share":
+		main._show_toast(Loc.t("SHARE_WEB"), main.BLUE)
+		return
+	main._show_toast(Loc.t("SHARE_SAVED_GALLERY"), main.BLUE)
+	if OS.has_feature("pc"):
+		OS.shell_open(ProjectSettings.globalize_path(ShareManager.share_directory()))
