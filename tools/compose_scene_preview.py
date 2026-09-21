@@ -34,7 +34,7 @@ PET_BASELINE = 479.0  # linha dos pés dentro do sprite 512
 PET_TOP = SURFACE - PET_BASELINE * (PET_SIZE / 512.0)
 
 RIM_LINE = SURFACE - 36.0
-SHELF_X, SHELF_W, SHELF_H = 812.0, 216.0, 786.0
+SHELF_X, SHELF_W, SHELF_H = 812.0, 216.0, 780.0
 SHELF_PLANK0_FRAC = 0.1853
 PLANK_DROP = 34.0
 SHELF_Y = [679, 801, 923, 1045, 1167]
@@ -93,7 +93,10 @@ def compose(service: str, pet_id: str, tier: int, establishment: str) -> tuple[I
     # 3. estante (arte raster) ancorada pela 1ª prancha
     first_plank_top = SHELF_Y[0] + PLANK_DROP
     shelf_top = first_plank_top - SHELF_PLANK0_FRAC * SHELF_H
-    shelf = Image.open(REPO / "art/stations/shelf_unit.png").convert("RGBA")
+    shelf_path = REPO / "art/stations" / f"shelf_{service}.png"
+    if not shelf_path.exists():
+        shelf_path = REPO / "art/stations" / "shelf_unit.png"
+    shelf = Image.open(shelf_path).convert("RGBA")
     paste(scene, shelf, (SHELF_X, shelf_top, SHELF_W, SHELF_H))
 
     # 4. utensílios (116px, centro em 910, shelf_y)

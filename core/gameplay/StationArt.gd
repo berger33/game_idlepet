@@ -96,7 +96,10 @@ static func draw_shelf_unit(shop) -> void:
 	var levels: Array = shop.service_shelf_levels
 	if levels.is_empty():
 		return
-	var texture: Texture2D = _art_texture(&"shelf_unit")
+	# cada cenário tem a sua estante (mesma geometria, material temático)
+	var texture: Texture2D = _art_texture(StringName("shelf_" + String(shop.service_mode)))
+	if texture == null:
+		texture = _art_texture(&"shelf_unit")
 	if texture != null and levels.size() == SHELF_PLANK_COUNT:
 		var first_plank_top: float = float(levels[0]) + PLANK_DROP
 		var top: float = first_plank_top - SHELF_PLANK0_FRAC * SHELF_ART_H

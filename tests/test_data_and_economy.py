@@ -351,6 +351,16 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(len(stage['shelf_y']), 5)
             self.assertEqual(stage['shelf_y'], sorted(stage['shelf_y']))
             self.assertTrue((Path('art/backgrounds') / stage['background']).exists())
+            # cada cenário tem a SUA estante temática (mesma geometria de
+            # pranchas, material harmônico com a parede) — o item apoia nelas.
+            shelf = Path('art/stations') / f"shelf_{stage['service']}.png"
+            raw = shelf.read_bytes()
+            self.assertEqual(raw[:8], b'\x89PNG\r\n\x1a\n', shelf.name)
+            self.assertEqual(raw[25], 6, f'{shelf.name} precisa de alfa (RGBA)')
+        # o runtime escolhe a estante pelo serviço (com fallback neutro)
+        station_art = Path('core/gameplay/StationArt.gd').read_text(encoding='utf8')
+        self.assertIn('"shelf_" + String(shop.service_mode)', station_art)
+        self.assertIn('_art_texture(&"shelf_unit")', station_art)
         for tool in ('soap', 'clipper', 'dryer', 'perfume', 'bow'):
             path = Path('art/props') / f'tool_{tool}.png'
             raw = path.read_bytes()

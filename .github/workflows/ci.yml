@@ -17,7 +17,7 @@ jobs:
       - name: Dependências Python
         run: |
           python -m pip install --upgrade pip
-          pip install gdtoolkit pillow
+          pip install gdtoolkit pillow numpy
       - name: Lint GDScript (projeto inteiro)
         run: gdlint $(git ls-files '*.gd')
       - name: Testes de dados, economia e contratos de UI
@@ -28,6 +28,10 @@ jobs:
         run: python tools/verify_pet_animations.py
       - name: SFX — assets em sync com o gerador (regeneração determinística)
         run: python tools/gen_sfx.py --check
+      - name: Estantes temáticas — pranchas ancoradas onde os itens apoiam
+        run: python tools/gen_shelf_art.py --qa
+      - name: Cenas compostas — alinhamento pet/estação/estante (QA visual+numérico)
+        run: python tools/compose_scene_preview.py
 
   runtime:
     name: Godot headless (import + smoke test)
