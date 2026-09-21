@@ -2,13 +2,9 @@ extends Control
 const BathServiceScript: Script = preload("res://core/gameplay/BathService.gd")
 const PetShopCanvasScript: Script = preload("res://core/gameplay/PetShopCanvas.gd")
 const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
-const NAV_ICONS: Dictionary = {
-	&"missions": preload("res://art/ui/icons/missions.png"),
-	&"collection": preload("res://art/ui/icons/collection.png"),
-	&"album": preload("res://art/ui/icons/album.png"),
-	&"staff": preload("res://art/ui/icons/staff.png"),
-	&"shop": preload("res://art/ui/icons/shop.png"),
-	&"map": preload("res://art/ui/icons/map.png"),
+const NAV_ICONS: Dictionary = { &"missions": preload("res://art/ui/icons/missions.png"), &"collection": preload("res://art/ui/icons/collection.png"),
+	&"album": preload("res://art/ui/icons/album.png"), &"staff": preload("res://art/ui/icons/staff.png"),
+	&"shop": preload("res://art/ui/icons/shop.png"), &"map": preload("res://art/ui/icons/map.png"),
 	&"settings": preload("res://art/ui/icons/settings.png"),
 }
 const PINK: Color = Color("ff8fb1")
@@ -16,36 +12,19 @@ const BLUE: Color = Color("4fc3f7")
 const GREEN: Color = Color("2e7d32") # WCAG AA 5.13:1 com branco (antes 43a047 3.30:1)
 const CREAM: Color = Color("fff3e0")
 const CHARCOAL: Color = Color("263238")
-const SERVICE_TOOLS: Dictionary = {
-	&"bath": &"soap",
-	&"groom": &"clipper",
-	&"dry": &"dryer",
-	&"perfume": &"perfume",
-	&"style": &"bow"
+const SERVICE_TOOLS: Dictionary = { &"bath": &"soap", &"groom": &"clipper", &"dry": &"dryer", &"perfume": &"perfume", &"style": &"bow"
 }
-const SERVICE_UNLOCK_LEVELS: Dictionary = {
-	&"bath": 1, &"groom": 3, &"dry": 5, &"perfume": 7, &"style": 10
+const SERVICE_UNLOCK_LEVELS: Dictionary = { &"bath": 1, &"groom": 3, &"dry": 5, &"perfume": 7, &"style": 10
 }
-const SERVICE_LABELS: Dictionary = {
-	&"bath": "SERVICE_VERB_BATH",
-	&"groom": "SERVICE_VERB_GROOM",
-	&"dry": "SERVICE_VERB_DRY",
-	&"perfume": "SERVICE_VERB_PERFUME",
-	&"style": "SERVICE_VERB_STYLE"
+const SERVICE_LABELS: Dictionary = { &"bath": "SERVICE_VERB_BATH", &"groom": "SERVICE_VERB_GROOM", &"dry": "SERVICE_VERB_DRY",
+	&"perfume": "SERVICE_VERB_PERFUME", &"style": "SERVICE_VERB_STYLE"
 }
 func _service_verb(service: StringName) -> String:
 	return Loc.t(String(SERVICE_LABELS.get(service, "SERVICE_VERB_BATH")))
 
-func _voice_for_service(service: StringName) -> StringName:
-	match service:
-		&"perfume": return &"perfume_spray"
-		&"style": return &"bow_here"
-		_: return &"drag_soap"
 const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
 const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 const ParkServiceScript: Script = preload("res://core/gameplay/ParkService.gd")
-const ParkCanvasScript: Script = preload("res://core/gameplay/ParkCanvas.gd")
-const PARK_ICON: Texture2D = preload("res://art/ui/icons/park.png")
 var bath: BathService
 var world: PetShopCanvas
 var coin_label: Label
@@ -146,10 +125,10 @@ func _ready() -> void:
 	park_service = ParkServiceScript.new()
 	_configure_current_service()
 	_build_interface()
-	_setup_park()
+	ParkFlow.setup(self)
 	world.clear_room()
 	# Warmup ResourceLoader cache: garante que caramelo.png já está em RAM antes da primeira escolha da fila
-	if ResourceLoader.exists("res://art/pets/caramelo.png"): var _pc: Texture2D = load("res://art/pets/caramelo.png") as Texture2D
+	if ResourceLoader.exists("res://art/pets/caramelo.png"): var pc: Texture2D = load("res://art/pets/caramelo.png") as Texture2D
 	queue[0] = SalonTuning.make_client_for_pet("caramelo", _available_services())
 	for slot: int in [1, 2]: queue[slot] = SalonTuning.make_client(_available_services())
 	_update_queue_ui()
@@ -176,12 +155,8 @@ func _ready() -> void:
 	tutorial.setup()
 	if GameState.services_completed == 0 and not GameState.tutorial_complete:
 		var intro: Dictionary = ChapterStories.intro(1)
-		RevealCard.enqueue(self, {
-			"title": "%s — %s" % [String(intro.get("title", "Quintal")), String(intro.get("act", ""))],
-			"body": "%s\n\n%s" % [String(intro.get("text", "")), Loc.t("FIRST_PET_READY")],
-			"color": GREEN,
-			"primary": Loc.t("REVEAL_OK"),
-			"sound": &"level_up"
+		RevealCard.enqueue(self, { "title": "%s — %s" % [String(intro.get("title", "Quintal")), String(intro.get("act", ""))],
+			"body": "%s\n\n%s" % [String(intro.get("text", "")), Loc.t("FIRST_PET_READY")], "color": GREEN, "primary": Loc.t("REVEAL_OK"), "sound": &"level_up"
 		})
 		if GameState.streak_freezes == 0:
 			GameState.streak_freezes = 1
@@ -261,13 +236,13 @@ func _process(delta: float) -> void:
 	upgrades_button.position = Vector2(120, 150) if left_handed else Vector2(952, 150)
 	if is_instance_valid(park_button):
 		park_button.position = Vector2(952, 250) if not left_handed else Vector2(120, 250)
-		_update_park_button()
+		ParkFlow.update_button(self)
 	if is_instance_valid(tutorial_skip_button):
 		tutorial_skip_button.position = Vector2(30, 145 + SalonTuning.safe_area_top()) if left_handed else Vector2(750, 145 + SalonTuning.safe_area_top())
 	# ── Parquinho tick ──
 	if park_active and park_service != null and park_service.state == ParkService.State.ACTIVE:
 		if park_service.tick(delta):
-			_finish_park(true) # timeout → fail
+			ParkFlow.finish(self, true) # timeout → fail
 			return
 		park_canvas.set_state(park_service.progress, park_service.time_left / park_service.duration if park_service.duration > 0 else 0.0, park_service.score)
 		# sync ball pos para canvas
@@ -279,7 +254,7 @@ func _process(delta: float) -> void:
 		park_canvas.treat_hidden_slot = park_service.treat_hidden_slot
 		park_canvas.treat_choice = park_service.treat_choice
 		park_canvas.treat_revealed = park_service.treat_revealed
-		instruction_label.text = _park_instruction()
+		instruction_label.text = ParkFlow.instruction(self)
 		# timeout visual já; progress bar em ParkCanvas
 	if bath.state == BathService.State.ACTIVE:
 		if bath.tick(delta):
@@ -347,8 +322,7 @@ func _process(delta: float) -> void:
 	_update_rush(delta)
 	_process_queue(delta)
 func _input(event: InputEvent) -> void:
-	if (
-		meta.is_open()
+	if ( meta.is_open()
 		or (is_instance_valid(result_panel) and result_panel.visible)
 		or (is_instance_valid(upsell_panel) and upsell_panel.visible)
 	):
@@ -357,23 +331,23 @@ func _input(event: InputEvent) -> void:
 		if event is InputEventScreenTouch:
 			var t: InputEventScreenTouch = event
 			if t.pressed:
-				_park_begin_pointer(t.position)
+				ParkFlow.begin_pointer(self, t.position)
 			else:
-				_park_end_pointer()
+				ParkFlow.end_pointer(self)
 			return
 		elif event is InputEventScreenDrag:
-			_park_move_pointer((event as InputEventScreenDrag).position)
+			ParkFlow.move_pointer(self, (event as InputEventScreenDrag).position)
 			return
 		elif event is InputEventMouseButton:
 			var mb: InputEventMouseButton = event
 			if mb.button_index == MOUSE_BUTTON_LEFT:
 				if mb.pressed:
-					_park_begin_pointer(mb.position)
+					ParkFlow.begin_pointer(self, mb.position)
 				else:
-					_park_end_pointer()
+					ParkFlow.end_pointer(self)
 			return
 		elif event is InputEventMouseMotion and park_dragging_ball:
-			_park_move_pointer((event as InputEventMouseMotion).position)
+			ParkFlow.move_pointer(self, (event as InputEventMouseMotion).position)
 			return
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
@@ -439,8 +413,7 @@ func _move_pointer(point: Vector2) -> void:
 			AudioManager.play(&"error_soft")
 	_rub(point)
 func _end_pointer() -> void:
-	var finalize_now: bool = (
-		bath.state == BathService.State.ACTIVE and bath.progress >= BathService.GOOD_FLOOR
+	var finalize_now: bool = ( bath.state == BathService.State.ACTIVE and bath.progress >= BathService.GOOD_FLOOR
 	)
 	dragging = false
 	dragged_tool = &""
@@ -482,7 +455,7 @@ func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
 	if park_active:
-		_close_park()
+		ParkFlow.close(self)
 		return
 	if meta.is_open():
 		meta.close()
@@ -520,39 +493,26 @@ func _finish_bath() -> void:
 		world.complete_service()
 		var used_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 		var mastery: Dictionary = GameState.register_tool_use(used_tool)
-		var reward_result: Dictionary = SalonTuning.compute_reward({
-			"service": current_service,
-			"quality": quality,
-			"pet_id": current_pet_id,
-			"vip": current_vip,
-			"buddy": world.buddy_active,
-			"rush": rush_active,
-			"special": special_multiplier,
+		var reward_result: Dictionary = SalonTuning.compute_reward({ "service": current_service, "quality": quality, "pet_id": current_pet_id,
+			"vip": current_vip, "buddy": world.buddy_active, "rush": rush_active, "special": special_multiplier,
 			"mastery": SalonTuning.mastery_bonus(int(GameState.tool_uses.get(String(used_tool), 0))),
-			"tool_level": int(GameState.tool_upgrade_levels.get(String(used_tool), 0)),
-			"rand": randf(),
+			"tool_level": int(GameState.tool_upgrade_levels.get(String(used_tool), 0)), "rand": randf(),
 		})
 		var reward: float = float(reward_result["reward"])
 		last_tip_percent = int(reward_result["tip_percent"])
 		if mastery.has("milestone"):
-			_show_toast(
-				Loc.t("MASTERY_TOAST") % [
-					SalonTuning.tool_display_name(used_tool).strip_edges(), "★".repeat(int(mastery["milestone"]))
-				],
-				Color("ffd54f")
+			_show_toast( Loc.t("MASTERY_TOAST") % [ SalonTuning.tool_display_name(used_tool).strip_edges(), "★".repeat(int(mastery["milestone"]))
+				], Color("ffd54f")
 			)
-			Analytics.track(
-				&"tool_milestone", {"tool": String(used_tool), "milestone": int(mastery["milestone"])}
+			Analytics.track( &"tool_milestone", {"tool": String(used_tool), "milestone": int(mastery["milestone"])}
 			)
 		var stars: int = 5 if quality == &"perfect" else 4
 		var reputation_before: int = GameState.reviews_sum
 		GameState.register_review(stars)
-		if Economy.neighborhood_tier(GameState.reviews_sum) > Economy.neighborhood_tier(
-			reputation_before
+		if Economy.neighborhood_tier(GameState.reviews_sum) > Economy.neighborhood_tier( reputation_before
 		):
 			EventBus.toast_requested.emit(Loc.t("REP_UP"), Color("ffd54f"))
-			Analytics.track(
-				&"neighborhood_tier_up", {"tier": Economy.neighborhood_tier(GameState.reviews_sum)}
+			Analytics.track( &"neighborhood_tier_up", {"tier": Economy.neighborhood_tier(GameState.reviews_sum)}
 			)
 		if last_tip_percent > 0:
 			GameState.register_weekly_event(&"tips")
@@ -563,9 +523,7 @@ func _finish_bath() -> void:
 		if current_visitor:
 			Discovery.register_service(current_pet_id)
 		EventBus.service_completed.emit(current_service, quality, reward)
-		Analytics.track(
-			&"service_complete",
-			{"type": String(current_service), "quality": String(quality), "reward": reward}
+		Analytics.track( &"service_complete", {"type": String(current_service), "quality": String(quality), "reward": reward}
 		)
 		if quality == &"perfect":
 			Analytics.track(&"perfect_service")
@@ -824,14 +782,12 @@ func _end_rush() -> void:
 	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
 	if is_instance_valid(rush_label):
 		rush_label.text = ""
-func _offer_special(
-	offered: StringName, quality: StringName, reward: float, stars: int
+func _offer_special( offered: StringName, quality: StringName, reward: float, stars: int
 ) -> void:
 	pending_special = offered
 	pending_special_result = {"quality": quality, "reward": reward, "stars": stars}
 	var service_name: String = _service_verb(offered).capitalize()
-	upsell_label.text = (
-		"%s adoraria também um %s!\nAceitar o pedido?" % [current_pet_name, service_name]
+	upsell_label.text = ( "%s adoraria também um %s!\nAceitar o pedido?" % [current_pet_name, service_name]
 	)
 	world.forced_state = &"happy_squash"
 	world.forced_state_time = 1.6
@@ -854,11 +810,7 @@ func _on_upsell_decline() -> void:
 	pending_special = &""
 	pending_special_result = {}
 	Analytics.track(&"upsell_declined", {"service": String(current_service)})
-	_show_success(
-		StringName(result.get("quality", &"good")),
-		float(result.get("reward", 0.0)),
-		int(result.get("stars", 4)),
-	)
+	_show_success( StringName(result.get("quality", &"good")), float(result.get("reward", 0.0)), int(result.get("stars", 4)), )
 func _on_queue_pressed(slot: int) -> void:
 	if not _can_select(slot):
 		return
@@ -886,8 +838,7 @@ func _on_queue_pressed(slot: int) -> void:
 	world.set_service_layout(current_service)
 	world.set_pet_profile(profile)
 	world.affection_level = int(GameState.pet_affection.get(current_pet_id, 0))
-	world.buddy_active = (
-		GameState.bath_upgrade_level >= 30
+	world.buddy_active = ( GameState.bath_upgrade_level >= 30
 		and GameState.favorite_pet != current_pet_id
 		and GameState.unlocked_pets.has(GameState.favorite_pet)
 	)
@@ -896,20 +847,14 @@ func _on_queue_pressed(slot: int) -> void:
 	world.arrive()
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
-	instruction_label.text = (
-		Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(required_tool), current_pet_name]
+	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(required_tool), current_pet_name]
 	)
 	tutorial.teach_service(current_service)
 	_update_queue_ui()
 	# Voz kids: indica gesto correto logo após escolher cliente (só se tutorial não estiver em passo 0/1)
 	if tutorial.step < 0 and not tutorial.teaching:
-		AudioManager.play_voice(_voice_for_service(current_service))
-	Analytics.track(
-		&"client_selected",
-		{
-			"pet_id": current_pet_id,
-			"service": String(current_service),
-			"vip": current_vip,
+		AudioManager.play_voice(AudioManager.voice_for_service(current_service))
+	Analytics.track( &"client_selected", { "pet_id": current_pet_id, "service": String(current_service), "vip": current_vip,
 			"rarity": profile.get("rarity", "common"),
 		}
 	)
@@ -930,8 +875,7 @@ func _process_queue(delta: float) -> void:
 			if refill_timers[slot] <= 0.0:
 				queue[slot] = SalonTuning.make_client(_available_services())
 				_update_queue_ui()
-		elif (
-			not queue[slot].is_empty()
+		elif ( not queue[slot].is_empty()
 			and slot != selected_slot
 			and bool(GameState.tutorial_complete)
 		):
@@ -1004,8 +948,7 @@ func _update_queue_ui() -> void:
 			elif is_kids_recommended:
 				service_text += " • %s" % Loc.t("RECOMMENDED_TAG")
 			queue_service_labels[slot].text = service_text
-			var base_info: String = (
-				Loc.t("VISITOR_TAG") % [Discovery.progress(String(client["pet"])), Discovery.VISITS_TO_ADOPT]
+			var base_info: String = ( Loc.t("VISITOR_TAG") % [Discovery.progress(String(client["pet"])), Discovery.VISITS_TO_ADOPT]
 				if bool(client.get("visitor", false))
 				else SalonTuning.queue_info_text(profile)
 			)
@@ -1026,9 +969,7 @@ func _update_queue_ui() -> void:
 			var is_recommended: bool = (slot == 0 and GameState.services_completed == 0) or (is_kids_highlight and slot == 0)
 			var border_color: Color = GREEN if is_recommended else border["color"]
 			var border_w: int = (6 if is_kids_highlight and slot == 0 else 4) if is_recommended else int(border["width"])
-			queue_cards[slot].add_theme_stylebox_override(
-				"panel",
-				_style(Color("ffffff", 0.96), 26, 16, border_color, border_w)
+			queue_cards[slot].add_theme_stylebox_override( "panel", _style(Color("ffffff", 0.96), 26, 16, border_color, border_w)
 			)
 			if is_kids_highlight:
 				if slot == 0:
@@ -1070,502 +1011,7 @@ func _available_services() -> Array[StringName]:
 	return result if not result.is_empty() else [&"bath"]
 
 # ── Parquinho helpers ──
-func _setup_park() -> void:
-	# Canvas do parquinho (quintal) — oculto até abrir — harden contra dupla chamada / godot headless
-	if is_instance_valid(park_canvas) and park_canvas.is_inside_tree():
-		return
-	park_canvas = ParkCanvasScript.new()
-	park_canvas.visible = false
-	park_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(park_canvas)
-	move_child(park_canvas, 1) # atrás do HUD mas à frente do mundo
-	# Botão Parquinho — ao lado do botão Upgrades, com cooldown visual + ícone dedicado park.png
-	var safe_top: float = SalonTuning.safe_area_top()
-	# safe_top offset leve no botão para notch
-	park_button = _button("", Color("8bc34a", 0.96), 86, 86)
-	park_button.icon = PARK_ICON
-	park_button.expand_icon = true
-	park_button.text = "🌳" # fallback se ícone falhar (Godot mostra texto sobre ícone)
-	park_button.position = Vector2(952, 250 + safe_top * 0.5)
-	park_button.tooltip_text = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
-	park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
-	park_button.add_theme_stylebox_override("hover", _style(Color("9ccc65", 0.98), 43, 6, Color.WHITE, 5))
-	park_button.add_theme_stylebox_override("pressed", _style(Color("689f38", 1.0), 43, 8, Color.WHITE, 4))
-	park_button.pressed.connect(_on_park_button)
-	add_child(park_button)
-	# Painel de escolha de atividade (3 botões) — 560h evita sobrepor instruction_label em 1350
-	park_choose_panel = PanelContainer.new()
-	park_choose_panel.visible = false
-	park_choose_panel.position = Vector2(60, 740)
-	park_choose_panel.size = Vector2(960, 560)
-	park_choose_panel.add_theme_stylebox_override("panel", _style(Color.WHITE, 28, 18, Color("8bc34a"), 4))
-	add_child(park_choose_panel)
-	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 14)
-	park_choose_panel.add_child(vbox)
-	var title: Label = Label.new()
-	title.text = Loc.t("PARK_TITLE") if Loc.t("PARK_TITLE") != "PARK_TITLE" else "🌳  Parquinho  —  escolha a brincadeira"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 30)
-	title.add_theme_color_override("font_color", Color("33691e"))
-	title.add_theme_stylebox_override("normal", _style(Color("f1f8e9"), 18, 10))
-	vbox.add_child(title)
-	var pets_line: Label = Label.new()
-	pets_line.name = "ParkPetsLine"
-	pets_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	pets_line.add_theme_font_size_override("font_size", 22)
-	pets_line.add_theme_color_override("font_color", Color("558b2f"))
-	vbox.add_child(pets_line)
-	for act: Dictionary in [
-		{"id": &"ball", "emoji": "🎾", "key": "PARK_BALL"},
-		{"id": &"treat", "emoji": "🦴", "key": "PARK_TREAT"},
-		{"id": &"photo", "emoji": "📸", "key": "PARK_PHOTO"},
-	]:
-		var btn: Button = _button("%s  %s" % [act["emoji"], Loc.t(String(act["key"])) if Loc.t(String(act["key"])) != String(act["key"]) else String(act["key"])], Color("fff3e0"), 900, 78)
-		btn.add_theme_font_size_override("font_size", 26)
-		btn.add_theme_color_override("font_color", Color("3e2723"))
-		btn.add_theme_stylebox_override("normal", _style(Color("fff3e0"), 22, 10, Color("ffcc80"), 3))
-		btn.add_theme_stylebox_override("hover", _style(Color("ffe0b2"), 22, 10, Color.WHITE, 3))
-		btn.pressed.connect(_start_park_activity.bind(StringName(act["id"])))
-		vbox.add_child(btn)
-	var album_btn: Button = _button("📖  %s (%d)" % [(Loc.t("ALBUM_TITLE") if Loc.t("ALBUM_TITLE") != "ALBUM_TITLE" else "Álbum"), GameState.park_photos.size()], Color("e1bee7"), 900, 68)
-	album_btn.add_theme_font_size_override("font_size", 24)
-	album_btn.add_theme_color_override("font_color", Color("4a148c"))
-	album_btn.tooltip_text = Loc.t("ALBUM_TROPHIES") % GameState.park_trophies if Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % GameState.park_trophies
-	album_btn.pressed.connect(func() -> void:
-		_close_park()
-		meta.open(&"album")
-	)
-	vbox.add_child(album_btn)
-	var close_btn: Button = _button(Loc.t("PARK_CLOSE") if Loc.t("PARK_CLOSE") != "PARK_CLOSE" else "✕  Fechar", Color("90a4ae"), 900, 56)
-	close_btn.add_theme_font_size_override("font_size", 22)
-	close_btn.pressed.connect(_close_park)
-	vbox.add_child(close_btn)
-	park_timer_label = Label.new()
-	park_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	park_timer_label.add_theme_font_size_override("font_size", 18)
-	park_timer_label.add_theme_color_override("font_color", Color("689f38"))
-	vbox.add_child(park_timer_label)
-	_update_park_button()
 
-func _park_format_cooldown(sec: int) -> String:
-	if sec <= 0:
-		return Loc.t("PARK_READY") if Loc.has_method("t") and Loc.t("PARK_READY") != "PARK_READY" else "Pronto!"
-	if sec < 60:
-		return "%ds" % sec
-	var m: int = sec / 60
-	var s: int = sec % 60
-	if sec < 3600:
-		return "%d:%02d" % [m, s]
-	var h: int = sec / 3600
-	m = (sec % 3600) / 60
-	return "%dh %02dm" % [h, m]
-
-func _update_park_button() -> void:
-	if not is_instance_valid(park_button):
-		return
-	# harden: GameState pode ainda não ter sido preenchido no primeiro frame
-	if GameState == null:
-		return
-	# Progressive disclosure: parquinho libera após 1 atendimento (tutorial feito) — não sobrecarrega D0
-	var locked: bool = GameState.services_completed == 0 and GameState.player_level < 2
-	if locked and not park_active:
-		park_button.icon = null
-		park_button.text = "🔒"
-		park_button.tooltip_text = Loc.t("PARK_LOCKED") if Loc.has_method("t") and Loc.t("PARK_LOCKED") != "PARK_LOCKED" else "Desbloqueia após o 1º atendimento"
-		park_button.disabled = false
-		park_button.modulate = Color("ffffff", 0.85)
-		park_button.add_theme_stylebox_override("normal", _style(Color("90a4ae", 0.96), 43, 6, Color.WHITE, 3))
-		return
-	else:
-		# só reaplica style se já tem um válido (evita flood de StyleBoxFlat no GC)
-		if park_button.has_theme_stylebox_override("normal"):
-			park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
-	var remain: int = GameState.park_remaining_seconds()
-	if park_active:
-		park_button.icon = null
-		park_button.text = "✕"
-		park_button.tooltip_text = Loc.t("PARK_CLOSE") if Loc.t("PARK_CLOSE") != "PARK_CLOSE" else "Sair do parquinho"
-		park_button.disabled = false
-		park_button.modulate = Color.WHITE
-		return
-	if remain > 0:
-		park_button.icon = null
-		park_button.text = "⏳ %s" % _park_format_cooldown(remain)
-		park_button.add_theme_font_size_override("font_size", 18)
-		park_button.tooltip_text = (Loc.t("PARK_COOLDOWN") % _park_format_cooldown(remain)) if Loc.has_method("t") and Loc.t("PARK_COOLDOWN") != "PARK_COOLDOWN" else "Volta em %s" % _park_format_cooldown(remain)
-		park_button.disabled = false
-		park_button.modulate = Color("ffffff", 0.88)
-		# quando em cooldown, leve pulse cinza
-		var badge: Label = park_button.get_node_or_null("Badge") as Label
-		if badge != null:
-			badge.visible = false
-	else:
-		park_button.icon = PARK_ICON
-		park_button.text = ""
-		park_button.add_theme_font_size_override("font_size", 34)
-		var streak: int = GameState.park_streak if GameState != null else 0
-		var tip: String = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
-		if streak > 1:
-			tip += " • 🔥%d" % streak
-		park_button.tooltip_text = tip
-		park_button.disabled = false
-		# brilho quando pronto
-		if not GameState.park_plays_total == 0:
-			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 2.6)
-			park_button.modulate = Color.WHITE.lerp(Color("dcedc8"), pulse * 0.5)
-		else:
-			park_button.modulate = Color.WHITE
-		# badge "!" na primeira vez
-		if GameState.park_plays_total == 0:
-			var badge: Label = park_button.get_node_or_null("Badge") as Label
-			if badge == null:
-				badge = Label.new()
-				badge.name = "Badge"
-				badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				badge.add_theme_font_size_override("font_size", 28)
-				badge.add_theme_color_override("font_color", Color.WHITE)
-				badge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 20, 6))
-				badge.custom_minimum_size = Vector2(44, 44)
-				badge.position = Vector2(52, -12)
-				park_button.add_child(badge)
-			badge.text = "!"
-			badge.visible = true
-		else:
-			var badge: Label = park_button.get_node_or_null("Badge") as Label
-			if is_instance_valid(badge):
-				badge.visible = false
-
-func _on_park_button() -> void:
-	if not is_inside_tree() or GameState == null:
-		return
-	if park_active:
-		_close_park()
-		return
-	var locked: bool = GameState.services_completed == 0 and GameState.player_level < 2
-	if locked:
-		_show_toast(Loc.t("PARK_LOCKED_TOAST") if Loc.has_method("t") and Loc.t("PARK_LOCKED_TOAST") != "PARK_LOCKED_TOAST" else "Termine seu primeiro atendimento para liberar o Parquinho!", Color("90a4ae"))
-		if AudioManager != null and AudioManager.has_method("play"):
-			AudioManager.play(&"error_soft")
-		return
-	if not GameState.park_can_play():
-		var remain: int = GameState.park_remaining_seconds()
-		_show_toast((Loc.t("PARK_COOLDOWN_TOAST") % _park_format_cooldown(remain)) if Loc.has_method("t") and Loc.t("PARK_COOLDOWN_TOAST") != "PARK_COOLDOWN_TOAST" else "Parquinho volta em %s — os pets estão tirando uma soneca!" % _park_format_cooldown(remain), Color("90a4ae"))
-		if AudioManager != null and AudioManager.has_method("play"):
-			AudioManager.play(&"error_soft")
-		return
-	_open_park_choose()
-
-func _open_park_choose() -> void:
-	if not is_inside_tree() or not is_instance_valid(park_choose_panel) or not is_instance_valid(park_canvas):
-		return
-	park_active = true
-	if GameState != null:
-		GameState.park_ensure_pets()
-	var ids: Array[String] = GameState.park_pets if GameState != null else ["caramelo", "caramelo", "caramelo"]
-	if ids.size() != 3:
-		ids = ["caramelo", "caramelo", "caramelo"]
-	park_canvas.set_pets(ids)
-	park_canvas.visible = true
-	if is_instance_valid(world):
-		world.visible = false
-	if is_instance_valid(queue_row):
-		queue_row.visible = false
-	# atualiza linha de pets no painel de escolha
-	var pets_line: Label = park_choose_panel.get_node_or_null("VBoxContainer/ParkPetsLine") as Label
-	if pets_line == null:
-		# fallback busca recursiva
-		pets_line = park_choose_panel.find_child("ParkPetsLine", true, false) as Label
-	if is_instance_valid(pets_line):
-		var names: Array[String] = []
-		for pid: String in ids:
-			var nm: String = "?"
-			if ContentDB != null and ContentDB.has_method("pet_name"):
-				nm = ContentDB.pet_name(pid)
-				if nm.is_empty():
-					nm = pid.capitalize()
-			else:
-				nm = pid.capitalize()
-			names.append(nm)
-		pets_line.text = "🐾  %s, %s & %s" % [names[0] if names.size() > 0 else "?", names[1] if names.size() > 1 else "?", names[2] if names.size() > 2 else "?"]
-	park_choose_panel.visible = true
-	park_choose_panel.modulate.a = 0.0
-	park_choose_panel.scale = Vector2(0.92, 0.92)
-	if is_inside_tree():
-		var tw: Tween = park_choose_panel.create_tween().set_parallel(true)
-		tw.tween_property(park_choose_panel, "modulate:a", 1.0, 0.18)
-		tw.tween_property(park_choose_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK)
-	if is_instance_valid(instruction_label):
-		instruction_label.text = Loc.t("PARK_CHOOSE") if Loc.has_method("t") and Loc.t("PARK_CHOOSE") != "PARK_CHOOSE" else "Escolha como cuidar dos 3 no quintal"
-		instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
-	if is_instance_valid(park_timer_label) and GameState != null:
-		var streak_txt: String = ""
-		if GameState.park_streak > 0:
-			streak_txt = (Loc.t("PARK_STREAK") % GameState.park_streak) if Loc.has_method("t") and Loc.t("PARK_STREAK") != "PARK_STREAK" else "🔥 %d dias seguidos no parquinho" % GameState.park_streak
-		park_timer_label.text = streak_txt
-	if AudioManager != null and AudioManager.has_method("play"):
-		AudioManager.play(&"window")
-	if Analytics != null and Analytics.has_method("track"):
-		Analytics.track(&"park_opened", {"pets": ids})
-
-func _start_park_activity(id: StringName) -> void:
-	if not is_instance_valid(park_choose_panel) or park_service == null or not is_instance_valid(park_canvas):
-		return
-	park_choose_panel.visible = false
-	var activity_str: String = String(id)
-	park_service.configure(id)
-	park_service.start()
-	if GameState != null and GameState.has_method("park_start_session"):
-		GameState.park_start_session(activity_str)
-	park_canvas.set_activity(id)
-	park_canvas.visible = true
-	park_dragging_ball = false
-	# esconde nav fantasiado? mantém HUD
-	if is_instance_valid(instruction_label):
-		instruction_label.text = _park_instruction()
-		instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
-	if AudioManager != null and AudioManager.has_method("play"):
-		AudioManager.play(&"service_start")
-	if HapticsManager != null and HapticsManager.has_method("light"):
-		HapticsManager.light()
-
-func _park_instruction() -> String:
-	if park_service == null:
-		return ""
-	if Loc == null or not Loc.has_method("t"):
-		match park_service.activity:
-			ParkService.Activity.BALL: return "🎾 Arraste a bolinha até o pet do meio!"
-			ParkService.Activity.TREAT: return "🦴 Toque no pote com o petisco escondido!"
-			ParkService.Activity.PHOTO: return "📸 Espere o alinhamento e toque em FOTO!"
-			_: return ""
-	match park_service.activity:
-		ParkService.Activity.BALL:
-			return Loc.t("PARK_HINT_BALL") if Loc.t("PARK_HINT_BALL") != "PARK_HINT_BALL" else "🎾 Arraste a bolinha até o pet do meio!"
-		ParkService.Activity.TREAT:
-			return Loc.t("PARK_HINT_TREAT") if Loc.t("PARK_HINT_TREAT") != "PARK_HINT_TREAT" else "🦴 Toque no pote com o petisco escondido!"
-		ParkService.Activity.PHOTO:
-			return Loc.t("PARK_HINT_PHOTO") if Loc.t("PARK_HINT_PHOTO") != "PARK_HINT_PHOTO" else "📸 Espere o alinhamento e toque em FOTO!"
-		_:
-			return ""
-
-func _park_begin_pointer(pos: Vector2) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE or not is_instance_valid(park_canvas) or not is_inside_tree():
-		return
-	match park_service.activity:
-		ParkService.Activity.BALL:
-			if park_canvas.has_method("ball_hit") and park_canvas.ball_hit(pos):
-				park_dragging_ball = true
-				if AudioManager != null and AudioManager.has_method("play"):
-					AudioManager.play(&"tool_pickup")
-				if HapticsManager != null and HapticsManager.has_method("light"):
-					HapticsManager.light()
-			else:
-				# arrasto direto também move
-				park_dragging_ball = true
-				if park_canvas.has_method("pet_focus"):
-					park_service.drag_ball(pos, park_canvas.pet_focus(1))
-				if is_instance_valid(park_canvas):
-					park_canvas.ball_pos = pos
-		ParkService.Activity.TREAT:
-			if not park_canvas.has_method("treat_slot_at"):
-				return
-			var slot: int = park_canvas.treat_slot_at(pos)
-			if slot >= 0 and not park_service.treat_revealed:
-				park_service.pick_treat(slot)
-				park_canvas.treat_choice = slot
-				park_canvas.treat_revealed = true
-				park_canvas.treat_hidden_slot = park_service.treat_hidden_slot
-				if AudioManager != null and AudioManager.has_method("play"):
-					AudioManager.play(&"tap")
-				if HapticsManager != null and HapticsManager.has_method("light"):
-					HapticsManager.light()
-				park_canvas.spawn_bubble(pos)
-				# auto-finaliza após escolha — guard get_tree + is_inside_tree para não travar se cena já saiu
-				if is_inside_tree() and get_tree() != null:
-					get_tree().create_timer(0.9).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
-		ParkService.Activity.PHOTO:
-			if not park_canvas.has_method("photo_hit") or not park_canvas.photo_hit(pos):
-				return
-			var ok: bool = park_service.try_photo()
-			park_canvas.photo_align = park_service.photo_align
-			park_canvas.spawn_bubble(pos)
-			if AudioManager != null and AudioManager.has_method("play"):
-				AudioManager.play(&"window" if ok else &"error_soft")
-			if HapticsManager != null and HapticsManager.has_method("light"):
-				HapticsManager.light()
-			if park_service.progress >= 0.92:
-				if is_inside_tree() and get_tree() != null:
-					get_tree().create_timer(0.4).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
-			elif park_service.photo_shots >= 4:
-				if is_inside_tree() and get_tree() != null:
-					get_tree().create_timer(0.6).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
-
-func _park_move_pointer(pos: Vector2) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE or not is_instance_valid(park_canvas) or not is_inside_tree():
-		return
-	if park_service.activity == ParkService.Activity.BALL and park_dragging_ball:
-		if park_canvas.has_method("pet_focus"):
-			park_service.drag_ball(pos, park_canvas.pet_focus(1))
-		if is_instance_valid(park_canvas):
-			park_canvas.ball_pos = pos
-		if park_service.fetch_count > 0 and park_service.progress > 0.85 and is_instance_valid(park_canvas):
-			park_canvas.spawn_bubble(pos)
-
-func _park_end_pointer() -> void:
-	if park_service == null or not is_inside_tree():
-		return
-	if park_service.activity == ParkService.Activity.BALL and park_dragging_ball:
-		park_dragging_ball = false
-		# se já fez progresso bom, permite finalizar cedo com toque duplo? mantém tempo
-		if park_service.progress >= 0.88 and park_service.fetch_count >= 3:
-			# brilha e auto-finaliza
-			if is_instance_valid(park_canvas) and park_canvas.has_method("celebrate"):
-				park_canvas.celebrate(true)
-			if is_inside_tree() and get_tree() != null:
-				get_tree().create_timer(0.5).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
-
-func _finish_park(timeout: bool) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE or GameState == null:
-		return
-	var quality: StringName = &"fail" if timeout else park_service.finish()
-	var success: bool = quality == &"perfect" or quality == &"good"
-	var perfect: bool = quality == &"perfect"
-	var activity_str: String = String(ParkService.ACTIVITY_NAMES.get(park_service.activity, &"ball")) if ParkService.ACTIVITY_NAMES.has(park_service.activity) else "ball"
-	var reward: Dictionary = {}
-	if GameState.has_method("park_complete"):
-		reward = GameState.park_complete(activity_str, success, perfect)
-	park_active = false
-	park_dragging_ball = false
-	if is_instance_valid(park_canvas):
-		park_canvas.visible = false
-	if is_instance_valid(world):
-		world.visible = true
-	if is_instance_valid(queue_row):
-		queue_row.visible = true
-	if is_instance_valid(park_choose_panel):
-		park_choose_panel.visible = false
-	_update_park_button()
-	_refresh_economy()
-	if success:
-		_show_park_success(quality, reward)
-	else:
-		_show_park_fail()
-	if Analytics != null and Analytics.has_method("track"):
-		Analytics.track(&"park_finished", {"quality": String(quality), "activity": activity_str})
-
-func _show_park_success(quality: StringName, reward: Dictionary) -> void:
-	if not is_inside_tree():
-		return
-	var coins: int = int(reward.get("coins", 0))
-	var aff: int = int(reward.get("affection", 0))
-	var embers: int = int(reward.get("embers", 0))
-	var streak: int = int(reward.get("streak", 0))
-	if AudioManager != null and AudioManager.has_method("play"):
-		AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
-	if HapticsManager != null and HapticsManager.has_method("success"):
-		HapticsManager.success()
-	if is_instance_valid(park_canvas) and park_canvas.has_method("celebrate"):
-		park_canvas.celebrate(true)
-	if is_instance_valid(result_title):
-		result_title.text = Loc.t("PARK_PERFECT") if Loc.has_method("t") and quality == &"perfect" and Loc.t("PARK_PERFECT") != "PARK_PERFECT" else ("⭐ Perfeito no parquinho!" if quality == &"perfect" else "✓ Ótimo cuidado!")
-		result_title.modulate = Color("ffd54f") if quality == &"perfect" else Color("2e7d32")
-	var coins_word: String = Loc.t("COINS") if Loc.has_method("t") else "R$"
-	var names: String = ""
-	if GameState != null:
-		for pid: String in GameState.park_pets:
-			var nm: String = pid.capitalize()
-			if ContentDB != null and ContentDB.has_method("pet_name"):
-				var tmp: String = ContentDB.pet_name(pid)
-				if not tmp.is_empty():
-					nm = tmp
-			names += nm + ", "
-		names = names.trim_suffix(", ")
-	var streak_line: String = ""
-	if streak >= 2:
-		streak_line = (Loc.t("PARK_STREAK_BONUS") % streak) if Loc.has_method("t") and Loc.t("PARK_STREAK_BONUS") != "PARK_STREAK_BONUS" else "🔥 %d dias seguidos!" % streak
-	if is_instance_valid(result_detail):
-		result_detail.text = "%s\n%s +%d  •  💗 +%d afeto%s%s" % ["★★★★★" if quality == &"perfect" else "★★★★☆", coins_word, coins, aff, "  •  🔥 +%d" % embers if embers > 0 else "", "\n" + streak_line if not streak_line.is_empty() else ""]
-	var extra: String = (Loc.t("PARK_SUCCESS_EXTRA") % names) if Loc.has_method("t") and Loc.t("PARK_SUCCESS_EXTRA") != "PARK_SUCCESS_EXTRA" else "%s adoraram o quintal com você!" % names
-	if quality == &"perfect":
-		extra += "\n" + (Loc.t("PARK_PERFECT_EXTRA") if Loc.has_method("t") and Loc.t("PARK_PERFECT_EXTRA") != "PARK_PERFECT_EXTRA" else "Foto perfeita! As memórias vão para a coleção.")
-	if is_instance_valid(result_detail_extra):
-		result_detail_extra.text = extra
-		result_detail_extra.visible = false
-		result_expanded = false
-		if is_instance_valid(result_expand_btn):
-			result_expand_btn.text = "ⓘ  Ver"
-			result_expand_btn.visible = true
-	if is_instance_valid(share_button):
-		share_button.visible = false
-	if is_instance_valid(result_panel):
-		_pop_panel(result_panel)
-	if is_instance_valid(primary_button):
-		primary_button.text = "✓  " + (Loc.t("REVEAL_OK") if Loc.has_method("t") else "OK")
-		primary_button.disabled = false
-		primary_button.show()
-	_animate_coin_fly(coins)
-	if EventBus != null and EventBus.has_signal("reveal_requested"):
-		EventBus.reveal_requested.emit(&"park", {"quality": String(quality), "coins": coins})
-
-func _show_park_fail() -> void:
-	if not is_inside_tree():
-		return
-	if AudioManager != null and AudioManager.has_method("play"):
-		AudioManager.play(&"error_soft")
-	if is_instance_valid(park_canvas):
-		park_canvas.forced_state = &"sad"
-	if is_instance_valid(result_title):
-		result_title.text = Loc.t("PARK_FAIL") if Loc.has_method("t") and Loc.t("PARK_FAIL") != "PARK_FAIL" else "Quase! Tente de novo"
-		result_title.modulate = Color("ef5350")
-	if is_instance_valid(result_detail):
-		result_detail.text = "★★☆☆☆\n" + (Loc.t("PARK_FAIL_HINT") if Loc.has_method("t") and Loc.t("PARK_FAIL_HINT") != "PARK_FAIL_HINT" else "Os pets se distraíram — tente outra brincadeira!")
-	if is_instance_valid(result_detail_extra):
-		result_detail_extra.text = Loc.t("PARK_FAIL_EXTRA") if Loc.has_method("t") and Loc.t("PARK_FAIL_EXTRA") != "PARK_FAIL_EXTRA" else "Sem penalidade na fila. Volta quando o cooldown acabar!"
-		result_detail_extra.visible = false
-		result_expanded = false
-		if is_instance_valid(result_expand_btn):
-			result_expand_btn.visible = true
-			result_expand_btn.text = "ⓘ  Dica"
-	if is_instance_valid(share_button):
-		share_button.visible = false
-	if is_instance_valid(result_panel):
-		_pop_panel(result_panel)
-	if is_instance_valid(primary_button):
-		primary_button.text = "↻  " + (Loc.t("TRY_AGAIN") if Loc.has_method("t") else "Tentar novamente")
-		primary_button.disabled = false
-		primary_button.show()
-
-func _close_park() -> void:
-	if not park_active:
-		# mesmo fechado, garante hidden se foi chamado por _input back
-		if is_instance_valid(park_canvas):
-			park_canvas.visible = false
-		if is_instance_valid(park_choose_panel):
-			park_choose_panel.visible = false
-		return
-	park_active = false
-	park_dragging_ball = false
-	if is_instance_valid(park_canvas):
-		park_canvas.visible = false
-	if is_instance_valid(world):
-		world.visible = true
-	if is_instance_valid(queue_row):
-		queue_row.visible = true
-	if is_instance_valid(park_choose_panel):
-		park_choose_panel.visible = false
-	if park_service != null:
-		park_service.state = ParkService.State.IDLE
-	if is_instance_valid(instruction_label):
-		instruction_label.text = Loc.t("CHOOSE_CLIENT") if Loc.has_method("t") else "Escolha um cliente"
-		if _instr_styles != null and _instr_styles.has(&"hint"):
-			instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
-		else:
-			instruction_label.add_theme_stylebox_override("normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2))
-	_last_instr_key = &""
-	_update_park_button()
-	if AudioManager != null and AudioManager.has_method("play"):
-		AudioManager.play(&"tap")
 
 func _toggle_goal_expand() -> void:
 	goal_collapsed = not goal_collapsed
@@ -1691,8 +1137,7 @@ func _connect_events() -> void:
 	EventBus.combo_changed.connect(func(_value: int) -> void: _refresh_economy())
 	EventBus.settings_changed.connect(func() -> void: _update_voice_button())
 	EventBus.toast_requested.connect(_show_toast)
-	EventBus.reveal_requested.connect(
-		func(kind: StringName, payload: Dictionary) -> void:
+	EventBus.reveal_requested.connect( func(kind: StringName, payload: Dictionary) -> void:
 			RevealCard.enqueue_kind(self, kind, payload)
 	)
 func _build_interface() -> void:
@@ -1782,14 +1227,9 @@ func _build_interface() -> void:
 	add_child(nav)
 	# Progressive disclosure P1: reduz sobrecarga D0, libera gradualmente
 	var nav_unlocks: Dictionary = {&"missions": 1, &"collection": 1, &"album": 2, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1}
-	for item: Dictionary in [
-		{"id": "missions", "tip_key": "NAV_MISSIONS"},
-		{"id": "collection", "tip_key": "NAV_COLLECTION"},
-		{"id": "album", "tip_key": "NAV_ALBUM"},
-		{"id": "staff", "tip_key": "NAV_STAFF"},
-		{"id": "shop", "tip_key": "NAV_SHOP"},
-		{"id": "map", "tip_key": "NAV_MAP"},
-		{"id": "settings", "tip_key": "NAV_SETTINGS"}
+	for item: Dictionary in [ {"id": "missions", "tip_key": "NAV_MISSIONS"}, {"id": "collection", "tip_key": "NAV_COLLECTION"},
+		{"id": "album", "tip_key": "NAV_ALBUM"}, {"id": "staff", "tip_key": "NAV_STAFF"},
+		{"id": "shop", "tip_key": "NAV_SHOP"}, {"id": "map", "tip_key": "NAV_MAP"}, {"id": "settings", "tip_key": "NAV_SETTINGS"}
 	]:
 		var sid: StringName = StringName(item["id"])
 		var tip: String = Loc.t(String(item["tip_key"]))
@@ -1834,15 +1274,13 @@ func _build_interface() -> void:
 	action_hud.add_theme_constant_override("separation", 16)
 	add_child(action_hud)
 	instruction_label = Label.new()
-	instruction_label.text = (
-		Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(&"soap"), "Caramelo"]
+	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(&"soap"), "Caramelo"]
 	)
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	instruction_label.add_theme_font_size_override("font_size", 33)
 	instruction_label.add_theme_color_override("font_color", Color.WHITE)
-	instruction_label.add_theme_stylebox_override(
-		"normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2)
+	instruction_label.add_theme_stylebox_override( "normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2)
 	)
 	instruction_label.custom_minimum_size = Vector2(990, 72)
 	action_hud.add_child(instruction_label)
@@ -1851,24 +1289,19 @@ func _build_interface() -> void:
 	upgrades_button.icon = UPGRADES_ICON
 	upgrades_button.expand_icon = true
 	upgrades_button.tooltip_text = Loc.t("UPGRADES_TITLE")
-	upgrades_button.add_theme_stylebox_override(
-		"normal", _style(Color(GREEN, 0.96), 43, 6, Color.WHITE, 4)
+	upgrades_button.add_theme_stylebox_override( "normal", _style(Color(GREEN, 0.96), 43, 6, Color.WHITE, 4)
 	)
-	upgrades_button.add_theme_stylebox_override(
-		"hover", _style(Color("66bb6a", 0.98), 43, 6, Color.WHITE, 5)
+	upgrades_button.add_theme_stylebox_override( "hover", _style(Color("66bb6a", 0.98), 43, 6, Color.WHITE, 5)
 	)
-	upgrades_button.add_theme_stylebox_override(
-		"pressed", _style(Color("5fae43", 1.0), 43, 8, Color.WHITE, 4)
+	upgrades_button.add_theme_stylebox_override( "pressed", _style(Color("5fae43", 1.0), 43, 8, Color.WHITE, 4)
 	)
 	add_child(upgrades_button)
-	upgrades_button.pressed.connect(
-		SessionFeedback.open_meta.bind(self, &"upgrades", upgrades_button)
+	upgrades_button.pressed.connect( SessionFeedback.open_meta.bind(self, &"upgrades", upgrades_button)
 	)
 	meta = MetaPanel.new()
 	meta.refresh_callback = _refresh_economy
 	meta.build(self)
-	var result_ui: Dictionary = SalonPanels.build_result_panel(
-		self, _style, _button, _on_primary_pressed, SessionFeedback.on_share_pressed.bind(self)
+	var result_ui: Dictionary = SalonPanels.build_result_panel( self, _style, _button, _on_primary_pressed, SessionFeedback.on_share_pressed.bind(self)
 	)
 	result_panel = result_ui["panel"]
 	result_title = result_ui["title"]
@@ -1881,8 +1314,7 @@ func _build_interface() -> void:
 	share_button = result_ui["share"]
 	if result_ui.has("xp_bar"):
 		result_panel.set_meta("xp_bar", result_ui["xp_bar"])
-	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel(
-		self, _style, _button, _on_upsell_accept, _on_upsell_decline
+	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel( self, _style, _button, _on_upsell_accept, _on_upsell_decline
 	)
 	upsell_panel = upsell_ui["panel"]
 	upsell_label = upsell_ui["body"]
@@ -1924,8 +1356,7 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	var fs: float = SalonTuning.font_scale()
 	label.add_theme_font_size_override("font_size", int(28 * fs))
 	label.add_theme_color_override("font_color", CHARCOAL)
-	label.add_theme_stylebox_override(
-		"normal", _style(Color("ffffff", 0.97), 32, 12, color, 4)
+	label.add_theme_stylebox_override( "normal", _style(Color("ffffff", 0.97), 32, 12, color, 4)
 	)
 	parent.add_child(label)
 	return label

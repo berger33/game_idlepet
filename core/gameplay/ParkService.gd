@@ -133,32 +133,27 @@ func try_photo() -> bool:
 func finish() -> StringName:
 	if state != State.ACTIVE:
 		return &"fail"
+	var result: StringName = _finish_result()
+	state = State.COMPLETE if result != &"fail" else State.FAILED
+	return result
+
+
+## Resultado puro por atividade (estado aplicado pelo finish acima).
+func _finish_result() -> StringName:
+	var result: StringName = &"fail"
 	if activity == Activity.BALL:
 		if progress >= 0.88 and fetch_count >= 3:
 			perfect = progress >= 0.96
-			state = State.COMPLETE
-			return &"perfect" if perfect else &"good"
+			result = &"perfect" if perfect else &"good"
 		elif progress >= 0.62:
-			state = State.COMPLETE
-			return &"good"
-		else:
-			state = State.FAILED
-			return &"fail"
+			result = &"good"
 	elif activity == Activity.TREAT:
-		if treat_choice < 0:
-			state = State.FAILED
-			return &"fail"
-		state = State.COMPLETE
-		return &"perfect" if score == 1 else &"good"
+		if treat_choice >= 0:
+			result = &"perfect" if score == 1 else &"good"
 	elif activity == Activity.PHOTO:
 		if progress >= 0.72:
-			state = State.COMPLETE
-			return &"perfect" if perfect and score >= 2 else &"good"
-		else:
-			state = State.FAILED
-			return &"fail"
-	state = State.FAILED
-	return &"fail"
+			result = &"perfect" if perfect and score >= 2 else &"good"
+	return result
 
 func quick_hint() -> String:
 	match activity:

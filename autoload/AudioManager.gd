@@ -27,17 +27,13 @@ extends Node
 ##   * a música (ambiente + camada de energia) segue sintetizada neste arquivo
 ##     e não foi tocada — apenas os efeitos mudaram de fonte.
 
-const SAMPLE_RATE: int = 22050
+const SAMPLE_RATE: int = 44100
 ## WAVs de SFX versionados (gerados por tools/gen_sfx.py).
 const SFX_DIR: String = "res://audio/sfx/"
-## BGM relaxante original restaurada (pedido do usuário): o loop ambiente
-## suave de 8 s (C/Am/F/G) — muito mais relaxante para sessões longas.
-## As trilhas geradas por tools/gen_bgm.py continuam em audio/bgm/ como
-## alternativa, mas a padrão agora é a ambiente relaxante.
+## BGM por tier (WAVs gerados por gen_bgm.py) + fallback procedural relaxante.
 const BGM_DIR: String = "res://audio/bgm/"
 const BGM_BY_TIER: Array[StringName] = [&"bgm_quintal", &"bgm_clinica", &"bgm_imperio"]
 ## Ganho da música relaxante (loop procedural) — mais baixa e aconchegante.
-const BGM_GAIN: float = 0.22
 const BGM_RELAX_GAIN: float = 0.22
 ## Âncora de sincronia: VFX pulsam no compasso da música REAL em execução
 ## (get_playback_position), não em relógio próprio.
@@ -51,6 +47,9 @@ const PENTATONIC: Array[float] = [
 	261.63, 293.66, 329.63, 392.00, 440.00,
 	523.25, 587.33, 659.26, 783.99, 880.00, 1046.50, 1174.66, 1318.51,
 ]
+## Cache em disco para evitar 4.6M sin() no boot (lazy + user://).
+const CACHE_DIR: String = "user://audio_cache/"
+
 var voices: Array[AudioStreamPlayer] = []
 var voice_index: int = 0
 var music_player: AudioStreamPlayer
@@ -66,12 +65,14 @@ var window_chime_armed: bool = true
 const VO_DIR: String = "res://audio/vo/"
 var voice_player: AudioStreamPlayer
 var voice_cache: Dictionary = {}
+var _ambient_cache: AudioStreamWAV = null
+var _energy_cache: AudioStreamWAV = null
 
 
 func _ready() -> void:
 	for i: int in VOICE_COUNT:
 		var voice: AudioStreamPlayer = AudioStreamPlayer.new()
-		voice.bus = &"Master"
+		voice.bus = &"SFX"
 		add_child(voice)
 		voices.append(voice)
 	_build_sfx_cache()
@@ -81,7 +82,7 @@ func _ready() -> void:
 	add_child(voice_player)
 	_build_voice_cache()
 	music_player = AudioStreamPlayer.new()
-	music_player.bus = &"Master"
+	music_player.bus = &"Music"
 	add_child(music_player)
 	play_bgm_for_tier(GameState.establishment_tier)
 	# Novo capítulo = nova trilha (crossfade curto), sem tocar no Main.
@@ -92,8 +93,9 @@ func _ready() -> void:
 	)
 	# Camada de energia: percussão entra durante o serviço e sai suave no fim.
 	energy_player = AudioStreamPlayer.new()
-	energy_player.bus = &"Master"
-	energy_player.stream = _energy_loop()
+	energy_player.bus = &"Music"
+	# Lazy: gera apenas quando necessário, com cache
+	energy_player.stream = _get_energy_loop_cached()
 	energy_player.volume_db = ENERGY_OFF_DB
 	add_child(energy_player)
 	energy_player.play()
@@ -110,8 +112,6 @@ func _ready() -> void:
 
 func _build_sfx_cache() -> void:
 	# --- Ticks progressivos do gesto: 10 degraus que sobem com o progresso.
-	# A nota (banho/tosa/laço) ou o brilho (secagem) já vem assada no WAV de
-	# cada degrau — é isso que faz o jogador OUVIR a aproximação dos 100%.
 	_cache_ladder(&"bubble", 10)
 	_cache_ladder(&"clipper", 10)
 	_cache_ladder(&"dryer", 10)
@@ -178,6 +178,8 @@ func play_gesture(service: StringName, bath: BathService) -> void:
 ## afinação (vida). `muted` = drenando ou passado da janela: uma oitava
 ## abaixo e mais baixo — o jogador ouve que está perdendo progresso.
 func play_progress(sfx: StringName, progress: float, muted: bool = false) -> void:
+	if String(sfx).is_empty():
+		return
 	var entry: StringName = sfx
 	var variants: int = int(cache.get("variants_" + String(sfx), 0))
 	var rung: int = 0
@@ -234,21 +236,32 @@ func set_energy(is_on: bool) -> void:
 	energy_target_db = ENERGY_ON_DB if is_on else ENERGY_OFF_DB
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if is_instance_valid(energy_player) and not is_equal_approx(
 		energy_player.volume_db, energy_target_db
 	):
-		energy_player.volume_db = move_toward(energy_player.volume_db, energy_target_db, 90.0 * _delta)
+		# Frame-rate independent fade: 90 dB/s aprox (1.5*60)
+		energy_player.volume_db = move_toward(energy_player.volume_db, energy_target_db, 90.0 * delta)
 
 
 ## Sliders de ajustes chamam isto para valer na hora (música inclusive).
 func apply_volumes() -> void:
 	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
+	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
+	# Por player (compat) + por bus (novo layout)
 	for voice: AudioStreamPlayer in voices:
 		voice.volume_db = linear_to_db(sfx_volume)
 	if is_instance_valid(voice_player):
 		voice_player.volume_db = linear_to_db(sfx_volume) if is_voice_enabled() else -80.0
 	music_player.volume_db = _music_db()
+	if is_instance_valid(energy_player):
+		# Energy segue música mas um pouco mais baixo
+		energy_player.volume_db = clampf(energy_target_db, ENERGY_OFF_DB, ENERGY_ON_DB)
+	# Bus volumes (se layout existir)
+	if AudioServer.get_bus_index(&"SFX") != -1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&"SFX"), linear_to_db(sfx_volume))
+	if AudioServer.get_bus_index(&"Music") != -1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&"Music"), linear_to_db(music_volume))
 
 # ── Voz kids ── exposta já na 1ª tela para mutar sem abrir Ajustes
 func is_voice_enabled() -> bool:
@@ -261,6 +274,14 @@ func set_voice_enabled(enabled: bool) -> void:
 	if not enabled and is_instance_valid(voice_player):
 		voice_player.stop()
 	EventBus.settings_changed.emit()
+
+## Mapeia serviço → locução kids (pt-BR): gesto específico quando existe.
+func voice_for_service(service: StringName) -> StringName:
+	match service:
+		&"perfume": return &"perfume_spray"
+		&"style": return &"bow_here"
+		_: return &"drag_soap"
+
 
 func play_voice(id: StringName) -> void:
 	if not is_voice_enabled():
@@ -333,16 +354,35 @@ func _load_voice(id: StringName) -> AudioStream:
 	return null
 
 
-## Trilha relaxante original restaurada (pedido do usuário):
-## o loop ambiente de 8 s (C/Am/F/G) é a padrão — muito mais relaxante e
-## aconchegante para idle. Troca de tier não muda a música (mantém o relax).
-func play_bgm_for_tier(_tier: int) -> void:
-	# Nome fixo para a música relaxante; ignora tier para não quebrar o relax.
-	var name: StringName = &"ambient_relax"
-	if name == current_bgm and music_player.playing:
+## Trilha por tier: tenta WAV por capítulo, fallback para ambient relax procedural.
+## Mantém relax como padrão se WAVs não existirem, mas agora usa BGM_BY_TIER.
+func play_bgm_for_tier(tier: int) -> void:
+	var desired: StringName = &"ambient_relax"
+	# Tier mapping: 1-3 quintal, 4-6 clinica, 7+ imperio (se WAVs existirem)
+	if tier >= 7 and BGM_BY_TIER.size() > 2:
+		desired = BGM_BY_TIER[2]
+	elif tier >= 4 and BGM_BY_TIER.size() > 1:
+		desired = BGM_BY_TIER[1]
+	elif tier >= 1 and BGM_BY_TIER.size() > 0:
+		desired = BGM_BY_TIER[0]
+	# Se WAV existe, usa; senão fallback relax procedural (mantém relax pedido usuário)
+	var wav_path: String = BGM_DIR + String(desired) + ".wav"
+	var stream: AudioStreamWAV = null
+	if ResourceLoader.exists(wav_path):
+		stream = _load_bgm(desired)
+		if stream != null:
+			desired = desired
+		else:
+			stream = _get_ambient_loop_cached()
+			desired = &"ambient_relax"
+	else:
+		# Sem WAV, usa procedural relax
+		stream = _get_ambient_loop_cached()
+		desired = &"ambient_relax"
+
+	if desired == current_bgm and music_player.playing:
 		return
-	current_bgm = name
-	var stream: AudioStreamWAV = _ambient_loop()
+	current_bgm = desired
 	if music_player.playing:
 		var fade: Tween = create_tween()
 		fade.tween_property(music_player, "volume_db", -40.0, 0.6)
@@ -399,6 +439,71 @@ func _load_sfx(sfx: StringName) -> AudioStreamWAV:
 		return load(path) as AudioStreamWAV
 	push_warning("AudioManager: SFX ausente: " + path)
 	return null
+
+
+## Cache helpers — evita regenerar 352k frames todo boot
+
+func _ensure_cache_dir() -> void:
+	if not DirAccess.dir_exists_absolute(CACHE_DIR):
+		DirAccess.make_dir_recursive_absolute(CACHE_DIR)
+
+
+func _get_ambient_loop_cached() -> AudioStreamWAV:
+	if _ambient_cache != null:
+		return _ambient_cache
+	var cache_path: String = CACHE_DIR + "ambient_relax_44100.bin"
+	if FileAccess.file_exists(cache_path):
+		var fa: FileAccess = FileAccess.open(cache_path, FileAccess.READ)
+		if fa != null:
+			var expected_frames: int = int(SAMPLE_RATE * 16.0)
+			if fa.get_length() == expected_frames * 2:
+				var bytes: PackedByteArray = fa.get_buffer(fa.get_length())
+				fa.close()
+				var s: AudioStreamWAV = _wav(bytes)
+				s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+				s.loop_begin = 0
+				s.loop_end = expected_frames
+				_ambient_cache = s
+				return s
+			fa.close()
+	var stream: AudioStreamWAV = _ambient_loop()
+	_ambient_cache = stream
+	# Salva em background (best effort)
+	_ensure_cache_dir()
+	var out: FileAccess = FileAccess.open(cache_path, FileAccess.WRITE)
+	if out != null:
+		out.store_buffer(stream.data)
+		out.close()
+	return stream
+
+
+func _get_energy_loop_cached() -> AudioStreamWAV:
+	if _energy_cache != null:
+		return _energy_cache
+	var cache_path: String = CACHE_DIR + "energy_44100.bin"
+	if FileAccess.file_exists(cache_path):
+		var fa: FileAccess = FileAccess.open(cache_path, FileAccess.READ)
+		if fa != null:
+			var beat_length: float = 60.0 / MUSIC_BPM
+			var expected_frames: int = int(SAMPLE_RATE * beat_length * 8.0)
+			if fa.get_length() == expected_frames * 2:
+				var bytes: PackedByteArray = fa.get_buffer(fa.get_length())
+				fa.close()
+				var s: AudioStreamWAV = _wav(bytes)
+				s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+				s.loop_begin = 0
+				s.loop_end = expected_frames
+				_energy_cache = s
+				return s
+			fa.close()
+	var stream: AudioStreamWAV = _energy_loop()
+	_energy_cache = stream
+	_ensure_cache_dir()
+	var out: FileAccess = FileAccess.open(cache_path, FileAccess.WRITE)
+	if out != null:
+		out.store_buffer(stream.data)
+		out.close()
+	return stream
 
 
 ## Loop relaxante original — restaurado e melhorado:
@@ -492,3 +597,16 @@ func _wav(bytes: PackedByteArray) -> AudioStreamWAV:
 	stream.stereo = false
 	stream.data = bytes
 	return stream
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if is_instance_valid(music_player):
+			music_player.stream_paused = true
+		if is_instance_valid(energy_player):
+			energy_player.stream_paused = true
+	elif what == NOTIFICATION_APPLICATION_RESUMED:
+		if is_instance_valid(music_player):
+			music_player.stream_paused = false
+		if is_instance_valid(energy_player):
+			energy_player.stream_paused = false

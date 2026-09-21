@@ -13,12 +13,19 @@ jobs:
   static:
     name: Lint + testes de dados/economia
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}-gdtoolkit-pillow-numpy
+          restore-keys: |
+            pip-${{ runner.os }}-
       - name: Dependências Python
         run: |
           python -m pip install --upgrade pip
@@ -45,20 +52,42 @@ jobs:
   runtime:
     name: Godot headless (import + smoke test)
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Godot binary
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-binary-4.7.2-stable-linux
       - name: Instalar Godot 4.7.2 headless
+        if: steps.godot-cache.outputs.cache-hit != 'true'
         run: |
           curl -fL -o godot.zip \
             https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip godot.zip
+          unzip -q godot.zip
           mv Godot_v4.7.2-stable_linux.x86_64 godot
           chmod +x godot
+      - name: Garantir permissão Godot
+        if: steps.godot-cache.outputs.cache-hit == 'true'
+        run: chmod +x godot
+      - name: Cache export templates
+        id: templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/4.7.2.stable
+          key: godot-templates-4.7.2
+      - name: Baixar export templates (se necessário para import)
+        if: steps.templates.outputs.cache-hit != 'true'
+        run: |
+          curl -fL -o templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/ || true
       - name: Import de assets (valida preload/paths)
         run: |
-          # Godot 4.7 headless tem um crash intermitente (SIGABRT/134) no
-          # caminho de primeiro frame do editor; uma retry absorve o flake.
           run_import() { ./godot --headless --import 2>&1 | tee /tmp/import.log; return ${PIPESTATUS[0]}; }
           if ! run_import; then
             echo "::warning::primeira tentativa de import falhou; nova tentativa em 10s"
@@ -78,8 +107,6 @@ jobs:
             echo "::error::smoke test falhou (cena principal não executou 120 frames)"
             exit 1
           fi
-          # Erros de script em runtime NÃO alteram o exit code do Godot; sem
-          # esta checagem o smoke "passa" com a cena quebrando no meio do _ready.
           if grep -q "SCRIPT ERROR" /tmp/smoke.log; then
             echo "::error::erro(s) de script durante a execução da cena principal"
             grep -E "SCRIPT ERROR|at:" /tmp/smoke.log | head -12 | while IFS= read -r line; do
@@ -127,7 +154,6 @@ jobs:
       - name: Análise estática de todos os scripts (contexto de projeto, 4.7.2)
         run: |
           status=0
-          # Autoteste do detector: um script com colisão var/func DEVE falhar.
           printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
           if ./godot --headless --script tools/check_scripts.gd -- res://probe_collision_selftest.gd > /dev/null 2>&1; then
             echo "::error::detector de análise não registrou a colisão de teste"
@@ -136,7 +162,6 @@ jobs:
             echo "detector validado: script de teste com colisão falhou como esperado"
           fi
           rm -f probe_collision_selftest.gd
-          # Análise de todos os scripts com autoloads registrados (como no editor).
           mapfile -t scripts < <(git ls-files '*.gd' | sed 's|^|res://|')
           ./godot --headless --script tools/check_scripts.gd -- "${scripts[@]}" 2>&1 | tee /tmp/check.log
           if [ ${PIPESTATUS[0]} -ne 0 ]; then

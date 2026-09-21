@@ -190,7 +190,7 @@ func _migrate(data: Dictionary) -> Dictionary:
 		version = 12
 	# v12 patch: parquinho+álbum foram adicionados no mesmo SAVE_VERSION 12 sem bump.
 	# Saves v12 antigos não têm essas chaves — injeta defaults sem apagar progresso e sem bump.
-	if version == 12:
+	if version >= 12:
 		if not data.has("park_pets"):
 			data["park_pets"] = []
 		if not data.has("park_cooldown_until"):
@@ -213,6 +213,14 @@ func _migrate(data: Dictionary) -> Dictionary:
 			data["park_contest_claimed_week"] = ""
 		if not data.has("park_trophies"):
 			data["park_trophies"] = 0
+	if version == 12:
+		# v13: monetização persistida — entitlements, ledger, ads policy
+		data["version"] = 13
+		data["purchased_entitlements"] = data.get("purchased_entitlements", {"no_ads": false, "bath_pass": false})
+		data["purchase_ledger"] = data.get("purchase_ledger", {})
+		data["ads_policy"] = data.get("ads_policy", {})
+		version = 13
+
 	return data
 
 

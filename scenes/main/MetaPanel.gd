@@ -60,12 +60,10 @@ func open(section: StringName, origin: Control = null) -> void:
 	screen.backdrop.show()
 	screen.backdrop.pivot_offset = screen.backdrop.size * 0.5
 	screen.backdrop.scale = Vector2(1.035, 1.035)
-	screen.backdrop.create_tween().tween_property(
-		screen.backdrop, "scale", Vector2.ONE, 3.5
+	screen.backdrop.create_tween().tween_property( screen.backdrop, "scale", Vector2.ONE, 3.5
 	).set_trans(Tween.TRANS_SINE)
 	if is_instance_valid(origin):
-		screen.panel.pivot_offset = (
-			origin.global_position + origin.size * 0.5 - screen.panel.position
+		screen.panel.pivot_offset = ( origin.global_position + origin.size * 0.5 - screen.panel.position
 		)
 	else:
 		screen.panel.pivot_offset = screen.panel.size * 0.5
@@ -123,9 +121,7 @@ func _build_missions() -> void:
 	# ── Retenção P0: roleta diária (recompensa variável) + streak + perda ── localizados
 	var can_spin: bool = DailySpin.can_spin()
 	var spin_status: String = Loc.t("SPIN_DONE") if not can_spin else Loc.t("SPIN_ACTION")
-	_info_row(
-		"🎡 %s • %s" % [Loc.t("DAILY_SPIN_TITLE"), spin_status],
-		Loc.t("DAILY_SPIN_DESC"),
+	_info_row( "🎡 %s • %s" % [Loc.t("DAILY_SPIN_TITLE"), spin_status], Loc.t("DAILY_SPIN_DESC"),
 		Loc.t("SPIN_ACTION") if can_spin else Loc.t("SPIN_DONE"),
 		Color("ffd54f") if can_spin else Color("b0bec5"),
 		can_spin,
@@ -138,14 +134,12 @@ func _build_missions() -> void:
 	_note("── " + Loc.t("DAILY_LOGIN").split(" ")[0] + " & STREAK ──", 26, PINK, false)
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
-	var streak_coins: int = Rewards.scaled(
-		float(Rewards.SECONDS[&"streak_day"]) * next_day, 25 * next_day
+	var streak_coins: int = Rewards.scaled( float(Rewards.SECONDS[&"streak_day"]) * next_day, 25 * next_day
 	)
 	var streak_note: String = Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes]
 	if not claimed_today:
 		streak_note += " • " + Loc.t("STREAK_LOSS_NOTE")
-	_info_row(
-		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
+	_info_row( Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
 		"%s %d • %s" % [Loc.t("COINS"), streak_coins, streak_note],
 		Loc.t("CLAIMED") if claimed_today else Loc.t("CLAIM"),
 		GREEN,
@@ -156,16 +150,11 @@ func _build_missions() -> void:
 	)
 	# Meta do dia do evento (LiveOps): o evento vira motivo de sessão.
 	if LiveOps.event_goal_target() > 0:
-		var goal_ready: bool = (
-			GameState.event_goal_count >= LiveOps.event_goal_target()
+		var goal_ready: bool = ( GameState.event_goal_count >= LiveOps.event_goal_target()
 			and not GameState.event_goal_claimed
 		)
-		_info_row(
-			"%s • %s" % [Loc.t("EVENT_GOAL_TITLE"), LiveOps.current_event_name()],
-			"%s\n%s" % [
-				LiveOps.event_goal_text(),
-				Loc.t("EVENT_GOAL_REWARD") % [
-					Rewards.for_kind(&"event_goal", 300), LiveOps.EVENT_GOAL_EMBERS
+		_info_row( "%s • %s" % [Loc.t("EVENT_GOAL_TITLE"), LiveOps.current_event_name()], "%s\n%s" % [ LiveOps.event_goal_text(),
+				Loc.t("EVENT_GOAL_REWARD") % [ Rewards.for_kind(&"event_goal", 300), LiveOps.EVENT_GOAL_EMBERS
 				],
 			],
 			Loc.t("CLAIMED") if GameState.event_goal_claimed else Loc.t("CLAIM"),
@@ -182,9 +171,7 @@ func _build_missions() -> void:
 		var claimed: bool = GameState.claimed_missions.has(mission_id)
 		var ready: bool = Missions.is_ready(mission)
 		var epic: bool = Missions.is_epic(mission)
-		_info_row(
-			("★ " if epic else "") + Missions.label(mission),
-			"%s • %s" % [String(mission.get("name", mission_id)), Missions.reward_text(mission)],
+		_info_row( ("★ " if epic else "") + Missions.label(mission), "%s • %s" % [String(mission.get("name", mission_id)), Missions.reward_text(mission)],
 			Loc.t("CLAIMED") if claimed else Loc.t("CLAIM"),
 			Color("ce93d8") if epic else GREEN,
 			ready and not claimed,
@@ -192,16 +179,11 @@ func _build_missions() -> void:
 				GameState.claim_mission(mid)
 				AudioManager.play(&"coin")
 		)
-	_note(
-		Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes],
-		26,
-		CHARCOAL
+	_note( Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes], 26, CHARCOAL
 	)
 	# Gancho de retorno: o jogador vê o amanhã (evento + streak) antes de sair.
 	var tomorrow: int = (LiveOps.weekday() + 1) % 7
-	_info_row(
-		Loc.t("TOMORROW"),
-		"%s — %s" % [LiveOps.event_name_for(tomorrow), LiveOps.event_description_for(tomorrow)],
+	_info_row( Loc.t("TOMORROW"), "%s — %s" % [LiveOps.event_name_for(tomorrow), LiveOps.event_description_for(tomorrow)],
 		"%d/7" % GameState.daily_streak,
 		Color("4fc3f7"),
 		false,
@@ -211,14 +193,9 @@ func _build_missions() -> void:
 	var pass_reward: Dictionary = ContentDB.pass_day(GameState.pass_day_claimed + 1)
 	var pass_line: String = Loc.t("PASS_DONE")
 	if not pass_reward.is_empty():
-		pass_line = "%s • %s %d" % [
-			Loc.t("PASS_DESC"),
-			Loc.t("COINS"),
-			Rewards.pass_day_coins(GameState.pass_day_claimed + 1),
+		pass_line = "%s • %s %d" % [ Loc.t("PASS_DESC"), Loc.t("COINS"), Rewards.pass_day_coins(GameState.pass_day_claimed + 1),
 		]
-	_info_row(
-		Loc.t("PASS_TITLE") + " %d/28" % (GameState.pass_day_claimed + 1),
-		pass_line,
+	_info_row( Loc.t("PASS_TITLE") + " %d/28" % (GameState.pass_day_claimed + 1), pass_line,
 		Loc.t("CLAIM") if pass_ready else "%d/28" % GameState.pass_day_unlocked,
 		GREEN if pass_ready else Color("b0bec5"),
 		pass_ready,
@@ -253,20 +230,14 @@ func _build_missions() -> void:
 		var weekly_done: bool = GameState.claimed_weeklies.has(weekly_id)
 		var weekly_ready: bool = value >= target and not weekly_done
 		var reward: Dictionary = weekly.get("reward", {})
-		var reward_text: String = (
-			"%s %d" % [Loc.t("COINS"), Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0)))]
+		var reward_text: String = ( "%s %d" % [Loc.t("COINS"), Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0)))]
 			if reward.has("coins")
 			else "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
 		)
-		var action_label: String = (
-			Loc.t("CLAIMED") if weekly_done else (
-				Loc.t("CLAIM") if weekly_ready else "%d/%d" % [value, target]
+		var action_label: String = ( Loc.t("CLAIMED") if weekly_done else ( Loc.t("CLAIM") if weekly_ready else "%d/%d" % [value, target]
 			)
 		)
-		_info_row(
-			Loc.t(String(weekly["label_key"])) % value,
-			"%s • %s" % [Loc.t("WEEKLY_NOTE_SHORT"), reward_text],
-			action_label,
+		_info_row( Loc.t(String(weekly["label_key"])) % value, "%s • %s" % [Loc.t("WEEKLY_NOTE_SHORT"), reward_text], action_label,
 			GREEN if weekly_ready else (Color("b0bec5") if weekly_done else Color("4fc3f7")),
 			weekly_ready,
 			func(claimed_id: String = weekly_id) -> void:
@@ -286,9 +257,7 @@ func _build_collection() -> void:
 	var filter_row: HBoxContainer = HBoxContainer.new()
 	filter_row.add_theme_constant_override("separation", 10)
 	screen.content_box.add_child(filter_row)
-	for f: Dictionary in [
-		{"id": &"all", "label_key": "FILTER_ALL"},
-		{"id": &"dog", "label_key": "FILTER_DOGS"},
+	for f: Dictionary in [ {"id": &"all", "label_key": "FILTER_ALL"}, {"id": &"dog", "label_key": "FILTER_DOGS"},
 		{"id": &"cat", "label_key": "FILTER_CATS"},
 		{"id": &"legendary", "label_key": "FILTER_LEGENDARY"},
 	]:
@@ -298,8 +267,7 @@ func _build_collection() -> void:
 		btn.text = Loc.t(String(f["label_key"]))
 		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, PINK if active else Color("b0bec5"))
-		btn.pressed.connect(
-			func(id: StringName = fid) -> void:
+		btn.pressed.connect( func(id: StringName = fid) -> void:
 				_collection_filter = id
 				_rebuild(&"collection")
 		)
@@ -325,8 +293,7 @@ func _build_collection() -> void:
 		var card: PanelContainer = PET_CARD.instantiate()
 		var card_alpha: float = 0.9 if unlocked else 0.45
 		var card_border: Color = PINK if unlocked else Color("90a4ae")
-		card.add_theme_stylebox_override(
-			"panel", StyleFactory.box(Color("ffffff", card_alpha), 22, 10, card_border, 3)
+		card.add_theme_stylebox_override( "panel", StyleFactory.box(Color("ffffff", card_alpha), 22, 10, card_border, 3)
 		)
 		grid.add_child(card)
 		var portrait: TextureRect = card.get_node("VBox/Portrait")
@@ -349,15 +316,12 @@ func _build_collection() -> void:
 		if aff >= 10 and all_mems.size() > 1: unlocked_mems.append(all_mems[1])
 		if aff >= 25 and all_mems.size() > 2: unlocked_mems.append(all_mems[2])
 		var mem_text: String = "\n".join(unlocked_mems) if not unlocked_mems.is_empty() else ""
-		sub.text = (
-			(
-				("★ " if GameState.favorite_pet == pet_id else "")
+		sub.text = ( ( ("★ " if GameState.favorite_pet == pet_id else "")
 				+ "♥ %d/50 • %s" % [aff, diary]
 				+ ("\n%s" % mem_text if not mem_text.is_empty() else "")
 			)
 			if unlocked
-			else (
-				Loc.t("VISITOR_TAG") % [Discovery.progress(pet_id), Discovery.VISITS_TO_ADOPT]
+			else ( Loc.t("VISITOR_TAG") % [Discovery.progress(pet_id), Discovery.VISITS_TO_ADOPT]
 				if Discovery.progress(pet_id) > 0
 				else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
 			)
@@ -372,8 +336,7 @@ func _build_collection() -> void:
 			card.pivot_offset = card.custom_minimum_size * 0.5
 			card.mouse_entered.connect(func(): card.create_tween().tween_property(card, "scale", Vector2(1.05, 1.05), 0.12))
 			card.mouse_exited.connect(func(): card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12))
-			card.gui_input.connect(
-				func(event: InputEvent, pid: String = pet_id) -> void:
+			card.gui_input.connect( func(event: InputEvent, pid: String = pet_id) -> void:
 					if event is InputEventScreenTouch:
 						if event.pressed:
 							card.create_tween().tween_property(card, "scale", Vector2(0.95, 0.95), 0.08)
@@ -386,19 +349,13 @@ func _build_collection() -> void:
 							else:
 								card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12)
 			)
-	_note(
-		Loc.t("COLLECTION_SUMMARY")
-		% [
-			GameState.unlocked_pets.size(),
-			ContentDB.pets.size(),
-			GameState.achievement_ids.size(),
-			ContentDB.achievements.size(),
+	_note( Loc.t("COLLECTION_SUMMARY")
+		% [ GameState.unlocked_pets.size(), ContentDB.pets.size(), GameState.achievement_ids.size(), ContentDB.achievements.size(),
 			GameState.unlocked_cosmetics.size(),
 		]
 	)
 	# Conquistas com card compartilhável (viralização de progresso)
-	var ach_count: String = "(%d/%d)" % [
-		GameState.achievement_ids.size(), ContentDB.achievements.size()
+	var ach_count: String = "(%d/%d)" % [ GameState.achievement_ids.size(), ContentDB.achievements.size()
 	]
 	_note(Loc.t("REVEAL_ACHIEVEMENT_TITLE") + " " + ach_count, 26, CHARCOAL)
 	for achievement: Dictionary in ContentDB.achievements:
@@ -416,12 +373,7 @@ func _build_collection() -> void:
 		var desc_full: String = desc_base
 		if not reward_text.is_empty():
 			desc_full += " • " + reward_text
-		_info_row(
-			ContentDB.achievement_name(aid),
-			desc_full,
-			action,
-			Color("ffd54f") if unlocked else Color("b0bec5"),
-			unlocked,
+		_info_row( ContentDB.achievement_name(aid), desc_full, action, Color("ffd54f") if unlocked else Color("b0bec5"), unlocked,
 			func(aid_inner: String = aid) -> void:
 				var saved_path: String = await ShareManager.share_achievement(aid_inner)
 				if not saved_path.is_empty():
@@ -456,8 +408,7 @@ func _build_album() -> void:
 	var can_claim: bool = false
 	if GameState.has_method("park_can_claim_contest"):
 		can_claim = GameState.park_can_claim_contest()
-	_info_row(
-		Loc.t("ALBUM_WEEK") if Loc.has_method("t") and Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
+	_info_row( Loc.t("ALBUM_WEEK") if Loc.has_method("t") and Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
 		(Loc.t("ALBUM_WEEK_PROGRESS") % [int(prog.get("total", 0)), int(prog.get("perfects", 0))] if Loc.has_method("t") and Loc.t("ALBUM_WEEK_PROGRESS") != "ALBUM_WEEK_PROGRESS" else "Fotos esta semana: %d (perfeitas %d)" % [int(prog.get("total", 0)), int(prog.get("perfects", 0))]),
 		Loc.t("ALBUM_CLAIMED") if bool(prog.get("claimed", false)) else (Loc.t("ALBUM_CLAIM") if Loc.has_method("t") and Loc.t("ALBUM_CLAIM") != "ALBUM_CLAIM" else "COLETAR CAPA"),
 		GREEN if can_claim else Color("b0bec5"),
@@ -589,19 +540,14 @@ func _build_upgrades() -> void:
 	var station_level: int = GameState.bath_upgrade_level
 	if station_level >= GameState.MAX_CAREER_LEVEL:
 		var bonus: float = (Economy.income_multiplier(station_level) - 1.0) * 100.0
-		_info_row(
-			Loc.t("UPGRADES_STATION"),
-			"Nv.%d  •  +%.0f%% %s" % [station_level, bonus, Loc.t("UPGRADES_REWARD")],
-			Loc.t("UPGRADES_MAXED"),
+		_info_row( Loc.t("UPGRADES_STATION"), "Nv.%d  •  +%.0f%% %s" % [station_level, bonus, Loc.t("UPGRADES_REWARD")], Loc.t("UPGRADES_MAXED"),
 			Color("b0bec5"),
 			false,
 			Callable()
 		)
 	else:
 		var cost: float = Economy.upgrade_cost(station_level)
-		_info_row(
-			Loc.t("UPGRADES_STATION"),
-			"Nv.%d  •  +7,5%% %s  •  %s %d"
+		_info_row( Loc.t("UPGRADES_STATION"), "Nv.%d  •  +7,5%% %s  •  %s %d"
 			% [station_level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(cost)],
 			Loc.t("UPGRADES_UPGRADE"),
 			GREEN,
@@ -610,15 +556,12 @@ func _build_upgrades() -> void:
 				if GameState.buy_bath_upgrade():
 					AudioManager.play(&"upgrade")
 					HapticsManager.success()
-					EventBus.toast_requested.emit(
-						Loc.t("UPGRADES_STATION_LEVEL") % GameState.bath_upgrade_level, GREEN
+					EventBus.toast_requested.emit( Loc.t("UPGRADES_STATION_LEVEL") % GameState.bath_upgrade_level, GREEN
 					)
 				else:
 					_upgrades_missing_toast(cost)
 		)
-	var tools: Array = [
-		{"id": &"soap", "key": "TOOL_SOAP", "level": 1},
-		{"id": &"clipper", "key": "TOOL_CLIPPER", "level": 3},
+	var tools: Array = [ {"id": &"soap", "key": "TOOL_SOAP", "level": 1}, {"id": &"clipper", "key": "TOOL_CLIPPER", "level": 3},
 		{"id": &"dryer", "key": "TOOL_DRYER", "level": 5},
 		{"id": &"perfume", "key": "TOOL_PERFUME", "level": 7},
 		{"id": &"bow", "key": "TOOL_BOW", "level": 10},
@@ -629,27 +572,13 @@ func _build_upgrades() -> void:
 		var locked: bool = GameState.player_level < int(tool["level"])
 		var tool_cost: float = GameState.tool_upgrade_cost(tool_id)
 		if locked:
-			_info_row(
-				Loc.t(String(tool["key"])),
-				Loc.t("UPGRADES_LOCKED") % int(tool["level"]),
-				"",
-				Color("b0bec5"),
-				false,
-				Callable()
+			_info_row( Loc.t(String(tool["key"])), Loc.t("UPGRADES_LOCKED") % int(tool["level"]), "", Color("b0bec5"), false, Callable()
 			)
 		elif level >= 30:
-			_info_row(
-				Loc.t(String(tool["key"])),
-				"Nv.%d/30  •  +%d%%" % [level, level * 4],
-				Loc.t("UPGRADES_MAXED"),
-				Color("b0bec5"),
-				false,
-				Callable()
+			_info_row( Loc.t(String(tool["key"])), "Nv.%d/30  •  +%d%%" % [level, level * 4], Loc.t("UPGRADES_MAXED"), Color("b0bec5"), false, Callable()
 			)
 		else:
-			_info_row(
-				Loc.t(String(tool["key"])),
-				"Nv.%d/30  •  +4%% %s  •  %s %d"
+			_info_row( Loc.t(String(tool["key"])), "Nv.%d/30  •  +4%% %s  •  %s %d"
 				% [level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(tool_cost)],
 				Loc.t("UPGRADES_UPGRADE"),
 				BLUE,
@@ -658,8 +587,7 @@ func _build_upgrades() -> void:
 					if GameState.buy_tool_upgrade(tool_id):
 						AudioManager.play(&"upgrade")
 						HapticsManager.success()
-						EventBus.toast_requested.emit(
-							Loc.t("UPGRADES_TOOL_UP") % Loc.t(String(tool["key"])), GREEN
+						EventBus.toast_requested.emit( Loc.t("UPGRADES_TOOL_UP") % Loc.t(String(tool["key"])), GREEN
 						)
 					else:
 						_upgrades_missing_toast(tool_cost)
@@ -667,8 +595,7 @@ func _build_upgrades() -> void:
 
 
 func _upgrades_missing_toast(cost: float) -> void:
-	EventBus.toast_requested.emit(
-		Loc.t("UPGRADES_MISSING") % maxi(0, int(cost - GameState.coins)), Color("ef5350")
+	EventBus.toast_requested.emit( Loc.t("UPGRADES_MISSING") % maxi(0, int(cost - GameState.coins)), Color("ef5350")
 	)
 
 
@@ -686,17 +613,14 @@ func _build_staff() -> void:
 			desc += "\n" + Loc.t("STAFF_AUTOMATION") % automation
 		if not dialogue.is_empty():
 			desc += "\n💬 %s" % dialogue
-		_info_row(
-			ContentDB.staff_name(staff_id),
-			desc,
+		_info_row( ContentDB.staff_name(staff_id), desc,
 			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %s %d" % [Loc.t("HIRE"), Loc.t("COINS"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
 			not hired and staff_id != "player" and GameState.coins >= float(cost),
 			func(sid: String = staff_id) -> void:
 				if GameState.hire_staff(sid):
 					AudioManager.play(&"upgrade")
-					EventBus.toast_requested.emit(
-						"%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN
+					EventBus.toast_requested.emit( "%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN
 					)
 		)
 
@@ -708,9 +632,7 @@ func _build_shop() -> void:
 	var shop_filter_row: HBoxContainer = HBoxContainer.new()
 	shop_filter_row.add_theme_constant_override("separation", 10)
 	screen.content_box.add_child(shop_filter_row)
-	for sf: Dictionary in [
-		{"id": &"all", "label_key": "FILTER_ALL_COSMETICS"},
-		{"id": &"bath", "label_key": "FILTER_BATH"},
+	for sf: Dictionary in [ {"id": &"all", "label_key": "FILTER_ALL_COSMETICS"}, {"id": &"bath", "label_key": "FILTER_BATH"},
 		{"id": &"wall", "label_key": "FILTER_WALL"},
 		{"id": &"pet_accessory", "label_key": "FILTER_ACCESSORY"},
 	]:
@@ -720,8 +642,7 @@ func _build_shop() -> void:
 		btn.text = Loc.t(String(sf["label_key"]))
 		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, Color("ffd54f") if active else Color("b0bec5"))
-		btn.pressed.connect(
-			func(id: StringName = fid) -> void:
+		btn.pressed.connect( func(id: StringName = fid) -> void:
 				_shop_filter = id
 				_rebuild(&"shop")
 		)
@@ -754,17 +675,12 @@ func _build_shop() -> void:
 			var feat_price: Dictionary = featured.get("price", {})
 			var feat_price_text: String = ""
 			if feat_price.has("coins"):
-				feat_price_text = "%s %d" % [
-					Loc.t("COINS"), Rewards.cosmetic_price(featured_id)
+				feat_price_text = "%s %d" % [ Loc.t("COINS"), Rewards.cosmetic_price(featured_id)
 				]
 			else:
-				feat_price_text = "%d %s" % [
-					int(feat_price.get("embers", 0)), Loc.t("EMBERS")
+				feat_price_text = "%d %s" % [ int(feat_price.get("embers", 0)), Loc.t("EMBERS")
 				]
-			_info_row(
-				"%s • %s" % [Loc.t("WEEKLY_FEATURED"), ContentDB.cosmetic_name(featured_id)],
-				Loc.t("WEEKLY_FEATURED_DESC"),
-				feat_price_text,
+			_info_row( "%s • %s" % [Loc.t("WEEKLY_FEATURED"), ContentDB.cosmetic_name(featured_id)], Loc.t("WEEKLY_FEATURED_DESC"), feat_price_text,
 				Color("ffd54f"),
 				not GameState.unlocked_cosmetics.has(featured_id),
 				func(fid: String = featured_id) -> void:
@@ -803,33 +719,22 @@ func _build_shop() -> void:
 			action_color = Color("b0bec5")
 		else:
 			action_text = Loc.t("BUY")
-		_info_row(
-			ContentDB.cosmetic_name(look_id),
-			price_text,
-			action_text,
-			action_color,
-			enabled,
-			func(lid: String = look_id) -> void:
+		_info_row( ContentDB.cosmetic_name(look_id), price_text, action_text, action_color, enabled, func(lid: String = look_id) -> void:
 				if GameState.unlocked_cosmetics.has(lid):
 					if GameState.equip_cosmetic(lid):
 						AudioManager.play(&"equip")
-						EventBus.toast_requested.emit(
-							"%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
+						EventBus.toast_requested.emit( "%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
 						)
 				elif GameState.buy_cosmetic(lid):
 					GameState.equip_cosmetic(lid)
 					AudioManager.play(&"coin")
-					EventBus.toast_requested.emit(
-						"%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
+					EventBus.toast_requested.emit( "%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
 					)
 				else:
 					AudioManager.play(&"error_soft")
 		)
 	# Sink de prestígio: token de franquia (ganho no prestige) vira brasas.
-	_info_row(
-		Loc.t("FRANCHISE_EXCHANGE"),
-		Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens,
-		"1 → 5 %s" % Loc.t("EMBERS"),
+	_info_row( Loc.t("FRANCHISE_EXCHANGE"), Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens, "1 → 5 %s" % Loc.t("EMBERS"),
 		GREEN if GameState.franchise_tokens > 0 else Color("b0bec5"),
 		GameState.franchise_tokens > 0,
 		func() -> void:
@@ -838,13 +743,7 @@ func _build_shop() -> void:
 				_rebuild(&"shop")
 	)
 	# Rewarded honesto: explica benefício + limite, com fallback brasa.
-	_info_row(
-		"+1 %s" % Loc.t("EMBERS"),
-		"🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa",
-		"▶ ASSISTIR",
-		BLUE,
-		true,
-		func() -> void:
+	_info_row( "+1 %s" % Loc.t("EMBERS"), "🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa", "▶ ASSISTIR", BLUE, true, func() -> void:
 			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
 	)
 	for sku: String in IAPManager.PRODUCTS:
@@ -856,11 +755,7 @@ func _build_shop() -> void:
 			desc += " • %s" % ent
 		var has_ent: bool = IAPManager.has_entitlement(StringName(ent)) if not ent.is_empty() else false
 		var btn_label: String = Loc.t("OWNED") if has_ent else "%s • %s" % [Loc.t("BUY"), Loc.t("MOCK_TAG") if not IAPManager.provider_ready else ""]
-		_info_row(
-			"%s%s" % [sku, " (mock)" if not IAPManager.provider_ready else ""],
-			desc,
-			btn_label,
-			Color("b0bec5") if has_ent else Color("ffd54f"),
+		_info_row( "%s%s" % [sku, " (mock)" if not IAPManager.provider_ready else ""], desc, btn_label, Color("b0bec5") if has_ent else Color("ffd54f"),
 			not has_ent,
 			func(s: String = sku) -> void:
 				if IAPManager.purchase(StringName(s)):
@@ -882,19 +777,14 @@ func _grant_ember() -> void:
 func _build_map() -> void:
 	var rep: int = GameState.reviews_sum
 	var tier: int = Economy.neighborhood_tier(rep)
-	var next_at: int = (
-		Economy.NEIGHBORHOOD_TIERS[tier + 1]
+	var next_at: int = ( Economy.NEIGHBORHOOD_TIERS[tier + 1]
 		if tier + 1 < Economy.NEIGHBORHOOD_TIERS.size()
 		else -1
 	)
-	var rep_line: String = "%s: %s • %d⭐ %s" % [
-		Loc.t("NEIGHBORHOOD"),
-		Loc.t("NEIGHBORHOOD_%d" % tier),
-		rep,
+	var rep_line: String = "%s: %s • %d⭐ %s" % [ Loc.t("NEIGHBORHOOD"), Loc.t("NEIGHBORHOOD_%d" % tier), rep,
 		"(%d)" % next_at if next_at > 0 else "(MAX)",
 	]
-	var text: String = (
-		"EVENTO: %s — %s\n"
+	var text: String = ( "EVENTO: %s — %s\n"
 		% [LiveOps.current_event_name(), LiveOps.event_description_for(LiveOps.weekday())]
 	)
 	if LiveOps.event_goal_target() > 0:
@@ -903,13 +793,11 @@ func _build_map() -> void:
 	if not season.is_empty():
 		var season_id: String = String(season.get("id", ""))
 		var gift: Dictionary = ContentDB.cosmetic(String(season.get("cosmetic", "")))
-		text += (
-			Loc.t("SEASON_ACTIVE")
+		text += ( Loc.t("SEASON_ACTIVE")
 			% [LiveOps.seasonal_name(season_id), String(gift.get("name", Loc.t("SEASON_NO_GIFT")))]
 			+ "\n"
 		)
-	text += (
-		"CARREIRA: nível %d/120 • %.1fh ativas\n%s\n\n"
+	text += ( "CARREIRA: nível %d/120 • %.1fh ativas\n%s\n\n"
 		% [GameState.player_level, GameState.active_play_seconds / 3600.0, rep_line]
 	)
 	for entry: Dictionary in ContentDB.career.get("establishments", []):
@@ -928,14 +816,10 @@ func _build_map() -> void:
 	var current_story: String = ChapterStories.narrative_for_reveal(current_tier)
 	_note("📖 %s" % current_story, 24, Color("5d4037"), true)
 	var tokens: int = GameState.prestige_tokens_available()
-	var bonus_percent: float = (
-		(Economy.prestige_coin_multiplier(GameState.prestige_level) - 1.0) * 100.0
+	var bonus_percent: float = ( (Economy.prestige_coin_multiplier(GameState.prestige_level) - 1.0) * 100.0
 	)
 	var kept_station: int = int(GameState.bath_upgrade_level * GameState.PRESTIGE_KEEP_RATIO)
-	_info_row(
-		"%s Nv.%d" % [Loc.t("PRESTIGE_TITLE"), GameState.prestige_level],
-		(
-			Loc.t("PRESTIGE_DESC") % [tokens, bonus_percent]
+	_info_row( "%s Nv.%d" % [Loc.t("PRESTIGE_TITLE"), GameState.prestige_level], ( Loc.t("PRESTIGE_DESC") % [tokens, bonus_percent]
 			+ "\n"
 			+ Loc.t("PRESTIGE_PREVIEW") % [kept_station, GameState.PRESTIGE_START_LEVEL]
 		),
@@ -945,8 +829,7 @@ func _build_map() -> void:
 		func() -> void:
 			if GameState.perform_prestige():
 				AudioManager.play(&"prestige")
-				EventBus.toast_requested.emit(
-					Loc.t("PRESTIGE_DONE") % GameState.prestige_level, Color("ce93d8")
+				EventBus.toast_requested.emit( Loc.t("PRESTIGE_DONE") % GameState.prestige_level, Color("ce93d8")
 				)
 				_rebuild(&"map")
 	)
@@ -958,13 +841,7 @@ func _build_map() -> void:
 ## Pesquisa da franquia: sink dos tokens de prestígio com efeito permanente
 ## (research.json). Cada nó mostra efeito, custo e o que ainda falta pesquisar.
 func _build_research() -> void:
-	_note(
-		"%s • %s" % [
-			Loc.t("RESEARCH_TITLE"),
-			Loc.t("RESEARCH_DESC") % [Research.owned_count(), ContentDB.research_nodes.size()],
-		],
-		26,
-		CHARCOAL
+	_note( "%s • %s" % [ Loc.t("RESEARCH_TITLE"), Loc.t("RESEARCH_DESC") % [Research.owned_count(), ContentDB.research_nodes.size()], ], 26, CHARCOAL
 	)
 	_note(Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens)
 	for node: Dictionary in ContentDB.research_nodes:
@@ -978,10 +855,7 @@ func _build_research() -> void:
 			action_text = Loc.t("RESEARCH_DONE")
 		elif not missing.is_empty():
 			desc_text += "\n" + Loc.t("RESEARCH_LOCKED") % missing
-		_info_row(
-			"T%d • %s" % [int(node.get("tier", 1)), ContentDB.research_name(node_id)],
-			desc_text,
-			action_text,
+		_info_row( "T%d • %s" % [int(node.get("tier", 1)), ContentDB.research_name(node_id)], desc_text, action_text,
 			GREEN if owned else (Color("ce93d8") if can_buy else Color("b0bec5")),
 			can_buy,
 			func(nid: String = node_id) -> void:
@@ -998,8 +872,7 @@ func _build_settings() -> void:
 	_add_slider(Loc.t("MUSIC_VOLUME"), "music", 0.7)
 	# Voz / Narração kids — mutável já na 1ª tela (top bar + tutorial), reforçado aqui
 	var voice_on: bool = bool(GameState.settings.get("voice", true))
-	_info_row(
-		"🔊 %s" % (Loc.t("VOICE_LABEL") if Loc.t("VOICE_LABEL") != "VOICE_LABEL" else "Voz / Narração"),
+	_info_row( "🔊 %s" % (Loc.t("VOICE_LABEL") if Loc.t("VOICE_LABEL") != "VOICE_LABEL" else "Voz / Narração"),
 		Loc.t("VOICE_DESC") if Loc.t("VOICE_DESC") != "VOICE_DESC" else "Fala que guia a criança (7 anos) nos gestos — toque no 🔊 do topo para mutar",
 		Loc.t("ON") if voice_on else Loc.t("OFF"),
 		GREEN if voice_on else Color("b0bec5"),
@@ -1024,9 +897,7 @@ func _build_settings() -> void:
 	var font_row: HBoxContainer = HBoxContainer.new()
 	font_row.add_theme_constant_override("separation", 12)
 	screen.content_box.add_child(font_row)
-	for option: Dictionary in [
-		{"label": "FONT_SCALE_SMALL", "value": 0.8},
-		{"label": "FONT_SCALE_NORMAL", "value": 1.0},
+	for option: Dictionary in [ {"label": "FONT_SCALE_SMALL", "value": 0.8}, {"label": "FONT_SCALE_NORMAL", "value": 1.0},
 		{"label": "FONT_SCALE_LARGE", "value": 1.2},
 	]:
 		var current: float = float(GameState.settings.get("font_scale", 1.0))
@@ -1035,8 +906,7 @@ func _build_settings() -> void:
 		_style_button(font_btn, GREEN if is_active else Color("b0bec5"))
 		font_btn.text = Loc.t(String(option["label"]))
 		font_btn.custom_minimum_size = Vector2(200, 60)
-		font_btn.pressed.connect(
-			func(v: float = float(option["value"])) -> void:
+		font_btn.pressed.connect( func(v: float = float(option["value"])) -> void:
 				GameState.settings["font_scale"] = v
 				SaveManager.request_save()
 				EventBus.settings_changed.emit()
@@ -1054,8 +924,7 @@ func _build_settings() -> void:
 	name_edit.max_length = 18
 	name_edit.custom_minimum_size = Vector2(480, 64)
 	name_edit.add_theme_font_size_override("font_size", 26)
-	name_edit.text_changed.connect(
-		func(value: String) -> void:
+	name_edit.text_changed.connect( func(value: String) -> void:
 			GameState.settings["shop_name"] = value.strip_edges().left(18)
 			SaveManager.request_save()
 			EventBus.settings_changed.emit()
@@ -1084,23 +953,11 @@ func _build_settings() -> void:
 	# Consentimento de dados de uso (nada é gravado sem isto).
 	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)
 	# Transferência de progresso sem cloud save: código assinado no clipboard.
-	_info_row(
-		Loc.t("TRANSFER_TITLE"),
-		Loc.t("TRANSFER_EXPORT_DESC"),
-		Loc.t("TRANSFER_COPY"),
-		BLUE,
-		true,
-		func() -> void:
+	_info_row( Loc.t("TRANSFER_TITLE"), Loc.t("TRANSFER_EXPORT_DESC"), Loc.t("TRANSFER_COPY"), BLUE, true, func() -> void:
 			DisplayServer.clipboard_set(SaveManager.export_code())
 			EventBus.toast_requested.emit(Loc.t("TRANSFER_COPIED"), BLUE)
 	)
-	_info_row(
-		Loc.t("TRANSFER_IMPORT"),
-		Loc.t("TRANSFER_IMPORT_DESC"),
-		Loc.t("TRANSFER_PASTE"),
-		Color("ce93d8"),
-		true,
-		func() -> void:
+	_info_row( Loc.t("TRANSFER_IMPORT"), Loc.t("TRANSFER_IMPORT_DESC"), Loc.t("TRANSFER_PASTE"), Color("ce93d8"), true, func() -> void:
 			if SaveManager.import_code(DisplayServer.clipboard_get()):
 				EventBus.toast_requested.emit(Loc.t("TRANSFER_DONE"), GREEN)
 				if refresh_callback.is_valid():
@@ -1120,8 +977,7 @@ func _build_settings() -> void:
 		_style_button(lang_button, BLUE if code == Loc.lang else Color("b0bec5"))
 		lang_button.text = String(lang_names.get(code, code))
 		lang_button.custom_minimum_size = Vector2(180, 60)
-		lang_button.pressed.connect(
-			func(c: String = code) -> void:
+		lang_button.pressed.connect( func(c: String = code) -> void:
 				Loc.set_language(c)
 				_rebuild(&"settings")
 		)
@@ -1171,16 +1027,14 @@ func _add_slider(caption: String, setting_key: String, default_value: float) -> 
 	slider.tooltip_text = "0% — 100%"
 	slider.value = float(GameState.settings.get(setting_key, default_value))
 	value_label.text = "%d%%" % int(slider.value * 100.0)
-	slider.value_changed.connect(
-		func(v: float) -> void:
+	slider.value_changed.connect( func(v: float) -> void:
 			GameState.settings[setting_key] = v
 			SaveManager.request_save()
 			AudioManager.apply_volumes()
 			value_label.text = "%d%%" % int(v * 100.0)
 	)
 	# Preview sonoro ao soltar o slider
-	slider.drag_ended.connect(
-		func(_v_changed: bool) -> void:
+	slider.drag_ended.connect( func(_v_changed: bool) -> void:
 			if setting_key == "sfx":
 				AudioManager.play(&"tap")
 			elif setting_key == "music":
@@ -1207,18 +1061,11 @@ func _add_toggle(caption: String, setting_key: String, default_value: bool) -> v
 	)
 
 
-func _info_row(
-	name_text: String,
-	desc_text: String,
-	action_text: String,
-	action_color: Color,
-	enabled: bool,
-	on_action: Callable,
+func _info_row( name_text: String, desc_text: String, action_text: String, action_color: Color, enabled: bool, on_action: Callable,
 ) -> void:
 	var row: PanelContainer = INFO_ROW.instantiate()
 	screen.content_box.add_child(row)
-	row.add_theme_stylebox_override(
-		"panel", StyleFactory.box(Color("ffffff", 0.9), 24, 16, PINK, 3)
+	row.add_theme_stylebox_override( "panel", StyleFactory.box(Color("ffffff", 0.9), 24, 16, PINK, 3)
 	)
 	var box: HBoxContainer = row.get_node("Box")
 	var info_vbox: VBoxContainer = row.get_node("Box/Info")
@@ -1294,8 +1141,7 @@ func _info_row(
 				pass
 		)
 	if enabled and on_action.is_valid():
-		button.pressed.connect(
-			func() -> void:
+		button.pressed.connect( func() -> void:
 				on_action.call()
 				if refresh_callback.is_valid():
 					refresh_callback.call()
@@ -1307,8 +1153,7 @@ func _current_section() -> StringName:
 	return _section
 
 
-func _note(
-	text: String, size: int = 24, color: Color = Color("90a4ae"), wrap_text: bool = false
+func _note( text: String, size: int = 24, color: Color = Color("90a4ae"), wrap_text: bool = false
 ) -> void:
 	var note: Label = _label_node(text, size, color)
 	if wrap_text:

@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 12
+const SAVE_VERSION: int = 13
 const MAX_CAREER_LEVEL: int = 120
 ## Custo base por raridade — escalado 2.2x para economia R$ realista (antes 150/400/900/2000)
 const HIRE_COSTS: Dictionary = {"common": 330, "rare": 880, "epic": 1980, "legendary": 4400}
@@ -104,6 +104,10 @@ var visitor_progress: Dictionary = {}
 var event_goal_date: String = ""
 var event_goal_count: int = 0
 var event_goal_claimed: bool = false
+## Monetização persistida (v13): entitlements e ledger IAP + AdsPolicy
+var purchased_entitlements: Dictionary = {"no_ads": false, "bath_pass": false}
+var purchase_ledger: Dictionary = {}
+var ads_policy: Dictionary = {}
 var settings: Dictionary = {
 	"music": 0.7,
 	"sfx": 0.9,
@@ -158,7 +162,7 @@ func add_coins(amount: float, source: StringName) -> void:
 	)
 
 
-func spend_coins(amount: float, sink: StringName) -> bool:
+func _spend_coins(amount: float, sink: StringName) -> bool:
 	if amount <= 0.0 or coins < amount:
 		return false
 	coins -= amount
@@ -172,11 +176,11 @@ func buy_bath_upgrade() -> bool:
 	if bath_upgrade_level >= MAX_CAREER_LEVEL:
 		return false
 	var cost: float = Economy.upgrade_cost(bath_upgrade_level)
-	if not spend_coins(cost, &"bath_upgrade"):
+	if not _spend_coins(cost, &"bath_upgrade"):
 		return false
 	bath_upgrade_level += 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
-	register_weekly_spend(int(cost))
+	_register_weekly_spend(int(cost))
 	EventBus.upgrade_purchased.emit(&"bath", bath_upgrade_level)
 	Analytics.track(&"establishment_upgrade", {"id": "bath", "level": bath_upgrade_level})
 	_check_achievements()
@@ -197,11 +201,11 @@ func buy_tool_upgrade(tool_id: StringName) -> bool:
 	var key: String = String(tool_id)
 	var level: int = clampi(int(tool_upgrade_levels.get(key, 0)), 0, 30)
 	var cost: float = tool_upgrade_cost(tool_id)
-	if level >= 30 or not spend_coins(cost, &"tool_upgrade"):
+	if level >= 30 or not _spend_coins(cost, &"tool_upgrade"):
 		return false
 	tool_upgrade_levels[key] = level + 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
-	register_weekly_spend(int(cost))
+	_register_weekly_spend(int(cost))
 	EventBus.upgrade_purchased.emit(tool_id, level + 1)
 	Analytics.track(&"tool_upgrade", {"id": key, "level": level + 1})
 	_check_achievements()
@@ -209,7 +213,7 @@ func buy_tool_upgrade(tool_id: StringName) -> bool:
 	return true
 
 
-func tool_bonus(tool_id: StringName) -> float:
+func _tool_bonus(tool_id: StringName) -> float:
 	return 1.0 + clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30) * 0.04
 
 
@@ -252,7 +256,7 @@ func hire_staff(staff_id: String) -> bool:
 		return false
 	if not ContentDB.staff_by_id.has(staff_id):
 		return false
-	if not spend_coins(float(hire_cost(staff_id)), &"hire_staff"):
+	if not _spend_coins(float(hire_cost(staff_id)), &"hire_staff"):
 		return false
 	hired_staff.append(staff_id)
 	Analytics.track(&"staff_hired", {"id": staff_id})
@@ -272,7 +276,7 @@ func buy_cosmetic(cosmetic_id: String) -> bool:
 	if coins < float(coin_price) or embers < ember_price:
 		return false
 	if coin_price > 0:
-		spend_coins(float(coin_price), &"cosmetic")
+		_spend_coins(float(coin_price), &"cosmetic")
 	if ember_price > 0:
 		embers -= ember_price
 		EventBus.currency_changed.emit(&"coins", coins)
@@ -423,6 +427,9 @@ func to_dictionary() -> Dictionary:
 		"event_goal_date": event_goal_date,
 		"event_goal_count": event_goal_count,
 		"event_goal_claimed": event_goal_claimed,
+		"purchased_entitlements": purchased_entitlements,
+		"purchase_ledger": purchase_ledger,
+		"ads_policy": ads_policy,
 		"settings": settings
 	}
 
@@ -519,6 +526,9 @@ func apply_dictionary(data: Dictionary) -> void:
 	event_goal_date = String(data.get("event_goal_date", ""))
 	event_goal_count = maxi(0, int(data.get("event_goal_count", 0)))
 	event_goal_claimed = bool(data.get("event_goal_claimed", false))
+	purchased_entitlements = _safe_dictionary(data.get("purchased_entitlements", {"no_ads": false, "bath_pass": false}), {"no_ads": false, "bath_pass": false})
+	purchase_ledger = _safe_dictionary(data.get("purchase_ledger", {}), {})
+	ads_policy = _safe_dictionary(data.get("ads_policy", {}), {})
 	_refresh_event_goal()
 	_sanitize_affection()
 	_reconcile_career_unlocks(false)
@@ -779,7 +789,7 @@ func register_weekly_event(metric: StringName) -> void:
 	weekly_progress[String(metric)] = int(weekly_progress.get(String(metric), 0)) + 1
 
 
-func register_weekly_spend(amount: int) -> void:
+func _register_weekly_spend(amount: int) -> void:
 	_refresh_weekly_missions()
 	weekly_progress["spend"] = int(weekly_progress.get("spend", 0)) + maxi(0, amount)
 
@@ -1031,7 +1041,7 @@ func register_pet_interaction(pet_id: String) -> int:
 
 
 ## ── Parquinho (Park) ── segunda área fora da banheira, a cada X tempo
-func park_cooldown_seconds() -> float:
+func _park_cooldown_seconds() -> float:
 	return RemoteConfig.get_float("park_cooldown_seconds") if RemoteConfig.values.has("park_cooldown_seconds") else 7200.0
 
 func park_can_play() -> bool:
@@ -1068,7 +1078,7 @@ func park_ensure_pets() -> void:
 			park_pets.append("caramelo")
 	SaveManager.request_save()
 
-func park_pick_activity() -> String:
+func _park_pick_activity() -> String:
 	# rotaciona ball → treat → photo → ball ... mas com peso do último
 	var options: Array[String] = ["ball", "treat", "photo"]
 	if park_last_activity in options:
@@ -1083,7 +1093,7 @@ func park_start_session(activity: String) -> void:
 
 func park_complete(activity: String, success: bool, perfect: bool) -> Dictionary:
 	# cooldown
-	park_cooldown_until = int(Time.get_unix_time_from_system()) + int(park_cooldown_seconds())
+	park_cooldown_until = int(Time.get_unix_time_from_system()) + int(_park_cooldown_seconds())
 	park_plays_total += 1
 	# streak diário do parquinho
 	var today: String = Time.get_date_string_from_system()
@@ -1132,21 +1142,21 @@ func park_complete(activity: String, success: bool, perfect: bool) -> Dictionary
 			_unlock_achievement("park_streak_7", 0, 3)
 	# Álbum: foto perfeita (só photo perfect entra no álbum, mas qualquer perfect pode guardar memória)
 	if success and perfect and activity == "photo":
-		park_add_photo({"pets": park_pets.duplicate(), "date": today, "perfect": true, "activity": activity, "ts": int(Time.get_unix_time_from_system()), "coins": coins_reward})
+		_park_add_photo({"pets": park_pets.duplicate(), "date": today, "perfect": true, "activity": activity, "ts": int(Time.get_unix_time_from_system()), "coins": coins_reward})
 	Analytics.track(&"park_completed", {"activity": activity, "success": success, "perfect": perfect, "coins": coins_reward})
 	SaveManager.request_save()
 	return {"coins": coins_reward, "affection": affection_gain, "embers": ember_gain, "streak": park_streak}
 
 
 ## ── Álbum & Concurso ──
-func park_add_photo(entry: Dictionary) -> void:
+func _park_add_photo(entry: Dictionary) -> void:
 	# limita a 50 fotos para não inchar o save
 	park_photos.append(entry)
 	if park_photos.size() > 50:
 		park_photos = park_photos.slice(park_photos.size() - 50, park_photos.size())
 	SaveManager.request_save()
 
-func park_photos_this_week() -> Array[Dictionary]:
+func _park_photos_this_week() -> Array[Dictionary]:
 	var week: String = _week_key()
 	var result: Array[Dictionary] = []
 	for p: Dictionary in park_photos:
@@ -1159,13 +1169,13 @@ func park_photos_this_week() -> Array[Dictionary]:
 			result.append(p)
 	return result
 
-func park_best_photo() -> Dictionary:
+func _park_best_photo() -> Dictionary:
 	for i: int in range(park_photos.size() - 1, -1, -1):
 		if bool(park_photos[i].get("perfect", false)):
 			return park_photos[i]
 	return {}
 
-func park_is_saturday() -> bool:
+func _park_is_saturday() -> bool:
 	var d: Dictionary = Time.get_datetime_dict_from_system()
 	if not d.has("weekday"):
 		return false
@@ -1175,22 +1185,22 @@ func park_can_claim_contest() -> bool:
 	var week: String = _week_key()
 	if park_contest_claimed_week == week:
 		return false
-	if not park_is_saturday() and park_photos_this_week().size() == 0:
+	if not _park_is_saturday() and _park_photos_this_week().size() == 0:
 		# fora de sábado só mostra coletável se já tem foto na semana; claim só no sábado
 		return false
 	# exige 1 perfect na semana
-	for p: Dictionary in park_photos_this_week():
+	for p: Dictionary in _park_photos_this_week():
 		if bool(p.get("perfect", false)):
-			return park_is_saturday()
+			return _park_is_saturday()
 	return false
 
 func park_contest_progress() -> Dictionary:
-	var week_photos: Array[Dictionary] = park_photos_this_week()
+	var week_photos: Array[Dictionary] = _park_photos_this_week()
 	var perfects: int = 0
 	for p: Dictionary in week_photos:
 		if bool(p.get("perfect", false)):
 			perfects += 1
-	return {"total": week_photos.size(), "perfects": perfects, "claimed": park_contest_claimed_week == _week_key(), "is_saturday": park_is_saturday()}
+	return {"total": week_photos.size(), "perfects": perfects, "claimed": park_contest_claimed_week == _week_key(), "is_saturday": _park_is_saturday()}
 
 func park_claim_contest() -> Dictionary:
 	if not park_can_claim_contest():
