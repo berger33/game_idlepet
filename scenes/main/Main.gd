@@ -227,7 +227,8 @@ func _move_pointer(point: Vector2) -> void:
 			# o anel dourado está aceso, desperdício se está apagado.
 			var spray: StringName = bath.pulse_contact()
 			if spray == &"hit":
-				AudioManager.play(&"spray")
+				# Cada borrifada sobe uma nota (C6, D6, E6): a terceira É o perfect.
+				AudioManager.play(StringName("spray_%d" % maxi(0, bath.pulses_hit - 1)))
 				HapticsManager.light()
 				world.spawn_bubble(point)
 			elif spray == &"miss":
@@ -293,10 +294,9 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		# Ticks do gesto: arpejo pentatônico suave em vez de bip repetido.
-		# Perfume não tem tick de arrasto — cada borrifada já é um evento.
-		if bath.fill_mode != &"pulse":
-			AudioManager.play_tick(SalonTuning.service_sound(current_service))
+		# Trilha progressiva do gesto (AudioManager): a nota sobe a pentatônica
+		# junto com o avanço e um chime avisa a janela perfeita — dosa de ouvido.
+		AudioManager.play_gesture(current_service, bath)
 		bubble_sound_gate = 0.16
 	EventBus.service_progress.emit(bath.progress)
 

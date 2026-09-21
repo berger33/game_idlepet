@@ -88,7 +88,7 @@ def synth_air(dur, vol, cutoff):
     return _norm(out, vol)
 
 
-def synth_spray(vol):
+def synth_spray(vol, ping_hz):
     frames = int(SR * 0.16)
     filtered = 0.0
     out = []
@@ -98,7 +98,7 @@ def synth_spray(vol):
         filtered += (noise - filtered) * 0.38
         air = filtered * math.sin(math.pi * t) ** 0.7
         ping_env = min(t / ATTACK, 1.0) * (1.0 - t) ** 2.2
-        ping = math.sin(TAU * 1046.50 * i / SR) * ping_env * 0.25
+        ping = math.sin(TAU * ping_hz * i / SR) * ping_env * 0.25
         out.append(air + ping)
     return _norm(out, vol)
 
@@ -125,14 +125,27 @@ def parse_audio_manager():
         name, freqs, dur, vol = m.group(1), _floats(m.group(2)), float(m.group(3)), float(m.group(4))
         sounds[name] = ("bloop", (freqs, dur, vol))
 
-    for m in re.finditer(r'cache\[&"(\w+)"\] = _spray\(([\d.]+)\)', src):
-        sounds[m.group(1)] = ("spray", (float(m.group(2)),))
+    # Escadas declaradas como variáveis (var X: Array = [...]) — o GDScript
+    # agora passa a ladder inteira, não um literal inline.
+    ladders = {}
+    for m in re.finditer(r'var (\w+): Array = (\[[^\]]*\])', src):
+        ladders[m.group(1)] = _floats(m.group(2))
+
+    for m in re.finditer(r'cache\[&"(\w+)"\] = _spray\(([\d.]+), ([\d.]+)\)', src):
+        sounds[m.group(1)] = ("spray", (float(m.group(2)), float(m.group(3))))
+
+    for m in re.finditer(r'cache\[&"(\w+)"\] = cache\[&"(\w+)"\]', src):
+        if m.group(2) in sounds:
+            sounds[m.group(1)] = sounds[m.group(2)]
 
     for m in re.finditer(
-        r'_cache_ticks\(&"(\w+)", &"(\w+)", (\[[^\]]*\]), ([\d.]+), ([\d.]+)\)', src
+        r'_cache_ticks\(&"(\w+)", &"(\w+)", ((?:\[[^\]]*\])|(?:\w+)), ([\d.]+), ([\d.]+)\)',
+        src,
     ):
         base, kind = m.group(1), m.group(2)
-        notes, dur, vol = _floats(m.group(3)), float(m.group(4)), float(m.group(5))
+        notes_src = m.group(3)
+        notes = _floats(notes_src) if notes_src.startswith("[") else ladders.get(notes_src, [])
+        dur, vol = float(m.group(4)), float(m.group(5))
         for i, note in enumerate(notes):
             if kind == "bloop":
                 sounds[f"{base}_{i}"] = ("bloop", ([note], dur, vol))
@@ -141,10 +154,13 @@ def parse_audio_manager():
         sounds[base] = sounds[f"{base}_0"]
 
     for m in re.finditer(
-        r'_cache_air_ticks\(&"(\w+)", ([\d.]+), ([\d.]+), (\[[^\]]*\])\)', src
+        r'_cache_air_ticks\(&"(\w+)", ([\d.]+), ([\d.]+), ((?:\[[^\]]*\])|(?:\w+))\)',
+        src,
     ):
         base, dur, vol = m.group(1), float(m.group(2)), float(m.group(3))
-        for i, cutoff in enumerate(_floats(m.group(4))):
+        bright_src = m.group(4)
+        brightness = _floats(bright_src) if bright_src.startswith("[") else ladders.get(bright_src, [])
+        for i, cutoff in enumerate(brightness):
             sounds[f"{base}_{i}"] = ("air", (dur, vol, cutoff))
         sounds[base] = sounds[f"{base}_0"]
 
@@ -193,6 +209,22 @@ def validate(sounds):
         elif spec[0] in ("pluck", "bloop"):
             oneshot_peaks.append(peak)
 
+    # Escadas progressivas: 10 degraus por serviço, sempre ascendentes —
+    # é isso que faz o jogador OUvir a aproximação dos 100%.
+    for base in ("bubble", "clipper", "bow", "dryer"):
+        variant_names = sorted(n for n in sounds if n.startswith(base + "_"))
+        if len(variant_names) < 5:
+            errors.append(f"escada {base}: só {len(variant_names)} degraus (mínimo 5)")
+            continue
+        key = 2 if base == "dryer" else 0  # dryer sobe pelo corte (brilho), índice 2
+        steps = [sounds[n][1][key] for n in variant_names]
+        if any(b <= a for a, b in zip(steps, steps[1:])):
+            errors.append(f"escada {base} não é ascendente: {steps}")
+
+    sprays = sorted(n for n in sounds if re.fullmatch(r"spray_\d+", n))
+    if len(sprays) < 3:
+        errors.append(f"perfume: {len(sprays)} borrifadas (mínimo 3, uma por pulso)")
+
     # Ticks de loop (repetem ~6x/s) precisam ser claramente mais baixos que
     # os one-shots — comparação por PICO (o que domina o volume percebido).
     if tick_peaks and oneshot_peaks:
@@ -210,9 +242,24 @@ def validate(sounds):
 LOOP_TICK_SPACING = 0.16
 
 
+def _muted(samples):
+    """Tick `muted` (drenando/passou da janela): uma oitava abaixo e mais
+    baixo — upsampling linear 2x divide as frequências por 2."""
+    out = []
+    for i in range(len(samples) * 2):
+        pos = i / 2.0
+        lo = int(pos)
+        frac = pos - lo
+        hi = min(lo + 1, len(samples) - 1)
+        out.append((samples[lo] * (1.0 - frac) + samples[hi] * frac) * 0.5)
+    return out
+
+
 def export_loop_demos(sounds):
-    """Como soa o ARRASTAR de verdade: ticks espaçados a 0,16 s com o arpejo
-    ciclando (o jogo acrescenta micro-jitter de afinação por cima)."""
+    """Como soa o ARRASTAR de verdade: 30 ticks a 0,16 s com o progresso
+    subindo 0→100% (a nota sobe a escada, alternando com o degrau seguinte —
+    o jogo acrescenta micro-jitter de afinação por cima) e, no fim, 3 ticks
+    `muted` de aviso: uma oitava abaixo, como drenar/passar da janela."""
     demos = {
         "loop_banho_bubble": "bubble",
         "loop_tosa_clipper": "clipper",
@@ -223,9 +270,17 @@ def export_loop_demos(sounds):
         variants = sorted(n for n in sounds if n.startswith(base + "_"))
         if not variants:
             continue
+        n = len(variants)
         stream = []
         for tick in range(30):
-            stream.extend(render(variants[tick % len(variants)], sounds[variants[tick % len(variants)]]))
+            progress = (tick + 0.5) / 30.0
+            rung = min(int(progress * n), n - 1)
+            if tick % 2 == 1:  # movimento: alterna com o degrau seguinte
+                rung = min(rung + 1, n - 1)
+            stream.extend(render(variants[rung], sounds[variants[rung]]))
+            stream.extend([0.0] * int(SR * LOOP_TICK_SPACING))
+        for _ in range(3):  # aviso: drenando (oitava abaixo, mais baixo)
+            stream.extend(_muted(render(variants[n - 1], sounds[variants[n - 1]])))
             stream.extend([0.0] * int(SR * LOOP_TICK_SPACING))
         write_wav(OUT_DIR / f"demo_{demo}.wav", stream)
 
@@ -252,19 +307,21 @@ def export_wavs(sounds):
     (OUT_DIR / "index.md").write_text(
         "# Preview dos SFX (síntese idêntica ao jogo)\n\n"
         "Cada arquivo é o WAV exato que o AudioManager gera em runtime para o "
-        "som correspondente. Variantes `*_0..n` são os passos do arpejo que o "
-        "`play_tick` cicla durante o gesto.\n\n"
+        "som correspondente. Variantes `*_0..9` são os DEGRAUS da escada "
+        "pentatônica que o `play_progress` sobe conforme o progresso da ação "
+        "chega perto dos 100% (com micro-jitter por cima, no jogo).\n\n"
         "| Som | O que é |\n|---|---|\n"
         "| bubble_* | banho — gotas d'água (a chuvinha do esfregar) |\n"
         "| clipper_* | tosa — duo grave abafado (ritmo de tesourada) |\n"
         "| dryer_* | secagem — sopros de ar filtrado |\n"
         "| bow_* | laço — harpa pentatônica |\n"
-        "| spray | borrifada do perfume (ar + ping) |\n"
+        "| spray_0 / spray_1 / spray_2 | borrifadas do perfume — cada uma sobe uma nota; a 3ª é o perfect |\n"
+        "| window | chime da janela perfeita — \"pode soltar\" |\n"
         "| tap / panel_open / equip | toques de UI |\n"
         "| coin / perfect / upgrade / level_up / prestige | recompensas |\n"
         "| error / error_soft | erros suaves e graves |\n"
         "| pet_happy / pet_surprise | reações do pet (gotas) |\n"
-        "| demo_loop_* | como soa o arrastar de cada serviço (30 ticks) |\n",
+        "| demo_loop_* | o arrastar de cada serviço: rampa 0→100% (nota subindo) + 3 ticks de aviso \"drenando\" |\n",
         encoding="utf8",
     )
     return len(sounds)

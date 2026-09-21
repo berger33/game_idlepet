@@ -10,8 +10,12 @@ extends Node
 ##   * tudo em pentatônica de Dó maior: qualquer sequência de SFX permanece
 ##     consonante com o loop ambiente (C, Am, F, G) — errar não "briga";
 ##   * pool de 4 vozes (round-robin): sinos se sobrepõem em vez de cortar;
-##   * play_tick — os sons de loop do gesto ciclam um arpejo pentatônico com
-##     micro-jitter de afinação: textura contínua, não metralhadora de bips.
+##   * play_progress — o som do gesto SOBE a pentatônica junto com o
+##     progresso: 10 degraus por serviço, alternando com o degrau seguinte e
+##     micro-jitter de afinação. O jogador ouve a aproximação dos 100%;
+##     drenar ou passar da janela toca uma oitava abaixo (aviso de perda);
+##   * "window" — brilho de harpa ao entrar na faixa do perfect: dá para
+##     dosar o momento de soltar de ouvido.
 
 const SAMPLE_RATE: int = 22050
 ## Âncora de sincronia: VFX pulsam no compasso da música REAL em execução
@@ -36,6 +40,9 @@ var energy_player: AudioStreamPlayer
 var energy_target_db: float = ENERGY_OFF_DB
 var cache: Dictionary = {}
 var tick_counter: Dictionary = {}
+## Chime da janela perfeita: toca UMA vez por entrada na faixa; rearma
+## sozinho quando o progresso cai abaixo dela (progresso 0 em novo serviço).
+var window_chime_armed: bool = true
 
 
 func _ready() -> void:
@@ -71,15 +78,34 @@ func _ready() -> void:
 
 
 func _build_sfx_cache() -> void:
-	# --- Ticks do gesto (loop do arrastar): quietos, em arpejo pentatônico ---
-	# Banho: gotas d'água sobem e descem a escala — esfregar vira chuvinha.
-	_cache_ticks(&"bubble", &"bloop", [523.25, 587.33, 659.26, 783.99, 659.26], 0.085, 0.05)
-	# Tosa: duo grave Mi/Sol curto e abafado — tesourada ritmada, nunca zumbido.
-	_cache_ticks(&"clipper", &"pluck", [261.63, 329.63], 0.05, 0.05)
-	# Secagem: dois sopros de ar com brilho diferente — respiração do secador.
-	_cache_air_ticks(&"dryer", 0.14, 0.05, [0.16, 0.24])
-	# Laço: harpa subindo a pentatônica — cada carinho no lacinho, uma nota.
-	_cache_ticks(&"bow", &"pluck", [523.25, 587.33, 659.26, 783.99, 880.00], 0.06, 0.05)
+	# --- Ticks progressivos do gesto: 10 degraus de pentatônica (2 oitavas).
+	# A nota do tick sobe com o progresso — o jogador OUVE que está perto.
+	var bubble_ladder: Array = [
+		523.25, 587.33, 659.26, 783.99, 880.00,
+		1046.50, 1174.66, 1318.51, 1567.98, 1760.00,
+	]
+	_cache_ticks(&"bubble", &"bloop", bubble_ladder, 0.085, 0.05)
+	var clipper_ladder: Array = [
+		261.63, 293.66, 329.63, 392.00, 440.00,
+		523.25, 587.33, 659.26, 783.99, 880.00,
+	]
+	_cache_ticks(&"clipper", &"pluck", clipper_ladder, 0.05, 0.05)
+	var bow_ladder: Array = [
+		523.25, 587.33, 659.26, 783.99, 880.00,
+		1046.50, 1174.66, 1318.51, 1567.98, 1760.00,
+	]
+	_cache_ticks(&"bow", &"pluck", bow_ladder, 0.06, 0.05)
+	var dryer_brightness: Array = [
+		0.10, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37,
+	]
+	_cache_air_ticks(&"dryer", 0.14, 0.05, dryer_brightness)
+	# --- Perfume: cada borrifada sobe uma nota — a terceira É o perfect. ---
+	cache[&"spray_0"] = _spray(0.11, 1046.50)
+	cache[&"spray_1"] = _spray(0.11, 1174.66)
+	cache[&"spray_2"] = _spray(0.11, 1318.51)
+	cache[&"spray"] = cache[&"spray_0"]
+	# Aviso de janela perfeita: brilho de harpa "pode soltar".
+	cache[&"window"] = _pluck([1318.51, 1567.98], 0.1, 0.08)
 	# --- Toques e painéis (frequentes: discretos) ---
 	cache[&"tap"] = _pluck([659.26], 0.045, 0.07)
 	cache[&"tool_pickup"] = _pluck([523.25, 659.26], 0.05, 0.09)
@@ -103,7 +129,6 @@ func _build_sfx_cache() -> void:
 	# --- Pets e erros: suaves, graves, sem bronca ---
 	cache[&"pet_happy"] = _bloop([783.99, 1046.50], 0.075, 0.10)
 	cache[&"pet_surprise"] = _bloop([392.00], 0.08, 0.09)
-	cache[&"spray"] = _spray(0.11)
 	cache[&"error_soft"] = _pluck([196.00, 164.81], 0.07, 0.09)
 	cache[&"error"] = _pluck([164.81, 130.81], 0.09, 0.10)
 	cache[&"freeze"] = _pluck([1046.50, 783.99, 659.26], 0.07, 0.09)
@@ -113,23 +138,59 @@ func play(sfx: StringName) -> void:
 	_play_entry(sfx, 1.0)
 
 
-## Som de loop do gesto (um tick a cada intervalo do arrastar): cicla as
-## variantes do sfx como arpejo e aplica micro-jitter de afinação — o gesto
-## vira textura musical contínua em vez do mesmo bip repetido.
-func play_tick(sfx: StringName) -> void:
+## Trilha do gesto em andamento (chamada a cada tick do arrastar): tick
+## progressivo + chime da janela perfeita. Perfume não tem trilha de arrasto
+## — cada borrifada é um evento com nota própria (spray_0..2, via Main).
+func play_gesture(service: StringName, bath: BathService) -> void:
+	if bath.fill_mode == &"pulse":
+		return
+	play_progress(
+		SalonTuning.service_sound(service),
+		bath.progress,
+		bath.progress > bath.target_maximum
+		or (bath.fill_mode == &"zone" and not bath.zone_inside)
+	)
+	# Janela perfeita: brilho de harpa "pode soltar" — uma vez por entrada.
+	if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
+		if window_chime_armed:
+			window_chime_armed = false
+			play(&"window")
+	elif bath.progress < bath.target_minimum:
+		window_chime_armed = true
+
+
+## Som de loop do gesto COM progresso (0..1): o degrau da pentatônica é
+## escolhido pelo avanço da ação — a nota sobe conforme o gesto se aproxima
+## dos 100%, alternando com o degrau seguinte (movimento) e micro-jitter de
+## afinação (vida). `muted` = drenando ou passado da janela: uma oitava
+## abaixo e mais baixo — o jogador ouve que está perdendo progresso.
+func play_progress(sfx: StringName, progress: float, muted: bool = false) -> void:
 	var entry: StringName = sfx
 	var variants: int = int(cache.get("variants_" + String(sfx), 0))
+	var rung: int = 0
 	if variants > 0:
-		var next_tick: int = (int(tick_counter.get(String(sfx), -1)) + 1) % variants
-		tick_counter[String(sfx)] = next_tick
-		entry = StringName("%s_%d" % [sfx, next_tick])
-	_play_entry(entry, randf_range(0.992, 1.008))
+		rung = clampi(int(clampf(progress, 0.0, 1.0) * float(variants)), 0, variants - 1)
+		tick_counter[String(sfx)] = int(tick_counter.get(String(sfx), 0)) + 1
+		if int(tick_counter[String(sfx)]) % 2 == 1:
+			rung = mini(rung + 1, variants - 1)
+		entry = StringName("%s_%d" % [sfx, rung])
+	var pitch: float = randf_range(0.992, 1.008)
+	# Swell: intensifica suavemente conforme a ação avança.
+	var volume_scale: float = 0.8 + 0.4 * clampf(progress, 0.0, 1.0)
+	if muted:
+		pitch *= 0.5
+		volume_scale = 0.5
+	_play_entry(entry, pitch, volume_scale)
 
 
-func _play_entry(sfx: StringName, pitch: float) -> void:
+func _play_entry(sfx: StringName, pitch: float, volume_scale: float = 1.0) -> void:
 	if not cache.has(sfx):
 		return
-	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
+	var sfx_volume: float = clampf(
+		clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0) * volume_scale,
+		0.0001,
+		1.0
+	)
 	var voice: AudioStreamPlayer = _next_voice()
 	voice.pitch_scale = pitch
 	voice.volume_db = linear_to_db(sfx_volume)
@@ -257,7 +318,7 @@ func _air(duration: float, volume: float, cutoff: float) -> AudioStreamWAV:
 
 ## Borrifada: sopro brilhante com um ping pentatônico discreto por cima —
 ## recompensa a borrifada certa sem assobio agudo.
-func _spray(volume: float) -> AudioStreamWAV:
+func _spray(volume: float, ping_hz: float) -> AudioStreamWAV:
 	var duration: float = 0.16
 	var frames: int = int(SAMPLE_RATE * duration)
 	var samples: PackedFloat32Array = PackedFloat32Array()
@@ -269,7 +330,7 @@ func _spray(volume: float) -> AudioStreamWAV:
 		filtered += (noise - filtered) * 0.38
 		var air: float = filtered * pow(sin(PI * t), 0.7)
 		var ping_env: float = minf(t / ATTACK, 1.0) * pow(1.0 - t, 2.2)
-		var ping: float = sin(TAU * 1046.50 * float(i) / SAMPLE_RATE) * ping_env * 0.25
+		var ping: float = sin(TAU * ping_hz * float(i) / SAMPLE_RATE) * ping_env * 0.25
 		samples[i] = air + ping
 	return _wav_norm(samples, volume)
 

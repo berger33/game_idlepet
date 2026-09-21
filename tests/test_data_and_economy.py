@@ -588,7 +588,9 @@ class EngagementWaveTests(unittest.TestCase):
 
 class SoundDesignTests(unittest.TestCase):
     """Revisão de conforto sonoro: SFX agradáveis, pentatônicos, sem clique
-    de ataque, loops em arpejo (não metralhadora), música ambiente intacta."""
+    de ataque, música ambiente intacta — e SOM PROGRESSIVO: a nota do gesto
+    sobe a pentatônica com o progresso, aviso grave ao drenar, chime na
+    janela perfeita e borrifadas do perfume subindo uma a uma."""
 
     def _read(self, path):
         return Path(path).read_text(encoding='utf8')
@@ -596,9 +598,18 @@ class SoundDesignTests(unittest.TestCase):
     def test_audio_synth_contracts(self):
         audio = self._read('autoload/AudioManager.gd')
         for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const ATTACK',
-                      'func play_tick', 'func _next_voice', 'func _pluck',
+                      'func play_progress', 'func play_gesture',
+                      'func _next_voice', 'func _pluck',
                       'func _bloop', 'func _air', 'func _spray', 'func _wav_norm',
                       'randf_range(0.992, 1.008)'):
+            self.assertIn(token, audio, token)
+        # som progressivo: borrifadas sobem C6→D6→E6 (a 3ª é o perfect),
+        # chime da janela perfeita e aviso de drenagem (oitava abaixo).
+        for token in ('cache[&"spray_0"] = _spray(0.11, 1046.50)',
+                      'cache[&"spray_1"] = _spray(0.11, 1174.66)',
+                      'cache[&"spray_2"] = _spray(0.11, 1318.51)',
+                      'cache[&"window"]', 'window_chime_armed', 'volume_scale = 0.5',
+                      '0.8 + 0.4'):
             self.assertIn(token, audio, token)
         # o sintetizador antigo (seno puro com ataque instantâneo = bip) e o
         # apito de 3,1 kHz do contratempo foram aposentados.
@@ -611,12 +622,16 @@ class SoundDesignTests(unittest.TestCase):
         canvas = self._read('core/gameplay/PetShopCanvas.gd')
         self.assertIn('AudioManager.beat_phase', canvas)
 
-    def test_main_gesture_loop_uses_tick_arpeggio(self):
+    def test_main_gesture_loop_is_progressive(self):
         main = self._read('scenes/main/Main.gd')
-        self.assertIn('AudioManager.play_tick(SalonTuning.service_sound', main)
+        # trilha do gesto delegada: nota sobe com o progresso + chime da
+        # janela perfeita (play_gesture), throttle de 0,16 s
+        self.assertIn('AudioManager.play_gesture(current_service, bath)', main)
         self.assertIn('bubble_sound_gate = 0.16', main)
-        # perfume: som por evento de borrifada, sem tick de arrasto
-        self.assertIn('if bath.fill_mode != &"pulse":', main)
+        # perfume: som por evento de borrifada, subindo uma nota a cada acerto
+        self.assertIn('spray_%d', main)
+        self.assertIn('bath.pulses_hit - 1', main)
+        self.assertNotIn('play_tick', main)
         self.assertNotIn('bubble_sound_gate = 0.11', main)
 
     def test_every_sfx_played_is_cached(self):
@@ -633,7 +648,7 @@ class SoundDesignTests(unittest.TestCase):
             if '.git' in path.parts or 'tools' in path.parts:
                 continue
             for line in path.read_text(encoding='utf8').splitlines():
-                for call in ('AudioManager.play(&"', 'AudioManager.play_tick(&"'):
+                for call in ('AudioManager.play(&"',):
                     if call in line:
                         played.add(line.split(call)[1].split('"')[0])
         # nomes vindos de service_sound() são dinâmicos: cobrir pelo mapa
@@ -646,6 +661,8 @@ class SoundDesignTests(unittest.TestCase):
         missing = (played | dynamic) - cached
         self.assertEqual(missing, set(), f'SFX tocados sem cache: {missing}')
         self.assertTrue({'bubble', 'clipper', 'dryer', 'spray', 'bow'} <= cached)
+        # escada do perfume (spray_%d dinâmico no Main) e chime da janela
+        self.assertTrue({'spray_0', 'spray_1', 'spray_2', 'window'} <= cached)
 
     def test_sfx_synthesis_quality(self):
         from gen_sfx_preview import parse_audio_manager, validate
