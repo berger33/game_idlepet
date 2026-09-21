@@ -12,7 +12,7 @@ const NAV_ICONS: Dictionary = {
 }
 const PINK: Color = Color("ff8fb1")
 const BLUE: Color = Color("4fc3f7")
-const GREEN: Color = Color("7ed957")
+const GREEN: Color = Color("43a047")
 const CREAM: Color = Color("fff3e0")
 const CHARCOAL: Color = Color("263238")
 const SERVICE_TOOLS: Dictionary = {
@@ -131,7 +131,7 @@ func _ready() -> void:
 		RevealCard.enqueue(self, {
 			"title": "%s — %s" % [String(intro.get("title", "Quintal")), String(intro.get("act", ""))],
 			"body": "%s\n\n%s" % [String(intro.get("text", "")), Loc.t("FIRST_PET_READY")],
-			"color": Color("7ed957"),
+			"color": GREEN,
 			"primary": Loc.t("REVEAL_OK"),
 			"sound": &"level_up"
 		})
@@ -180,7 +180,7 @@ func _process(delta: float) -> void:
 		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
 			if not instruction_label.text.begins_with("✓"):
 				instruction_label.text = "✓ SOLTE PARA PERFEITO!"
-				instruction_label.add_theme_stylebox_override("normal", _style(Color("7ed957", 0.92), 34, 14, Color.WHITE, 4))
+				instruction_label.add_theme_stylebox_override("normal", _style(Color(GREEN, 0.92), 34, 14, Color.WHITE, 4))
 		elif bath.progress > bath.target_maximum:
 			instruction_label.text = "⚠ PASSOU! SOLTE E TENTE DE NOVO"
 			instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.88), 34, 14, Color.WHITE, 3))
@@ -709,7 +709,7 @@ func _process_queue(delta: float) -> void:
 			var bg: Control = queue_bars[slot].get_parent() as Control
 			var total_w: float = bg.custom_minimum_size.x if is_instance_valid(bg) else 296.0
 			queue_bars[slot].custom_minimum_size.x = total_w * ratio
-			queue_bars[slot].color = Color("ef5350") if ratio <= 0.25 else (Color("ffd54f") if ratio <= 0.5 else Color("7ed957"))
+			queue_bars[slot].color = Color("ef5350") if ratio <= 0.25 else (Color("ffd54f") if ratio <= 0.5 else GREEN)
 		queue_cards[slot].disabled = not _can_select(slot)
 func _client_left(slot: int) -> void:
 	var client: Dictionary = queue[slot]
@@ -893,30 +893,41 @@ func _build_interface() -> void:
 	nav.position = Vector2(30, 145 + safe_top)
 	nav.add_theme_constant_override("separation", 10)
 	add_child(nav)
+	# Progressive disclosure P1: reduz sobrecarga D0, libera gradualmente
+	var nav_unlocks: Dictionary = {&"missions": 1, &"collection": 1, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1}
 	for item: Dictionary in [
-		{"id": "missions", "tip": "Missões"},
-		{"id": "collection", "tip": "Pets"},
-		{"id": "staff", "tip": "Equipe"},
-		{"id": "shop", "tip": "Loja"},
-		{"id": "map", "tip": "Mapa"},
-		{"id": "settings", "tip": "Ajustes"}
+		{"id": "missions", "tip_key": "NAV_MISSIONS"},
+		{"id": "collection", "tip_key": "NAV_COLLECTION"},
+		{"id": "staff", "tip_key": "NAV_STAFF"},
+		{"id": "shop", "tip_key": "NAV_SHOP"},
+		{"id": "map", "tip_key": "NAV_MAP"},
+		{"id": "settings", "tip_key": "NAV_SETTINGS"}
 	]:
+		var sid: StringName = StringName(item["id"])
+		var tip: String = Loc.t(String(item["tip_key"]))
+		var unlock_lv: int = int(nav_unlocks.get(sid, 1))
+		var locked: bool = GameState.player_level < unlock_lv and not GameState.tutorial_complete
 		var col: VBoxContainer = VBoxContainer.new()
 		col.alignment = BoxContainer.ALIGNMENT_CENTER
 		col.add_theme_constant_override("separation", 2)
 		nav.add_child(col)
-		var nav_button: Button = _button("", CHARCOAL, 72, 72)
-		nav_button.icon = NAV_ICONS[StringName(item["id"])]
-		nav_button.tooltip_text = String(item["tip"])
-		nav_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88), 36, 6, Color("ffffff", 0.72), 3))
+		var nav_button: Button = _button("🔒" if locked else "", CHARCOAL if not locked else Color("90a4ae"), 72, 72)
+		if not locked:
+			nav_button.icon = NAV_ICONS[sid]
+		nav_button.tooltip_text = tip if not locked else "%s • %s" % [tip, Loc.t("NAV_LOCKED") % unlock_lv]
+		nav_button.disabled = locked
+		nav_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88) if not locked else Color("90a4ae", 0.88), 36, 6, Color("ffffff", 0.72), 3))
 		nav_button.add_theme_stylebox_override("hover", _style(PINK, 36, 6, Color.WHITE, 3))
-		nav_button.pressed.connect(SessionFeedback.open_meta.bind(self, StringName(item["id"]), nav_button))
+		if not locked:
+			nav_button.pressed.connect(SessionFeedback.open_meta.bind(self, sid, nav_button))
+		else:
+			nav_button.pressed.connect(func(): _show_toast(Loc.t("UPGRADES_LOCKED") % unlock_lv, Color("b0bec5")))
 		col.add_child(nav_button)
 		var nav_label: Label = Label.new()
-		nav_label.text = String(item["tip"])
+		nav_label.text = tip if not locked else "🔒 %s" % tip
 		nav_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		nav_label.add_theme_font_size_override("font_size", int(16 * font_scale))
-		nav_label.add_theme_color_override("font_color", Color("263238", 0.85))
+		nav_label.add_theme_color_override("font_color", Color("263238", 0.85) if not locked else Color("90a4ae"))
 		nav_label.add_theme_stylebox_override("normal", _style(Color("ffffff", 0.82), 12, 4))
 		col.add_child(nav_label)
 	var event_pill: Label = _pill(nav, LiveOps.current_event_name(), Color("4fc3f7"), 210)
@@ -940,16 +951,16 @@ func _build_interface() -> void:
 	)
 	instruction_label.custom_minimum_size = Vector2(990, 72)
 	action_hud.add_child(instruction_label)
-	upgrades_button = _button("", Color("7ed957", 0.96), 86, 86)
+	upgrades_button = _button("", Color(GREEN, 0.96), 86, 86)
 	upgrades_button.position = Vector2(952, 150)
 	upgrades_button.icon = UPGRADES_ICON
 	upgrades_button.expand_icon = true
 	upgrades_button.tooltip_text = Loc.t("UPGRADES_TITLE")
 	upgrades_button.add_theme_stylebox_override(
-		"normal", _style(Color("7ed957", 0.96), 43, 6, Color.WHITE, 4)
+		"normal", _style(Color(GREEN, 0.96), 43, 6, Color.WHITE, 4)
 	)
 	upgrades_button.add_theme_stylebox_override(
-		"hover", _style(Color("8fe46b", 0.98), 43, 6, Color.WHITE, 5)
+		"hover", _style(Color("66bb6a", 0.98), 43, 6, Color.WHITE, 5)
 	)
 	upgrades_button.add_theme_stylebox_override(
 		"pressed", _style(Color("5fae43", 1.0), 43, 8, Color.WHITE, 4)

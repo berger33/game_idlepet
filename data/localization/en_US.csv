@@ -424,3 +424,14 @@ FIRST_BONUS,🎉 First perfect! +1 Ember!
 COMBO_CHEST_TITLE,Rhythm Chest!
 COMBO_CHEST_TOAST,Combo ×%d chest! +%d coins and +%d Embers!
 COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.
+NAV_LOCKED,Lv.%d
+NAV_MISSIONS,Missions
+NAV_COLLECTION,Pets
+NAV_STAFF,Staff
+NAV_SHOP,Shop
+NAV_MAP,Map
+NAV_SETTINGS,Settings
+NOTIF_OFFLINE_TITLE,Vault is full!
+NOTIF_OFFLINE_BODY,%s earned %d coins while you were away! Come back to collect.
+NOTIF_PETS_TITLE,%s missed you!
+NOTIF_PETS_BODY,%s is waiting in queue with %d friends. Your streak is %d days!

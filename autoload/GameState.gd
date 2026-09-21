@@ -602,7 +602,7 @@ func claim_daily_reward() -> int:
 		unlocked_pets.append("mel_golden")
 	if daily_streak in [3, 5, 7]:
 		streak_freezes += 1
-		EventBus.toast_requested.emit(Loc.t("FREEZE_EARNED"), Color("7ed957"))
+		EventBus.toast_requested.emit(Loc.t("FREEZE_EARNED"), Color("43a047"))
 	add_coins(reward, &"daily_login")
 	Analytics.track(&"daily_reward", {"day": daily_streak})
 	SaveManager.request_save()
@@ -834,7 +834,7 @@ func _on_service_completed(service_id: StringName, quality: StringName, reward: 
 		Analytics.track(&"combo_chest", {"combo": combo, "coins": chest_coins, "embers": chest_embers})
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
-		EventBus.toast_requested.emit(Loc.t("BIA_HIRED"), Color("7ed957"))
+		EventBus.toast_requested.emit(Loc.t("BIA_HIRED"), Color("43a047"))
 	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
 	_check_achievements()

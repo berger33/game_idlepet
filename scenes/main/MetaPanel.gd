@@ -6,7 +6,7 @@ extends Node
 ## (brasas + IAP honesto + rewarded ads), mapa e ajustes com sliders.
 ## Tudo emerge do painel (pivot na origem + cascata scale-in).
 
-const GREEN: Color = Color("7ed957")
+const GREEN: Color = Color("43a047")
 const BLUE: Color = Color("4fc3f7")
 const PINK: Color = Color("ff8fb1")
 const CHARCOAL: Color = Color("263238")
@@ -351,13 +351,23 @@ func _build_collection() -> void:
 		if unlocked:
 			var bio_text: String = PetStories.bio(pet) if PetStories.has_method("bio") else ""
 			card.tooltip_text = "%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text] if not bio_text.is_empty() else Loc.t("FAVORITE_HINT")
+			# Feedback visual P1: hover scale + pressed
+			card.pivot_offset = card.custom_minimum_size * 0.5
+			card.mouse_entered.connect(func(): card.create_tween().tween_property(card, "scale", Vector2(1.05, 1.05), 0.12))
+			card.mouse_exited.connect(func(): card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12))
 			card.gui_input.connect(
 				func(event: InputEvent, pid: String = pet_id) -> void:
-					if event is InputEventScreenTouch and event.pressed:
-						if GameState.set_favorite_pet(pid):
-							AudioManager.play(&"tap")
-							EventBus.toast_requested.emit(Loc.t("FAVORITE_SET"), GREEN)
-							_rebuild(&"collection")
+					if event is InputEventScreenTouch:
+						if event.pressed:
+							card.create_tween().tween_property(card, "scale", Vector2(0.95, 0.95), 0.08)
+						else:
+							if GameState.set_favorite_pet(pid):
+								AudioManager.play(&"tap")
+								HapticsManager.light()
+								EventBus.toast_requested.emit(Loc.t("FAVORITE_SET"), GREEN)
+								_rebuild(&"collection")
+							else:
+								card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12)
 			)
 	_note(
 		Loc.t("COLLECTION_SUMMARY")

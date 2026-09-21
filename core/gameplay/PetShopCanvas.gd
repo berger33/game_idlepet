@@ -466,6 +466,14 @@ func _draw() -> void:
 		_draw_affection_hearts(body_center)
 		GestureArt.draw_gesture_ui(self, body_center)
 		GestureArt.draw_buddy(self)
+	else:
+		# Primeira impressão P1: silhueta de Caramelo + convite quando sala vazia (evita parecer bug)
+		var silhouette_alpha: float = 0.18 + 0.06 * sin(shake_phase * 1.5)
+		draw_circle(body_center, 160.0, Color("263238", silhouette_alpha))
+		draw_circle(body_center + Vector2(0, -20), 110.0, Color("ffffff", 0.22))
+		var invite: String = Loc.t("CHOOSE_CLIENT")
+		draw_string(UI_TITLE_FONT, body_center + Vector2(-210, -140), "🐾 " + invite, HORIZONTAL_ALIGNMENT_CENTER, 420, 26, Color("263238", 0.85))
+		StationArt.draw_station_foreground(self)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
 	# Cada serviço tem identidade visual própria e pulsa no beat da música relaxante.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0

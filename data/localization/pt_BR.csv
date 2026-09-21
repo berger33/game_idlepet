@@ -424,3 +424,14 @@ FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
 COMBO_CHEST_TITLE,Baú do Ritmo!
 COMBO_CHEST_TOAST,Baú do combo ×%d! +%d moedas e +%d Brasas!
 COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
+NAV_LOCKED,Nv.%d
+NAV_MISSIONS,Missões
+NAV_COLLECTION,Pets
+NAV_STAFF,Equipe
+NAV_SHOP,Loja
+NAV_MAP,Mapa
+NAV_SETTINGS,Ajustes
+NOTIF_OFFLINE_TITLE,O cofre está cheio!
+NOTIF_OFFLINE_BODY,%s rendeu %d moedas enquanto você estava fora! Volte para coletar.
+NOTIF_PETS_TITLE,%s sentiu sua falta!
+NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!

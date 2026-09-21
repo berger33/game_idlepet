@@ -6,7 +6,7 @@ extends RefCounted
 
 const PINK: Color = Color("ff8fb1")
 const BLUE: Color = Color("4fc3f7")
-const GREEN: Color = Color("7ed957")
+const GREEN: Color = Color("43a047")
 const CHARCOAL: Color = Color("263238")
 
 

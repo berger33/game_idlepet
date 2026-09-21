@@ -25,14 +25,8 @@ func schedule_return_reminders(last_seen_unix: int = 0) -> void:
 	scheduled.clear()
 	if not permission_granted:
 		return
-	scheduled.append(
-		{
-			"id": "offline_ready",
-			"delay_seconds": 7200,
-			"title": "O cofre está ficando cheio!",
-			"deep_link": "--section=map",
-		}
-	)
+	var fav_name: String = ContentDB.pet_name(GameState.favorite_pet) if ContentDB.has_pet(GameState.favorite_pet) else "Caramelo"
+	var offline_est: int = Rewards.scaled(3600.0 * 2.0, 50)
 	var absence_hours: float = (
 		(Time.get_unix_time_from_system() - last_seen_unix) / 3600.0
 		if last_seen_unix > 0
@@ -40,9 +34,19 @@ func schedule_return_reminders(last_seen_unix: int = 0) -> void:
 	)
 	scheduled.append(
 		{
+			"id": "offline_ready",
+			"delay_seconds": 7200,
+			"title": Loc.t("NOTIF_OFFLINE_TITLE"),
+			"body": Loc.t("NOTIF_OFFLINE_BODY") % [fav_name, offline_est],
+			"deep_link": "--section=map",
+		}
+	)
+	scheduled.append(
+		{
 			"id": "pets_waiting",
 			"delay_seconds": 28800,
-			"title": "Caramelo sentiu sua falta",
+			"title": Loc.t("NOTIF_PETS_TITLE") % fav_name,
+			"body": Loc.t("NOTIF_PETS_BODY") % [fav_name, GameState.unlocked_pets.size(), GameState.daily_streak],
 			"deep_link": "--section=missions",
 		}
 	)
@@ -50,5 +54,5 @@ func schedule_return_reminders(last_seen_unix: int = 0) -> void:
 		scheduled.resize(DAILY_CAP)
 	Analytics.track(
 		&"notification_scheduled",
-		{"count": scheduled.size(), "absence_hours": absence_hours}
+		{"count": scheduled.size(), "absence_hours": absence_hours, "pet": fav_name}
 	)

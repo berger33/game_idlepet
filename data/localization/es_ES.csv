@@ -424,3 +424,14 @@ FIRST_BONUS,🎉 ¡Primer perfecto! +1 Brasa!
 COMBO_CHEST_TITLE,¡Cofre de Ritmo!
 COMBO_CHEST_TOAST,¡Cofre combo ×%d! +%d monedas y +%d Brasas!
 COMBO_CHEST_BODY,¡Mantuviste ritmo perfecto! El barrio está impresionado.
+NAV_LOCKED,Nv.%d
+NAV_MISSIONS,Misiones
+NAV_COLLECTION,Mascotas
+NAV_STAFF,Equipo
+NAV_SHOP,Tienda
+NAV_MAP,Mapa
+NAV_SETTINGS,Ajustes
+NOTIF_OFFLINE_TITLE,¡Cofre lleno!
+NOTIF_OFFLINE_BODY,¡%s ganó %d monedas mientras estabas fuera! Vuelve a recoger.
+NOTIF_PETS_TITLE,¡%s te extrañó!
+NOTIF_PETS_BODY,¡%s espera en cola con %d amigos. Tu racha es %d días!
