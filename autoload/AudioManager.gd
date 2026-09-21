@@ -29,13 +29,15 @@ extends Node
 const SAMPLE_RATE: int = 22050
 ## WAVs de SFX versionados (gerados por tools/gen_sfx.py).
 const SFX_DIR: String = "res://audio/sfx/"
-## Trilhas por capítulo (tools/gen_bgm.py, 96 BPM, loop de 16 compassos):
-## quintal (tiers 1–3), clínica (4–6) e império (7–10). Sem o arquivo, o loop
-## procedural antigo entra como fallback — a música nunca falta.
+## BGM relaxante original restaurada (pedido do usuário): o loop ambiente
+## suave de 8 s (C/Am/F/G) — muito mais relaxante para sessões longas.
+## As trilhas geradas por tools/gen_bgm.py continuam em audio/bgm/ como
+## alternativa, mas a padrão agora é a ambiente relaxante.
 const BGM_DIR: String = "res://audio/bgm/"
 const BGM_BY_TIER: Array[StringName] = [&"bgm_quintal", &"bgm_clinica", &"bgm_imperio"]
-## Ganho das trilhas (pico 0,6 / RMS ~-17 dBFS) vs. o loop procedural antigo.
-const BGM_GAIN: float = 0.34
+## Ganho da música relaxante (loop procedural) — mais baixa e aconchegante.
+const BGM_GAIN: float = 0.22
+const BGM_RELAX_GAIN: float = 0.22
 ## Âncora de sincronia: VFX pulsam no compasso da música REAL em execução
 ## (get_playback_position), não em relógio próprio.
 const MUSIC_BPM: float = 96.0
@@ -237,17 +239,16 @@ func apply_volumes() -> void:
 	music_player.volume_db = _music_db()
 
 
-## Trilha do capítulo: troca com fade quando o tier muda de faixa; a posição
-## reinicia no tempo 1 (beat_phase continua ancorada na música real).
-func play_bgm_for_tier(tier: int) -> void:
-	var band: int = 0 if tier < 4 else (1 if tier < 7 else 2)
-	var name: StringName = BGM_BY_TIER[band]
+## Trilha relaxante original restaurada (pedido do usuário):
+## o loop ambiente de 8 s (C/Am/F/G) é a padrão — muito mais relaxante e
+## aconchegante para idle. Troca de tier não muda a música (mantém o relax).
+func play_bgm_for_tier(_tier: int) -> void:
+	# Nome fixo para a música relaxante; ignora tier para não quebrar o relax.
+	var name: StringName = &"ambient_relax"
 	if name == current_bgm and music_player.playing:
 		return
-	var stream: AudioStreamWAV = _load_bgm(name)
-	if stream == null:
-		stream = _ambient_loop()
 	current_bgm = name
+	var stream: AudioStreamWAV = _ambient_loop()
 	if music_player.playing:
 		var fade: Tween = create_tween()
 		fade.tween_property(music_player, "volume_db", -40.0, 0.6)
@@ -265,8 +266,7 @@ func play_bgm_for_tier(tier: int) -> void:
 
 func _music_db() -> float:
 	var music_volume: float = clampf(float(GameState.settings.get("music", 0.7)), 0.0001, 1.0)
-	var gain: float = BGM_GAIN if current_bgm != &"" else 0.22
-	return linear_to_db(music_volume * gain)
+	return linear_to_db(music_volume * BGM_RELAX_GAIN)
 
 
 ## WAV da trilha (importado) com loop forçado — o importador não sabe que é loop.
@@ -307,27 +307,53 @@ func _load_sfx(sfx: StringName) -> AudioStreamWAV:
 	return null
 
 
+## Loop relaxante original — restaurado e melhorado:
+## 16 s, acordes C/Am/F/G trocando a cada 4 s (antes 2 s), baixo suave uma
+## oitava abaixo e melodia pentatônica bem esparsa (1 nota a cada 1 s).
+## Ganho baixo (0,22) e crossfade entre acordes = sem cliques, super relax.
 func _ambient_loop() -> AudioStreamWAV:
-	var duration: float = 8.0
+	var duration: float = 16.0
 	var frames: int = int(SAMPLE_RATE * duration)
 	var bytes: PackedByteArray = PackedByteArray()
 	bytes.resize(frames * 2)
 	var chords: Array = [
-		[261.63, 329.63, 392.00],
-		[220.00, 261.63, 329.63],
-		[174.61, 220.00, 261.63],
-		[196.00, 246.94, 293.66],
+		[261.63, 329.63, 392.00],  # C
+		[220.00, 261.63, 329.63],  # Am
+		[174.61, 220.00, 261.63],  # F
+		[196.00, 246.94, 293.66],  # G
 	]
+	var chord_duration: float = 4.0
 	for i: int in frames:
 		var time: float = float(i) / SAMPLE_RATE
-		var chord: Array = chords[int(time / 2.0) % chords.size()]
+		var chord_index: int = int(time / chord_duration) % chords.size()
+		var chord: Array = chords[chord_index]
+		# Crossfade suave entre acordes (0,4 s)
+		var chord_time: float = fmod(time, chord_duration)
+		var next_index: int = (chord_index + 1) % chords.size()
+		var next_chord: Array = chords[next_index]
+		var fade: float = 1.0
+		if chord_time > chord_duration - 0.4:
+			fade = 1.0 - (chord_time - (chord_duration - 0.4)) / 0.4
+		var next_fade: float = 0.0
+		if chord_time > chord_duration - 0.4:
+			next_fade = (chord_time - (chord_duration - 0.4)) / 0.4
 		var sample_value: float = 0.0
+		# Acorde atual (pad suave)
 		for frequency: float in chord:
-			sample_value += sin(TAU * frequency * time) * 0.06
-		var beat_frac: float = fmod(time, 0.5) / 0.5
-		var melody_frequency: float = chord[int(time * 2.0) % chord.size()] * 2.0
-		sample_value += sin(TAU * melody_frequency * time) * 0.04 * (1.0 - beat_frac)
-		var sample: int = int(clampf(sample_value, -0.3, 0.3) * 32767.0)
+			sample_value += sin(TAU * frequency * time) * 0.05 * fade
+			# Baixo uma oitava abaixo, bem suave
+			sample_value += sin(TAU * frequency * 0.5 * time) * 0.03 * fade
+		# Próximo acorde entrando
+		for frequency: float in next_chord:
+			sample_value += sin(TAU * frequency * time) * 0.05 * next_fade
+			sample_value += sin(TAU * frequency * 0.5 * time) * 0.03 * next_fade
+		# Melodia pentatônica esparsa: 1 nota a cada 1 s, com decay suave
+		var mel_beat: float = fmod(time, 1.0)
+		var mel_index: int = int(time) % chord.size()
+		var melody_frequency: float = chord[mel_index] * 2.0
+		var mel_env: float = (1.0 - mel_beat) * (1.0 - mel_beat)
+		sample_value += sin(TAU * melody_frequency * time) * 0.03 * mel_env
+		var sample: int = int(clampf(sample_value, -0.25, 0.25) * 32767.0)
 		bytes.encode_s16(i * 2, sample)
 	var stream: AudioStreamWAV = _wav(bytes)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
