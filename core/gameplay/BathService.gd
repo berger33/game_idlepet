@@ -157,8 +157,11 @@ func pulse_contact() -> StringName:
 		return &"ignored"
 	if hopping:
 		return &"ignored"
+	if pulses_hit >= pulses_needed:
+		progress = 1.0
+		return &"ignored"
 	if pulse_bright():
-		pulses_hit += 1
+		pulses_hit = mini(pulses_hit + 1, pulses_needed)
 		progress = clampf(float(pulses_hit) / float(pulses_needed), 0.0, 1.0)
 		return &"hit"
 	progress = maxf(0.0, progress - pulse_miss_penalty)
@@ -234,6 +237,16 @@ func rub(pointer: Vector2) -> float:
 		rub_distance += distance
 		progress = clampf(progress + distance / distance_required, 0.0, 1.0)
 	elif fill_mode == &"stroke" and has_pointer and hop_left <= 0.0:
+			# Guard: tosa completa ou mal configurada — sem OOB (fix crash poodle)
+			if stroke_axes.is_empty():
+				last_pointer = pointer
+				has_pointer = true
+				return progress
+			if stroke_index >= stroke_axes.size():
+				progress = 1.0
+				last_pointer = pointer
+				has_pointer = true
+				return progress
 			# Só pontua o movimento no eixo do passo atual: "seguir a seta".
 			var move: Vector2 = pointer - last_pointer
 			var stroke_axis: StringName = stroke_axes[stroke_index]
@@ -245,6 +258,9 @@ func rub(pointer: Vector2) -> float:
 			if stroke_distance >= stroke_quota:
 				stroke_distance = 0.0
 				stroke_index += 1
+				# Trava no fim: não deixa índice estourar no próximo rub
+				if stroke_index > stroke_axes.size():
+					stroke_index = stroke_axes.size()
 	elif fill_mode == &"zone":
 		zone_inside = pointer.distance_to(zone_target) <= zone_radius
 	elif fill_mode == &"drop":
