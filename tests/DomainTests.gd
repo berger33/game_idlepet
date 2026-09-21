@@ -80,11 +80,17 @@ func _test_state_sanitization() -> void:
 			}
 		)
 	)
-	_expect(GameState.coins == 0.0, "moedas negativas devem ser reparadas")
+	# Nível 999 → 120 destrava conquistas que pagam moedas no load; o que se
+	# testa aqui é que o valor negativo nunca sobrevive (nunca fica < 0).
+	_expect(GameState.coins >= 0.0, "moedas negativas devem ser reparadas")
 	_expect(GameState.player_level == 120, "nível deve respeitar o cap")
 	_expect(GameState.unlocked_pets.has("caramelo"), "save sem pet válido deve recuperar Caramelo")
 	_expect(float(GameState.settings["music"]) == 1.0, "volume deve ser limitado")
 	_expect(float(GameState.settings["sfx"]) == 0.0, "volume negativo deve ser limitado")
+
+
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "coins": -10})
+	_expect(GameState.coins == 0.0, "sem conquistas no load, moedas negativas viram zero")
 
 
 func _test_liveops_schedule() -> void:
