@@ -4,6 +4,20 @@ extends RefCounted
 ## Recebe o PetShopCanvas para reusar shake_phase, _box e as primitivas de
 ## draw; mantém o canvas de gameplay abaixo do limite de 1000 linhas.
 
+## Especificação de desenho das texturas por peça: altura total em unidades
+## de fit, deslocamento vertical do centro do sprite relativo à âncora e a
+## âncora usada ("neck" = pescoço, "crown" = topo da cabeça).
+const ACCESSORY_TEXTURE_SPEC: Dictionary = {
+	"bandana_blue": {"h": 104.0, "dy": 60.0, "anchor": "neck"},
+	"bandana_red": {"h": 104.0, "dy": 60.0, "anchor": "neck"},
+	"scarf_caramel": {"h": 112.0, "dy": 52.0, "anchor": "neck"},
+	"crown_gold": {"h": 100.0, "dy": 26.0, "anchor": "crown"},
+	"crown_bubbles": {"h": 110.0, "dy": 23.0, "anchor": "crown"},
+}
+
+static var _cosmetic_cache: Dictionary = {}
+
+
 
 ## Cosmético de banheira troca a cor da espuma e das bolhas em todo o banho.
 static func bath_foam_color(shop) -> Color:
@@ -64,9 +78,62 @@ static func draw_room_cosmetics(shop) -> void:
 	shop.draw_style_box(shop._box(Color.WHITE, 6), Rect2(86, 606, 218, 16))
 
 
+
+static func _cosmetic_texture(accessory: String) -> Texture2D:
+	if _cosmetic_cache.has(accessory):
+		return _cosmetic_cache[accessory]
+	var path: String = "res://art/cosmetics/%s.png" % accessory
+	var texture: Texture2D = null
+	if ResourceLoader.exists(path):
+		texture = load(path) as Texture2D
+	_cosmetic_cache[accessory] = texture
+	return texture
+
+
+static func _accessory_anchor(
+	shop, accessory: String, center: Vector2, fit: float, texture_local: bool
+) -> Vector2:
+	var spec: Dictionary = ACCESSORY_TEXTURE_SPEC.get(accessory, {})
+	# Gatos sentados têm o topo da cabeça e o pescoço mais baixos que os cães;
+	# âncoras por espécie mantêm a peça "vestida" em ambas as silhuetas.
+	var is_cat: bool = shop.species == &"cat"
+	if String(spec.get("anchor", "neck")) == "crown":
+		var crown_y: float = -335.0 if is_cat else -390.0 * shop.PET_TEXTURE_BASELINE - 16.0
+		var crown_x: float = -62.0 if is_cat else 0.0
+		return (
+			Vector2(crown_x * fit, crown_y * fit)
+			if texture_local
+			else center + Vector2(crown_x, -164)
+		)
+	var neck_y: float = -125.0 if is_cat else -140.0
+	var neck_x: float = -55.0 if is_cat else 0.0
+	return (
+		Vector2(neck_x * fit, neck_y * fit)
+		if texture_local
+		else center + Vector2(neck_x, 98)
+	)
+
+
 static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_local: bool) -> void:
 	# texture_local: coordenadas locais ao pivô dos pés do sprite texturizado.
 	var accessory: String = String(shop.room_cosmetics.get("pet_accessory", ""))
+	var texture: Texture2D = _cosmetic_texture(accessory) if accessory != "" else null
+	if texture != null:
+		var spec: Dictionary = ACCESSORY_TEXTURE_SPEC[accessory]
+		var h: float = float(spec.h) * fit
+		var w: float = h * float(texture.get_width()) / float(texture.get_height())
+		var anchor: Vector2 = _accessory_anchor(shop, accessory, center, fit, texture_local)
+		var sprite_center: Vector2 = anchor + Vector2(0.0, float(spec.dy) * fit)
+		shop.draw_texture_rect(
+			texture, Rect2(sprite_center.x - w * 0.5, sprite_center.y - h * 0.5, w, h), false
+		)
+		return
+	_draw_accessory_polygons(shop, accessory, center, fit, texture_local)
+
+
+static func _draw_accessory_polygons(
+	shop, accessory: String, center: Vector2, fit: float, texture_local: bool
+) -> void:
 	if accessory == "bandana_blue" or accessory == "bandana_red":
 		var bandana_colors: Dictionary = {
 			"bandana_blue": ["4a7bd0", "3a63ad"],

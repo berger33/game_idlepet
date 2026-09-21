@@ -32,6 +32,8 @@ jobs:
         run: python tools/gen_shelf_art.py --qa
       - name: Cenas compostas — alinhamento pet/estação/estante (QA visual+numérico)
         run: python tools/compose_scene_preview.py
+      - name: Acessórios do pet — peça vestida por espécie (QA de âncoras)
+        run: python tools/qa_accessory_preview.py
 
   runtime:
     name: Godot headless (import + smoke test)

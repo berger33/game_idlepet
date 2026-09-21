@@ -16,6 +16,11 @@
 | `stations/station_ottoman.png` | estilo, pufe rosa com botões | ilustração original gerada e recortada/curada | 340×110 RGBA | topo ancorado na superfície do pet |
 | `stations/shelf_<serviço>.png` (bath/groom/dry/perfume/style) | estante de utensílios temática por cenário, 5 pranchas — madeira rústica (banho), clara+menta (tosa), mel+pêssego (secagem), mármore+dourado+lavanda (perfume), rosewood+blush (estilo) | gerada proceduralmente por tools/gen_shelf_art.py (2x=432×1560, filtrada p/ baixo no Godot) | 216×780 (box de desenho) RGBA | pranchas ancoradas EXATAS em shelf_y+PLANK_DROP (frações 0.1853+i*122/780) para cada item apoiar na prateleira; QA: gen_shelf_art --qa + compose_scene_preview |
 | `stations/shelf_unit.png` | estante neutra de fallback (madeira clara) | gerada por tools/gen_shelf_art.py | 216×780 RGBA | usada só se a estante do serviço não existir |
+| `cosmetics/bandana_blue.png` | bandana azul com poás e patinha, laço lateral | ilustração original gerada e recortada (tools/normalize_cosmetics_art.py) | ~512×373 RGBA | vestida no pescoço do pet (âncora por espécie); substitui o polígono vetorial |
+| `cosmetics/bandana_red.png` | bandana vermelha de poás brancos com laço | ilustração original gerada e recortada | ~512×366 RGBA | idem bandana_blue |
+| `cosmetics/scarf_caramel.png` | cachecol caramelo de tricô com franjas | ilustração original gerada e recortada | ~512×331 RGBA | rolo de tricô envolvendo o pescoço, ponta franjada no peito |
+| `cosmetics/crown_gold.png` | coroa real dourada com gemas rosadas | ilustração original gerada e recortada | ~512×366 RGBA | assentada no topo da cabeça (âncora por espécie) |
+| `cosmetics/crown_bubbles.png` | coroa dourada com bolhas de sabão iridescentes | ilustração original gerada e recortada | ~512×347 RGBA | idem crown_gold; bolhas ficam acima do aro |
 | `pets/*.png` coleção completa (50) | todos os 25 cães e 25 gatos do catálogo | ilustrações originais geradas e recortadas/curadas para este projeto | 512×512 RGBA | raça individualizada, transparência real; referências anexadas não foram incorporadas |
 | fallback de segurança | runtime | desenho vetorial procedural original em GDScript | escalável | mantido apenas para defesa contra recurso ausente/corrompido |
 | SFX/BGM | runtime | síntese procedural original | 22.050 Hz mono | sem arquivo/licença externa |

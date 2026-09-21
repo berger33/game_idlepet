@@ -12,3 +12,4 @@ analytics_queue.jsonl
 __pycache__/
 *.py[cod]
 .preview/
+art/_gen/

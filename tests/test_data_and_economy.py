@@ -369,6 +369,31 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(raw[24], 8)  # 8-bit channels
             self.assertEqual(raw[25], 6)  # RGBA, transparency is mandatory
 
+    def test_pet_accessory_worn_art(self):
+        # todo acessório de pet tem ilustração própria "vestida" (RGBA) e o
+        # runtime a ancora por espécie com fallback vetorial.
+        cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))
+        accessories = [
+            item['id'] for item in cosmetics['cosmetics']
+            if item.get('slot') == 'pet_accessory'
+        ]
+        self.assertEqual(
+            sorted(accessories),
+            ['bandana_blue', 'bandana_red', 'crown_bubbles', 'crown_gold', 'scarf_caramel'],
+        )
+        for acc_id in accessories:
+            path = Path('art/cosmetics') / f'{acc_id}.png'
+            raw = path.read_bytes()
+            self.assertEqual(raw[:8], b'\x89PNG\r\n\x1a\n', path.name)
+            self.assertEqual(raw[25], 6, f'{path.name} precisa de alfa (RGBA)')
+        art = Path('core/gameplay/PetCosmeticsArt.gd').read_text(encoding='utf8')
+        self.assertIn('"res://art/cosmetics/%s.png"', art)
+        for acc_id in accessories:
+            self.assertIn(f'"{acc_id}": {{', art, f'spec de {acc_id}')
+        # âncoras por espécie (gato sentado tem cabeça/pescoço deslocados)
+        self.assertIn('shop.species == &"cat"', art)
+        self.assertIn('_draw_accessory_polygons', art)
+
     def test_godot_47_compatibility_regressions(self):
         canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
