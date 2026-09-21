@@ -103,12 +103,14 @@ func _ready() -> void:
 	_configure_current_service()
 	_build_interface()
 	world.clear_room()
+	if ResourceLoader.exists("res://art/pets/caramelo.png"): var _pc: Texture2D = load("res://art/pets/caramelo.png") as Texture2D
 	queue[0] = SalonTuning.make_client_for_pet("caramelo", _available_services())
-	for slot: int in [1, 2]:
-		queue[slot] = SalonTuning.make_client(_available_services())
+	for slot: int in [1, 2]: queue[slot] = SalonTuning.make_client(_available_services())
 	_update_queue_ui()
 	_connect_events()
 	_refresh_economy()
+	_refresh_proof_social()
+	proof_timer = randf_range(8.0, 12.0)
 	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
 	if GameState.services_completed > 0:
 		SessionFeedback.show_offline_card(self)
@@ -558,21 +560,18 @@ func _dismiss_result() -> void:
 	pending_special_result = {}
 	special_multiplier = 1.0
 	mood_buff_clients = maxi(0, mood_buff_clients - 1)
-	if assistance_clients > 0:
-		assistance_clients -= 1
+	if assistance_clients > 0: assistance_clients -= 1
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	primary_button.hide()
 	_update_queue_ui()
-	# D1 retenção: daily auto-popup + notif prompt + tomorrow card (após 1-3 serviços)
-	if GameState.services_completed == 1:
-		D1Retention.show_daily_login(self)
-	if GameState.services_completed == 2:
-		D1Retention.show_tomorrow_card(self)
-	if GameState.services_completed == 3:
-		D1Retention.show_notif_prompt(self)
+	if GameState.services_completed == 1: D1Retention.show_daily_login(self)
+	if GameState.services_completed == 2: D1Retention.show_tomorrow_card(self)
+	if GameState.services_completed == 3: D1Retention.show_notif_prompt(self)
 	if GameState.services_completed == 1 and String(GameState.settings.get("shop_name", "")).is_empty():
+		var daily_shown: bool = GameState.settings.get("daily_popup_shown_today", "") == Time.get_date_string_from_system()
 		_show_toast("🏷️ " + Loc.t("SHOP_NAME") + "? " + Loc.t("SHOP_NAME_HINT"), BLUE)
-		get_tree().create_timer(1.2).timeout.connect(func(): if not meta.is_open(): meta.open(&"settings"), CONNECT_ONE_SHOT)
+		if not daily_shown:
+			get_tree().create_timer(2.5).timeout.connect(func(): if not meta.is_open() and not result_panel.visible and not upsell_panel.visible: meta.open(&"settings"), CONNECT_ONE_SHOT)
 func _refill_delay() -> float:
 	return 0.35 if rush_active else 1.1
 func _update_rush(delta: float) -> void:
@@ -756,10 +755,15 @@ func _update_queue_ui() -> void:
 				client_name = "✦ " + client_name
 			if String(client["pet"]) == GameState.favorite_pet:
 				client_name += " • " + Loc.t("BUDDY_TAG")
+			# D0: primeiro slot com Caramelo mostra RECOMENDADO
+			if slot == 0 and GameState.services_completed == 0:
+				client_name = "⭐ " + client_name
 			queue_name_labels[slot].text = client_name
 			var service_text: String = String(SERVICE_LABELS.get(StringName(client["service"]), "cuidado")).capitalize()
 			if StringName(client.get("special", &"")) != &"":
 				service_text += " + ★"
+			if slot == 0 and GameState.services_completed == 0:
+				service_text += " • %s" % Loc.t("RECOMMENDED_TAG")
 			queue_service_labels[slot].text = service_text
 			var base_info: String = (
 				Loc.t("VISITOR_TAG") % [Discovery.progress(String(client["pet"])), Discovery.VISITS_TO_ADOPT]
@@ -769,9 +773,12 @@ func _update_queue_ui() -> void:
 			var story_line: String = PetStories.queue_story(profile, String(client.get("service", "bath")))
 			queue_info_labels[slot].text = "%s\n%s" % [base_info, story_line] if not story_line.is_empty() else base_info
 			var border: Dictionary = SalonTuning.queue_border(profile)
+			# D0: borda verde no recomendado
+			var border_color: Color = GREEN if slot == 0 and GameState.services_completed == 0 else border["color"]
+			var border_w: int = 4 if slot == 0 and GameState.services_completed == 0 else int(border["width"])
 			queue_cards[slot].add_theme_stylebox_override(
 				"panel",
-				_style(Color("ffffff", 0.96), 26, 16, border["color"], int(border["width"]))
+				_style(Color("ffffff", 0.96), 26, 16, border_color, border_w)
 			)
 			queue_cards[slot].modulate.a = 1.0
 			queue_cards[slot].disabled = not _can_select(slot)
@@ -781,10 +788,12 @@ func _configure_current_service() -> void:
 	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
 	var pf: float = clampf(patience / 42.0, 0.6, 1.25) + GameState.staff_bonus(&"patience")
 	pf = RushTuning.patience_factor(pf, assistance_clients)
+	if GameState.services_completed == 0: pf *= 1.3; required_distance *= 0.8
 	if current_service == &"bath": required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
 	var wb: float = GameState.staff_bonus(&"perfect_window")
 	if current_service == &"groom": wb += GameState.staff_bonus(&"groom_quality")
 	wb = RushTuning.window_bonus(wb, assistance_clients)
+	if GameState.services_completed == 0: wb += 0.15
 	var t_min: float = RemoteConfig.get_float("bath_target_min")
 	var t_max: float = minf(RemoteConfig.get_float("bath_target_max") + wb, 1.0)
 	if current_service == &"perfume": t_min = 0.95; t_max = 1.0

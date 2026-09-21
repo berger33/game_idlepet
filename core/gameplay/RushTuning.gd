@@ -10,12 +10,15 @@ static func update_rush_labels(rush_active: bool, rush_left: float, rush_cooldow
 		if is_instance_valid(rush_label):
 			rush_label.text = Loc.t("RUSH_ACTIVE") % int(ceilf(maxf(0.0, rush_left)))
 			rush_label.modulate = Color("ffd54f") if fmod(rush_left, 0.8) < 0.4 else Color("ff8f00")
+			rush_label.visible = true
 		if is_instance_valid(rush_bar):
 			rush_bar.value = ratio * 100.0
 			rush_bar.visible = true
 	else:
 		if is_instance_valid(rush_label):
-			rush_label.text = Loc.t("RUSH_COOLDOWN") % int(ceilf(rush_cooldown)) if rush_cooldown <= 15.0 else ""
+			var txt: String = Loc.t("RUSH_COOLDOWN") % int(ceilf(rush_cooldown)) if rush_cooldown <= 15.0 else ""
+			rush_label.text = txt
+			rush_label.visible = not txt.is_empty()
 		if is_instance_valid(rush_bar):
 			rush_bar.visible = false
 
