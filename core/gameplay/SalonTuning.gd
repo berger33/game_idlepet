@@ -31,6 +31,13 @@ const SMALL_BREEDS: Array[String] = [
 const LARGE_BREEDS: Array[String] = ["Golden", "Labrador", "Samoieda", "Bernês", "Maine Coon"]
 ## Marcos de maestria por usos da ferramenta (C2): 1/2/3 selos.
 const TOOL_MASTERY_STEPS: Array[int] = [100, 500, 2000]
+## Posto de raridade para o viés da "Quinta do Pet Raro": peso = viés^posto.
+const RARITY_RANK: Dictionary = {
+	&"common": 0, &"uncommon": 1, &"rare": 2, &"epic": 3, &"legendary": 4
+}
+## Teto de VIPs na fila mesmo com evento (VIP tem menos paciência; a fila
+## inteira VIP viraria punição, não festa).
+const VIP_CHANCE_CAP: float = 0.5
 const GESTURE_HINTS: Dictionary = {
 	&"bath": "HINT_BATH",
 	&"groom": "HINT_GROOM",
@@ -106,6 +113,16 @@ static func apply(
 		bath.target_minimum = clampf(
 			bath.target_minimum + 0.04, BathService.GOOD_FLOOR, 0.95
 		)
+	# --- Pesquisa da franquia (research.json): meta permanente comprada com
+	# tokens de prestígio. Paciência = mais tempo; satisfação = janela de
+	# Perfect mais larga; velocidade = menos gesto para encher (todos os modos).
+	bath.duration_seconds *= 1.0 + Research.bonus(&"patience")
+	bath.target_maximum = minf(bath.target_maximum + Research.bonus(&"satisfaction"), 1.0)
+	var speed: float = clampf(Research.bonus(&"service_speed"), 0.0, 0.5)
+	if speed > 0.0:
+		bath.distance_required *= 1.0 - speed
+		bath.stroke_quota *= 1.0 - speed
+		bath.hold_rate = clampf(bath.hold_rate * (1.0 + speed), 0.0, 0.5)
 
 
 ## Nível do marco que destrava o bônus da ferramenta (C1).
@@ -216,6 +233,10 @@ static func compute_reward(ctx: Dictionary) -> Dictionary:
 	# Banheira dupla (C1): o buddy é atendido em paralelo (+40%).
 	var buddy_multiplier: float = 1.4 if bool(ctx["buddy"]) else 1.0
 	var mastery_multiplier: float = 1.0 + float(ctx["mastery"])
+	# Pesquisa "Água Purificada" (research.json): banho rende +10% para sempre.
+	var research_multiplier: float = 1.0
+	if service == &"bath":
+		research_multiplier += Research.bonus(&"bath_income")
 	var reward: float = (
 		Economy
 		. service_reward(
@@ -233,6 +254,7 @@ static func compute_reward(ctx: Dictionary) -> Dictionary:
 		* vip_multiplier
 		* buddy_multiplier
 		* mastery_multiplier
+		* research_multiplier
 		* float(ctx["special"])
 	)
 	return {"reward": reward, "tip_percent": int(roundf((tip_multiplier - 1.0) * 100.0))}
@@ -244,7 +266,11 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 	var unlocked: Array[String] = GameState.unlocked_pets
 	if unlocked.is_empty():
 		unlocked = ["caramelo"]
-	var pet_id: String = unlocked[randi() % unlocked.size()]
+	# Quinta do Pet Raro (events.json rare_chance): raridades altas pesam mais.
+	var rare_bias: float = LiveOps.modifier_multiplier(&"rare_chance")
+	var pet_id: String = draw_pet(unlocked, rare_bias)
+	if rare_bias > 1.0 and rarity_rank(pet_id) >= 2:
+		Analytics.track(&"event_client", {"rare_pet": pet_id})
 	# O pet preferido (buddy) visita com prioridade: 40% de chance de vir.
 	if pet_id != GameState.favorite_pet and randf() < 0.4:
 		pet_id = GameState.favorite_pet
@@ -256,7 +282,12 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 	if featured != &"" and featured in services and service != featured and randf() < 0.5:
 		service = featured
 		Analytics.track(&"event_client", {"service": String(service)})
-	var vip: bool = randf() < Economy.vip_chance(GameState.reviews_sum)
+	# Sexta do VIP (events.json vip_frequency): VIPs em dobro, com teto.
+	var vip_chance: float = minf(
+		VIP_CHANCE_CAP,
+		Economy.vip_chance(GameState.reviews_sum) * LiveOps.modifier_multiplier(&"vip_frequency")
+	)
+	var vip: bool = randf() < vip_chance
 	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
 	# B2: pedido especial (upsell) — a preferência do pet tem prioridade.
 	var special: StringName = &""
@@ -280,6 +311,32 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 		"wait_total": wait_total,
 		"wait_left": wait_total,
 	}
+
+
+static func rarity_rank(pet_id: String) -> int:
+	return int(RARITY_RANK.get(StringName(ContentDB.pet(pet_id).get("rarity", "common")), 0))
+
+
+## Sorteio ponderado por raridade: peso = bias^posto (bias 1.0 = uniforme).
+## Com 1.5 na quinta, um lendário pesa ~5× um comum — a fila brilha mais sem
+## virar só lendários (a loteria continua entre todos os desbloqueados).
+static func draw_pet(unlocked: Array[String], bias: float) -> String:
+	if unlocked.is_empty():
+		return "caramelo"
+	if bias <= 1.0:
+		return unlocked[randi() % unlocked.size()]
+	var weights: Array[float] = []
+	var total: float = 0.0
+	for pet_id: String in unlocked:
+		var weight: float = pow(bias, rarity_rank(pet_id))
+		weights.append(weight)
+		total += weight
+	var roll: float = randf() * total
+	for index: int in unlocked.size():
+		roll -= weights[index]
+		if roll <= 0.0:
+			return unlocked[index]
+	return unlocked[unlocked.size() - 1]
 
 
 ## Bônus de maestria no pagamento (C2): +2% por selo (até +6%).

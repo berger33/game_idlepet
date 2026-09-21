@@ -1,20 +1,25 @@
 extends Node
-## Agenda semanal local previsível, 7/7 com efeito real de gameplay.
+## Agenda semanal local previsível, 7/7 com efeito real de gameplay, dirigida
+## por data/events.json (fonte única: serviço em destaque + modificador do dia).
+## Temporadas (sazonal) vêm do mesmo arquivo: cada uma pode presentear um
+## cosmético de edição enquanto o mês estiver ativo.
 ## Kill switch remoto: events_enabled = 0 desliga tudo; event_boost_scale
 ## (0..1) dosifica a intensidade sem quebrar a economia.
+## Nomes dos eventos vivem na localização: EVENT_0..EVENT_6 / SEASON_<id>.
 
-## Serviço em destaque de cada dia (0 = domingo: todos ganham bônus família).
-## Nomes dos eventos vivem na localização: EVENT_0..EVENT_6.
-const DAY_SERVICE: Array[StringName] = [
-	&"", &"bath", &"groom", &"dry", &"style", &"perfume", &""
-]
+const GIFT_COLOR: Color = Color("ffd54f")
+
+
+## Entrada da agenda para hoje ({} com eventos desligados).
+func today() -> Dictionary:
+	if not events_on():
+		return {}
+	return ContentDB.weekly_event_for(weekday())
 
 
 ## Serviço que domina a fila hoje (dia temático); &"" se não houver.
 func featured_service() -> StringName:
-	if not events_on():
-		return &""
-	return DAY_SERVICE[weekday()]
+	return StringName(String(today().get("service", "")))
 
 
 func events_on() -> bool:
@@ -40,20 +45,82 @@ func event_name_for(day: int) -> String:
 	return Loc.t("EVENT_%d" % clampi(day, 0, 6))
 
 
+## O que o dia faz, em uma linha (mapa e cartão "amanhã").
+func event_description_for(day: int) -> String:
+	return Loc.t("EVENT_DESC_%d" % clampi(day, 0, 6))
+
+
+## Multiplicador de renda do serviço hoje: dia temático dobra o serviço em
+## destaque; "all_income" (domingo) rende um pouco mais em tudo.
 func multiplier_for(service_id: StringName) -> float:
-	if not events_on():
+	var entry: Dictionary = today()
+	if entry.is_empty():
 		return 1.0
-	var day: int = weekday()
 	var bonus: float = 0.0
-	if day == 0:
-		bonus = 0.25  # Família: tudo rende um pouco mais.
-	elif DAY_SERVICE[day] == service_id:
-		bonus = 1.0  # Dia temático: serviço em destaque dobra.
-	return 1.0 + bonus * boost_scale()
+	if String(entry.get("modifier", "")) == "all_income":
+		bonus = float(entry.get("multiplier", 1.0)) - 1.0
+	elif service_id != &"" and StringName(String(entry.get("service", ""))) == service_id:
+		bonus = float(entry.get("service_multiplier", 2.0)) - 1.0
+	return 1.0 + maxf(0.0, bonus) * boost_scale()
 
 
 ## Sábado do Combo: Perfect vale +50% (dosificado pelo mesmo kill switch).
 func bonus_for_quality(quality: StringName) -> float:
-	if not events_on() or quality != &"perfect" or weekday() != 6:
+	if quality != &"perfect":
 		return 1.0
-	return 1.0 + 0.5 * boost_scale()
+	return modifier_multiplier(&"perfect_bonus")
+
+
+## Multiplicador do modificador extra do dia (vip_frequency, rare_chance,
+## perfect_bonus...); 1.0 quando hoje não é esse modificador ou eventos off.
+func modifier_multiplier(modifier: StringName) -> float:
+	var entry: Dictionary = today()
+	if String(entry.get("modifier", "")) != String(modifier):
+		return 1.0
+	return 1.0 + maxf(0.0, float(entry.get("multiplier", 1.0)) - 1.0) * boost_scale()
+
+
+## Temporada ativa neste mês ({} fora de temporada ou com eventos desligados).
+func active_seasonal() -> Dictionary:
+	if not events_on():
+		return {}
+	return ContentDB.seasonal_for_month(
+		int(Time.get_datetime_dict_from_system().get("month", 1))
+	)
+
+
+func seasonal_name(season_id: String) -> String:
+	return Loc.t("SEASON_" + season_id)
+
+
+## Rótulo da origem de um cosmético sem preço (loja): temporada com período,
+## ou conquista. Nunca expõe o id cru ao jogador.
+func source_label(source: String) -> String:
+	if ContentDB.seasonal(source).is_empty():
+		return Loc.t("SOURCE_" + source)
+	return "%s • %s" % [seasonal_name(source), Loc.t("SEASON_WHEN_" + source)]
+
+
+## Presente de temporada: o cosmético da temporada ativa entra na coleção no
+## primeiro boot do período ("exclusivo" = edição; volta no ano seguinte).
+## Idempotente: unlocked_cosmetics já persiste, então nunca presenteia duas vezes.
+func claim_seasonal_gift() -> bool:
+	var season: Dictionary = active_seasonal()
+	var cosmetic_id: String = String(season.get("cosmetic", ""))
+	if cosmetic_id.is_empty() or ContentDB.cosmetic(cosmetic_id).is_empty():
+		return false
+	if GameState.unlocked_cosmetics.has(cosmetic_id):
+		return false
+	GameState.unlocked_cosmetics.append(cosmetic_id)
+	var season_id: String = String(season.get("id", ""))
+	Analytics.track(
+		&"collection_unlock", {"id": cosmetic_id, "category": "cosmetic", "source": season_id}
+	)
+	EventBus.toast_requested.emit(
+		Loc.t("SEASON_GIFT") % [
+			seasonal_name(season_id), String(ContentDB.cosmetic(cosmetic_id).get("name", cosmetic_id))
+		],
+		GIFT_COLOR
+	)
+	SaveManager.request_save()
+	return true

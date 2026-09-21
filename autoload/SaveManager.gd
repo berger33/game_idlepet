@@ -142,13 +142,20 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["version"] = 9
 		data["tool_uses"] = data.get("tool_uses", {})
 		version = 9
+	if version == 9:
+		# v10: pesquisa da franquia (sink dos tokens de prestígio).
+		data["version"] = 10
+		data["research_ids"] = data.get("research_ids", [])
+		version = 10
 	return data
 
 
 func _grant_offline_reward() -> void:
 	var elapsed_seconds: float = TimeManager.offline_elapsed(GameState.last_seen_unix)
 	var rate: float = 0.015 * Economy.income_multiplier(GameState.bath_upgrade_level)
-	var reward: float = Economy.offline_earnings(rate, elapsed_seconds, GameState.prestige_level)
+	var reward: float = Economy.offline_earnings(
+		rate, elapsed_seconds, GameState.prestige_level, Research.bonus(&"offline_rate")
+	)
 	if reward > 0.0:
 		GameState.add_coins(reward, &"offline")
 		GameState.register_offline_collection(elapsed_seconds)

@@ -9,6 +9,8 @@ const COSMETICS_PATH: String = "res://data/cosmetics.json"
 const PASS_PATH: String = "res://data/pass.json"
 const WEEKLY_PATH: String = "res://data/weekly_missions.json"
 const SERVICE_LAYOUTS_PATH: String = "res://data/service_layouts.json"
+const EVENTS_PATH: String = "res://data/events.json"
+const RESEARCH_PATH: String = "res://data/research.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -23,6 +25,14 @@ var pass_days: Array[Dictionary] = []
 var weekly_missions: Array[Dictionary] = []
 var weekly_by_id: Dictionary = {}
 var service_layouts: Dictionary = {}
+## Agenda semanal (events.json "weekly"): índice = weekday 0..6 (0 = domingo).
+var weekly_events: Dictionary = {}
+## Temporadas (events.json "seasonal"): id -> entrada com months/cosmetic.
+var seasonal_events: Array[Dictionary] = []
+var seasonal_by_id: Dictionary = {}
+## Árvore de pesquisa da franquia (research.json): sink dos tokens de prestígio.
+var research_nodes: Array[Dictionary] = []
+var research_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -57,10 +67,46 @@ func _ready() -> void:
 		var stage_service: String = String(stage.get("service", ""))
 		if not stage_service.is_empty():
 			service_layouts[stage_service] = stage
+	for weekly_event: Dictionary in _load_array(EVENTS_PATH, "weekly"):
+		var day: int = int(weekly_event.get("weekday", -1))
+		if day >= 0 and day <= 6 and not weekly_events.has(day):
+			weekly_events[day] = weekly_event
+	seasonal_events = _load_array(EVENTS_PATH, "seasonal")
+	for season: Dictionary in seasonal_events:
+		var season_id: String = String(season.get("id", ""))
+		if not season_id.is_empty() and not seasonal_by_id.has(season_id):
+			seasonal_by_id[season_id] = season
+	research_nodes = _load_array(RESEARCH_PATH, "nodes")
+	for node: Dictionary in research_nodes:
+		var node_id: String = String(node.get("id", ""))
+		if not node_id.is_empty() and not research_by_id.has(node_id):
+			research_by_id[node_id] = node
 
 
 func cosmetic(id: String) -> Dictionary:
 	return cosmetics_by_id.get(id, {})
+
+
+## Evento semanal de um dia (0 = domingo); {} se a agenda não cobrir o dia.
+func weekly_event_for(weekday: int) -> Dictionary:
+	return weekly_events.get(clampi(weekday, 0, 6), {})
+
+
+## Temporada cujo período inclui o mês (1..12); {} fora de temporada.
+func seasonal_for_month(month: int) -> Dictionary:
+	for season: Dictionary in seasonal_events:
+		for value: Variant in season.get("months", []):
+			if int(value) == month:
+				return season
+	return {}
+
+
+func seasonal(id: String) -> Dictionary:
+	return seasonal_by_id.get(id, {})
+
+
+func research(id: String) -> Dictionary:
+	return research_by_id.get(id, {})
 
 
 ## Recompensa do dia N do pass (1..28); retorna {} fora do intervalo.

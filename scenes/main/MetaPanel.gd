@@ -155,9 +155,10 @@ func _build_missions() -> void:
 		CHARCOAL
 	)
 	# Gancho de retorno: o jogador vê o amanhã (evento + streak) antes de sair.
+	var tomorrow: int = (LiveOps.weekday() + 1) % 7
 	_info_row(
 		Loc.t("TOMORROW"),
-		LiveOps.event_name_for((LiveOps.weekday() + 1) % 7),
+		"%s — %s" % [LiveOps.event_name_for(tomorrow), LiveOps.event_description_for(tomorrow)],
 		"%d/7" % GameState.daily_streak,
 		Color("4fc3f7"),
 		false,
@@ -392,13 +393,16 @@ func _build_shop() -> void:
 		var look_id: String = String(look.get("id", ""))
 		var owned: bool = GameState.unlocked_cosmetics.has(look_id)
 		var price: Dictionary = look.get("price", {})
+		var source: String = String(look.get("source", ""))
+		var seasonal: bool = not ContentDB.seasonal(source).is_empty()
 		var price_text: String
 		if price.has("coins"):
 			price_text = "%d moedas" % int(price["coins"])
 		elif price.has("embers"):
 			price_text = "%d %s" % [int(price["embers"]), Loc.t("EMBERS")]
 		else:
-			price_text = String(look.get("source", "evento"))
+			# Sem preço: a origem (temporada com período ou conquista) é legível.
+			price_text = LiveOps.source_label(source)
 		var is_active: bool = GameState.active_cosmetic(String(look.get("slot", ""))) == look_id
 		var action_text: String
 		var action_color: Color = PINK
@@ -407,7 +411,7 @@ func _build_shop() -> void:
 			action_text = Loc.t("EQUIPPED") if is_active else Loc.t("EQUIP")
 			action_color = GREEN if is_active else PINK
 		elif price.is_empty():
-			action_text = "EVENTO"
+			action_text = Loc.t("SOURCE_BTN_SEASON" if seasonal else "SOURCE_BTN_ACHIEVEMENT")
 			action_color = Color("b0bec5")
 		else:
 			action_text = Loc.t("BUY")
@@ -485,13 +489,21 @@ func _build_map() -> void:
 		"(%d)" % next_at if next_at > 0 else "(MAX)",
 	]
 	var text: String = (
-		"EVENTO: %s\nCARREIRA: nível %d/120 • %.1fh ativas\n%s\n\n"
-		% [
-			LiveOps.current_event_name(),
-			GameState.player_level,
-			GameState.active_play_seconds / 3600.0,
-			rep_line,
-		]
+		"EVENTO: %s — %s\n"
+		% [LiveOps.current_event_name(), LiveOps.event_description_for(LiveOps.weekday())]
+	)
+	var season: Dictionary = LiveOps.active_seasonal()
+	if not season.is_empty():
+		var season_id: String = String(season.get("id", ""))
+		var gift: Dictionary = ContentDB.cosmetic(String(season.get("cosmetic", "")))
+		text += (
+			Loc.t("SEASON_ACTIVE")
+			% [LiveOps.seasonal_name(season_id), String(gift.get("name", Loc.t("SEASON_NO_GIFT")))]
+			+ "\n"
+		)
+	text += (
+		"CARREIRA: nível %d/120 • %.1fh ativas\n%s\n\n"
+		% [GameState.player_level, GameState.active_play_seconds / 3600.0, rep_line]
 	)
 	for entry: Dictionary in ContentDB.career.get("establishments", []):
 		var unlock_level: int = int(entry.get("unlock_level", 1))
@@ -516,6 +528,45 @@ func _build_map() -> void:
 	)
 	_note(Loc.t("PRESTIGE_KEEP"))
 	_note(Loc.t("PRESTIGE_LOST"))
+	_build_research()
+
+
+## Pesquisa da franquia: sink dos tokens de prestígio com efeito permanente
+## (research.json). Cada nó mostra efeito, custo e o que ainda falta pesquisar.
+func _build_research() -> void:
+	_note(
+		"%s • %s" % [
+			Loc.t("RESEARCH_TITLE"),
+			Loc.t("RESEARCH_DESC") % [Research.owned_count(), ContentDB.research_nodes.size()],
+		],
+		26,
+		CHARCOAL
+	)
+	_note(Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens)
+	for node: Dictionary in ContentDB.research_nodes:
+		var node_id: String = String(node.get("id", ""))
+		var owned: bool = Research.owned(node_id)
+		var can_buy: bool = Research.can_buy(node_id)
+		var missing: String = Research.missing_requirements(node_id)
+		var action_text: String = Loc.t("RESEARCH_COST") % Research.cost(node_id)
+		var desc_text: String = Research.effect_text(node_id)
+		if owned:
+			action_text = Loc.t("RESEARCH_DONE")
+		elif not missing.is_empty():
+			desc_text += "\n" + Loc.t("RESEARCH_LOCKED") % missing
+		_info_row(
+			"T%d • %s" % [int(node.get("tier", 1)), String(node.get("name", node_id))],
+			desc_text,
+			action_text,
+			GREEN if owned else (Color("ce93d8") if can_buy else Color("b0bec5")),
+			can_buy,
+			func(nid: String = node_id) -> void:
+				if Research.buy(nid):
+					AudioManager.play(&"prestige")
+				else:
+					AudioManager.play(&"error_soft")
+		)
+	_note(Loc.t("RESEARCH_NOTE"))
 
 
 func _build_settings() -> void:

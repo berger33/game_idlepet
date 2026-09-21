@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 9
+const SAVE_VERSION: int = 10
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 ## Glossário da equipe: o que cada passivo faz em uma palavra (a UI explica a
@@ -40,6 +40,9 @@ var five_star_reviews: int = 0
 var total_perfect_services: int = 0
 var offline_seconds_collected: float = 0.0
 var prestige_level: int = 0
+## Pesquisa da franquia (data/research.json): nós comprados com tokens de
+## franquia. Meta permanente — sobrevive ao prestígio (ver Research.gd).
+var research_ids: Array[String] = []
 var last_seen_unix: int = 0
 var tutorial_complete: bool = false
 var unlocked_pets: Array[String] = ["caramelo"]
@@ -318,6 +321,7 @@ func to_dictionary() -> Dictionary:
 		"total_perfect_services": total_perfect_services,
 		"offline_seconds_collected": offline_seconds_collected,
 		"prestige_level": prestige_level,
+		"research_ids": research_ids,
 		"last_seen_unix": Time.get_unix_time_from_system(),
 		"tutorial_complete": tutorial_complete,
 		"unlocked_pets": unlocked_pets,
@@ -373,6 +377,8 @@ func apply_dictionary(data: Dictionary) -> void:
 	)
 	offline_seconds_collected = maxf(0.0, float(data.get("offline_seconds_collected", 0.0)))
 	prestige_level = clampi(int(data.get("prestige_level", 0)), 0, 100)
+	research_ids = _valid_research_array(data.get("research_ids", []))
+	Research.invalidate_cache()
 	last_seen_unix = maxi(0, int(data.get("last_seen_unix", 0)))
 	tutorial_complete = bool(data.get("tutorial_complete", false))
 	unlocked_pets = _valid_pet_array(data.get("unlocked_pets", []))
@@ -443,6 +449,14 @@ func _valid_pet_array(value: Variant) -> Array[String]:
 	var result: Array[String] = []
 	for id: String in _safe_string_array(value):
 		if ContentDB.has_pet(id):
+			result.append(id)
+	return result
+
+
+func _valid_research_array(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	for id: String in _safe_string_array(value):
+		if ContentDB.research_by_id.has(id):
 			result.append(id)
 	return result
 

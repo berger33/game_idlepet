@@ -87,7 +87,10 @@ func service_reward(
 	)
 
 
-func offline_earnings(rate_per_second: float, elapsed_seconds: float, prestige_level: int) -> float:
+## research_bonus: soma de "offline_rate" da pesquisa da franquia (0..1).
+func offline_earnings(
+	rate_per_second: float, elapsed_seconds: float, prestige_level: int, research_bonus: float = 0.0
+) -> float:
 	var cap_hours: float = minf(24.0, RemoteConfig.get_float("offline_cap_hours") + prestige_level)
 	var clamped_seconds: float = clampf(elapsed_seconds, 0.0, cap_hours * 3600.0)
 	return floor(
@@ -96,6 +99,7 @@ func offline_earnings(rate_per_second: float, elapsed_seconds: float, prestige_l
 			* clamped_seconds
 			* RemoteConfig.get_float("offline_rate")
 			* (1.0 + prestige_level * 0.05)
+			* (1.0 + clampf(research_bonus, 0.0, 1.0))
 		)
 	)
 

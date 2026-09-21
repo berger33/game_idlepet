@@ -117,6 +117,46 @@ e `docs/ROADMAP.md` (gates). Todas as afirmações citam arquivo/linha.
 Restam (próxima fase, deliberadamente): polaroids/álbum completo e cosméticos
 exclusivos de prestígio além do conversor.
 
+## 4b. Mecânicas órfãs em `data/` — fechadas (auditoria de completude)
+
+Auditoria posterior (código × dados × GDD) encontrou três mecânicas **prometidas
+pelos dados e não entregues** pelo runtime. Todas foram ligadas nesta fase:
+
+- **Temporadas (`events.json` → `seasonal`).** `wall_junina` tinha
+  `source: festa_junina` e nenhuma rota de obtenção (`buy_cosmetic` recusa item sem
+  preço) — item impossível na loja. Agora cada temporada declara `cosmetic` e
+  `LiveOps.claim_seasonal_gift()` (boot do Main, após o tutorial) presenteia o
+  cosmético do mês uma única vez (idempotente via `unlocked_cosmetics`), com toast e
+  `collection_unlock`. A loja mostra a origem legível (“Festa Junina • junho” /
+  “Conquista: combo de 20”) e o mapa mostra a temporada ativa. Os pets exclusivos
+  (`exclusive_pet`) continuam declarados mas **não** entram na fila: exigem arte
+  (base + 10 estados) antes de existir no catálogo — `ContentDB.has_pet` protege.
+  Temporadas = edição (GDD §16): voltam no ano seguinte.
+- **Agenda semanal como fonte única (`events.json` → `weekly`).** `LiveOps` deixou
+  de ter a agenda hardcoded (`DAY_SERVICE`) e lê `ContentDB.weekly_event_for(dia)`:
+  serviço em destaque (×2 + metade da fila) **e** modificador do dia. Correções
+  reais: “Sexta do VIP” aplicava perfume ×2 e nenhum VIP — agora `vip_frequency ×2`
+  (com teto de 50% em `SalonTuning.VIP_CHANCE_CAP`); “Quinta do Laço” ganhou
+  `rare_chance ×1.5` (sorteio ponderado por raridade em `SalonTuning.draw_pet`:
+  peso = viés^posto, lendário ≈ 5× comum). Domingo (`all_income 1.25`) e Sábado
+  (`perfect_bonus 1.5`) passaram a ser dados, não código. Cada dia tem descrição
+  localizada (`EVENT_DESC_n`) no mapa e no cartão “Amanhã”. Kill switch e
+  `boost_scale` continuam valendo para tudo.
+- **Pesquisa da franquia (`research.json`).** O prestígio só tinha o conversor
+  token→brasas; o GDD §14 promete “tokens compram meta permanente / sink: pesquisa”.
+  `core/progression/Research.gd` (estático, como `SalonTuning`) compra nós com
+  `franchise_tokens`, respeita pré-requisitos e aplica efeitos permanentes que
+  **sobrevivem ao prestígio** (motivo para prestigiar de novo): banho +10%
+  (`compute_reward`), janela de Perfect +5% e serviços 6% mais curtos
+  (`SalonTuning.apply`), paciência +8% (tempo do atendimento e drenagem da fila no
+  Main), cofre offline +5% (`Economy.offline_earnings`). UI no painel Franquia
+  (mapa) com efeito, custo e “Requer: …”. Save v10 (`research_ids`, migração em
+  `SaveManager._migrate`).
+
+Divergências restantes, documentadas e sem impacto de gameplay: `daily_missions.json`
+(catálogo lido só pelos testes; as 3 diárias do runtime usam os mesmos ids) e
+`economy_curves.json` (referência de balanceamento).
+
 ## 5. O que NÃO mexer (está certo e protege o jogador)
 
 - Sem energia/stamina: sessões ilimitadas são a identidade do jogo.

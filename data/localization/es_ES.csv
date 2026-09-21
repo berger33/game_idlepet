@@ -128,3 +128,34 @@ BUDDY_VISIT,¡%s te extrañó y llegó primero!
 BUDDY_TAG,amigo
 FRANCHISE_EXCHANGE,Franquicia
 FRANCHISE_DESC,Tokens disponibles: %d
+EVENT_DESC_0,todo rinde +25%
+EVENT_DESC_1,el baño rinde ×2 y domina la fila
+EVENT_DESC_2,la tosa rinde ×2 y domina la fila
+EVENT_DESC_3,el secado rinde ×2 y domina la fila
+EVENT_DESC_4,el lazo rinde ×2 • más mascotas raras
+EVENT_DESC_5,el doble de VIPs • el perfume rinde ×2
+EVENT_DESC_6,Perfect vale +50%
+SEASON_carnaval,Carnaval
+SEASON_festa_junina,Fiesta Junina
+SEASON_natal,Navidad Tropical
+SEASON_WHEN_carnaval,febrero y marzo
+SEASON_WHEN_festa_junina,junio
+SEASON_WHEN_natal,diciembre
+SEASON_GIFT,Regalo de temporada (%s): ¡%s desbloqueado!
+SEASON_ACTIVE,TEMPORADA: %s — regalo: %s
+SEASON_NO_GIFT,muy pronto
+SOURCE_achievement,Logro: combo de 20
+SOURCE_BTN_SEASON,TEMPORADA
+SOURCE_BTN_ACHIEVEMENT,LOGRO
+RESEARCH_TITLE,INVESTIGACIÓN DE LA FRANQUICIA
+RESEARCH_DESC,%d/%d investigadas
+RESEARCH_COST,INVESTIGAR (%d)
+RESEARCH_DONE,✓ LISTA
+RESEARCH_LOCKED,Requiere: %s
+RESEARCH_EFFECT_bath_income,el baño rinde +%d%%
+RESEARCH_EFFECT_satisfaction,ventana de Perfect +%d%%
+RESEARCH_EFFECT_service_speed,servicios %d%% más rápidos
+RESEARCH_EFFECT_patience,paciencia de las mascotas +%d%%
+RESEARCH_EFFECT_offline_rate,caja offline +%d%%
+RESEARCH_TOAST,Investigación completada: %s
+RESEARCH_NOTE,"Costo entre paréntesis en tokens de franquicia (ganados al prestigiar). Efectos permanentes: sobreviven al prestigio."

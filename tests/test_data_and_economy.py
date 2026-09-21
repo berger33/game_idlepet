@@ -30,13 +30,15 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 9', state)
+        self.assertIn('const SAVE_VERSION: int = 10', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)
         self.assertIn('if version == 7:', migration)
         self.assertIn('if version == 8:', migration)
-        self.assertIn('data["version"] = 9', migration)
+        self.assertIn('if version == 9:', migration)
+        self.assertIn('data["version"] = 10', migration)
+        self.assertIn('data["research_ids"] = data.get("research_ids", [])', migration)
         self.assertIn('tool_upgrade_levels', state)
         self.assertIn('active_cosmetics', state)
 
@@ -740,6 +742,166 @@ class SoundDesignTests(unittest.TestCase):
         rendered = load_rendered()
         self.assertEqual(set(rendered), set(all_names()))
         self.assertEqual(validate_assets(rendered), [], 'SFX fora do padrão')
+
+
+def _loc_table(code):
+    table = {}
+    for line in Path(f'data/localization/{code}.csv').read_text(encoding='utf8').splitlines():
+        if not line.strip() or line.startswith('key,'):
+            continue
+        key, value = line.split(',', 1)
+        table[key] = value.strip().strip('"')
+    return table
+
+
+class LiveOpsAndResearchTests(unittest.TestCase):
+    """Mecânicas antes órfãs em data/ (auditoria): agenda semanal dirigida por
+    events.json, temporadas que presenteiam cosmético e a pesquisa da franquia
+    como sink dos tokens de prestígio. Testes de contrato (texto + dados) no
+    mesmo padrão do restante do arquivo."""
+
+    def test_events_json_is_the_weekly_source_of_truth(self):
+        events = json.loads(Path('data/events.json').read_text(encoding='utf8'))
+        weekly = events['weekly']
+        self.assertEqual(sorted(e['weekday'] for e in weekly), list(range(7)))
+        services = {'', 'bath', 'groom', 'dry', 'perfume', 'style'}
+        modifiers = {'', 'all_income', 'rare_chance', 'vip_frequency', 'perfect_bonus'}
+        for entry in weekly:
+            self.assertIn(entry['service'], services, entry['id'])
+            self.assertIn(entry['modifier'], modifiers, entry['id'])
+            self.assertGreaterEqual(entry['multiplier'], 1.0)
+            self.assertGreaterEqual(entry['service_multiplier'], 1.0)
+        # Cada serviço tem o seu dia temático (a fila segue o evento).
+        self.assertEqual({e['service'] for e in weekly} - {''}, services - {''})
+        # O rótulo do dia é honesto: "Sexta do VIP" tem VIPs de verdade e
+        # "Quinta do Laço" traz os pets raros prometidos pelo design.
+        by_day = {e['weekday']: e for e in weekly}
+        self.assertEqual(by_day[5]['modifier'], 'vip_frequency')
+        self.assertEqual(by_day[4]['modifier'], 'rare_chance')
+        self.assertEqual(by_day[6]['modifier'], 'perfect_bonus')
+        self.assertEqual(by_day[0]['modifier'], 'all_income')
+        # Nomes em pt_BR sincronizados com a localização (EVENT_n).
+        pt = _loc_table('pt_BR')
+        for entry in weekly:
+            self.assertEqual(pt['EVENT_%d' % entry['weekday']], entry['name'])
+        content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
+        self.assertIn('res://data/events.json', content)
+        self.assertIn('func weekly_event_for', content)
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        self.assertNotIn('DAY_SERVICE', liveops)
+        self.assertIn('ContentDB.weekly_event_for(weekday())', liveops)
+        for token in ('func modifier_multiplier', 'func event_description_for',
+                      'boost_scale()'):
+            self.assertIn(token, liveops)
+
+    def test_queue_applies_vip_and_rare_modifiers(self):
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.modifier_multiplier(&"vip_frequency")', salon)
+        self.assertIn('LiveOps.modifier_multiplier(&"rare_chance")', salon)
+        self.assertIn('static func draw_pet', salon)
+        self.assertIn('VIP_CHANCE_CAP', salon)
+        # Viés por raridade cobre as cinco raridades do catálogo.
+        for rarity in ('common', 'uncommon', 'rare', 'epic', 'legendary'):
+            self.assertIn('&"%s"' % rarity, salon)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for day in range(7):
+                self.assertIn('EVENT_DESC_%d' % day, table)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.event_description_for', panel)
+
+    def test_seasonal_cosmetics_are_obtainable(self):
+        events = json.loads(Path('data/events.json').read_text(encoding='utf8'))
+        cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))
+        by_id = {c['id']: c for c in cosmetics['cosmetics']}
+        seasons = {s['id']: s for s in events['seasonal']}
+        months = [m for s in events['seasonal'] for m in s['months']]
+        self.assertEqual(len(months), len(set(months)), 'temporadas não podem se sobrepor')
+        for season in events['seasonal']:
+            gift = season['cosmetic']
+            if gift:
+                self.assertIn(gift, by_id)
+                self.assertEqual(by_id[gift]['source'], season['id'])
+        # Todo cosmético sem preço tem uma rota real: conquista ou temporada.
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for look in cosmetics['cosmetics']:
+            if 'price' in look:
+                continue
+            source = look['source']
+            if source == 'achievement':
+                self.assertIn('unlocked_cosmetics.append("%s")' % look['id'], state)
+            else:
+                self.assertEqual(seasons[source]['cosmetic'], look['id'])
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        for token in ('func active_seasonal', 'func claim_seasonal_gift',
+                      'ContentDB.seasonal_for_month', 'GameState.unlocked_cosmetics.append',
+                      'SaveManager.request_save()', 'func source_label'):
+            self.assertIn(token, liveops)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.claim_seasonal_gift()', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('LiveOps.source_label(source)', panel)
+        self.assertNotIn('"EVENTO"', panel)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for season in events['seasonal']:
+                self.assertIn('SEASON_' + season['id'], table)
+                self.assertIn('SEASON_WHEN_' + season['id'], table)
+            for key in ('SEASON_GIFT', 'SEASON_ACTIVE', 'SOURCE_achievement',
+                        'SOURCE_BTN_SEASON', 'SOURCE_BTN_ACHIEVEMENT'):
+                self.assertIn(key, table)
+            self.assertEqual(table['SEASON_GIFT'].count('%s'), 2)
+
+    def test_research_tree_is_a_real_prestige_sink(self):
+        research = json.loads(Path('data/research.json').read_text(encoding='utf8'))
+        nodes = research['nodes']
+        ids = {n['id'] for n in nodes}
+        effects = set()
+        for node in nodes:
+            self.assertEqual(node['currency'], 'franchise_token')
+            self.assertGreaterEqual(node['cost'], 1)
+            self.assertTrue(set(node['requires']) <= ids, node['id'])
+            self.assertTrue(node['effect'])
+            effects |= set(node['effect'])
+            for value in node['effect'].values():
+                self.assertTrue(0.0 < value <= 0.5)
+        # A árvore é alcançável: tier 1 sem pré-requisitos e o topo custa o
+        # que um ciclo de prestígio realista rende (soma <= 10 tokens).
+        self.assertTrue(any(not n['requires'] for n in nodes))
+        self.assertLessEqual(sum(n['cost'] for n in nodes), 10)
+        # Todo efeito declarado tem hook em código e texto localizado.
+        hooks = {
+            'bath_income': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"bath_income")'),
+            'satisfaction': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"satisfaction")'),
+            'service_speed': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"service_speed")'),
+            'patience': ('scenes/main/Main.gd', 'Research.bonus(&"patience")'),
+            'offline_rate': ('autoload/SaveManager.gd', 'Research.bonus(&"offline_rate")'),
+        }
+        self.assertEqual(effects, set(hooks))
+        for effect, (path, token) in hooks.items():
+            self.assertIn(token, Path(path).read_text(encoding='utf8'), effect)
+            for code in ('pt_BR', 'en_US', 'es_ES'):
+                self.assertIn('RESEARCH_EFFECT_' + effect, _loc_table(code))
+        research_gd = Path('core/progression/Research.gd').read_text(encoding='utf8')
+        for token in ('class_name Research', 'static func bonus', 'static func buy',
+                      'GameState.franchise_tokens -= price', 'GameState.research_ids.append',
+                      'SaveManager.request_save()', 'research_complete'):
+            self.assertIn(token, research_gd)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('var research_ids: Array[String] = []', state)
+        self.assertIn('"research_ids": research_ids', state)
+        self.assertIn('_valid_research_array(data.get("research_ids", []))', state)
+        # Prestígio NÃO apaga a pesquisa (é o motivo de prestigiar de novo).
+        prestige = state[state.index('func perform_prestige'):state.index('func register_review')]
+        self.assertNotIn('research_ids', prestige)
+        economy = Path('autoload/Economy.gd').read_text(encoding='utf8')
+        self.assertIn('research_bonus: float = 0.0', economy)
+        content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
+        self.assertIn('res://data/research.json', content)
+        self.assertIn('func research(', content)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('func _build_research', panel)
+        self.assertIn('Research.buy(nid)', panel)
 
 
 if __name__=='__main__': unittest.main()

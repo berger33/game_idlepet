@@ -128,3 +128,34 @@ BUDDY_VISIT,%s missed you and came first!
 BUDDY_TAG,buddy
 FRANCHISE_EXCHANGE,Franchise
 FRANCHISE_DESC,Tokens available: %d
+EVENT_DESC_0,everything pays +25%
+EVENT_DESC_1,bath pays ×2 and fills the queue
+EVENT_DESC_2,grooming pays ×2 and fills the queue
+EVENT_DESC_3,drying pays ×2 and fills the queue
+EVENT_DESC_4,bow pays ×2 • rare pets show up more
+EVENT_DESC_5,twice the VIPs • perfume pays ×2
+EVENT_DESC_6,Perfect is worth +50%
+SEASON_carnaval,Carnival
+SEASON_festa_junina,June Festival
+SEASON_natal,Tropical Christmas
+SEASON_WHEN_carnaval,February and March
+SEASON_WHEN_festa_junina,June
+SEASON_WHEN_natal,December
+SEASON_GIFT,Season gift (%s): %s unlocked!
+SEASON_ACTIVE,SEASON: %s — gift: %s
+SEASON_NO_GIFT,coming soon
+SOURCE_achievement,Achievement: combo of 20
+SOURCE_BTN_SEASON,SEASON
+SOURCE_BTN_ACHIEVEMENT,ACHIEVEMENT
+RESEARCH_TITLE,FRANCHISE RESEARCH
+RESEARCH_DESC,%d/%d researched
+RESEARCH_COST,RESEARCH (%d)
+RESEARCH_DONE,✓ DONE
+RESEARCH_LOCKED,Requires: %s
+RESEARCH_EFFECT_bath_income,bath pays +%d%%
+RESEARCH_EFFECT_satisfaction,Perfect window +%d%%
+RESEARCH_EFFECT_service_speed,services %d%% faster
+RESEARCH_EFFECT_patience,pet patience +%d%%
+RESEARCH_EFFECT_offline_rate,offline vault +%d%%
+RESEARCH_TOAST,Research complete: %s
+RESEARCH_NOTE,"Cost in parentheses is franchise tokens (earned by prestiging). Effects are permanent and survive prestige."

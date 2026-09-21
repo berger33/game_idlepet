@@ -93,7 +93,7 @@ sessões curtas cabem no bolso; o mundo tem identidade (Bairro, Bia, eventos tem
 |---|---|---|---|
 | **Calendário de sequência** | 7 dias com recompensa crescente; perder dia não zera, só pausa (anti-punição). | M | Alto |
 | **Passe da temporada visível** | Trilha grátis+premium do `pass.json` com cosméticos exclusivos por temporada. | M | Alto |
-| **Pesquisa como árvore** | `research.json` em tela de árvore com pré-requisitos — meta de médio prazo legível. | M | Médio |
+| **Pesquisa como árvore** | ✅ Entregue: `research.json` no painel Franquia com pré-requisitos e efeitos permanentes (`core/progression/Research.gd`). | M | Médio |
 | **Conquistas com vitrine** | Conquista ganha vira troféu na parede da sala (cosmético de cenário). | P | Médio |
 
 ### 3.6 Acessibilidade e conforto (guarda-chuva)

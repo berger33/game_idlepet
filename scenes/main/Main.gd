@@ -111,6 +111,8 @@ func _ready() -> void:
 	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
 	_show_pending_offline_reward()
 	SessionFeedback.show_comeback(self)
+	if GameState.tutorial_complete:
+		LiveOps.claim_seasonal_gift()  # Temporada do mês presenteia seu cosmético.
 	# Retenção: o opt-in de lembretes persiste nos ajustes; sincroniza antes de
 	# agendar (sem isso o gatilho externo nunca era armado).
 	NotificationManager.permission_granted = bool(
@@ -686,8 +688,9 @@ func _process_queue(delta: float) -> void:
 			and bool(GameState.tutorial_complete)
 		):
 			# Onda 2: pico deixa a fila mais paciente (dá pra atender todos);
-			# A3: sequência de perfects deixa o salão "no ritmo" (-10%).
-			var patience_drain: float = delta
+			# A3: sequência de perfects deixa o salão "no ritmo" (-10%);
+			# pesquisa "Comportamento Animal" drena a paciência mais devagar.
+			var patience_drain: float = delta * (1.0 - Research.bonus(&"patience"))
 			if rush_active:
 				patience_drain *= 0.5
 			if mood_buff_clients > 0:

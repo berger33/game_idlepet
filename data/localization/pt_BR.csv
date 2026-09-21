@@ -128,3 +128,34 @@ BUDDY_VISIT,%s sentiu sua falta e veio primeiro!
 BUDDY_TAG,amigo
 FRANCHISE_EXCHANGE,Franquia
 FRANCHISE_DESC,Tokens disponíveis: %d
+EVENT_DESC_0,tudo rende +25%
+EVENT_DESC_1,banho rende ×2 e domina a fila
+EVENT_DESC_2,tosa rende ×2 e domina a fila
+EVENT_DESC_3,secagem rende ×2 e domina a fila
+EVENT_DESC_4,laço rende ×2 • pets raros aparecem mais
+EVENT_DESC_5,VIPs em dobro • perfume rende ×2
+EVENT_DESC_6,Perfect vale +50%
+SEASON_carnaval,Carnaval
+SEASON_festa_junina,Festa Junina
+SEASON_natal,Natal Tropical
+SEASON_WHEN_carnaval,fevereiro e março
+SEASON_WHEN_festa_junina,junho
+SEASON_WHEN_natal,dezembro
+SEASON_GIFT,Presente de temporada (%s): %s liberado!
+SEASON_ACTIVE,TEMPORADA: %s — presente: %s
+SEASON_NO_GIFT,em breve
+SOURCE_achievement,Conquista: combo de 20
+SOURCE_BTN_SEASON,TEMPORADA
+SOURCE_BTN_ACHIEVEMENT,CONQUISTA
+RESEARCH_TITLE,PESQUISA DA FRANQUIA
+RESEARCH_DESC,%d/%d pesquisadas
+RESEARCH_COST,PESQUISAR (%d)
+RESEARCH_DONE,✓ PRONTA
+RESEARCH_LOCKED,Requer: %s
+RESEARCH_EFFECT_bath_income,banho rende +%d%%
+RESEARCH_EFFECT_satisfaction,janela de Perfect +%d%%
+RESEARCH_EFFECT_service_speed,serviços %d%% mais rápidos
+RESEARCH_EFFECT_patience,paciência dos pets +%d%%
+RESEARCH_EFFECT_offline_rate,cofre offline +%d%%
+RESEARCH_TOAST,Pesquisa concluída: %s
+RESEARCH_NOTE,"Custo entre parênteses em tokens de franquia (ganhos ao prestigiar). Efeitos permanentes: sobrevivem ao prestígio."
