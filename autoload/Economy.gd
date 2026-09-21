@@ -98,7 +98,11 @@ func offline_earnings(
 	research_bonus: float = 0.0,
 	automation_share: float = 0.0
 ) -> float:
-	var cap_hours: float = minf(24.0, RemoteConfig.get_float("offline_cap_hours") + prestige_level)
+	var base_cap: float = RemoteConfig.get_float("offline_cap_hours")
+	var cap_scale: float = RemoteConfig.get_float("offline_cap_scale")
+	if cap_scale <= 0.0:
+		cap_scale = 1.0
+	var cap_hours: float = minf(24.0, (base_cap + prestige_level) * cap_scale)
 	var clamped_seconds: float = clampf(elapsed_seconds, 0.0, cap_hours * 3600.0)
 	var share: float = RemoteConfig.get_float("offline_rate") + clampf(automation_share, 0.0, 0.6)
 	return floor(

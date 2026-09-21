@@ -368,3 +368,29 @@ static func mastery_bonus(uses: int) -> float:
 		if uses >= step:
 			badges += 1
 	return badges * 0.02
+
+
+## Safe-area superior (notch): DisplayServer em mobile/web, 0 em desktop.
+static func safe_area_top() -> float:
+	var safe_top: float = 0.0
+	if OS.has_feature("mobile") or OS.has_feature("web"):
+		var safe: Rect2i = DisplayServer.get_display_safe_area()
+		if safe.position.y > 0:
+			safe_top = clampf(float(safe.position.y) * 0.5, 0.0, 80.0)
+	return safe_top
+
+
+static func font_scale() -> float:
+	return clampf(float(GameState.settings.get("font_scale", 1.0)), 0.8, 1.4)
+
+
+## Alguma melhoria está ao alcance agora (pulso do botão de upgrades).
+static func upgrades_affordable() -> bool:
+	if GameState.bath_upgrade_level < GameState.MAX_CAREER_LEVEL:
+		if Economy.upgrade_cost(GameState.bath_upgrade_level) <= GameState.coins:
+			return true
+	for tool_id: StringName in [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]:
+		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
+		if level < 30 and GameState.tool_upgrade_cost(tool_id) <= GameState.coins:
+			return true
+	return false

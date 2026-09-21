@@ -91,7 +91,13 @@ var event_goal_date: String = ""
 var event_goal_count: int = 0
 var event_goal_claimed: bool = false
 var settings: Dictionary = {
-	"music": 0.7, "sfx": 0.9, "haptics": true, "reduced_particles": false, "eco_mode": false
+	"music": 0.7,
+	"sfx": 0.9,
+	"haptics": true,
+	"reduced_particles": false,
+	"eco_mode": false,
+	"font_scale": 1.0,
+	"left_handed": false,
 }
 
 
@@ -543,6 +549,8 @@ func _sanitize_settings() -> void:
 	settings["colorblind"] = bool(settings.get("colorblind", false))
 	settings["assist_window"] = bool(settings.get("assist_window", false))
 	settings["analytics_consent"] = bool(settings.get("analytics_consent", false))
+	settings["font_scale"] = clampf(float(settings.get("font_scale", 1.0)), 0.8, 1.4)
+	settings["left_handed"] = bool(settings.get("left_handed", false))
 	settings["shop_name"] = String(settings.get("shop_name", "")).strip_edges().left(18)
 
 

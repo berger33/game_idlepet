@@ -253,7 +253,7 @@ func _build_collection() -> void:
 		else:
 			portrait.modulate.a = 0.0
 		var name_label: Label = card.get_node("VBox/Name")
-		name_label.text = String(pet.get("name", pet_id)) if unlocked else "???"
+		name_label.text = ContentDB.pet_name(pet_id) if unlocked else "???"
 		name_label.add_theme_font_size_override("font_size", 24)
 		name_label.add_theme_color_override("font_color", CHARCOAL)
 		var sub: Label = card.get_node("VBox/Sub")
@@ -291,6 +291,41 @@ func _build_collection() -> void:
 			GameState.unlocked_cosmetics.size(),
 		]
 	)
+	# Conquistas com card compartilhável (viralização de progresso)
+	var ach_count: String = "(%d/%d)" % [
+		GameState.achievement_ids.size(), ContentDB.achievements.size()
+	]
+	_note(Loc.t("REVEAL_ACHIEVEMENT_TITLE") + " " + ach_count, 26, CHARCOAL)
+	for achievement: Dictionary in ContentDB.achievements:
+		var aid: String = String(achievement.get("id", ""))
+		var unlocked: bool = GameState.achievement_ids.has(aid)
+		var reward: Dictionary = achievement.get("reward", {})
+		var reward_text: String = ""
+		if reward.has("coins"):
+			var c: int = Rewards.for_kind(&"achievement", int(reward.get("coins", 0)))
+			reward_text = "%d %s" % [c, Loc.t("COINS")]
+		elif reward.has("embers"):
+			reward_text = "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
+		var action: String = Loc.t("SHARE_ACHIEVEMENT_BUTTON") if unlocked else Loc.t("LOCKED") % 1
+		var desc_base: String = String(achievement.get("description", ""))
+		var desc_full: String = desc_base
+		if not reward_text.is_empty():
+			desc_full += " • " + reward_text
+		_info_row(
+			ContentDB.achievement_name(aid),
+			desc_full,
+			action,
+			Color("ffd54f") if unlocked else Color("b0bec5"),
+			unlocked,
+			func(aid_inner: String = aid) -> void:
+				var saved_path: String = await ShareManager.share_achievement(aid_inner)
+				if not saved_path.is_empty():
+					var channel: StringName = ShareManager.share_last()
+					if channel == &"web_share":
+						EventBus.toast_requested.emit(Loc.t("SHARE_WEB"), BLUE)
+					else:
+						EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY"), BLUE)
+		)
 
 
 ## Painel de melhorias: estação + os cinco utensílios. Tudo que era botão
@@ -395,7 +430,7 @@ func _build_staff() -> void:
 		if automation > 0:
 			desc += "\n" + Loc.t("STAFF_AUTOMATION") % automation
 		_info_row(
-			String(member.get("name", staff_id)),
+			ContentDB.staff_name(staff_id),
 			desc,
 			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %d" % [Loc.t("HIRE"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
@@ -410,6 +445,34 @@ func _build_staff() -> void:
 
 
 func _build_shop() -> void:
+	# Rotativo semanal (LiveOps sem build): cosmético em destaque da semana
+	var featured_id: String = ContentDB.weekly_featured_cosmetic()
+	if not featured_id.is_empty():
+		var featured: Dictionary = ContentDB.cosmetic(featured_id)
+		if not featured.is_empty():
+			var feat_price: Dictionary = featured.get("price", {})
+			var feat_price_text: String = ""
+			if feat_price.has("coins"):
+				feat_price_text = "%d %s" % [
+					Rewards.cosmetic_price(featured_id), Loc.t("COINS")
+				]
+			else:
+				feat_price_text = "%d %s" % [
+					int(feat_price.get("embers", 0)), Loc.t("EMBERS")
+				]
+			_info_row(
+				"%s • %s" % [Loc.t("WEEKLY_FEATURED"), ContentDB.cosmetic_name(featured_id)],
+				Loc.t("WEEKLY_FEATURED_DESC"),
+				feat_price_text,
+				Color("ffd54f"),
+				not GameState.unlocked_cosmetics.has(featured_id),
+				func(fid: String = featured_id) -> void:
+					if GameState.unlocked_cosmetics.has(fid):
+						GameState.equip_cosmetic(fid)
+					elif GameState.buy_cosmetic(fid):
+						GameState.equip_cosmetic(fid)
+						AudioManager.play(&"coin")
+			)
 	for look: Dictionary in ContentDB.cosmetics:
 		var look_id: String = String(look.get("id", ""))
 		var owned: bool = GameState.unlocked_cosmetics.has(look_id)
@@ -437,7 +500,7 @@ func _build_shop() -> void:
 		else:
 			action_text = Loc.t("BUY")
 		_info_row(
-			String(look.get("name", look_id)),
+			ContentDB.cosmetic_name(look_id),
 			price_text,
 			action_text,
 			action_color,
@@ -586,7 +649,7 @@ func _build_research() -> void:
 		elif not missing.is_empty():
 			desc_text += "\n" + Loc.t("RESEARCH_LOCKED") % missing
 		_info_row(
-			"T%d • %s" % [int(node.get("tier", 1)), String(node.get("name", node_id))],
+			"T%d • %s" % [int(node.get("tier", 1)), ContentDB.research_name(node_id)],
 			desc_text,
 			action_text,
 			GREEN if owned else (Color("ce93d8") if can_buy else Color("b0bec5")),
@@ -606,6 +669,30 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("HAPTICS"), "haptics", true)
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
 	_add_toggle(Loc.t("NOTIFICATIONS"), "notifications", false)
+	# Acessibilidade: tamanho de fonte (pequena/normal/grande) — 0.8 / 1.0 / 1.2
+	_note(Loc.t("FONT_SCALE"), 26, CHARCOAL)
+	var font_row: HBoxContainer = HBoxContainer.new()
+	font_row.add_theme_constant_override("separation", 12)
+	screen.content_box.add_child(font_row)
+	for option: Dictionary in [
+		{"label": "FONT_SCALE_SMALL", "value": 0.8},
+		{"label": "FONT_SCALE_NORMAL", "value": 1.0},
+		{"label": "FONT_SCALE_LARGE", "value": 1.2},
+	]:
+		var current: float = float(GameState.settings.get("font_scale", 1.0))
+		var is_active: bool = is_equal_approx(current, float(option["value"]))
+		var font_btn: Button = Button.new()
+		_style_button(font_btn, GREEN if is_active else Color("b0bec5"))
+		font_btn.text = Loc.t(String(option["label"]))
+		font_btn.custom_minimum_size = Vector2(200, 60)
+		font_btn.pressed.connect(
+			func(v: float = float(option["value"])) -> void:
+				GameState.settings["font_scale"] = v
+				SaveManager.request_save()
+				EventBus.settings_changed.emit()
+				_rebuild(&"settings")
+		)
+		font_row.add_child(font_btn)
 	# Nome do pet shop (personalização): placa da sala e cartão de share.
 	var name_row: HBoxContainer = HBoxContainer.new()
 	name_row.add_theme_constant_override("separation", 12)
@@ -624,9 +711,10 @@ func _build_settings() -> void:
 			EventBus.settings_changed.emit()
 	)
 	name_row.add_child(name_edit)
-	# Acessibilidade: paleta daltônica e assistência motora (opt-in, sem custo).
+	# Acessibilidade: paleta daltônica, assistência motora e mão esquerda.
 	_add_toggle(Loc.t("COLORBLIND_MODE"), "colorblind", false)
 	_add_toggle(Loc.t("ASSIST_WINDOW"), "assist_window", false)
+	_add_toggle(Loc.t("LEFT_HANDED_MODE"), "left_handed", false)
 	# Consentimento de dados de uso (nada é gravado sem isto).
 	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)
 	# Transferência de progresso sem cloud save: código assinado no clipboard.

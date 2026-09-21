@@ -71,15 +71,53 @@ func _ready() -> void:
 		var stage_service: String = String(stage.get("service", ""))
 		if not stage_service.is_empty():
 			service_layouts[stage_service] = stage
-	for weekly_event: Dictionary in _load_array(EVENTS_PATH, "weekly"):
-		var day: int = int(weekly_event.get("weekday", -1))
-		if day >= 0 and day <= 6 and not weekly_events.has(day):
-			weekly_events[day] = weekly_event
-	seasonal_events = _load_array(EVENTS_PATH, "seasonal")
-	for season: Dictionary in seasonal_events:
-		var season_id: String = String(season.get("id", ""))
-		if not season_id.is_empty() and not seasonal_by_id.has(season_id):
-			seasonal_by_id[season_id] = season
+	var weekly_override_json: String = ""
+	var seasonal_override_json: String = ""
+	# RemoteConfig pode ainda não estar pronto no _ready; leitura defensiva.
+	if Engine.has_singleton("RemoteConfig") or (is_inside_tree() and has_node("/root/RemoteConfig")):
+		weekly_override_json = RemoteConfig.get_string("events_weekly_override")
+		seasonal_override_json = RemoteConfig.get_string("events_seasonal_override")
+	else:
+		# Fallback: tenta via autoload direto se existir
+		var rc: Node = get_node_or_null("/root/RemoteConfig")
+		if rc != null:
+			weekly_override_json = rc.get_string("events_weekly_override")
+			seasonal_override_json = rc.get_string("events_seasonal_override")
+
+	if not weekly_override_json.is_empty():
+		var parsed_weekly: Variant = JSON.parse_string(weekly_override_json)
+		if parsed_weekly is Array:
+			for weekly_event: Variant in parsed_weekly:
+				if not weekly_event is Dictionary:
+					continue
+				var day: int = int((weekly_event as Dictionary).get("weekday", -1))
+				if day >= 0 and day <= 6 and not weekly_events.has(day):
+					weekly_events[day] = weekly_event as Dictionary
+	else:
+		for weekly_event: Dictionary in _load_array(EVENTS_PATH, "weekly"):
+			var day: int = int(weekly_event.get("weekday", -1))
+			if day >= 0 and day <= 6 and not weekly_events.has(day):
+				weekly_events[day] = weekly_event
+
+	if not seasonal_override_json.is_empty():
+		var parsed_seasonal: Variant = JSON.parse_string(seasonal_override_json)
+		if parsed_seasonal is Array:
+			seasonal_events = []
+			seasonal_by_id.clear()
+			for season: Variant in parsed_seasonal:
+				if not season is Dictionary:
+					continue
+				var s: Dictionary = season as Dictionary
+				seasonal_events.append(s)
+				var season_id: String = String(s.get("id", ""))
+				if not season_id.is_empty() and not seasonal_by_id.has(season_id):
+					seasonal_by_id[season_id] = s
+	else:
+		seasonal_events = _load_array(EVENTS_PATH, "seasonal")
+		for season: Dictionary in seasonal_events:
+			var season_id: String = String(season.get("id", ""))
+			if not season_id.is_empty() and not seasonal_by_id.has(season_id):
+				seasonal_by_id[season_id] = season
 	research_nodes = _load_array(RESEARCH_PATH, "nodes")
 	for node: Dictionary in research_nodes:
 		var node_id: String = String(node.get("id", ""))
@@ -141,9 +179,18 @@ func service_layout(service: StringName) -> Dictionary:
 	return layout if not layout.is_empty() else fallback
 
 
+func _localized_or(key: String, fallback: String) -> String:
+	var localized: String = Loc.t(key)
+	# Loc.t returns key itself when missing — treat as not localized
+	if localized == key:
+		return fallback
+	return localized
+
+
 func staff_name(id: String) -> String:
 	var entry: Dictionary = staff_by_id.get(id, {})
-	return String(entry.get("name", id))
+	var fallback: String = String(entry.get("name", id))
+	return _localized_or("STAFF_" + id.to_upper(), fallback)
 
 
 func staff(id: String) -> Dictionary:
@@ -152,7 +199,26 @@ func staff(id: String) -> Dictionary:
 
 func achievement_name(id: String) -> String:
 	var entry: Dictionary = achievements_by_id.get(id, {})
-	return String(entry.get("name", id))
+	var fallback: String = String(entry.get("name", id))
+	return _localized_or("ACH_" + id.to_upper(), fallback)
+
+
+func pet_name(id: String) -> String:
+	var entry: Dictionary = pets_by_id.get(id, {})
+	var fallback: String = String(entry.get("name", id))
+	return _localized_or("PET_" + id.to_upper(), fallback)
+
+
+func cosmetic_name(id: String) -> String:
+	var entry: Dictionary = cosmetics_by_id.get(id, {})
+	var fallback: String = String(entry.get("name", id))
+	return _localized_or("COS_" + id.to_upper(), fallback)
+
+
+func research_name(id: String) -> String:
+	var entry: Dictionary = research_by_id.get(id, {})
+	var fallback: String = String(entry.get("name", id))
+	return _localized_or("RESEARCH_" + id.to_upper(), fallback)
 
 
 func has_pet(id: String) -> bool:
@@ -184,6 +250,51 @@ func establishment_name(tier: int) -> String:
 		if int(entry.get("tier", 0)) == tier:
 			return String(entry.get("name", "Petshop"))
 	return "Petshop"
+
+
+## Reaplica overrides remotos (chamado quando RemoteConfig recebe payload).
+func apply_remote_overrides() -> void:
+	var weekly_json: String = RemoteConfig.get_string("events_weekly_override")
+	var seasonal_json: String = RemoteConfig.get_string("events_seasonal_override")
+	if not weekly_json.is_empty():
+		var parsed: Variant = JSON.parse_string(weekly_json)
+		if parsed is Array:
+			weekly_events.clear()
+			for weekly_event: Variant in parsed:
+				if not weekly_event is Dictionary:
+					continue
+				var day: int = int((weekly_event as Dictionary).get("weekday", -1))
+				if day >= 0 and day <= 6:
+					weekly_events[day] = weekly_event as Dictionary
+	if not seasonal_json.is_empty():
+		var parsed_s: Variant = JSON.parse_string(seasonal_json)
+		if parsed_s is Array:
+			seasonal_events.clear()
+			seasonal_by_id.clear()
+			for season: Variant in parsed_s:
+				if not season is Dictionary:
+					continue
+				var s: Dictionary = season as Dictionary
+				seasonal_events.append(s)
+				var sid: String = String(s.get("id", ""))
+				if not sid.is_empty():
+					seasonal_by_id[sid] = s
+
+
+func weekly_featured_cosmetic() -> String:
+	var featured: String = RemoteConfig.get_string("weekly_featured_cosmetic")
+	if not featured.is_empty() and cosmetics_by_id.has(featured):
+		return featured
+	# Fallback: rotação semanal por hash da semana (sem backend)
+	var week_key: int = int(Time.get_unix_time_from_system() / 604800.0)
+	var list: Array[String] = []
+	for c: Dictionary in cosmetics:
+		var cid: String = String(c.get("id", ""))
+		if not cid.is_empty() and c.has("price"):
+			list.append(cid)
+	if list.is_empty():
+		return ""
+	return list[week_key % list.size()]
 
 
 func _load_array(path: String, key: String) -> Array[Dictionary]:

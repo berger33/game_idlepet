@@ -42,7 +42,7 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 			)
 			spec["image"] = "res://art/pets/%s.png" % pet_id
 			spec["body"] = "%s • %s\n%s • %s\n\n%s" % [
-				String(profile.get("name", pet_id)),
+				ContentDB.pet_name(pet_id),
 				String(profile.get("breed", "")),
 				Loc.t("RARITY_" + rarity),
 				String(profile.get("city", "")),
@@ -84,7 +84,7 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 			spec["title"] = Loc.t("REVEAL_COSMETIC_TITLE")
 			spec["image"] = "res://art/cosmetics/%s.png" % cosmetic_id
 			spec["body"] = "%s\n%s" % [
-				String(ContentDB.cosmetic(cosmetic_id).get("name", cosmetic_id)),
+				ContentDB.cosmetic_name(cosmetic_id),
 				String(payload.get("detail", "")),
 			]
 			spec["color"] = Color("ffd54f")

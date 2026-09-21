@@ -23,6 +23,16 @@ const DEFAULTS: Dictionary = {
 	"upsell_chance": 0.35,
 	"upsell_tip_mult": 1.4,
 	"petting_max_per_client": 5.0,
+	# Economia escalável via remote: multiplicadores que afetam Rewards.gd
+	"cosmetic_price_scale": 1.0,
+	"hire_price_scale": 1.0,
+	"reward_scale": 1.0,
+	"offline_cap_scale": 1.0,
+	# LiveOps sem build: overrides JSON como string (vazio = usa data/events.json)
+	"events_weekly_override": "",
+	"events_seasonal_override": "",
+	# Rotativo semanal de cosméticos (id do cosmético em destaque na loja)
+	"weekly_featured_cosmetic": "",
 }
 const RANGES: Dictionary = {
 	"bath_base_reward": Vector2(1.0, 1000.0),
@@ -46,7 +56,16 @@ const RANGES: Dictionary = {
 	"upsell_chance": Vector2(0.0, 1.0),
 	"upsell_tip_mult": Vector2(1.0, 3.0),
 	"petting_max_per_client": Vector2(0.0, 20.0),
+	"cosmetic_price_scale": Vector2(0.1, 5.0),
+	"hire_price_scale": Vector2(0.1, 5.0),
+	"reward_scale": Vector2(0.1, 5.0),
+	"offline_cap_scale": Vector2(0.5, 3.0),
 }
+# Chaves que aceitam string (JSON ou id) — tamanho limitado para evitar abuso.
+const STRING_KEYS: Array[String] = [
+	"events_weekly_override", "events_seasonal_override", "weekly_featured_cosmetic"
+]
+const STRING_MAX_LEN: int = 8192
 
 var values: Dictionary = DEFAULTS.duplicate(true)
 
@@ -59,10 +78,34 @@ func get_int(key: StringName) -> int:
 	return int(values.get(String(key), DEFAULTS.get(String(key), 0)))
 
 
+func get_string(key: StringName) -> String:
+	return String(values.get(String(key), DEFAULTS.get(String(key), "")))
+
+
 func apply_verified(payload: Dictionary) -> void:
 	for raw_key: Variant in payload:
 		var key: String = String(raw_key)
-		if not DEFAULTS.has(key) or typeof(payload[raw_key]) != typeof(DEFAULTS[key]):
+		if not DEFAULTS.has(key):
+			continue
+		var expected_type: int = typeof(DEFAULTS[key])
+		if typeof(payload[raw_key]) != expected_type:
+			# Permite int->float coercion para chaves numéricas
+			if expected_type == TYPE_FLOAT and typeof(payload[raw_key]) == TYPE_INT:
+				pass
+			else:
+				continue
+		if expected_type == TYPE_STRING:
+			if not STRING_KEYS.has(key):
+				continue
+			var str_value: String = String(payload[raw_key])
+			if str_value.length() > STRING_MAX_LEN:
+				continue
+			# Validação leve de JSON para overrides de eventos
+			if key.ends_with("_override") and not str_value.is_empty():
+				var parsed: Variant = JSON.parse_string(str_value)
+				if not parsed is Array and not parsed is Dictionary:
+					continue
+			values[key] = str_value
 			continue
 		var numeric_value: float = float(payload[raw_key])
 		var allowed: Vector2 = RANGES.get(key, Vector2(-INF, INF))
@@ -72,3 +115,8 @@ func apply_verified(payload: Dictionary) -> void:
 	if get_float("bath_target_min") >= get_float("bath_target_max"):
 		values["bath_target_min"] = DEFAULTS["bath_target_min"]
 		values["bath_target_max"] = DEFAULTS["bath_target_max"]
+	# Se houver overrides de eventos, aplica no ContentDB (LiveOps sem build)
+	if Engine.has_singleton("ContentDB") or has_node("/root/ContentDB"):
+		var cdb: Node = get_node_or_null("/root/ContentDB")
+		if cdb != null and cdb.has_method("apply_remote_overrides"):
+			cdb.apply_remote_overrides()

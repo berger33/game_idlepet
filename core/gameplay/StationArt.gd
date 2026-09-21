@@ -96,6 +96,8 @@ static func draw_shelf_unit(shop) -> void:
 	var levels: Array = shop.service_shelf_levels
 	if levels.is_empty():
 		return
+	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
+	var shelf_x: float = 52.0 if left_handed else SHELF_X
 	# cada cenário tem a sua estante (mesma geometria, material temático)
 	var texture: Texture2D = _art_texture(StringName("shelf_" + String(shop.service_mode)))
 	if texture == null:
@@ -103,9 +105,11 @@ static func draw_shelf_unit(shop) -> void:
 	if texture != null and levels.size() == SHELF_PLANK_COUNT:
 		var first_plank_top: float = float(levels[0]) + PLANK_DROP
 		var top: float = first_plank_top - SHELF_PLANK0_FRAC * SHELF_ART_H
-		shop.draw_texture_rect(texture, Rect2(SHELF_X, top, SHELF_W, SHELF_ART_H), false)
+		shop.draw_texture_rect(texture, Rect2(shelf_x, top, SHELF_W, SHELF_ART_H), false)
+		# Espelhamento simples quando canhoto: desenha a mesma textura no lado esquerdo
+		# (a arte é simétrica o suficiente; evita duplicar PNGs)
 		return
-	_draw_shelf_fallback(shop, levels)
+	_draw_shelf_fallback(shop, levels, shelf_x)
 
 
 ## Placa de título da sala atrás do texto localizado desenhado pelo canvas.
@@ -130,6 +134,7 @@ static func draw_station(shop) -> void:
 	var texture: Texture2D = _art_texture(key) if key != &"" else null
 	if texture != null:
 		shop.draw_texture_rect(texture, _station_box(shop, key), false)
+		_draw_station_evolution(shop, cx, surface)
 		return
 	match shop.service_mode:
 		&"bath":
@@ -142,6 +147,52 @@ static func draw_station(shop) -> void:
 			_draw_spa_pedestal(shop, cx, surface)
 		&"style":
 			_draw_ottoman(shop, cx, surface)
+	_draw_station_evolution(shop, cx, surface)
+
+
+## Evolução visual a cada 10 níveis de estação (antes só o texto mudava).
+## Tier 0 = base; a cada 10 níveis ganha um detalhe: toalha, patinho, planta,
+## troféu, luz dourada — vende progresso de 120 níveis sem nova arte raster.
+static func _draw_station_evolution(shop, cx: float, surface: float) -> void:
+	var level: int = int(shop.upgrade_level)
+	var evo: int = clampi(level / 10, 0, 12)
+	if evo <= 0:
+		return
+	# Nível 10: toalha dobrada ao lado da estação
+	if evo >= 1:
+		shop.draw_style_box(
+			_panel_box(Color("e1f5fe", 0.9), 8, Color(CHARCOAL, 0.18), 2),
+			Rect2(cx + 210, surface + 20, 44, 28)
+		)
+	# Nível 20: patinho de borracha (banho) ou tesoura dourada (tosa)
+	if evo >= 2:
+		shop.draw_circle(Vector2(cx + 232, surface - 18), 12, Color("ffd54f", 0.95))
+		shop.draw_circle(Vector2(cx + 228, surface - 22), 3, Color(CHARCOAL))
+	# Nível 30: plantinha (vida no salão)
+	if evo >= 3:
+		shop.draw_rect(Rect2(cx - 260, surface + 10, 18, 36), Color(WOOD, 0.9))
+		shop.draw_circle(Vector2(cx - 251, surface - 8), 18, Color("7ed957", 0.85))
+	# Nível 40+: brilho dourado sutil na borda da estação
+	if evo >= 4:
+		var glow: float = 0.12 + 0.04 * float(evo - 4)
+		_ellipse(shop, Vector2(cx, surface + 2), 200 + evo * 4, 18 + evo, Color("ffd54f", glow))
+	# Nível 60+: faixa de campeão
+	if evo >= 6:
+		shop.draw_style_box(
+			_panel_box(Color("ffd54f", 0.22), 6), Rect2(cx - 190, surface - 62, 380, 10)
+		)
+	# Nível 100+: coroa pequena no canto da estação
+	if evo >= 10:
+		var crown_x: float = cx + 190
+		var crown_y: float = surface - 46
+		var crown: PackedVector2Array = PackedVector2Array([
+			Vector2(crown_x - 14, crown_y + 8),
+			Vector2(crown_x - 10, crown_y - 6),
+			Vector2(crown_x, crown_y + 2),
+			Vector2(crown_x + 10, crown_y - 6),
+			Vector2(crown_x + 14, crown_y + 8)
+		])
+		shop.draw_colored_polygon(crown, Color("ffd54f", 0.95))
 
 
 ## Primeiro plano da banheira (desenhada DEPOIS do pet): a parede frontal
@@ -193,18 +244,21 @@ static func _station_key(shop) -> StringName:
 ## ---------------------------- fallback vetorial ----------------------------
 
 
-static func _draw_shelf_fallback(shop, levels: Array) -> void:
+static func _draw_shelf_fallback(shop, levels: Array, shelf_x: float = SHELF_X) -> void:
 	var top: float = float(levels[0]) + PLANK_DROP - 26.0
 	var bottom: float = float(levels[levels.size() - 1]) + PLANK_DROP + 48.0
 	var board: StyleBoxFlat = _panel_box(Color(CREAM, 0.42), 22, Color(CHARCOAL, 0.16), 3)
-	shop.draw_style_box(board, Rect2(824, top, 192, bottom - top))
+	shop.draw_style_box(board, Rect2(shelf_x + 12, top, 192, bottom - top))
 	for level: float in levels:
 		var y: float = level + PLANK_DROP
 		shop.draw_style_box(
-			_panel_box(WOOD, 9, Color(CHARCOAL, 0.32), 3), Rect2(824, y, 192, 22)
+			_panel_box(WOOD, 9, Color(CHARCOAL, 0.32), 3),
+			Rect2(shelf_x + 12, y, 192, 22)
 		)
-		shop.draw_line(Vector2(834.0, y + 4.0), Vector2(1006.0, y + 4.0), WOOD_LIGHT.lightened(0.22), 4)
-		shop.draw_line(Vector2(834.0, y + 24.0), Vector2(1006.0, y + 24.0), Color(CHARCOAL, 0.16), 3)
+		var x1: float = shelf_x + 22.0
+		var x2: float = shelf_x + 184.0
+		shop.draw_line(Vector2(x1, y + 4.0), Vector2(x2, y + 4.0), WOOD_LIGHT.lightened(0.22), 4)
+		shop.draw_line(Vector2(x1, y + 24.0), Vector2(x2, y + 24.0), Color(CHARCOAL, 0.16), 3)
 
 
 static func _draw_bathtub(shop, cx: float, surface: float) -> void:

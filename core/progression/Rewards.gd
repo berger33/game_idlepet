@@ -71,8 +71,12 @@ static func income_per_second() -> float:
 
 
 ## Moedas equivalentes a `seconds` de renda, nunca abaixo de `minimum`.
+## Escala remota (RemoteConfig.reward_scale) permite LiveOps ajustar sem build.
 static func scaled(seconds: float, minimum: int = 0) -> int:
-	return maxi(minimum, int(roundf(income_per_second() * seconds)))
+	var scale: float = RemoteConfig.get_float("reward_scale")
+	if scale <= 0.0:
+		scale = 1.0
+	return maxi(minimum, int(roundf(income_per_second() * seconds * scale)))
 
 
 ## Recompensa de um tipo (ver SECONDS) com piso.
@@ -89,17 +93,26 @@ static func pass_day_coins(day: int) -> int:
 
 
 ## Preço em moedas de um cosmético: piso do catálogo ou ~10 min de renda.
+## Escala remota permite ajustar sink sem novo build (cosmetic_price_scale).
 static func cosmetic_price(cosmetic_id: String) -> int:
 	var price: Dictionary = ContentDB.cosmetic(cosmetic_id).get("price", {})
 	if not price.has("coins"):
 		return 0
-	return scaled(COSMETIC_SECONDS, int(price.get("coins", 0)))
+	var base: int = scaled(COSMETIC_SECONDS, int(price.get("coins", 0)))
+	var scale: float = RemoteConfig.get_float("cosmetic_price_scale")
+	if scale <= 0.0:
+		scale = 1.0
+	return int(roundf(base * scale))
 
 
 ## Preço de contratação: piso por raridade (HIRE_COSTS) ou minutos de renda.
 static func hire_price(staff_id: String, floor_cost: int) -> int:
 	var rarity: String = String(ContentDB.staff(staff_id).get("rarity", "common"))
-	return scaled(float(HIRE_SECONDS.get(rarity, 300.0)), floor_cost)
+	var base: int = scaled(float(HIRE_SECONDS.get(rarity, 300.0)), floor_cost)
+	var scale: float = RemoteConfig.get_float("hire_price_scale")
+	if scale <= 0.0:
+		scale = 1.0
+	return int(roundf(base * scale))
 
 
 ## Fração da renda ativa que a equipe contratada produz sozinha

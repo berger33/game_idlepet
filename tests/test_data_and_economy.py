@@ -458,7 +458,8 @@ class FoundationTests(unittest.TestCase):
         self.assertNotIn('FILA  2', canvas)
         self.assertNotIn('bottom.offset_top', main)
         self.assertIn('action_hud.position = Vector2(45, 1350)', main)
-        self.assertIn('nav.position = Vector2(45, 155)', main)
+        # Safe-area: nav pode ter + safe_top, mas a base 45,155 deve permanecer
+        self.assertIn('nav.position = Vector2(45, 155', main)
         self.assertNotIn('ProgressBar.new()', main)
         self.assertIn('world.tool_at(point)', main)
         self.assertIn('draw_arc(tool_position, 66.0', canvas)

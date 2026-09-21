@@ -67,12 +67,43 @@ func share_directory() -> String:
 
 ## Legenda pronta para colar: pet, estrelas e assinatura (+ link se houver).
 func caption_for(profile: Dictionary, stars: int) -> String:
+	var pet_id: String = String(profile.get("id", "caramelo"))
+	var pet_display: String = String(profile.get("name", "Pet"))
+	if ContentDB.has_pet(pet_id):
+		pet_display = ContentDB.pet_name(pet_id)
 	var text: String = Loc.t("SHARE_CAPTION") % [
-		String(profile.get("name", "Pet")), "★".repeat(stars)
+		pet_display, "★".repeat(stars)
 	]
 	if not SHARE_URL.is_empty():
 		text += " " + SHARE_URL
 	return text
+
+
+func caption_for_achievement(achievement_id: String) -> String:
+	var name: String = ContentDB.achievement_name(achievement_id)
+	var text: String = Loc.t("SHARE_ACHIEVEMENT_CAPTION") % name
+	if not SHARE_URL.is_empty():
+		text += " " + SHARE_URL
+	return text
+
+
+## Compartilha conquista como cartão 9:16 com marca (sem antes/depois).
+func share_achievement(achievement_id: String) -> String:
+	var card: Image = await _render_achievement_card(achievement_id)
+	if card == null:
+		Analytics.track(&"share_created", {"ok": false, "context": "achievement"})
+		return ""
+	var directory: String = share_directory()
+	DirAccess.make_dir_recursive_absolute(directory)
+	var timestamp: int = int(Time.get_unix_time_from_system())
+	var path: String = "%s/conquista_%s_%d.png" % [
+		directory, achievement_id, timestamp
+	]
+	var error: Error = card.save_png(path)
+	last_saved_path = path if error == OK else ""
+	last_caption = caption_for_achievement(achievement_id)
+	Analytics.track(&"share_created", {"ok": error == OK, "context": "achievement"})
+	return last_saved_path
 
 
 ## Canal de compartilhamento da plataforma. Retorna o que aconteceu:
@@ -184,6 +215,68 @@ func _render_card(
 	root.add_child(
 		_text(Loc.t("SHARE_SERVICE_" + context.to_upper()), 42, Color("546e7a"), 1210, BODY_FONT)
 	)
+	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
+	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
+	await RenderingServer.frame_post_draw
+	var image: Image = null
+	var texture: ViewportTexture = viewport.get_texture()
+	if texture != null:
+		image = texture.get_image()
+	viewport.queue_free()
+	if image == null or image.is_empty():
+		return null
+	return image
+
+
+func _render_achievement_card(achievement_id: String) -> Image:
+	var viewport: SubViewport = SubViewport.new()
+	viewport.size = CARD_SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	add_child(viewport)
+	var root: Control = Control.new()
+	root.size = Vector2(CARD_SIZE)
+	viewport.add_child(root)
+	var background: ColorRect = ColorRect.new()
+	background.color = Color("fff8e1")
+	background.size = Vector2(CARD_SIZE)
+	root.add_child(background)
+	var band: ColorRect = ColorRect.new()
+	band.color = Color("ffd54f")
+	band.position = Vector2(0, 0)
+	band.size = Vector2(CARD_SIZE.x, 250)
+	root.add_child(band)
+	var shop_name: String = String(GameState.settings.get("shop_name", ""))
+	var headline: String = shop_name if not shop_name.is_empty() else Loc.t("GAME_TITLE")
+	root.add_child(_text(headline.to_upper(), 56, Color.WHITE, 60, TITLE_FONT))
+	root.add_child(_text(Loc.t("SHARE_ACHIEVEMENT_HEADLINE"), 40, Color("fff8e1"), 150, BODY_FONT))
+	# Centro: troféu + nome da conquista
+	var trophy: Label = Label.new()
+	trophy.text = "🏆"
+	trophy.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	trophy.position = Vector2(40, 400)
+	trophy.size = Vector2(CARD_SIZE.x - 80, 200)
+	trophy.add_theme_font_size_override("font_size", 180)
+	root.add_child(trophy)
+	var achievement_name: String = ContentDB.achievement_name(achievement_id)
+	root.add_child(_text(achievement_name, 64, Color("263238"), 650, TITLE_FONT))
+	var profile: Dictionary = ContentDB.achievements_by_id.get(achievement_id, {})
+	var desc: String = String(profile.get("description", ""))
+	if desc.is_empty():
+		desc = Loc.t("REVEAL_ACHIEVEMENT_TITLE")
+	root.add_child(_text(desc, 42, Color("546e7a"), 780, BODY_FONT))
+	# Recompensa
+	var reward_text: String = ""
+	var reward: Dictionary = profile.get("reward", {})
+	var coins: int = int(reward.get("coins", 0))
+	var embers: int = int(reward.get("embers", 0))
+	if coins > 0 or embers > 0:
+		if coins > 0:
+			reward_text = "+%d %s" % [coins, Loc.t("COINS")]
+		if embers > 0:
+			var sep: String = " • " if not reward_text.is_empty() else ""
+			reward_text += sep + "+%d %s" % [embers, Loc.t("EMBERS")]
+	if not reward_text.is_empty():
+		root.add_child(_text(reward_text, 48, Color("ff8f00"), 950, TITLE_FONT))
 	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
 	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
 	await RenderingServer.frame_post_draw

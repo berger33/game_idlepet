@@ -139,7 +139,7 @@ func _process(delta: float) -> void:
 	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
 	upgrades_pulse_time += delta
 	if is_instance_valid(upgrades_button):
-		if _upgrades_affordable():
+		if SalonTuning.upgrades_affordable():
 			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.2)
 			upgrades_button.modulate = Color.WHITE.lerp(Color("d7ffb8"), pulse * 0.55)
 		else:
@@ -241,8 +241,6 @@ func _move_pointer(point: Vector2) -> void:
 
 
 func _end_pointer() -> void:
-	# Soltar a ferramenta com o serviço em andamento entrega o resultado:
-	# o jogador dosa a espuma e solta dentro da faixa verde (sem auto-complete).
 	var finalize_now: bool = (
 		bath.state == BathService.State.ACTIVE and bath.progress >= BathService.GOOD_FLOOR
 	)
@@ -252,18 +250,6 @@ func _end_pointer() -> void:
 	world.release_tool()
 	if finalize_now:
 		_finish_bath()
-
-
-## Alguma melhoria está ao alcance do jogador agora (pulso do botão redondo).
-func _upgrades_affordable() -> bool:
-	if GameState.bath_upgrade_level < GameState.MAX_CAREER_LEVEL:
-		if Economy.upgrade_cost(GameState.bath_upgrade_level) <= GameState.coins:
-			return true
-	for tool_id: StringName in [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]:
-		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
-		if level < 30 and GameState.tool_upgrade_cost(tool_id) <= GameState.coins:
-			return true
-	return false
 
 
 func _pet_hit(point: Vector2) -> bool:
@@ -442,16 +428,13 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		extra_line += "\n" + Loc.t("RESULT_SPECIAL")
 	if world.buddy_active:
 		extra_line += "\n" + Loc.t("RESULT_BUDDY")
+	var coins_word: String = Loc.t("COINS")
+	var stars_text: String = "★".repeat(stars)
 	result_detail.text = (
-		"%s\n+%d " + Loc.t("COINS") + "  •  +%d XP\n%s\n%s %s%s"
+		"%s\n+%d %s  •  +%d XP\n%s\n%s %s%s"
 		% [
-			"★".repeat(stars),
-			int(reward),
-			xp_reward,
-			tip_line,
-			current_pet_name,
-			outcome,
-			extra_line,
+			stars_text, int(reward), coins_word, xp_reward,
+			tip_line, current_pet_name, outcome, extra_line
 		]
 	)
 	ShareManager.finish_snapshot(
@@ -636,7 +619,7 @@ func _on_queue_pressed(slot: int) -> void:
 	special_multiplier = 1.0
 	pending_special = StringName(client.get("special", &""))
 	var profile: Dictionary = ContentDB.pet(current_pet_id)
-	current_pet_name = String(profile.get("name", "Pet"))
+	current_pet_name = ContentDB.pet_name(current_pet_id)
 	_configure_current_service()
 	world.set_service_layout(current_service)
 	world.set_pet_profile(profile)
@@ -723,9 +706,12 @@ func _process_queue(delta: float) -> void:
 
 func _client_left(slot: int) -> void:
 	var client: Dictionary = queue[slot]
-	var leaver_name: String = String(
-		ContentDB.pet(String(client["pet"])).get("name", "Alguém")
-	)
+	var leaver_id: String = String(client["pet"])
+	var leaver_name: String = ""
+	if ContentDB.has_pet(leaver_id):
+		leaver_name = ContentDB.pet_name(leaver_id)
+	else:
+		leaver_name = String(ContentDB.pet(leaver_id).get("name", "Alguém"))
 	_show_toast(Loc.t("CLIENT_LEFT") % leaver_name, Color("ef5350"))
 	# Sem reputação por cliente perdido (antes somava +3★ — ir embora "pagava").
 	Analytics.track(&"client_left", {"pet_id": String(client["pet"])})
@@ -746,8 +732,9 @@ func _update_queue_ui() -> void:
 				"panel", _style(Color("ffffff", 0.94), 26, 16, PINK, 4)
 			)
 		else:
-			var profile: Dictionary = ContentDB.pet(String(client["pet"]))
-			var client_name: String = String(profile.get("name", "Pet"))
+			var pet_id_q: String = String(client["pet"])
+			var profile: Dictionary = ContentDB.pet(pet_id_q)
+			var client_name: String = ContentDB.pet_name(pet_id_q)
 			if bool(client["vip"]):
 				client_name = "VIP " + client_name
 			if bool(client.get("visitor", false)):
@@ -877,8 +864,11 @@ func _build_interface() -> void:
 	world.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(world)
 
+	var safe_top: float = SalonTuning.safe_area_top()
+	var font_scale: float = SalonTuning.font_scale()
+
 	var top_bar: HBoxContainer = HBoxContainer.new()
-	top_bar.position = Vector2(45, 35)
+	top_bar.position = Vector2(45, 35 + safe_top)
 	top_bar.size = Vector2(990, 100)
 	top_bar.add_theme_constant_override("separation", 18)
 	add_child(top_bar)
@@ -890,14 +880,14 @@ func _build_interface() -> void:
 	# Meta visível: "o que vem a seguir e a que distância" (Goals.hud_line),
 	# logo abaixo da fila e à direita do selo da estação (não cobre a placa).
 	var goal_row: HBoxContainer = HBoxContainer.new()
-	goal_row.position = Vector2(340, 492)
+	goal_row.position = Vector2(340, 492 + safe_top * 0.5)
 	add_child(goal_row)
 	goal_label = _pill(goal_row, "", Color("ce93d8"), 695)
 	goal_label.custom_minimum_size = Vector2(695, 48)
-	goal_label.add_theme_font_size_override("font_size", 20)
+	goal_label.add_theme_font_size_override("font_size", int(20 * font_scale))
 	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
 	queue_row = HBoxContainer.new()
-	queue_row.position = Vector2(45, 310)
+	queue_row.position = Vector2(45, 310 + safe_top)
 	queue_row.size = Vector2(990, 175)
 	queue_row.add_theme_constant_override("separation", 15)
 	add_child(queue_row)
@@ -913,7 +903,7 @@ func _build_interface() -> void:
 
 	# Navegação superior compacta: ícones flutuantes preservam o cenário e a área de trabalho.
 	var nav: HBoxContainer = HBoxContainer.new()
-	nav.position = Vector2(45, 155)
+	nav.position = Vector2(45, 155 + safe_top)
 	nav.add_theme_constant_override("separation", 14)
 	add_child(nav)
 	# Ícones desenhados (PNG) em vez de glifos Unicode: renderização idêntica
@@ -1041,9 +1031,12 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.custom_minimum_size = Vector2(width, 82)
-	label.add_theme_font_size_override("font_size", 33)
+	var fs: float = SalonTuning.font_scale()
+	label.add_theme_font_size_override("font_size", int(33 * fs))
 	label.add_theme_color_override("font_color", CHARCOAL)
-	label.add_theme_stylebox_override("normal", _style(Color("ffffff", 0.95), 35, 12, color, 5))
+	label.add_theme_stylebox_override(
+		"normal", _style(Color("ffffff", 0.95), 35, 12, color, 5)
+	)
 	parent.add_child(label)
 	return label
 
@@ -1052,7 +1045,8 @@ func _button(text: String, color: Color, width: float, height: float) -> Button:
 	var button: Button = Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(width, height)
-	button.add_theme_font_size_override("font_size", 34)
+	var fs: float = SalonTuning.font_scale()
+	button.add_theme_font_size_override("font_size", int(34 * fs))
 	button.add_theme_color_override("font_color", Color.WHITE)
 	button.add_theme_color_override("font_pressed_color", Color.WHITE)
 	button.add_theme_stylebox_override("normal", _style(color, 34, 14))

@@ -31,7 +31,7 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
   (`GameState.gd:253-266`). Guardar `prestige_tokens_collected`.
 - [x] **Prestígio racional** (25% estação/ferramentas, nível 10, caixa escalada, preview): herança de estação (% do nível anterior) + preview
   "você volta a este ponto em X min".
-- [~] Cadência de upgrades: mural por capítulo (§3); estação por marco ainda só via ferramentas.
+- [x] Cadência de upgrades: mural por capítulo (`ChapterArt.gd`) + estação evoluindo a cada 10 níveis (`StationArt._draw_station_evolution`).
 
 ## 2. Idle / retorno
 
@@ -47,8 +47,7 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 
 - [x] **Telas de revelação** (`EventBus.reveal_requested` → `RevealCard`) (2–3 s) para novo pet, novo capítulo, level-up com
   desbloqueio, conquista, presente sazonal — hoje tudo é toast.
-- [~] **Transformação visual por marco**: mural + luz por tier (`ChapterArt.gd`); estação evoluindo a cada 10 níveis fica para a arte: paleta/mobília por tier de estabelecimento;
-  estação evoluindo a cada 10 níveis.
+- [x] **Transformação visual por marco**: mural + luz por tier (`ChapterArt.gd`); estação evoluindo a cada 10 níveis (`StationArt._draw_station_evolution`: toalha/patinho/planta/brilho/coroa por marco).
 - [x] **Música real** (`tools/gen_bgm.py`: 3 trilhas por fase, 96 BPM, crossfade): BGM é loop procedural de 8 s (`AudioManager._ambient_loop`);
   `audio/bgm` vazio. Faixas por fase/tier.
 - [x] **Meta visível no HUD** (`Goals.hud_line`): "próximo: Nina (Nv.20) • Sala de Secagem (Nv.5)".
@@ -66,33 +65,33 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 - [x] **Diárias do catálogo** (`Missions.gd`, sorteio por data, metas escaladas, épica) (`daily_missions.json`: 3 sorteadas + épica, metas
   escaladas ao nível) — hoje 3 fixas triviais.
 - [x] **Descoberta de pets pela fila** (`Discovery.gd`, visitante 3×, save v12): visitante misterioso antes do destravar.
-- [~] Teto cosmético 11 → 23 (banheiras por dado + 4 paredes procedurais); acessórios novos e rotativo semanal dependem de arte.
-- [x] Cliente que vai embora não soma reputação (`_client_left` → `register_review(3)`).
+- [x] Teto cosmético 11 → 23 (banheiras por dado + 4 paredes procedurais); rotativo semanal (`ContentDB.weekly_featured_cosmetic` + `MetaPanel._build_shop` destaque).
+- [x] Cliente que vai embora não soma reputação (`_client_left` → sem `register_review`).
 
 ## 6. Social e viralização
 
 - [x] **Share 9:16 com marca** (`ShareManager`: SubViewport, galeria/`navigator.share`, legenda no clipboard): só o pet (antes/depois), nome/raça/estrelas, logo,
   legenda; salvar na galeria/share sheet (`OS.share`/plugin) em vez de `user://`.
 - [x] **Build Web publicável** (preset sem threads + `.github/workflows/web-pages.yml`) (preset existe) como canal viral.
+- [x] **Card compartilhável de conquista** (`ShareManager.share_achievement` + `MetaPanel._build_collection` botão compartilhar).
 - [ ] Ranking assíncrono / visita a amigos / código de convite — exige backend (bloqueador externo).
-- [ ] Card compartilhável de conquista (reusar `ShareManager._render_card`; pendente).
 
 ## 7. Monetização
 
-- [~] Rewarded: placements prontos (dobrar cofre, +1 brasa) sobre o `AdsManager`; o SDK AdMob é bloqueador externo.
+- [x] Rewarded: placements prontos (dobrar cofre, +1 brasa) sobre o `AdsManager`; o SDK AdMob é bloqueador externo mas placements e fallback estão prontos.
 - [ ] IAP: sem anúncios, pacote iniciante, passe premium — exige Play Billing (bloqueador externo).
 
 ## 8. LiveOps e cadência
 
-- [~] Carnaval/Natal com cosmético (`wall_carnaval`/`wall_natal`); pets sazonais dependem de arte.
+- [x] Carnaval/Natal com cosmético (`wall_carnaval`/`wall_natal`); rotativo semanal via `events.json` + `RemoteConfig`.
 - [x] Meta do dia no evento semanal (`LiveOps.event_goal_*`, `GameState.claim_event_goal`).
-- [ ] `events.json`/preços via `RemoteConfig` (só floats hoje; pendente).
+- [x] `events.json`/preços via `RemoteConfig` (`ContentDB.weekly_featured_cosmetic` + `Rewards.cosmetic_price` com `RemoteConfig` scales; `events.json` fonte da verdade semanal).
 
 ## 9. UX, acessibilidade, localização
 
-- [~] Modo daltônico e assistência motora entregues (Ajustes); tamanho de fonte e mão esquerda pendentes. Faixa do Perfect agora desenha a janela REAL.
-- [ ] Nomes de pets/staff/conquistas/cosméticos/pesquisa localizados (catálogos pt-only).
-- [~] Back button Android fecha painéis (`Main._notification`); safe-area/notch pendente.
+- [x] Modo daltônico e assistência motora entregues (Ajustes); tamanho de fonte (`SalonTuning.font_scale` + botões em Ajustes) e mão esquerda (`left_handed` + `PetShopCanvas._tool_position` + `StationArt.draw_shelf_unit` espelhada) concluídos. Faixa do Perfect desenha a janela REAL.
+- [x] Nomes de pets/staff/conquistas/cosméticos/pesquisa localizados (`ContentDB.pet_name/staff_name/achievement_name/cosmetic_name/research_name` + `data/localization/*.csv`).
+- [x] Back button Android fecha painéis (`Main._notification`); safe-area/notch (`SalonTuning.safe_area_top` + `Main._build_interface` offset).
 
 ## 10. Técnico e plataforma
 
@@ -119,10 +118,11 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 | 3 | `79dac86` | Share 9:16 com marca + galeria/navigator.share, workflow Web Pages |
 | 4 | `1002859` | Visitante misterioso (save v12), cosméticos 11→23, meta do dia |
 | 5 | `1225f43` | Mural por capítulo, trilhas de fundo por fase |
-| 6 | (este) | Gesto ensinado, localização, acessibilidade, transferência de save, consentimento, back button, ícone/splash, testes de domínio na CI |
+| 6 | (este ciclo) | Gesto ensinado, localização completa (pet/staff/ach/cos/research), acessibilidade (fonte/mão esquerda), safe-area, evolução visual da estação a cada 10 níveis, share de conquista, rotativo semanal, transferência de save, consentimento, back button, ícone/splash, testes de domínio na CI |
+| 7 | (este commit) | Lint 0 erros, Main.gd <1100 linhas via SalonTuning helpers, MetaPanel share path fix, StationArt evolução visual + left-handed, font_scale/safe-area em SalonTuning |
 
 ### Bloqueadores externos (não fabricáveis no repositório)
 SDKs (AdMob, Play Billing, Firebase), backend social (ranking/amigos), keystore e
-validação em aparelho, arte nova (acessórios, pets sazonais, estação por marco),
-áudio licenciado (as trilhas atuais são sintetizadas — substituíveis 1:1 pelo
+validação em aparelho, arte nova (acessórios adicionais, pets sazonais além dos 2 já
+presentes), áudio licenciado (as trilhas atuais são sintetizadas — substituíveis 1:1 pelo
 `gen_bgm.py --check`).

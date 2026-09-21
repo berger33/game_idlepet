@@ -312,9 +312,11 @@ func _service_effect_active() -> bool:
 func _tool_position(tool: StringName) -> Vector2:
 	var index: int = TOOL_ORDER.find(tool)
 	var shelf_levels: Array[float] = service_shelf_levels
+	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 	if index < 0 or index >= shelf_levels.size():
-		return Vector2(910, 545)
-	return Vector2(910, shelf_levels[index])
+		return Vector2(170, 545) if left_handed else Vector2(910, 545)
+	var x: float = 170.0 if left_handed else 910.0
+	return Vector2(x, shelf_levels[index])
 
 
 ## Posição da prateleira de um utensílio (para spotlight do tutorial).
