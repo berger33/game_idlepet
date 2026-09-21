@@ -606,6 +606,24 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("HAPTICS"), "haptics", true)
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
 	_add_toggle(Loc.t("NOTIFICATIONS"), "notifications", false)
+	# Nome do pet shop (personalização): placa da sala e cartão de share.
+	var name_row: HBoxContainer = HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 12)
+	screen.content_box.add_child(name_row)
+	name_row.add_child(_label_node(Loc.t("SHOP_NAME") + ":", 28, CHARCOAL))
+	var name_edit: LineEdit = LineEdit.new()
+	name_edit.text = String(GameState.settings.get("shop_name", ""))
+	name_edit.placeholder_text = Loc.t("SHOP_NAME_HINT")
+	name_edit.max_length = 18
+	name_edit.custom_minimum_size = Vector2(480, 64)
+	name_edit.add_theme_font_size_override("font_size", 26)
+	name_edit.text_changed.connect(
+		func(value: String) -> void:
+			GameState.settings["shop_name"] = value.strip_edges().left(18)
+			SaveManager.request_save()
+			EventBus.settings_changed.emit()
+	)
+	name_row.add_child(name_edit)
 	# Acessibilidade: paleta daltônica e assistência motora (opt-in, sem custo).
 	_add_toggle(Loc.t("COLORBLIND_MODE"), "colorblind", false)
 	_add_toggle(Loc.t("ASSIST_WINDOW"), "assist_window", false)

@@ -260,3 +260,5 @@ TRANSFER_IMPORT_DESC,Pastes the copied code (replaces the current save)
 TRANSFER_PASTE,PASTE CODE
 TRANSFER_DONE,Progress restored!
 TRANSFER_INVALID,Invalid or corrupted code.
+SHOP_NAME,Pet shop name
+SHOP_NAME_HINT,e.g. Moon Bath

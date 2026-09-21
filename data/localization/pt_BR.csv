@@ -260,3 +260,5 @@ TRANSFER_IMPORT_DESC,Cola o código copiado (substitui o save atual)
 TRANSFER_PASTE,COLAR CÓDIGO
 TRANSFER_DONE,Progresso restaurado!
 TRANSFER_INVALID,Código inválido ou corrompido.
+SHOP_NAME,Nome do pet shop
+SHOP_NAME_HINT,ex.: Banho da Lua

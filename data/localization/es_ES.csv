@@ -260,3 +260,5 @@ TRANSFER_IMPORT_DESC,Pega el código copiado (reemplaza la partida actual)
 TRANSFER_PASTE,PEGAR CÓDIGO
 TRANSFER_DONE,¡Progreso restaurado!
 TRANSFER_INVALID,Código inválido o dañado.
+SHOP_NAME,Nombre de la tienda
+SHOP_NAME_HINT,p. ej. Baño de Luna

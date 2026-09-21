@@ -432,6 +432,9 @@ func _draw() -> void:
 		. get(service_mode, "PET SHOP")
 	)
 	var establishment_name: String = ContentDB.establishment_name(clampi(establishment_tier, 1, 10))
+	var shop_name: String = String(GameState.settings.get("shop_name", ""))
+	if not shop_name.is_empty():
+		establishment_name = "%s • %s" % [shop_name, establishment_name]
 	StationArt.draw_title_plaque(self)
 	draw_string(
 		UI_TITLE_FONT,

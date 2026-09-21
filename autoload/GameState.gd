@@ -543,6 +543,7 @@ func _sanitize_settings() -> void:
 	settings["colorblind"] = bool(settings.get("colorblind", false))
 	settings["assist_window"] = bool(settings.get("assist_window", false))
 	settings["analytics_consent"] = bool(settings.get("analytics_consent", false))
+	settings["shop_name"] = String(settings.get("shop_name", "")).strip_edges().left(18)
 
 
 func _refresh_daily_missions() -> void:

@@ -59,7 +59,7 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 - [x] Mini-tutorial por gesto novo (`TutorialFlow.teach_service`, spotlight + dica, 1× por serviço).
 - [x] Localizar as ~30 strings pt cravadas (`Main.gd`, `GameState.gd`,
   `TutorialFlow.gd`, `MetaPanel.gd`).
-- [ ] Nomear o pet shop / o buddy (pendente: precisa de campo de texto no painel).
+- [x] Nomear o pet shop (Ajustes → placa da sala e cartão de share); buddy já é escolhido na coleção.
 
 ## 5. Retenção D1–D30
 
