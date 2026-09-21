@@ -19,7 +19,7 @@ godot --headless --path . --editor --quit
 # validação estrutural e dados
 python3 tools/validate_project.py
 # testes de domínio no próprio Godot
-godot --headless --path . --script tests/run_godot_tests.gd
+godot --headless --path . res://tests/domain_tests.tscn
 # simuladores
 python3 tools/economy_sim.py --csv docs/balance_initial.csv
 python3 tools/career_sim.py

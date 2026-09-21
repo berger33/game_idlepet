@@ -1294,8 +1294,8 @@ class AccessibilityAndPlatformTests(unittest.TestCase):
         self.assertIn('package/unique_name=', template)
         self.assertNotIn('keystore/release_password="', template.replace('""', ''), 'nunca versionar senha')
         workflow = Path('.github/workflows/ci.yml').read_text(encoding='utf8')
-        self.assertIn('tests/run_godot_tests.gd', workflow)
-        domain = Path('tests/run_godot_tests.gd').read_text(encoding='utf8')
+        self.assertIn('res://tests/domain_tests.tscn', workflow)
+        domain = Path('tests/DomainTests.gd').read_text(encoding='utf8')
         for token in ('_test_prestige_and_research', '_test_save_migration', '_test_discovery',
                       '_test_rewards_and_missions', '_test_liveops_schedule'):
             self.assertIn(token, domain)

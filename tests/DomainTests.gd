@@ -1,14 +1,13 @@
-extends SceneTree
-## Execute: godot --headless --path . --script tests/run_godot_tests.gd
+extends Node
+## Testes de domínio no runtime REAL do jogo (autoloads instanciados pelo
+## motor). Roda como cena, não como --script: o script de entrada do modo
+## --script não resolve autoloads (Economy, GameState...) na compilação.
+## Execute: godot --headless --path . res://tests/domain_tests.tscn
 
 var failures: int = 0
 
 
-func _initialize() -> void:
-	call_deferred("_run")
-
-
-func _run() -> void:
+func _ready() -> void:
 	_test_bath_boundaries()
 	_test_economy_invariants()
 	_test_content_contract()
@@ -22,7 +21,7 @@ func _run() -> void:
 		print("Godot domain tests: PASS")
 	else:
 		push_error("Godot domain tests: %d failure(s)" % failures)
-	quit(failures)
+	get_tree().quit(failures)
 
 
 func _test_bath_boundaries() -> void:

@@ -83,7 +83,7 @@ jobs:
           fi
       - name: Testes de domínio (Godot) — economia, prestígio, pesquisa, descoberta, migração
         run: |
-          ./godot --headless --path . --script tests/run_godot_tests.gd 2>&1 | tee /tmp/domain.log
+          ./godot --headless --path . res://tests/domain_tests.tscn 2>&1 | tee /tmp/domain.log
           status=${PIPESTATUS[0]}
           if grep -q "SCRIPT ERROR" /tmp/domain.log; then
             echo "::error::erro(s) de script nos testes de domínio"

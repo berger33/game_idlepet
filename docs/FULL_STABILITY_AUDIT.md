@@ -67,7 +67,7 @@ Quando Godot 4.3+ estiver instalado:
 
 ```bash
 godot --headless --path . --editor --quit
-godot --headless --path . --script tests/run_godot_tests.gd
+godot --headless --path . res://tests/domain_tests.tscn
 godot --path .
 ```
 
