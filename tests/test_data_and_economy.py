@@ -587,37 +587,57 @@ class EngagementWaveTests(unittest.TestCase):
 
 
 class SoundDesignTests(unittest.TestCase):
-    """Revisão de conforto sonoro: SFX agradáveis, pentatônicos, sem clique
-    de ataque, música ambiente intacta — e SOM PROGRESSIVO: a nota do gesto
-    sobe a pentatônica com o progresso, aviso grave ao drenar, chime na
-    janela perfeita e borrifadas do perfume subindo uma a uma."""
+    """SFX de alta qualidade: assets 44.1 kHz pré-renderizados por tools/
+    gen_sfx.py (modelagem física, um instrumento por ação), pentatônicos,
+    progressivos, sem estalos, com a música ambiente intacta."""
 
     def _read(self, path):
         return Path(path).read_text(encoding='utf8')
 
-    def test_audio_synth_contracts(self):
+    def _cached_sounds(self):
+        """Nome cacheado → WAV alvo (resolvendo aliases), pelo parse das
+        linhas de cache do AudioManager (operações de string pura)."""
         audio = self._read('autoload/AudioManager.gd')
-        for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const ATTACK',
-                      'func play_progress', 'func play_gesture',
-                      'func _next_voice', 'func _pluck',
-                      'func _bloop', 'func _air', 'func _spray', 'func _wav_norm',
-                      'randf_range(0.992, 1.008)'):
+        cached = {}
+        for line in audio.splitlines():
+            if line.startswith('\tcache[&"') and '= _load_sfx(&"' in line:
+                name = line.split('cache[&"')[1].split('"')[0]
+                cached[name] = name
+            elif line.startswith('\tcache[&"') and '= cache[&"' in line:
+                alias = line.split('cache[&"')[1].split('"')[0]
+                target = line.split('= cache[&"')[1].split('"')[0]
+                cached[alias] = target
+            elif line.startswith('\t_cache_ladder(&"'):
+                base = line.split('(&"')[1].split('"')[0]
+                steps = int(line.split(', ')[1].split(')')[0])
+                for i in range(steps):
+                    cached[f'{base}_{i}'] = f'{base}_{i}'
+                cached[base] = f'{base}_0'
+        return cached
+
+    def test_audio_contracts(self):
+        audio = self._read('autoload/AudioManager.gd')
+        for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const SFX_DIR',
+                      'func play_progress', 'func play_gesture', 'func _load_sfx',
+                      'func _cache_ladder', 'randf_range(0.992, 1.008)'):
             self.assertIn(token, audio, token)
         # som progressivo: borrifadas sobem C6→D6→E6 (a 3ª é o perfect),
         # chime da janela perfeita e aviso de drenagem (oitava abaixo).
-        for token in ('cache[&"spray_0"] = _spray(0.11, 1046.50)',
-                      'cache[&"spray_1"] = _spray(0.11, 1174.66)',
-                      'cache[&"spray_2"] = _spray(0.11, 1318.51)',
+        for token in ('cache[&"spray_0"] = _load_sfx(&"spray_0")',
+                      'cache[&"spray_1"] = _load_sfx(&"spray_1")',
+                      'cache[&"spray_2"] = _load_sfx(&"spray_2")',
                       'cache[&"window"]', 'window_chime_armed', 'volume_scale = 0.5',
                       '0.8 + 0.4'):
             self.assertIn(token, audio, token)
-        # o sintetizador antigo (seno puro com ataque instantâneo = bip) e o
-        # apito de 3,1 kHz do contratempo foram aposentados.
-        self.assertNotIn('func _chime', audio)
-        self.assertNotIn('3100.0', audio)
-        # música ambiente e sincronia de compasso intocadas (contrato fase 4).
+        # sintetizadores 8-bit aposentados (agora são assets de qualidade);
+        # o "bip" antigo e o apito de 3,1 kHz continuam proibidos.
+        for gone in ('func _chime', '3100.0', 'func _pluck', 'func _bloop',
+                     'func _air', 'func _spray', 'func _wav_norm'):
+            self.assertNotIn(gone, audio, gone)
+        # música ambiente e sincronia de compasso intocadas (contrato fase 4):
+        # _wav continua existindo para a síntese da música em runtime.
         for token in ('func _ambient_loop', 'func beat_phase', 'func _energy_loop',
-                      'get_playback_position', 'MUSIC_BPM'):
+                      'get_playback_position', 'MUSIC_BPM', 'func _wav('):
             self.assertIn(token, audio, token)
         canvas = self._read('core/gameplay/PetShopCanvas.gd')
         self.assertIn('AudioManager.beat_phase', canvas)
@@ -635,39 +655,76 @@ class SoundDesignTests(unittest.TestCase):
         self.assertNotIn('bubble_sound_gate = 0.11', main)
 
     def test_every_sfx_played_is_cached(self):
-        # parsing por operações de string (à prova de camadas de escape)
-        audio = self._read('autoload/AudioManager.gd')
-        cached = set()
-        for line in audio.splitlines():
-            if line.startswith('\tcache[&"'):
-                cached.add(line.split('"')[1])
-            elif line.startswith('\t_cache_ticks(&"') or line.startswith('\t_cache_air_ticks(&"'):
-                cached.add(line.split('(&"')[1].split('"')[0])
+        cached = self._cached_sounds()
+        self.assertTrue(cached, 'nenhum SFX cacheado (parse falhou?)')
         played = set()
         for path in Path('.').rglob('*.gd'):
-            if '.git' in path.parts or 'tools' in path.parts:
+            if '.git' in path.parts or 'tools' in path.parts or 'tests' in path.parts:
                 continue
             for line in path.read_text(encoding='utf8').splitlines():
-                for call in ('AudioManager.play(&"',):
-                    if call in line:
-                        played.add(line.split(call)[1].split('"')[0])
+                if 'AudioManager.play(&"' in line:
+                    played.add(line.split('AudioManager.play(&"')[1].split('"')[0])
         # nomes vindos de service_sound() são dinâmicos: cobrir pelo mapa
         tuning = self._read('core/gameplay/SalonTuning.gd')
-        dynamic = set()
         for line in tuning.splitlines():
-            # formato do mapa service_sound: &"bath": &"bubble",
             if ': &"' in line and '{' not in line and 'func' not in line:
-                dynamic.add(line.split(': &"')[1].split('"')[0])
-        missing = (played | dynamic) - cached
+                played.add(line.split(': &"')[1].split('"')[0])
+        # perfume dinâmico (spray_%d): as 3 notas têm de existir
+        played |= {'spray_0', 'spray_1', 'spray_2'}
+        missing = played - set(cached)
         self.assertEqual(missing, set(), f'SFX tocados sem cache: {missing}')
-        self.assertTrue({'bubble', 'clipper', 'dryer', 'spray', 'bow'} <= cached)
-        # escada do perfume (spray_%d dinâmico no Main) e chime da janela
-        self.assertTrue({'spray_0', 'spray_1', 'spray_2', 'window'} <= cached)
+        self.assertTrue({'bubble', 'clipper', 'dryer', 'spray', 'bow'} <= set(cached))
+        self.assertTrue({'spray_0', 'spray_1', 'spray_2', 'window'} <= set(cached))
 
-    def test_sfx_synthesis_quality(self):
-        from gen_sfx_preview import parse_audio_manager, validate
-        errors = validate(parse_audio_manager())
-        self.assertEqual(errors, [], 'SFX fora do padrão de conforto')
+    def test_sfx_manifest_musicality(self):
+        sys.path.insert(0, str(Path(__file__).parents[1] / 'tools'))
+        from gen_sfx import LADDERS, SPRAY_PINGS, validate_manifest
+        self.assertEqual(validate_manifest(), [], 'manifesto fora da pentatônica')
+        for base in ('bubble', 'clipper', 'bow', 'dryer'):
+            self.assertEqual(len(LADDERS[base]), 10, f'escada {base} sem 10 degraus')
+        self.assertEqual(SPRAY_PINGS, [1046.50, 1174.66, 1318.51])
+
+    def test_sfx_assets_quality(self):
+        import math
+        import wave
+        cached = self._cached_sounds()
+        asset_dir = Path('assets/audio/sfx')
+        targets = set(cached.values())
+        on_disk = {p.stem for p in asset_dir.glob('*.wav')}
+        self.assertEqual(on_disk, targets,
+                         f'assets órfãos/faltando: {on_disk ^ targets}')
+        tick_peaks, oneshot_peaks = [], []
+        for name, target in sorted(cached.items()):
+            if name.startswith('variants_'):
+                continue
+            with wave.open(str(asset_dir / f'{target}.wav')) as handle:
+                self.assertEqual(handle.getframerate(), 44100, name)
+                self.assertEqual(handle.getsampwidth(), 2, name)
+                nch, n = handle.getnchannels(), handle.getnframes()
+                raw = handle.readframes(n)
+            is_tick = target.split('_')[0] in ('bubble', 'clipper', 'dryer', 'bow')
+            self.assertEqual(nch, 1 if is_tick else 2, f'{name}: canais')
+            samples = [int.from_bytes(raw[i * 2:i * 2 + 2], 'little', signed=True)
+                       for i in range(n * nch)]
+            peak = max(abs(s) for s in samples) / 32767.0
+            self.assertLess(peak, 0.999, f'{name}: clipping')
+            mono = samples[::nch]
+            mean = sum(mono) / len(mono) / 32767.0
+            self.assertLess(abs(mean), 0.005, f'{name}: offset DC {mean:.4f}')
+            # degrau silêncio→som (estalo) nas duas pontas
+            self.assertLess(abs(mono[0]), 0.03 * peak * 32767 + 2, f'{name}: início')
+            self.assertLess(abs(mono[-1]), 0.03 * peak * 32767 + 2, f'{name}: fim')
+            dur = n / 44100.0
+            self.assertTrue(0.05 <= dur <= 2.4, f'{name}: duração {dur:.2f}s')
+            if is_tick:
+                tick_peaks.append(peak)
+            else:
+                oneshot_peaks.append(peak)
+        # ticks de loop bem abaixo dos eventos (repetem ~6x/s)
+        self.assertTrue(tick_peaks and oneshot_peaks)
+        median = sorted(oneshot_peaks)[len(oneshot_peaks) // 2]
+        self.assertLessEqual(max(tick_peaks), 0.65 * median,
+                             'ticks altos demais vs one-shots')
 
 
 if __name__=='__main__': unittest.main()
