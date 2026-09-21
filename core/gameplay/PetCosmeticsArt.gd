@@ -132,14 +132,13 @@ static func draw_pet_accessories(shop, center: Vector2, fit: float, texture_loca
 	var accessory: String = String(shop.room_cosmetics.get("pet_accessory", ""))
 	var texture: Texture2D = _cosmetic_texture(accessory) if accessory != "" else null
 	var sway: Vector2 = Vector2.ZERO
-	if shop.has_method("get") or true:
-		# acessório flutter 10/10
-		var jump_h: float = 0.0
-		if shop.get("celebration") != null and float(shop.celebration) > 0.0:
-			var c_ph: float = 1.0 - float(shop.celebration) / 1.8
-			if c_ph >= 0.2 and c_ph < 0.72:
-				jump_h = sin(PI * (c_ph - 0.2) / 0.52) * 72.0
-		sway = PetAnimationTuning.accessory_sway(shop.shake_phase, jump_h, fit)
+	# acessório flutter 10/10
+	var jump_h: float = 0.0
+	if float(shop.celebration) > 0.0:
+		var c_ph: float = 1.0 - float(shop.celebration) / 1.8
+		if c_ph >= 0.2 and c_ph < 0.72:
+			jump_h = sin(PI * (c_ph - 0.2) / 0.52) * 72.0
+	sway = PetAnimationTuning.accessory_sway(shop.shake_phase, jump_h, fit)
 	if texture != null:
 		var spec: Dictionary = ACCESSORY_TEXTURE_SPEC[accessory]
 		var h: float = float(spec.h) * fit

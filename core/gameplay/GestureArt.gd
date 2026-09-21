@@ -201,9 +201,9 @@ static func draw_buddy(shop) -> void:
 		return
 	var size: float = 170.0
 	var feet: Vector2 = Vector2(196.0, 1198.0)
-	var jump: float = float(shop.get("buddy_jump_height", 0.0))
-	var eye_off: Vector2 = shop.get("buddy_eye_offset", Vector2.ZERO)
-	var celebration: float = float(shop.get("buddy_celebration", 0.0))
+	var jump: float = float(shop.buddy_jump_height)
+	var eye_off: Vector2 = shop.buddy_eye_offset
+	var celebration: float = float(shop.buddy_celebration)
 	# breathing buddy
 	var breathe: float = sin(shop.shake_phase * 2.2) * 0.008
 	var scale_y: float = 1.0 + breathe
@@ -231,8 +231,8 @@ static func draw_buddy(shop) -> void:
 		shop.draw_circle(eye_center + Vector2(36, 0) + eye_off, 4.0, Color("ffffff", 0.85))
 	# +40% pulsa com beat quando celebra
 	var beat_pulse: float = 1.0
-	if shop.get("celebration") != null:
-		beat_pulse = 1.0 + sin(shop.shake_phase * 5.0) * 0.15 * (1.0 if celebration > 0.0 else 0.0)
+	if celebration > 0.0:
+		beat_pulse += sin(shop.shake_phase * 5.0) * 0.15
 	var label_size: float = 24.0 * beat_pulse
 	var label_alpha: float = 0.65 + 0.25 * sin(shop.shake_phase * 3.0) if celebration > 0.0 else 0.65
 	shop.draw_string(
