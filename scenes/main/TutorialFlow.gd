@@ -29,18 +29,18 @@ func apply() -> void:
 				main.queue_row.position - Vector2(10, 10),
 				main.queue_row.size + Vector2(20, 20)
 			),
-			"1/3 · " + Loc.t("TUT_STEP_1"),
+			"●○○ 1/3 · " + Loc.t("TUT_STEP_1"),
 		)
 	elif step == 1:
 		var tool: StringName = StringName(main.SERVICE_TOOLS[main.current_service])
 		main.tutorial_overlay.show_step(
 			spot_rect(),
-			"2/3 · " + Loc.t("TUT_STEP_2") % [SalonTuning.tool_display_name(tool), main.current_pet_name],
+			"○●○ 2/3 · " + Loc.t("TUT_STEP_2") % [SalonTuning.tool_display_name(tool), main.current_pet_name],
 		)
 	elif step == 2:
 		main.tutorial_overlay.show_step(
 			Rect2(main.world.pet_focus() - Vector2(250, 250), Vector2(500, 560)),
-			"3/3 · " + SalonTuning.hint(main.current_service),
+			"○○● 3/3 · " + SalonTuning.hint(main.current_service),
 		)
 
 

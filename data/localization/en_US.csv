@@ -418,3 +418,6 @@ ASSIST_ACTIVE,💡 Assist active: %d client(s) left
 QUEUE_ARRIVING,Arriving
 QUEUE_RELOAD,Queue reloads in %0.1fs
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
+NEW_TAG,New!
+WELCOME_BONUS,🎁 Welcome bonus: +1 freeze!
+FIRST_BONUS,🎉 First perfect! +1 Ember!

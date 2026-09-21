@@ -3,6 +3,7 @@ extends RefCounted
 ## Meta visível no HUD: "o que vem a seguir e a que distância". Legibilidade de
 ## objetivo é um dos maiores preditores de retorno (o HUD mostrava só
 ## "NV.12 45% • ×3"). Estático: lê ContentDB/GameState, sem estado próprio.
+## P0 primeira impressão: mostra nome do pet direto, sem "pet X", mais claro.
 
 ## Gates dos serviços (mesma fonte de Rewards: data/service_layouts.json).
 const SERVICE_LABEL_KEY: Dictionary = {
@@ -22,18 +23,19 @@ static func next_unlock(level: int) -> Dictionary:
 		var unlock: int = int(pet.get("unlock_level", 1))
 		if unlock > level and unlock < best_level:
 			best_level = unlock
-			best_text = Loc.t("GOAL_PET") % String(pet.get("name", ""))
+			var pid: String = String(pet.get("id", ""))
+			best_text = ContentDB.pet_name(pid) if ContentDB.has_pet(pid) else String(pet.get("name", ""))
 	for service: String in SERVICE_LABEL_KEY:
 		var layout: Dictionary = ContentDB.service_layouts.get(service, {})
 		var unlock: int = int(layout.get("unlock_level", 1))
 		if unlock > level and unlock < best_level:
 			best_level = unlock
-			best_text = Loc.t("GOAL_SERVICE") % Loc.t(String(SERVICE_LABEL_KEY[service]))
+			best_text = Loc.t(String(SERVICE_LABEL_KEY[service]))
 	for entry: Dictionary in ContentDB.career.get("establishments", []):
 		var unlock: int = int(entry.get("unlock_level", 1))
 		if unlock > level and unlock < best_level:
 			best_level = unlock
-			best_text = Loc.t("GOAL_CHAPTER") % String(entry.get("name", ""))
+			best_text = String(entry.get("name", ""))
 	if best_text.is_empty():
 		return {}
 	return {"level": best_level, "text": best_text}

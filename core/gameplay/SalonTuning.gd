@@ -282,11 +282,24 @@ static func base_reward(service: StringName) -> float:
 
 ## Sorteio de um cliente da fila: pet desbloqueado (buddy tem prioridade),
 ## serviço (evento do dia pesa), VIP, paciência e pedido especial (B2).
+static func make_client_for_pet(pet_id: String, services: Array[StringName]) -> Dictionary:
+	# Primeira impressão: garante Caramelo como primeiro cliente
+	var service: StringName = services[randi() % services.size()] if not services.is_empty() else &"bath"
+	var wait_total: float = randf_range(80.0, 90.0)
+	return {
+		"pet": pet_id,
+		"service": service,
+		"vip": false,
+		"visitor": false,
+		"special": &"",
+		"wait_total": wait_total,
+		"wait_left": wait_total,
+	}
+
 static func make_client(services: Array[StringName]) -> Dictionary:
 	var unlocked: Array[String] = GameState.unlocked_pets
 	if unlocked.is_empty():
 		unlocked = ["caramelo"]
-	# Quinta do Pet Raro (events.json rare_chance): raridades altas pesam mais.
 	var rare_bias: float = LiveOps.modifier_multiplier(&"rare_chance")
 	var pet_id: String = draw_pet(unlocked, rare_bias)
 	if rare_bias > 1.0 and rarity_rank(pet_id) >= 2:

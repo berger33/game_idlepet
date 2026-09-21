@@ -418,3 +418,6 @@ ASSIST_ACTIVE,💡 Assistência ativa: %d cliente(s) restantes
 QUEUE_ARRIVING,Chegando
 QUEUE_RELOAD,A fila recarrega em %0.1fs
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
+NEW_TAG,Novo!
+WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
+FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
