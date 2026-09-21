@@ -116,12 +116,10 @@ var buddy_texture: Texture2D
 var buddy_texture_id: String = ""
 var tool_levels: Dictionary = {}
 
-
 func _ready() -> void:
 	level_box = _box(Color("ffd54f", 0.94), 28)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
-
 
 func _process(delta: float) -> void:
 	shake_phase += delta
@@ -154,7 +152,6 @@ func _process(delta: float) -> void:
 			bubbles.remove_at(index)
 	queue_redraw()
 
-
 func set_service_layout(next_service: StringName) -> void:
 	service_mode = next_service
 	service_active = false
@@ -171,12 +168,10 @@ func set_service_layout(next_service: StringName) -> void:
 		service_shelf_levels.append(float(level))
 	queue_redraw()
 
-
 func begin_service() -> void:
 	service_active = true
 	progress = 0.0
 	pet_wet = service_mode == &"bath" or service_mode == &"dry"
-
 
 func complete_service() -> void:
 	service_active = false
@@ -185,7 +180,6 @@ func complete_service() -> void:
 	condition_release = 1.0 if service_mode == &"bath" else 0.0
 	pet_wet = false
 	progress = 1.0
-
 
 func spawn_bubble(at: Vector2) -> void:
 	tool_position = at
@@ -201,12 +195,10 @@ func spawn_bubble(at: Vector2) -> void:
 		}
 	)
 
-
 func celebrate(is_special_reward: bool = false) -> void:
 	pet_happy = true
 	celebration = 1.8
 	special_reward_active = is_special_reward
-
 
 func set_pet_profile(profile: Dictionary) -> void:
 	pet_id = String(profile.get("id", "caramelo"))
@@ -230,30 +222,24 @@ func set_pet_profile(profile: Dictionary) -> void:
 	temperament = StringName(profile.get("temperament", "happy"))
 	rarity = StringName(profile.get("rarity", "common"))
 
-
 func set_cosmetics(active: Dictionary) -> void:
 	room_cosmetics = active.duplicate()
 	queue_redraw()
-
 
 ## Cosmético de banheira troca a cor da espuma e das bolhas em todo o banho.
 func _bath_foam_color() -> Color:
 	return PetCosmeticsArt.bath_foam_color(self)
 
-
 func _draw_room_cosmetics() -> void:
 	PetCosmeticsArt.draw_room_cosmetics(self)
 
-
 func _draw_pet_accessories(center: Vector2, fit: float, texture_local: bool) -> void:
 	PetCosmeticsArt.draw_pet_accessories(self, center, fit, texture_local)
-
 
 ## Posição de foco do pet (peito/corpo) para hit test e destaques: os pés
 ## ficam em pet_position; o corpo ocupa ~340px acima.
 func pet_focus() -> Vector2:
 	return pet_position + Vector2(0.0, -170.0)
-
 
 func react_to_touch() -> String:
 	var reactions: PackedStringArray
@@ -282,7 +268,6 @@ func react_to_touch() -> String:
 		)
 	return reactions[randi() % reactions.size()]
 
-
 func react_to_service(service_progress: float) -> void:
 	if service_progress > 0.78:
 		reaction_kind = &"excited"
@@ -292,13 +277,11 @@ func react_to_service(service_progress: float) -> void:
 		pet_happy = false
 	reaction_time = 0.22
 
-
 func react_to_dizziness() -> void:
 	# Reserved for explicit overload/stun; normal service completion never causes dizziness.
 	reaction_kind = &"dizzy"
 	reaction_time = 1.0
 	pet_happy = false
-
 
 func _service_effect_active() -> bool:
 	return (
@@ -307,7 +290,6 @@ func _service_effect_active() -> bool:
 		and tool_contact_valid
 		and active_tool == StringName(SERVICE_TOOLS.get(service_mode, &""))
 	)
-
 
 func _tool_position(tool: StringName) -> Vector2:
 	var index: int = TOOL_ORDER.find(tool)
@@ -318,11 +300,9 @@ func _tool_position(tool: StringName) -> Vector2:
 	var x: float = 170.0 if left_handed else 910.0
 	return Vector2(x, shelf_levels[index])
 
-
 ## Posição da prateleira de um utensílio (para spotlight do tutorial).
 func tool_shelf_position(tool: StringName) -> Vector2:
 	return _tool_position(tool)
-
 
 func tool_at(point: Vector2) -> StringName:
 	for tool: StringName in TOOL_ORDER:
@@ -333,27 +313,22 @@ func tool_at(point: Vector2) -> StringName:
 			return tool
 	return &""
 
-
 func grab_tool(tool: StringName, at: Vector2) -> void:
 	active_tool = tool
 	tool_position = at
 	tool_visible = true
 
-
 func move_tool(at: Vector2) -> void:
 	tool_position = at
 	tool_visible = true
 
-
 func set_tool_contact(is_valid: bool) -> void:
 	tool_contact_valid = is_valid
-
 
 func release_tool() -> void:
 	tool_visible = false
 	tool_contact_valid = false
 	active_tool = &""
-
 
 func react_to_failure() -> void:
 	tool_visible = false
@@ -364,13 +339,11 @@ func react_to_failure() -> void:
 	reaction_time = 1.5
 	pet_happy = false
 
-
 func arrive() -> void:
 	room_empty = false
 	arrival_time = 0.0
 	departure_time = -1.0
 	pet_happy = false
-
 
 func clear_room() -> void:
 	room_empty = true
@@ -378,13 +351,11 @@ func clear_room() -> void:
 	pet_texture = null
 	pet_state_textures.clear()
 
-
 func depart() -> void:
 	service_active = false
 	tool_visible = false
 	tool_contact_valid = false
 	departure_time = 0.0
-
 
 func reset_pet() -> void:
 	pet_happy = false
@@ -401,7 +372,6 @@ func reset_pet() -> void:
 	reaction_kind = &"idle"
 	bubbles.clear()
 	hearts.clear()
-
 
 func _draw() -> void:
 	var background: Texture2D = BATH_BACKGROUND
@@ -497,38 +467,68 @@ func _draw() -> void:
 		GestureArt.draw_gesture_ui(self, body_center)
 		GestureArt.draw_buddy(self)
 	# VFX de serviço só existe enquanto o utensílio correto está ativo sobre o pet.
+	# Cada serviço tem identidade visual própria e pulsa no beat da música relaxante.
 	var effect_count: int = int(progress * 18.0) if _service_effect_active() else 0
 	for i: int in effect_count:
-		var angle: float = float(i) * 2.4
-		var radius: float = 70.0 + float(i % 5) * 23.0
+		var angle: float = float(i) * 2.4 + shake_phase * 0.6
+		var radius: float = 70.0 + float(i % 5) * 23.0 + beat_pulse * 8.0
 		var effect_pos: Vector2 = (
 			pet_position + Vector2(cos(angle), sin(angle) * 0.5) * radius + Vector2(0, 70)
 		)
 		if service_mode == &"bath":
 			var foam: Color = _bath_foam_color()
-			draw_circle(effect_pos, 30 + (i % 3) * 6, Color(foam, 0.95))
-			draw_arc(effect_pos, 25 + (i % 3) * 6, 0, TAU, 20, foam.darkened(0.18), 4)
+			var foam_r: float = 30.0 + (i % 3) * 6.0 + beat_pulse * 4.0
+			draw_circle(effect_pos, foam_r, Color(foam, 0.95))
+			draw_arc(effect_pos, foam_r * 0.85, 0, TAU, 20, foam.darkened(0.18), 4)
+			# Brilho de espuma
+			if i % 4 == 0:
+				draw_circle(effect_pos + Vector2(-6, -6), 5.0, Color("ffffff", 0.6))
 		elif service_mode == &"groom":
-			draw_line(effect_pos - Vector2(14, 10), effect_pos + Vector2(14, 10), ear_color, 8)
-			draw_line(effect_pos + Vector2(-12, 12), effect_pos + Vector2(12, -12), fur_color, 6)
+			# Tufos de pelo com brilho ao cortar — feedback de tosa satisfatório
+			var tuft_a: Vector2 = effect_pos - Vector2(16, 10)
+			var tuft_b: Vector2 = effect_pos + Vector2(16, 10)
+			draw_line(tuft_a, tuft_b, ear_color, 9)
+			draw_line(
+				effect_pos + Vector2(-14, 12), effect_pos + Vector2(14, -12), fur_color, 7
+			)
+			if i % 3 == 0:
+				draw_circle(effect_pos, 4.0 + beat_pulse * 2.0, Color("ffffff", 0.7))
 		elif service_mode == &"dry":
-			draw_arc(effect_pos, 34, -0.8, 0.8, 12, Color("e1f5fe", 0.85), 7)
+			# Vento quente: arcos + brisa que pulsa
+			var wind_alpha: float = 0.75 + 0.25 * beat_pulse
+			draw_arc(effect_pos, 38.0, -0.9, 0.9, 14, Color("e1f5fe", wind_alpha), 7)
+			draw_arc(effect_pos, 28.0, -0.6, 0.6, 10, Color("b3e5fc", wind_alpha * 0.6), 4)
+			if i % 5 == 0:
+				draw_circle(effect_pos, 3.0, Color("ffffff", 0.5))
 		elif service_mode == &"perfume":
-			draw_circle(effect_pos, 14 + i % 3 * 4, Color("ce93d8", 0.62))
+			# Névoa perfumada: círculos que crescem e somem
+			var mist_r: float = 16.0 + float(i % 3) * 5.0 + beat_pulse * 6.0
+			draw_circle(effect_pos, mist_r, Color("ce93d8", 0.42))
+			draw_circle(effect_pos, mist_r * 0.5, Color("ffffff", 0.32))
 		else:
-			# Styling uses soft ribbon glints; stars remain exclusive to special rewards.
-			draw_circle(effect_pos, 8 + i % 3 * 3, Color("ff8fb1", 0.78))
-			draw_arc(effect_pos, 18 + i % 3 * 2, -0.7, 0.7, 8, Color("ffffff", 0.8), 3)
+			# Laço: brilhos de fita que giram — laço sendo colocado
+			var glint_r: float = 9.0 + float(i % 3) * 3.0 + beat_pulse * 3.0
+			draw_circle(effect_pos, glint_r, Color("ff8fb1", 0.78))
+			draw_arc(effect_pos, glint_r + 10.0, -0.7, 0.7, 8, Color("ffffff", 0.85), 3)
+			if i % 4 == 0:
+				_star(effect_pos, 6.0 + beat_pulse * 2.0, Color("ffffff", 0.6))
 	for particle: Dictionary in bubbles:
-		var particle_alpha: float = clampf(float(particle["life"]), 0.0, 0.75)
+		var particle_alpha: float = clampf(float(particle["life"]), 0.0, 0.85)
+		var beat_pop: float = 1.0 + beat_pulse * 0.22
 		if service_mode == &"bath":
 			var bubble_foam: Color = _bath_foam_color()
+			var bubble_r: float = float(particle["r"]) * beat_pop
 			draw_circle(
-				particle["p"], particle["r"], Color(bubble_foam.lightened(0.35), particle_alpha)
+				particle["p"], bubble_r, Color(bubble_foam.lightened(0.35), particle_alpha)
 			)
-			draw_arc(particle["p"], particle["r"], 0, TAU, 18, bubble_foam.darkened(0.3), 3)
+			draw_arc(particle["p"], bubble_r, 0, TAU, 18, bubble_foam.darkened(0.3), 3)
+			draw_circle(
+				particle["p"] + Vector2(-bubble_r * 0.25, -bubble_r * 0.25),
+				bubble_r * 0.22,
+				Color("ffffff", particle_alpha * 0.55)
+			)
 		elif service_mode == &"groom":
-			var tuft_size: float = float(particle["r"]) * 0.7
+			var tuft_size: float = float(particle["r"]) * 0.7 * beat_pop
 			var tuft_color: Color = fur_color
 			tuft_color.a = particle_alpha
 			draw_line(
@@ -537,17 +537,31 @@ func _draw() -> void:
 				tuft_color,
 				6
 			)
+			if particle_alpha > 0.5:
+				draw_circle(particle["p"], 3.0, Color("ffffff", particle_alpha * 0.4))
 		elif service_mode == &"dry":
+			var wind_len: float = 42.0 * beat_pop
 			draw_line(
-				particle["p"] - Vector2(42, 0),
+				particle["p"] - Vector2(wind_len, 0),
 				particle["p"] + Vector2(24, 0),
 				Color("e1f5fe", particle_alpha),
 				6
 			)
+			draw_line(
+				particle["p"] - Vector2(wind_len * 0.6, 8.0),
+				particle["p"] + Vector2(16, 8),
+				Color("b3e5fc", particle_alpha * 0.5),
+				3
+			)
 		elif service_mode == &"perfume":
-			draw_circle(particle["p"], float(particle["r"]) * 0.55, Color("ce93d8", particle_alpha))
+			var mist_r: float = float(particle["r"]) * 0.65 * beat_pop
+			draw_circle(particle["p"], mist_r, Color("ce93d8", particle_alpha * 0.7))
+			draw_circle(particle["p"], mist_r * 0.4, Color("ffffff", particle_alpha * 0.5))
 		else:
-			draw_circle(particle["p"], float(particle["r"]) * 0.45, Color("ff8fb1", particle_alpha))
+			var bow_r: float = float(particle["r"]) * 0.5 * beat_pop
+			draw_circle(particle["p"], bow_r, Color("ff8fb1", particle_alpha))
+			if particle_alpha > 0.4:
+				_star(particle["p"], bow_r * 0.6, Color("ffffff", particle_alpha * 0.7))
 	for heart: Dictionary in hearts:
 		_draw_heart(
 			heart["p"],
@@ -615,7 +629,6 @@ func _draw() -> void:
 		draw_rect(Rect2(0.0, 0.0, 1080.0, 22.0), Color("ffb300", rush_glow))
 		draw_rect(Rect2(0.0, 22.0, 1080.0, 8.0), Color("ffd54f", 0.28))
 		draw_rect(Rect2(0.0, 0.0, 1080.0, 1920.0), Color("ffd54f", 0.04))
-
 
 func _draw_pet(center: Vector2) -> void:
 	if is_instance_valid(pet_texture):
@@ -770,7 +783,6 @@ func _draw_pet(center: Vector2) -> void:
 	draw_circle(center + Vector2(-92, 28), 17, Color("ff8fb1", 0.42))
 	draw_circle(center + Vector2(92, 28), 17, Color("ff8fb1", 0.42))
 	_draw_pet_accessories(center, 1.0, false)
-
 
 func _draw_illustrated_pet(center: Vector2) -> void:
 	var small_breed: bool = _breed_contains_any(
@@ -931,7 +943,6 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	_draw_pet_accessories(Vector2.ZERO, sprite_size / 390.0, true)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
-
 func _draw_pet_texture_layer(
 	texture: Texture2D, sprite_size: float, tint: Color = Color.WHITE
 ) -> void:
@@ -944,7 +955,6 @@ func _draw_pet_texture_layer(
 		tint,
 	)
 
-
 func _draw_pet_state_layer(
 	state_name: StringName, alpha: float, sprite_size: float, tint: Color = Color.WHITE
 ) -> void:
@@ -954,13 +964,11 @@ func _draw_pet_state_layer(
 	layer_tint.a *= clampf(alpha, 0.0, 1.0)
 	_draw_pet_texture_layer(pet_state_textures[state_name] as Texture2D, sprite_size, layer_tint)
 
-
 func _breed_contains_any(labels: Array[String]) -> bool:
 	for label: String in labels:
 		if breed_name.contains(label):
 			return true
 	return false
-
 
 func _draw_pet_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
 	var points: PackedVector2Array = PackedVector2Array()
@@ -968,7 +976,6 @@ func _draw_pet_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
 		var angle: float = TAU * float(i) / 32.0
 		points.append(center + Vector2(cos(angle) * radii.x, sin(angle) * radii.y))
 	draw_colored_polygon(points, color)
-
 
 func _box(color: Color, radius: float) -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
@@ -978,7 +985,6 @@ func _box(color: Color, radius: float) -> StyleBoxFlat:
 	box.corner_radius_bottom_left = int(radius)
 	box.corner_radius_bottom_right = int(radius)
 	return box
-
 
 func _draw_tool_shelf() -> void:
 	# As prateleiras pertencem à arte raster; aqui são desenhados somente utensílios interativos.
@@ -1000,7 +1006,6 @@ func _draw_tool_shelf() -> void:
 				20,
 				Color.WHITE,
 			)
-
 
 func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = false) -> void:
 	if not TOOL_TEXTURES.has(tool):
@@ -1041,7 +1046,6 @@ func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = 
 		)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
-
 ## Três corações de marcos de afeto (10/25/50) flutuando sobre o pet: o jogador
 ## vê o laço crescer na própria cena, não só num toast.
 func _draw_affection_hearts(body_center: Vector2) -> void:
@@ -1055,7 +1059,6 @@ func _draw_affection_hearts(body_center: Vector2) -> void:
 			heart_center, 20.0, Color("ff8fb1") if filled else Color("263238", 0.18)
 		)
 
-
 func _draw_heart(center: Vector2, radius: float, color: Color) -> void:
 	var points: PackedVector2Array = PackedVector2Array()
 	for index: int in 24:
@@ -1066,7 +1069,6 @@ func _draw_heart(center: Vector2, radius: float, color: Color) -> void:
 		)
 		points.append(center + Vector2(x, y) * radius / 18.0)
 	draw_colored_polygon(points, color)
-
 
 func _star(center: Vector2, radius: float, color: Color) -> void:
 	var points: PackedVector2Array = PackedVector2Array()

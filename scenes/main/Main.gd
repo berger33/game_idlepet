@@ -96,6 +96,10 @@ var upsell_decline: Button
 ## Onda 3: maestria e carinho com limite por cliente.
 var petting_count: int = 0
 var pending_special_result: Dictionary = {}
+## Feedback por gesto: rastreia mudanças para SFX/haptics.
+var last_stroke_index: int = 0
+var last_zone_inside: bool = false
+var perfume_hold_time: float = 0.0
 
 
 func _ready() -> void:
@@ -148,17 +152,40 @@ func _process(delta: float) -> void:
 		if bath.tick(delta):
 			_fail(&"timeout")
 			return
-		# Aro de dosagem (progresso cru) + barra de paciência no topo da cena.
 		world.progress = bath.progress
-		world.service_time_ratio = (
-			bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
-		)
-		# Onda 1: UI de gesto por serviço + pulinho do brincalhão.
+		world.service_time_ratio = bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
 		world.gesture_ui = GestureArt.gesture_snapshot(bath)
 		world.playful_hop = bath.hopping
+		if bath.fill_mode == &"stroke":
+			if bath.stroke_index != last_stroke_index and bath.stroke_index > 0:
+				AudioManager.play(&"tool_pickup")
+				HapticsManager.light()
+				world.spawn_bubble(world.pet_focus() + Vector2(randf_range(-40, 40), -20))
+			last_stroke_index = bath.stroke_index
+		elif bath.fill_mode == &"zone":
+			if bath.zone_inside != last_zone_inside:
+				if bath.zone_inside:
+					AudioManager.play(&"window")
+					HapticsManager.light()
+				last_zone_inside = bath.zone_inside
+		elif bath.fill_mode == &"pulse":
+			if world.tool_contact_valid and bath.pulse_bright():
+				perfume_hold_time += delta
+				if perfume_hold_time >= 0.32:
+					perfume_hold_time = 0.0
+					var spray: StringName = bath.pulse_contact()
+					if spray == &"hit":
+						AudioManager.play(StringName("spray_%d" % maxi(0, bath.pulses_hit - 1)))
+						HapticsManager.light()
+						world.spawn_bubble(world.pet_focus())
+			else:
+				perfume_hold_time = 0.0
 	else:
 		world.gesture_ui = {}
 		world.playful_hop = false
+		last_stroke_index = 0
+		last_zone_inside = false
+		perfume_hold_time = 0.0
 	world.tool_levels = GameState.tool_upgrade_levels
 	world.rush_active = rush_active
 	_update_rush(delta)
@@ -215,29 +242,23 @@ func _move_pointer(point: Vector2) -> void:
 		world.set_tool_contact(false)
 		if wrong_tool_gate <= 0.0:
 			wrong_tool_gate = 0.8
-			_show_toast(
-				"Use %s neste pedido" % SalonTuning.tool_display_name(required_tool),
-				Color("ffd54f")
-			)
+			_show_toast("Use %s neste pedido" % SalonTuning.tool_display_name(required_tool), Color("ffd54f"))
 			AudioManager.play(&"error_soft")
 		return
 	var contact_resumed: bool = not world.tool_contact_valid
 	world.set_tool_contact(true)
 	if bath.state == BathService.State.WAITING:
 		_start_bath()
-	if bath.state == BathService.State.ACTIVE:
-		if contact_resumed and bath.fill_mode == &"pulse":
-			# Perfume (Onda 1): cada novo contato é uma borrifada — acerto se
-			# o anel dourado está aceso, desperdício se está apagado.
-			var spray: StringName = bath.pulse_contact()
-			if spray == &"hit":
-				# Cada borrifada sobe uma nota (C6, D6, E6): a terceira É o perfect.
-				AudioManager.play(StringName("spray_%d" % maxi(0, bath.pulses_hit - 1)))
-				HapticsManager.light()
-				world.spawn_bubble(point)
-			elif spray == &"miss":
-				AudioManager.play(&"error_soft")
-		_rub(point)
+	if bath.state == BathService.State.ACTIVE and contact_resumed and bath.fill_mode == &"pulse":
+		perfume_hold_time = 0.0
+		var spray: StringName = bath.pulse_contact()
+		if spray == &"hit":
+			AudioManager.play(StringName("spray_%d" % maxi(0, bath.pulses_hit - 1)))
+			HapticsManager.light()
+			world.spawn_bubble(point)
+		elif spray == &"miss":
+			AudioManager.play(&"error_soft")
+	_rub(point)
 
 
 func _end_pointer() -> void:
@@ -767,55 +788,24 @@ func _update_queue_ui() -> void:
 			queue_cards[slot].disabled = not _can_select(slot)
 
 func _configure_current_service() -> void:
-	var duration: float = (
-		{&"bath": 10.0, &"groom": 11.0, &"dry": 9.0, &"perfume": 8.0, &"style": 8.0}
-		. get(current_service, 10.0)
-	)
-	var required_distance: float = (
-		{&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}
-		. get(current_service, 1350.0)
-	)
-	# A paciência do pet modula o tempo real do atendimento (27–50 no catálogo);
-	# passivos de equipe contratada (staff.json) ajustam tempo, distância e janela.
+	var duration: float = {&"bath": 10.0, &"groom": 11.0, &"dry": 9.0, &"perfume": 8.0, &"style": 8.0}.get(current_service, 10.0)
+	var required_distance: float = {&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}.get(current_service, 1350.0)
 	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
-	var patience_factor: float = clampf(patience / 42.0, 0.6, 1.25)
-	patience_factor += GameState.staff_bonus(&"patience")
+	var patience_factor: float = clampf(patience / 42.0, 0.6, 1.25) + GameState.staff_bonus(&"patience")
 	if current_service == &"bath":
 		required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
 	var window_bonus: float = GameState.staff_bonus(&"perfect_window")
 	if current_service == &"groom":
 		window_bonus += GameState.staff_bonus(&"groom_quality")
-	# Perfume funciona em borrifadas discretas: o perfect É a última
-	# borrifada (progresso salta em 1/n); Good aceita n-1 acertos. A janela
-	# máxima precisa ser 1.0 — senão 3 acertos (progresso 1.0) nunca dão
-	# perfect.
 	var target_min: float = RemoteConfig.get_float("bath_target_min")
 	var target_max: float = minf(RemoteConfig.get_float("bath_target_max") + window_bonus, 1.0)
 	if current_service == &"perfume":
 		target_min = 0.95
 		target_max = 1.0
-	bath.configure(
-		duration * patience_factor,
-		target_min,
-		target_max,
-		required_distance,
-	)
-	var gesture: Dictionary = SalonTuning.GESTURES.get(
-		current_service, SalonTuning.GESTURES[&"bath"]
-	)
-	bath.configure_gesture(
-		gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"]
-	)
-	# --- Ondas 1–3: gesto com identidade própria, ajustado ao pet
-	# (temperamento, espécie, porte, marcos de maestria e recuperação).
-	SalonTuning.apply(
-		bath,
-		current_service,
-		ContentDB.pet(current_pet_id),
-		GameState.tool_upgrade_levels,
-		recovery_penalty,
-		world.pet_focus() if is_instance_valid(world) else Vector2(540, 990)
-	)
+	bath.configure(duration * patience_factor, target_min, target_max, required_distance)
+	var gesture: Dictionary = SalonTuning.GESTURES.get(current_service, SalonTuning.GESTURES[&"bath"])
+	bath.configure_gesture(gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"])
+	SalonTuning.apply(bath, current_service, ContentDB.pet(current_pet_id), GameState.tool_upgrade_levels, recovery_penalty, world.pet_focus() if is_instance_valid(world) else Vector2(540, 990))
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
 		world.player_level = GameState.player_level

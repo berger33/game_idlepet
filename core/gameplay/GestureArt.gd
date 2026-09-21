@@ -46,72 +46,96 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 		return
 	var mode: StringName = StringName(shop.gesture_ui.get("mode", &""))
 	var jitter: Vector2 = _jitter(shop)
+	var beat_pulse: float = pow(1.0 - AudioManager.beat_phase(), 2.0)
 	match mode:
 		&"stroke":
 			# Tosa: setas de duas pontas — uma por passo do traçado.
+			# Movidas para mais perto do pet (-180 vs -308) para leitura imediata.
 			var axes: Array = shop.gesture_ui.get("axes", [])
 			var current: int = int(shop.gesture_ui.get("stroke_index", 0))
 			for i: int in maxi(1, axes.size()):
 				var axis: StringName = StringName(axes[i]) if i < axes.size() else &"vertical"
 				var anchor: Vector2 = (
 					body_center
-					+ Vector2(-308.0, -96.0 + i * 96.0)
+					+ Vector2(-180.0, -88.0 + i * 88.0)
 					+ jitter * (1.0 if i == current else 0.3)
 				)
 				var color: Color
 				if i < current:
 					color = good_color(0.9)
 				elif i == current:
-					color = Color("ff8fb1", 0.95)
+					# Pulso no compasso para o passo atual
+					var pulse: float = 0.85 + 0.15 * beat_pulse
+					color = Color("ff8fb1", 0.95 * pulse)
+					# Aro de destaque no passo atual
+					shop.draw_circle(anchor, 36.0 + beat_pulse * 6.0, Color(color, 0.18))
 				else:
 					color = Color("ffffff", 0.35)
 				if axis == &"horizontal":
-					shop.draw_line(anchor + Vector2(-26.0, 0.0), anchor + Vector2(26.0, 0.0), color, 9.0)
-					_triangle(shop, anchor + Vector2(-26.0, 0.0), Vector2(-1, 0), color)
-					_triangle(shop, anchor + Vector2(26.0, 0.0), Vector2(1, 0), color)
+					shop.draw_line(anchor + Vector2(-28.0, 0.0), anchor + Vector2(28.0, 0.0), color, 10.0)
+					_triangle(shop, anchor + Vector2(-28.0, 0.0), Vector2(-1, 0), color)
+					_triangle(shop, anchor + Vector2(28.0, 0.0), Vector2(1, 0), color)
 				else:
-					shop.draw_line(anchor + Vector2(0.0, -26.0), anchor + Vector2(0.0, 26.0), color, 9.0)
-					_triangle(shop, anchor + Vector2(0.0, -26.0), Vector2(0, -1), color)
-					_triangle(shop, anchor + Vector2(0.0, 26.0), Vector2(0, 1), color)
+					shop.draw_line(anchor + Vector2(0.0, -28.0), anchor + Vector2(0.0, 28.0), color, 10.0)
+					_triangle(shop, anchor + Vector2(0.0, -28.0), Vector2(0, -1), color)
+					_triangle(shop, anchor + Vector2(0.0, 28.0), Vector2(0, 1), color)
 		&"zone":
 			# Secagem: círculo-alvo que deriva pelo corpo; verde = bocal dentro.
+			# Pulso suave no beat + anel duplo para leitura de precisão.
 			var target: Vector2 = shop.gesture_ui.get("zone_target", body_center) + jitter
-			var radius: float = float(shop.gesture_ui.get("zone_radius", 110.0))
+			var radius: float = float(shop.gesture_ui.get("zone_radius", 80.0))
 			var inside: bool = bool(shop.gesture_ui.get("zone_inside", false))
 			var zone_color: Color = good_color(0.9) if inside else Color("ffffff", 0.75)
-			shop.draw_circle(target, radius, Color(zone_color.r, zone_color.g, zone_color.b, 0.10))
+			var pulse_r: float = radius + beat_pulse * 8.0
+			shop.draw_circle(target, pulse_r, Color(zone_color.r, zone_color.g, zone_color.b, 0.10))
 			shop.draw_arc(target, radius, 0.0, TAU, 48, zone_color, 6.0)
+			shop.draw_arc(target, radius * 0.6, 0.0, TAU, 24, Color(zone_color, 0.35), 3.0)
 			shop.draw_circle(target, 10.0, zone_color)
+			if inside:
+				# Brilho interno quando está secando certo
+				shop.draw_circle(target, 18.0 + beat_pulse * 6.0, Color(zone_color, 0.25))
 		&"pulse":
 			# Perfume: anel que ACENDE na janela da borrifada + acertos em pips.
+			# Anel escala com o beat para dar ritmo visual.
 			var bright: bool = bool(shop.gesture_ui.get("pulse_bright", false))
-			var ring_radius: float = 168.0 + (14.0 if bright else 0.0)
+			var base_radius: float = 148.0
+			var ring_radius: float = base_radius + (18.0 if bright else 0.0) + beat_pulse * 6.0
 			if bright:
-				shop.draw_circle(body_center, ring_radius, Color("ffd54f", 0.14))
+				shop.draw_circle(body_center, ring_radius, Color("ffd54f", 0.18))
 				shop.draw_arc(body_center, ring_radius, 0.0, TAU, 48, Color("ffd54f", 0.95), 12.0)
+				shop.draw_arc(body_center, ring_radius - 18.0, 0.0, TAU, 48, Color("ffd54f", 0.4), 4.0)
 			else:
-				shop.draw_arc(body_center, ring_radius, 0.0, TAU, 48, Color("ffffff", 0.4), 5.0)
+				shop.draw_arc(body_center, base_radius, 0.0, TAU, 48, Color("ffffff", 0.4), 5.0)
 			var needed: int = maxi(1, int(shop.gesture_ui.get("pulses_needed", 3)))
 			var hit: int = int(shop.gesture_ui.get("pulses_hit", 0))
 			for i: int in needed:
-				var pip: Vector2 = body_center + Vector2((i - (needed - 1) * 0.5) * 52.0, 240.0)
+				var pip: Vector2 = body_center + Vector2((i - (needed - 1) * 0.5) * 56.0, 240.0)
+				var is_hit: bool = i < hit
+				var pip_r: float = 15.0 + (4.0 * beat_pulse if is_hit else 0.0)
 				shop.draw_circle(
-					pip, 13.0, Color("ffd54f", 0.95) if i < hit else Color("ffffff", 0.30)
+					pip, pip_r, Color("ffd54f", 0.95) if is_hit else Color("ffffff", 0.30)
 				)
-				shop.draw_arc(pip, 13.0, 0.0, TAU, 16, Color("263238", 0.35), 3.0)
+				shop.draw_arc(pip, pip_r, 0.0, TAU, 16, Color("263238", 0.35), 3.0)
+				if is_hit:
+					shop.draw_circle(pip, 6.0, Color("ffffff", 0.9))
 		&"drop":
 			# Laço: marca no pescoço; anel verde quando o laço está na zona.
+			# Pulso + snap visual quando está dentro.
 			var target: Vector2 = shop.gesture_ui.get("drop_target", body_center) + jitter * 0.5
-			var radius: float = float(shop.gesture_ui.get("drop_radius", 110.0))
+			var radius: float = float(shop.gesture_ui.get("drop_radius", 80.0))
 			var inside: bool = bool(shop.gesture_ui.get("drop_inside", false))
 			var mark_color: Color = good_color(0.9) if inside else Color("ff8fb1", 0.9)
+			var dash_alpha: float = 0.75 + 0.25 * beat_pulse if inside else 0.65
 			for seg: int in 12:
 				shop.draw_arc(
 					target, radius, TAU * seg / 12.0 + 0.09, TAU * (seg + 1) / 12.0 - 0.09, 6,
-					Color(mark_color.r, mark_color.g, mark_color.b, 0.65), 6.0
+					Color(mark_color.r, mark_color.g, mark_color.b, dash_alpha), 6.0
 				)
-			shop.draw_line(target + Vector2(-16, 0), target + Vector2(16, 0), mark_color, 6.0)
-			shop.draw_line(target + Vector2(0, -16), target + Vector2(0, 16), mark_color, 6.0)
+			shop.draw_line(target + Vector2(-18, 0), target + Vector2(18, 0), mark_color, 6.0)
+			shop.draw_line(target + Vector2(0, -18), target + Vector2(0, 18), mark_color, 6.0)
+			if inside:
+				shop.draw_circle(target, 12.0 + beat_pulse * 8.0, Color(mark_color, 0.28))
+				shop.draw_circle(target, 6.0, Color("ffffff", 0.85))
 
 
 ## Banheira dupla (Onda 3): o buddy é atendido em paralelo no cantinho da cena.

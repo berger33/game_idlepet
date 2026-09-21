@@ -46,25 +46,25 @@ var stroke_index: int = 0
 ## raio enche, fora drena devagar — é preciso ACOMPANHAR o bocal.
 var zone_target: Vector2 = Vector2.ZERO
 var zone_home: Vector2 = Vector2.ZERO
-var zone_radius: float = 120.0
-var zone_speed: float = 1.0
+var zone_radius: float = 80.0
+var zone_speed: float = 0.9
 var zone_drift_time: float = 0.0
 var zone_inside: bool = false
 
 ## Pulso (perfume): anel acende em janelas; um NOVO contato na janela = acerto,
 ## contato na janela apagada = borrifada desperdiçada (pequena perda).
-var pulse_period: float = 1.35
-var pulse_window: float = 0.45
+var pulse_period: float = 1.5
+var pulse_window: float = 0.5
 var pulse_time: float = 0.0
 var pulses_needed: int = 3
 var pulses_hit: int = 0
-var pulse_miss_penalty: float = 0.06
+var pulse_miss_penalty: float = 0.03
 
 ## Encaixe (laço): marca no pescoço; a taxa de enchimento escala com a
 ## proximidade — colado na marca enche rápido, longe não enche.
 var drop_target: Vector2 = Vector2.ZERO
-var drop_radius: float = 120.0
-var drop_rate: float = 0.5
+var drop_radius: float = 80.0
+var drop_rate: float = 0.8
 var drop_distance: float = 9999.0
 
 ## Temperamento: tremor do UI de gesto (agitado) e pulinhos que interrompem
@@ -189,13 +189,14 @@ func tick(delta: float) -> bool:
 	if fill_mode == &"zone":
 		zone_drift_time += delta * zone_speed
 		zone_target = zone_home + Vector2(
-			sin(zone_drift_time * 1.9) * 92.0, cos(zone_drift_time * 2.6) * 58.0
+			sin(zone_drift_time * 1.6) * 78.0, cos(zone_drift_time * 2.2) * 48.0
 		)
 		if has_pointer:
 			if zone_inside and hop_left <= 0.0:
 				progress = clampf(progress + hold_rate * delta, 0.0, 1.0)
 			else:
-				progress = maxf(0.0, progress - 0.016 * delta)
+				# Drenagem perceptível fora da zona (antes 0.016 = imperceptível)
+				progress = maxf(0.0, progress - 0.08 * delta)
 	elif fill_mode == &"pulse":
 		pulse_time += delta
 	elif fill_mode == &"hold" and has_pointer and hold_rate > 0.0:
@@ -204,8 +205,11 @@ func tick(delta: float) -> bool:
 	elif fill_mode == &"drop" and has_pointer:
 		if hop_left <= 0.0:
 			var proximity: float = clampf(1.0 - drop_distance / drop_radius, 0.0, 1.0)
+			# Curva quadrática: colado enche muito rápido, na borda quase nada
 			if proximity > 0.0:
-				progress = clampf(progress + drop_rate * proximity * delta, 0.0, 1.0)
+				progress = clampf(
+					progress + drop_rate * proximity * proximity * delta, 0.0, 1.0
+				)
 	time_left = maxf(0.0, time_left - delta)
 	if time_left <= 0.0:
 		state = State.FAILED

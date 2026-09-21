@@ -68,13 +68,20 @@ static func apply(
 				stroke_axes_for(String(profile.get("id", ""))), 520.0 * breed_size_factor(profile)
 			)
 		&"dry":
-			# Secação: acompanhar o círculo que deriva (raças pequenas derivam mais).
-			bath.configure_zone(body_center, 112.0, 1.2 if breed_size_factor(profile) < 1.0 else 1.0)
+			# Secação: acompanhar o círculo que deriva. Raças pequenas = alvo
+			# maior e mais lento (mais fácil), grandes = mais rápido.
+			var small: bool = breed_size_factor(profile) < 1.0
+			var radius: float = 88.0 if small else 76.0
+			var speed: float = 0.7 if small else 1.0
+			bath.configure_zone(body_center, radius, speed)
 		&"perfume":
-			bath.configure_pulses(3, 1.35, 0.45)
+			# Perfume: 3 borrifadas, janela 50% do período (mais relaxante),
+			# período 1,5 s (antes 1,35) — dá tempo de respirar.
+			bath.configure_pulses(3, 1.5, 0.5)
 		&"style":
-			# Laço: encaixe de precisão na marca do pescoço.
-			bath.configure_drop(body_center + Vector2(0.0, -74.0), 112.0, 0.5)
+			# Laço: encaixe de precisão na marca do pescoço. Raio menor
+			# (80) exige precisão, mas taxa maior (0,8) recompensa rápido.
+			bath.configure_drop(body_center + Vector2(0.0, -74.0), 80.0, 0.8)
 	# --- A2: temperamento e espécie mudam o jogo ---
 	var temperament: StringName = StringName(profile.get("temperament", "happy"))
 	var species: StringName = StringName(profile.get("species", "dog"))
