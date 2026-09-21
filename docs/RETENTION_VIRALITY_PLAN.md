@@ -48,8 +48,7 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 - [x] **Telas de revelação** (`EventBus.reveal_requested` → `RevealCard`) (2–3 s) para novo pet, novo capítulo, level-up com
   desbloqueio, conquista, presente sazonal — hoje tudo é toast.
 - [x] **Transformação visual por marco**: mural + luz por tier (`ChapterArt.gd`); estação evoluindo a cada 10 níveis (`StationArt._draw_station_evolution`: toalha/patinho/planta/brilho/coroa por marco).
-- [x] **Música real** (`tools/gen_bgm.py`: 3 trilhas por fase, 96 BPM, crossfade): BGM é loop procedural de 8 s (`AudioManager._ambient_loop`);
-  `audio/bgm` vazio. Faixas por fase/tier.
+- [x] **Música relaxante restaurada** (pedido do usuário 2026-09-21): `AudioManager._ambient_loop()` 16 s, C/Am/F/G com crossfade 0,4 s, baixo suave oitava abaixo, melodia esparsa — muito mais relaxante que as 3 trilhas de `gen_bgm.py` (quintal/clínica/império) que continuam em `audio/bgm/` como alternativa. Ganho 0,22, tier não troca música.
 - [x] **Meta visível no HUD** (`Goals.hud_line`): "próximo: Nina (Nv.20) • Sala de Secagem (Nv.5)".
 - [x] Buddy 40% → 25% subindo com afeto.
 
@@ -119,7 +118,8 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 | 4 | `1002859` | Visitante misterioso (save v12), cosméticos 11→23, meta do dia |
 | 5 | `1225f43` | Mural por capítulo, trilhas de fundo por fase |
 | 6 | (este ciclo) | Gesto ensinado, localização completa (pet/staff/ach/cos/research), acessibilidade (fonte/mão esquerda), safe-area, evolução visual da estação a cada 10 níveis, share de conquista, rotativo semanal, transferência de save, consentimento, back button, ícone/splash, testes de domínio na CI |
-| 7 | (este commit) | Lint 0 erros, Main.gd <1100 linhas via SalonTuning helpers, MetaPanel share path fix, StationArt evolução visual + left-handed, font_scale/safe-area em SalonTuning |
+| 7 | `b393f0d`/`bdac9c9` | Lint 0 erros, Main.gd <1100 linhas via SalonTuning helpers, MetaPanel share path fix, StationArt evolução visual + left-handed, font_scale/safe-area em SalonTuning |
+| 8 | `7e79fb3` | Audio: restaura BGM relaxante original (16 s, C/Am/F/G crossfade, baixo suave) — pedido do usuário, gen_bgm.py mantido como alternativa |
 
 ### Bloqueadores externos (não fabricáveis no repositório)
 SDKs (AdMob, Play Billing, Firebase), backend social (ranking/amigos), keystore e
