@@ -19,11 +19,12 @@ const GESTURES: Dictionary = {
 const AGITATED_TEMPERAMENTS: Array[StringName] = [&"active", &"irritated", &"curious"]
 const PLAYFUL_TEMPERAMENTS: Array[StringName] = [&"playful", &"happy"]
 const CALM_TEMPERAMENTS: Array[StringName] = [&"calm", &"gentle", &"elegant"]
+## Chaves de localização por temperamento (TEMPER_*).
 const TEMPERAMENT_LABELS: Dictionary = {
-	&"active": "agitado", &"irritated": "agitado", &"curious": "agitado",
-	&"calm": "calmo", &"gentle": "calmo", &"elegant": "calmo",
-	&"playful": "brincalhão", &"happy": "brincalhão",
-	&"anxious": "tímido", &"fearful": "tímido",
+	&"active": "TEMPER_AGITATED", &"irritated": "TEMPER_AGITATED", &"curious": "TEMPER_AGITATED",
+	&"calm": "TEMPER_CALM", &"gentle": "TEMPER_CALM", &"elegant": "TEMPER_CALM",
+	&"playful": "TEMPER_PLAYFUL", &"happy": "TEMPER_PLAYFUL",
+	&"anxious": "TEMPER_SHY", &"fearful": "TEMPER_SHY",
 }
 const SMALL_BREEDS: Array[String] = [
 	"Pinscher", "Yorkshire", "Pug", "Maltês", "Munchkin", "Shih-tzu",
@@ -125,6 +126,15 @@ static func apply(
 		bath.distance_required *= 1.0 - speed
 		bath.stroke_quota *= 1.0 - speed
 		bath.hold_rate = clampf(bath.hold_rate * (1.0 + speed), 0.0, 0.5)
+	# --- Acessibilidade motora (settings["assist_window"]): janela mais larga,
+	# mais tempo, alvos maiores e mais lentos. Opt-in, sem custo de recompensa.
+	if bool(GameState.settings.get("assist_window", false)):
+		bath.target_minimum = clampf(bath.target_minimum - 0.06, BathService.GOOD_FLOOR, 0.95)
+		bath.target_maximum = minf(bath.target_maximum + 0.02, 1.0)
+		bath.duration_seconds *= 1.25
+		bath.zone_speed = clampf(bath.zone_speed * 0.75, 0.2, 3.0)
+		bath.drop_radius *= 1.3
+		bath.pulse_window = clampf(bath.pulse_window * 1.3, 0.12, 0.8)
 
 
 ## Nível do marco que destrava o bônus da ferramenta (C1).
@@ -156,10 +166,10 @@ static func breed_size_factor(profile: Dictionary) -> float:
 ## Linha de trade-offs do cartão da fila (B1): temperamento + pagamento.
 static func queue_info_text(profile: Dictionary) -> String:
 	var temperament: StringName = StringName(profile.get("temperament", "happy"))
-	var temperament_text: String = String(TEMPERAMENT_LABELS.get(temperament, ""))
+	var temperament_text: String = Loc.t(String(TEMPERAMENT_LABELS.get(temperament, "TEMPER_PLAYFUL")))
 	var tip: float = float(profile.get("base_tip", 1.0))
 	var pay_pips: String = "●" if tip < 1.4 else ("●●" if tip < 2.2 else "●●●")
-	return "%s  paga %s" % [temperament_text, pay_pips]
+	return "%s  %s %s" % [temperament_text, Loc.t("PAYS"), pay_pips]
 
 
 ## Borda do cartão pela raridade do pet (B1): leitura instantânea do valor.

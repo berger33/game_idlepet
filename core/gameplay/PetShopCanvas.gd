@@ -553,8 +553,14 @@ func _draw() -> void:
 		_draw_tool(active_tool, tool_position, 1.0, true)
 		# Aro de dosagem: faixa verde fixa = janela do Perfect; o preenchimento
 		# cru avança com a esfregada e soltar decide a qualidade (sem auto-complete).
-		var band_min: float = RemoteConfig.get_float("bath_target_min")
-		var band_max: float = RemoteConfig.get_float("bath_target_max")
+		# Faixa desenhada = janela REAL deste atendimento (temperamento, equipe,
+		# pesquisa e assistência mudam a janela; antes era a do RemoteConfig).
+		var band_min: float = float(
+			gesture_ui.get("target_min", RemoteConfig.get_float("bath_target_min"))
+		)
+		var band_max: float = float(
+			gesture_ui.get("target_max", RemoteConfig.get_float("bath_target_max"))
+		)
 		var fill: float = clampf(progress, 0.0, 1.0)
 		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.25), 6.0)
 		draw_arc(
@@ -563,14 +569,14 @@ func _draw() -> void:
 			-PI / 2.0 + TAU * band_min,
 			-PI / 2.0 + TAU * band_max,
 			40,
-			Color("7ed957", 0.5),
+			GestureArt.good_color(0.5),
 			14.0,
 		)
 		var ring_color: Color = Color.WHITE
 		if fill > band_max:
-			ring_color = Color("ef5350")
+			ring_color = GestureArt.bad_color()
 		elif fill >= band_min:
-			ring_color = Color("7ed957")
+			ring_color = GestureArt.good_color()
 		elif fill >= 0.62:
 			ring_color = Color("ffd54f")
 		if fill > 0.005:
@@ -583,9 +589,9 @@ func _draw() -> void:
 		var patience_fill: Vector2 = Vector2(
 			patience_rect.size.x * patience_ratio, patience_rect.size.y
 		)
-		var patience_color: Color = Color("7ed957")
+		var patience_color: Color = GestureArt.good_color()
 		if patience_ratio <= 0.25:
-			patience_color = Color("ef5350")
+			patience_color = GestureArt.bad_color()
 		elif patience_ratio <= 0.5:
 			patience_color = Color("ffd54f")
 		draw_rect(Rect2(patience_rect.position, patience_fill), patience_color)

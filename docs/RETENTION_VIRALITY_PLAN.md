@@ -21,86 +21,85 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 
 ## 1. Economia e progressão
 
-- [ ] **Recompensas escaladas à renda**: `Economy.scaled_reward(seconds)` (segundos de
+- [x] **Recompensas escaladas à renda** (`core/progression/Rewards.gd`): `Economy.scaled_reward(seconds)` (segundos de
   renda atual, com piso) aplicado a missões diárias/semanais, passe, streak,
   conquistas, level-up e baú semanal.
-- [ ] **Sinks que acompanham a curva**: cosméticos (moedas) e staff precificados por
+- [x] **Sinks que acompanham a curva** (`Rewards.cosmetic_price/hire_price`): cosméticos (moedas) e staff precificados por
   múltiplo da renda atual / tier.
-- [ ] **Bug tokens de prestígio em dobro**: `prestige_tokens_available = tokens(total) −
+- [x] **Bug tokens de prestígio em dobro** (`prestige_tokens_collected`, save v11): `prestige_tokens_available = tokens(total) −
   prestige_level` mas `perform_prestige` faz `prestige_level += 1` com `gain = 3`
   (`GameState.gd:253-266`). Guardar `prestige_tokens_collected`.
-- [ ] **Prestígio racional**: herança de estação (% do nível anterior) + preview
+- [x] **Prestígio racional** (25% estação/ferramentas, nível 10, caixa escalada, preview): herança de estação (% do nível anterior) + preview
   "você volta a este ponto em X min".
-- [ ] Cadência de upgrades: marcos visuais (ver §3).
+- [~] Cadência de upgrades: mural por capítulo (§3); estação por marco ainda só via ferramentas.
 
 ## 2. Idle / retorno
 
-- [ ] **Cofre offline relevante**: base = 50% da renda ativa recente
+- [x] **Cofre offline relevante** (renda ativa × 15% + equipe; `offline_rate`): base = 50% da renda ativa recente
   (`recent_income_rate` persistido), cap 2h→8h por progressão, dobrar via
   rewarded/brasa.
-- [ ] **Automação como progressão**: Bia atende sozinha a cada N s (gerente por sala,
+- [x] **Automação como progressão** (`staff.json` `automation`, renda passiva + cofre): Bia atende sozinha a cada N s (gerente por sala,
   upgrades de velocidade).
-- [ ] **Cartão "Enquanto você estava fora"** (moedas, pets que visitaram, streak,
+- [x] **Cartão "Enquanto você estava fora"** (`SessionFeedback.show_offline_card` + dobro por brasa/vídeo) (moedas, pets que visitaram, streak,
   evento de hoje) no lugar do toast.
 
 ## 3. Feedback, momentos e juice
 
-- [ ] **Telas de revelação** (2–3 s) para novo pet, novo capítulo, level-up com
+- [x] **Telas de revelação** (`EventBus.reveal_requested` → `RevealCard`) (2–3 s) para novo pet, novo capítulo, level-up com
   desbloqueio, conquista, presente sazonal — hoje tudo é toast.
-- [ ] **Transformação visual por marco**: paleta/mobília por tier de estabelecimento;
+- [~] **Transformação visual por marco**: mural + luz por tier (`ChapterArt.gd`); estação evoluindo a cada 10 níveis fica para a arte: paleta/mobília por tier de estabelecimento;
   estação evoluindo a cada 10 níveis.
-- [ ] **Música real**: BGM é loop procedural de 8 s (`AudioManager._ambient_loop`);
+- [x] **Música real** (`tools/gen_bgm.py`: 3 trilhas por fase, 96 BPM, crossfade): BGM é loop procedural de 8 s (`AudioManager._ambient_loop`);
   `audio/bgm` vazio. Faixas por fase/tier.
-- [ ] **Meta visível no HUD**: "próximo: Nina (Nv.20) • Sala de Secagem (Nv.5)".
-- [ ] Buddy 40% → 25% subindo com afeto.
+- [x] **Meta visível no HUD** (`Goals.hud_line`): "próximo: Nina (Nv.20) • Sala de Secagem (Nv.5)".
+- [x] Buddy 40% → 25% subindo com afeto.
 
 ## 4. Onboarding e primeira sessão
 
-- [ ] Mini-tutorial fantasma de 1 tentativa para cada gesto novo (níveis 3/5/7/10).
-- [ ] Localizar as ~30 strings pt cravadas (`Main.gd`, `GameState.gd`,
+- [x] Mini-tutorial por gesto novo (`TutorialFlow.teach_service`, spotlight + dica, 1× por serviço).
+- [x] Localizar as ~30 strings pt cravadas (`Main.gd`, `GameState.gd`,
   `TutorialFlow.gd`, `MetaPanel.gd`).
-- [ ] Nomear o pet shop / o buddy.
+- [ ] Nomear o pet shop / o buddy (pendente: precisa de campo de texto no painel).
 
 ## 5. Retenção D1–D30
 
-- [ ] **Diárias do catálogo** (`daily_missions.json`: 3 sorteadas + épica, metas
+- [x] **Diárias do catálogo** (`Missions.gd`, sorteio por data, metas escaladas, épica) (`daily_missions.json`: 3 sorteadas + épica, metas
   escaladas ao nível) — hoje 3 fixas triviais.
-- [ ] **Descoberta de pets pela fila**: visitante misterioso antes do destravar.
-- [ ] Teto cosmético (11 itens) → 30+, rotativo semanal.
-- [ ] Cliente que vai embora não soma reputação (`_client_left` → `register_review(3)`).
+- [x] **Descoberta de pets pela fila** (`Discovery.gd`, visitante 3×, save v12): visitante misterioso antes do destravar.
+- [~] Teto cosmético 11 → 23 (banheiras por dado + 4 paredes procedurais); acessórios novos e rotativo semanal dependem de arte.
+- [x] Cliente que vai embora não soma reputação (`_client_left` → `register_review(3)`).
 
 ## 6. Social e viralização
 
-- [ ] **Share 9:16 com marca**: só o pet (antes/depois), nome/raça/estrelas, logo,
+- [x] **Share 9:16 com marca** (`ShareManager`: SubViewport, galeria/`navigator.share`, legenda no clipboard): só o pet (antes/depois), nome/raça/estrelas, logo,
   legenda; salvar na galeria/share sheet (`OS.share`/plugin) em vez de `user://`.
-- [ ] **Build Web publicável** (preset existe) como canal viral.
-- [ ] Ranking assíncrono / visita a amigos / código de convite (ROADMAP 1.3).
-- [ ] Card compartilhável de conquista.
+- [x] **Build Web publicável** (preset sem threads + `.github/workflows/web-pages.yml`) (preset existe) como canal viral.
+- [ ] Ranking assíncrono / visita a amigos / código de convite — exige backend (bloqueador externo).
+- [ ] Card compartilhável de conquista (reusar `ShareManager._render_card`; pendente).
 
 ## 7. Monetização
 
-- [ ] Rewarded real: dobrar cofre, +1 brasa, estender pico (`AdsPolicy` já limita).
-- [ ] IAP: sem anúncios, pacote iniciante, passe premium (trilha premium em
-  `pass.json`).
+- [~] Rewarded: placements prontos (dobrar cofre, +1 brasa) sobre o `AdsManager`; o SDK AdMob é bloqueador externo.
+- [ ] IAP: sem anúncios, pacote iniciante, passe premium — exige Play Billing (bloqueador externo).
 
 ## 8. LiveOps e cadência
 
-- [ ] Carnaval/Natal com cosmético (hoje `cosmetic: ""`) e pets sazonais com arte.
-- [ ] Meta do dia no evento semanal ("30 banhos na Segunda → baú").
-- [ ] `events.json`/preços via `RemoteConfig`.
+- [~] Carnaval/Natal com cosmético (`wall_carnaval`/`wall_natal`); pets sazonais dependem de arte.
+- [x] Meta do dia no evento semanal (`LiveOps.event_goal_*`, `GameState.claim_event_goal`).
+- [ ] `events.json`/preços via `RemoteConfig` (só floats hoje; pendente).
 
 ## 9. UX, acessibilidade, localização
 
-- [ ] Tamanho de fonte, modo daltônico (janela do gesto), mão esquerda, motor assistido.
-- [ ] Nomes de pets/staff/conquistas/cosméticos/pesquisa localizados.
-- [ ] Safe-area/notch e back button Android.
+- [~] Modo daltônico e assistência motora entregues (Ajustes); tamanho de fonte e mão esquerda pendentes. Faixa do Perfect agora desenha a janela REAL.
+- [ ] Nomes de pets/staff/conquistas/cosméticos/pesquisa localizados (catálogos pt-only).
+- [~] Back button Android fecha painéis (`Main._notification`); safe-area/notch pendente.
 
 ## 10. Técnico e plataforma
 
-- [ ] Preset Android ativo, ícone/splash, keystore de debug documentada.
-- [ ] Cloud save ou export/import de save.
-- [ ] Adapter de analytics + consentimento + funil mínimo.
-- [ ] Testes Godot de fluxo (atendimento completo, prestígio, migração real).
+- [~] Ícone/splash gerados e configurados; preset Android segue no template por decisão documentada (GODOT_4_7_COMPATIBILITY.md); keystore é passo de release.
+- [x] Export/import de save por código assinado (`SaveManager.export_code/import_code`, Ajustes).
+- [~] Consentimento em Ajustes (nada persiste sem opt-in); adapter Firebase é bloqueador externo.
+- [x] Testes de domínio no Godot na CI (prestígio, pesquisa, migração v8→atual, descoberta, agenda, recompensas).
 
 ## Ordem de execução (impacto ÷ esforço)
 
@@ -113,4 +112,17 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 
 ## Registro de execução
 
-(preenchido a cada etapa concluída, com commit)
+| Etapa | Commit | Conteúdo |
+|---|---|---|
+| 1 | `72736a4` | Recompensas/sinks escalados, cofre relevante, automação, prestígio com herança, bug dos tokens, diárias do catálogo, save v11 |
+| 2 | `5dec890`/`6eb12e1` | Cartões de revelação, meta no HUD, buddy |
+| 3 | `79dac86` | Share 9:16 com marca + galeria/navigator.share, workflow Web Pages |
+| 4 | `1002859` | Visitante misterioso (save v12), cosméticos 11→23, meta do dia |
+| 5 | `1225f43` | Mural por capítulo, trilhas de fundo por fase |
+| 6 | (este) | Gesto ensinado, localização, acessibilidade, transferência de save, consentimento, back button, ícone/splash, testes de domínio na CI |
+
+### Bloqueadores externos (não fabricáveis no repositório)
+SDKs (AdMob, Play Billing, Firebase), backend social (ranking/amigos), keystore e
+validação em aparelho, arte nova (acessórios, pets sazonais, estação por marco),
+áudio licenciado (as trilhas atuais são sintetizadas — substituíveis 1:1 pelo
+`gen_bgm.py --check`).

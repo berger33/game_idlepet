@@ -24,7 +24,17 @@ func track(event_name: StringName, parameters: Dictionary = {}) -> void:
 		flush_offline()
 
 
+## Consentimento (LGPD/GDPR): sem opt-in em Ajustes nada é persistido nem
+## entregue ao adapter; a fila em memória serve só à sessão e é descartada.
+func consent_given() -> bool:
+	return bool(GameState.settings.get("analytics_consent", false))
+
+
 func flush_offline() -> void:
+	if not consent_given():
+		if FileAccess.file_exists(QUEUE_PATH):
+			DirAccess.remove_absolute(QUEUE_PATH)
+		return
 	var file: FileAccess = FileAccess.open(QUEUE_PATH, FileAccess.WRITE)
 	if file == null:
 		return

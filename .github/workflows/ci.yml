@@ -81,6 +81,25 @@ jobs:
             done
             exit 1
           fi
+      - name: Testes de domínio (Godot) — economia, prestígio, pesquisa, descoberta, migração
+        run: |
+          ./godot --headless --path . --script tests/run_godot_tests.gd 2>&1 | tee /tmp/domain.log
+          status=${PIPESTATUS[0]}
+          if grep -q "SCRIPT ERROR" /tmp/domain.log; then
+            echo "::error::erro(s) de script nos testes de domínio"
+            grep -E "SCRIPT ERROR|at:" /tmp/domain.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          if ! grep -q "Godot domain tests: PASS" /tmp/domain.log; then
+            echo "::error::testes de domínio não passaram"
+            grep -iE "falha|failure|deve|must" /tmp/domain.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          exit $status
       - name: Interação — seleção de cliente e painéis (headless)
         run: |
           ./godot --headless --script tools/smoke_interact.gd 2>&1 | tee /tmp/interact.log

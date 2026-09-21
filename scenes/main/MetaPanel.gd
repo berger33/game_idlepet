@@ -606,6 +606,37 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("HAPTICS"), "haptics", true)
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
 	_add_toggle(Loc.t("NOTIFICATIONS"), "notifications", false)
+	# Acessibilidade: paleta daltônica e assistência motora (opt-in, sem custo).
+	_add_toggle(Loc.t("COLORBLIND_MODE"), "colorblind", false)
+	_add_toggle(Loc.t("ASSIST_WINDOW"), "assist_window", false)
+	# Consentimento de dados de uso (nada é gravado sem isto).
+	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)
+	# Transferência de progresso sem cloud save: código assinado no clipboard.
+	_info_row(
+		Loc.t("TRANSFER_TITLE"),
+		Loc.t("TRANSFER_EXPORT_DESC"),
+		Loc.t("TRANSFER_COPY"),
+		BLUE,
+		true,
+		func() -> void:
+			DisplayServer.clipboard_set(SaveManager.export_code())
+			EventBus.toast_requested.emit(Loc.t("TRANSFER_COPIED"), BLUE)
+	)
+	_info_row(
+		Loc.t("TRANSFER_IMPORT"),
+		Loc.t("TRANSFER_IMPORT_DESC"),
+		Loc.t("TRANSFER_PASTE"),
+		Color("ce93d8"),
+		true,
+		func() -> void:
+			if SaveManager.import_code(DisplayServer.clipboard_get()):
+				EventBus.toast_requested.emit(Loc.t("TRANSFER_DONE"), GREEN)
+				if refresh_callback.is_valid():
+					refresh_callback.call()
+			else:
+				EventBus.toast_requested.emit(Loc.t("TRANSFER_INVALID"), Color("ef5350"))
+				AudioManager.play(&"error_soft")
+	)
 	var lang_row: HBoxContainer = HBoxContainer.new()
 	lang_row.add_theme_constant_override("separation", 12)
 	screen.content_box.add_child(lang_row)

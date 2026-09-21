@@ -287,9 +287,9 @@ func _react_to_pet_touch() -> void:
 	world.affection_level = affection
 	AudioManager.play(&"pet_happy")
 	HapticsManager.light()
-	_show_toast("%s  •  carinho %d/50" % [message, affection], PINK)
+	_show_toast("%s  •  %s" % [message, Loc.t("PETTING_COUNT") % affection], PINK)
 	if GameState.services_completed == 0 and affection >= 3:
-		instruction_label.text = "Caramelo está pronto! Arraste o sabonete até ele."
+		instruction_label.text = Loc.t("FIRST_PET_READY")
 	Analytics.track(&"pet_interacted", {"pet_id": current_pet_id, "kind": "pet"})
 
 
@@ -305,6 +305,17 @@ func _rub(point: Vector2) -> void:
 	EventBus.service_progress.emit(bath.progress)
 
 
+## Botão voltar (Android): fecha o painel aberto ou o resultado; nunca sai
+## do jogo por acidente no meio de um atendimento.
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	if meta.is_open():
+		meta.close()
+	elif is_instance_valid(result_panel) and result_panel.visible:
+		_on_primary_pressed()
+
+
 func _on_primary_pressed() -> void:
 	if bath.state == BathService.State.COMPLETE or bath.state == BathService.State.FAILED:
 		_dismiss_result()
@@ -312,6 +323,7 @@ func _on_primary_pressed() -> void:
 
 func _start_bath() -> void:
 	bath.start_service()
+	tutorial.stop_teaching()
 	world.begin_service()
 	ShareManager.begin_snapshot(get_viewport(), world.pet_focus())
 	instruction_label.text = SalonTuning.hint(current_service)
@@ -344,7 +356,7 @@ func _finish_bath() -> void:
 		last_tip_percent = int(reward_result["tip_percent"])
 		if mastery.has("milestone"):
 			_show_toast(
-				"Maestria de %s %s!" % [
+				Loc.t("MASTERY_TOAST") % [
 					SalonTuning.tool_display_name(used_tool).strip_edges(), "★".repeat(int(mastery["milestone"]))
 				],
 				Color("ffd54f")
@@ -414,19 +426,10 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	if tutorial.step == 2:
 		tutorial.advance()
 	if GameState.combo >= 5:
-		result_title.text = "RITMO PERFEITO ×%d" % GameState.combo
+		result_title.text = Loc.t("RESULT_RHYTHM") % GameState.combo
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
 	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
-	var outcome: String = (
-		{
-			&"bath": "saiu limpinho!",
-			&"groom": "ganhou um corte novo!",
-			&"dry": "ficou sequinho e fofo!",
-			&"perfume": "ficou muito cheiroso!",
-			&"style": "amou o novo lacinho!",
-		}
-		. get(current_service, "recebeu cuidado especial!")
-	)
+	var outcome: String = Loc.t("SHARE_SERVICE_" + String(current_service).to_upper())
 	var xp_reward: int = 15 if quality == &"perfect" else 10
 	xp_reward = int(xp_reward * (1.0 + GameState.staff_bonus(&"veterinary_xp")))
 	var tip_line: String = (
@@ -436,11 +439,11 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		tip_line = Loc.t("VIP_TAG") + " ×2 · " + tip_line
 	var extra_line: String = ""
 	if special_active:
-		extra_line += "\n★ pedido especial atendido!"
+		extra_line += "\n" + Loc.t("RESULT_SPECIAL")
 	if world.buddy_active:
-		extra_line += "\n• buddy na banheira dupla: +40%"
+		extra_line += "\n" + Loc.t("RESULT_BUDDY")
 	result_detail.text = (
-		"%s\n+%d moedas  •  +%d XP\n%s\n%s %s%s"
+		"%s\n+%d " + Loc.t("COINS") + "  •  +%d XP\n%s\n%s %s%s"
 		% [
 			"★".repeat(stars),
 			int(reward),
@@ -456,7 +459,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	)
 	share_button.visible = true
 	_pop_panel(result_panel)
-	primary_button.text = "✓  CONTINUAR"
+	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
 	primary_button.disabled = false
 	primary_button.show()
 	_refresh_economy()
@@ -483,23 +486,20 @@ func _fail(reason: StringName) -> void:
 	world.react_to_failure()
 	AudioManager.play(&"error")
 	HapticsManager.error()
-	result_title.text = "QUASE LÁ!"
+	result_title.text = Loc.t("RESULT_ALMOST")
 	result_title.modulate = Color("ef5350")
 	var action_name: String = String(SERVICE_LABELS.get(current_service, "cuidado"))
 	var hint: String
 	if reason == &"timeout":
-		hint = "O tempo acabou. Faça o movimento com mais ritmo!"
+		hint = Loc.t("FAIL_TIMEOUT")
 	elif reason == &"overwashed":
-		hint = (
-			"%s demais. Solte assim que o aro entrar na faixa verde."
-			% action_name.capitalize()
-		)
+		hint = Loc.t("FAIL_OVERWASHED") % action_name.capitalize()
 	else:
-		hint = "Leve a %s até a faixa verde antes de finalizar." % action_name
-	result_detail.text = "★★☆☆☆\n%s\nSem punição — tente de novo." % hint
+		hint = Loc.t("FAIL_TOO_SOON") % action_name
+	result_detail.text = "★★☆☆☆\n%s\n%s" % [hint, Loc.t("FAIL_NO_PENALTY")]
 	share_button.visible = false
 	_pop_panel(result_panel)
-	primary_button.text = "↻  TENTAR NOVAMENTE"
+	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
 	primary_button.disabled = false
 	primary_button.show()
 	if tutorial.step == 2:
@@ -564,7 +564,7 @@ func _start_rush() -> void:
 	rush_active = true
 	rush_left = RemoteConfig.get_float("rush_duration")
 	GameState.rush_combo_protection = true
-	_show_toast("PICO DO BAIRRO! Gorjetas dobradas e fila cheia!", Color("ffb300"))
+	_show_toast(Loc.t("RUSH_TOAST"), Color("ffb300"))
 	Analytics.track(&"rush_started", {})
 	for slot: int in 3:
 		if queue[slot].is_empty():
@@ -653,10 +653,9 @@ func _on_queue_pressed(slot: int) -> void:
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
 	instruction_label.text = (
-		"Arraste %s da prateleira até %s" % [
-			SalonTuning.tool_display_name(required_tool), current_pet_name
-		]
+		Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(required_tool), current_pet_name]
 	)
+	tutorial.teach_service(current_service)
 	_update_queue_ui()
 	Analytics.track(
 		&"client_selected",
@@ -740,7 +739,7 @@ func _update_queue_ui() -> void:
 		var client: Dictionary = queue[slot]
 		if client.is_empty():
 			queue_name_labels[slot].text = "· · ·"
-			queue_service_labels[slot].text = "aguardando cliente"
+			queue_service_labels[slot].text = Loc.t("QUEUE_WAITING")
 			queue_info_labels[slot].text = ""
 			queue_cards[slot].modulate.a = 0.45
 			queue_cards[slot].add_theme_stylebox_override(
@@ -951,7 +950,9 @@ func _build_interface() -> void:
 	action_hud.add_theme_constant_override("separation", 16)
 	add_child(action_hud)
 	instruction_label = Label.new()
-	instruction_label.text = "Arraste o sabonete da prateleira até Caramelo"
+	instruction_label.text = (
+		Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(&"soap"), "Caramelo"]
+	)
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	instruction_label.add_theme_font_size_override("font_size", 33)

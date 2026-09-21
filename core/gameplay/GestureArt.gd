@@ -25,6 +25,22 @@ static func _triangle(shop, tip: Vector2, direction: Vector2, color: Color) -> v
 
 ## UI de gesto por serviço: setas da tosa, zona da secagem, anel rítmico do
 ## perfume e marca de encaixe do laço. Desenhada sobre o pet, sob o utensílio.
+## Paleta de estado acessível: verde/vermelho viram azul/laranja no modo
+## daltônico (settings["colorblind"]) — o núcleo do jogo é "soltar na faixa".
+static func good_color(alpha: float = 1.0) -> Color:
+	var base: Color = Color("4fc3f7") if _colorblind() else Color("7ed957")
+	return Color(base, alpha)
+
+
+static func bad_color(alpha: float = 1.0) -> Color:
+	var base: Color = Color("ff9800") if _colorblind() else Color("ef5350")
+	return Color(base, alpha)
+
+
+static func _colorblind() -> bool:
+	return bool(GameState.settings.get("colorblind", false))
+
+
 static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 	if shop.gesture_ui.is_empty() or not shop.service_active or shop.room_empty:
 		return
@@ -44,7 +60,7 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 				)
 				var color: Color
 				if i < current:
-					color = Color("7ed957", 0.9)
+					color = good_color(0.9)
 				elif i == current:
 					color = Color("ff8fb1", 0.95)
 				else:
@@ -62,7 +78,7 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 			var target: Vector2 = shop.gesture_ui.get("zone_target", body_center) + jitter
 			var radius: float = float(shop.gesture_ui.get("zone_radius", 110.0))
 			var inside: bool = bool(shop.gesture_ui.get("zone_inside", false))
-			var zone_color: Color = Color("7ed957", 0.9) if inside else Color("ffffff", 0.75)
+			var zone_color: Color = good_color(0.9) if inside else Color("ffffff", 0.75)
 			shop.draw_circle(target, radius, Color(zone_color.r, zone_color.g, zone_color.b, 0.10))
 			shop.draw_arc(target, radius, 0.0, TAU, 48, zone_color, 6.0)
 			shop.draw_circle(target, 10.0, zone_color)
@@ -88,7 +104,7 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 			var target: Vector2 = shop.gesture_ui.get("drop_target", body_center) + jitter * 0.5
 			var radius: float = float(shop.gesture_ui.get("drop_radius", 110.0))
 			var inside: bool = bool(shop.gesture_ui.get("drop_inside", false))
-			var mark_color: Color = Color("7ed957", 0.9) if inside else Color("ff8fb1", 0.9)
+			var mark_color: Color = good_color(0.9) if inside else Color("ff8fb1", 0.9)
 			for seg: int in 12:
 				shop.draw_arc(
 					target, radius, TAU * seg / 12.0 + 0.09, TAU * (seg + 1) / 12.0 - 0.09, 6,
@@ -138,6 +154,8 @@ static func gesture_snapshot(bath: BathService) -> Dictionary:
 	return {
 		"mode": bath.fill_mode,
 		"shake": bath.shake_amplitude,
+		"target_min": bath.target_minimum,
+		"target_max": bath.target_maximum,
 		"axes": bath.stroke_axes,
 		"stroke_index": bath.stroke_index,
 		"zone_target": bath.zone_target,

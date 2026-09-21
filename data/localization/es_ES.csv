@@ -224,3 +224,39 @@ EVENT_GOAL_TITLE,META DEL DÍA
 EVENT_GOAL_DESC,%s: %d/%d atenciones
 EVENT_GOAL_ANY,cualquier servicio
 EVENT_GOAL_REWARD,cofre: +%d monedas y +%d Brasas
+TEACH_NEW_GESTURE,¡Gesto nuevo! Pruébalo con calma:
+TUT_STEP_1,Toca un cliente de la fila para atender
+TUT_STEP_2,Arrastra %s hasta %s
+DRAG_TOOL_TO,Arrastra %s del estante hasta %s
+QUEUE_WAITING,esperando cliente
+RUSH_TOAST,¡HORA PUNTA DEL BARRIO! ¡Propinas dobles y fila llena!
+MASTERY_TOAST,¡Maestría de %s %s!
+RESULT_SPECIAL,★ ¡pedido especial atendido!
+RESULT_BUDDY,• buddy en la bañera doble: +40%
+RESULT_ALMOST,¡CASI!
+RESULT_RHYTHM,RITMO PERFECTO ×%d
+FAIL_TIMEOUT,Se acabó el tiempo. ¡Mueve con más ritmo!
+FAIL_OVERWASHED,%s de más. Suelta en cuanto el aro entre en la franja verde.
+FAIL_TOO_SOON,Lleva el %s hasta la franja verde antes de terminar.
+FAIL_NO_PENALTY,Sin castigo — inténtalo de nuevo.
+PETTING_COUNT,cariño %d/50
+FIRST_PET_READY,¡Caramelo está listo! Arrastra el jabón hasta él.
+COMEBACK_TOAST,¡Bienvenido de vuelta! Regalo de regreso reclamado.
+AFFECTION_TOAST,¡Lazo de amistad! +%d Brasas
+TEMPER_AGITATED,inquieto
+TEMPER_CALM,tranquilo
+TEMPER_PLAYFUL,juguetón
+TEMPER_SHY,tímido
+PAYS,paga
+COLORBLIND_MODE,Modo daltónico (franja azul/naranja)
+ASSIST_WINDOW,Asistencia motora (franja y objetivos más grandes)
+ANALYTICS_CONSENT,Compartir datos de uso anónimos
+TRANSFER_TITLE,Transferir progreso
+TRANSFER_EXPORT_DESC,Copia un código firmado para pegar en otro dispositivo
+TRANSFER_COPY,COPIAR CÓDIGO
+TRANSFER_COPIED,¡Código copiado! Pégalo en Ajustes en el otro dispositivo.
+TRANSFER_IMPORT,Restaurar progreso
+TRANSFER_IMPORT_DESC,Pega el código copiado (reemplaza la partida actual)
+TRANSFER_PASTE,PEGAR CÓDIGO
+TRANSFER_DONE,¡Progreso restaurado!
+TRANSFER_INVALID,Código inválido o dañado.

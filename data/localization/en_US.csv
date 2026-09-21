@@ -224,3 +224,39 @@ EVENT_GOAL_TITLE,GOAL OF THE DAY
 EVENT_GOAL_DESC,%s: %d/%d services
 EVENT_GOAL_ANY,any service
 EVENT_GOAL_REWARD,chest: +%d coins and +%d Embers
+TEACH_NEW_GESTURE,New gesture! Take your time:
+TUT_STEP_1,Tap a client in the queue to serve
+TUT_STEP_2,Drag %s to %s
+DRAG_TOOL_TO,Drag %s from the shelf to %s
+QUEUE_WAITING,waiting for a client
+RUSH_TOAST,NEIGHBORHOOD RUSH! Double tips and a full queue!
+MASTERY_TOAST,%s mastery %s!
+RESULT_SPECIAL,★ special request fulfilled!
+RESULT_BUDDY,• buddy in the double tub: +40%
+RESULT_ALMOST,ALMOST THERE!
+RESULT_RHYTHM,PERFECT RHYTHM ×%d
+FAIL_TIMEOUT,Time ran out. Move with a bit more rhythm!
+FAIL_OVERWASHED,Too much %s. Release as soon as the ring enters the green band.
+FAIL_TOO_SOON,Bring the %s into the green band before finishing.
+FAIL_NO_PENALTY,No penalty — try again.
+PETTING_COUNT,petting %d/50
+FIRST_PET_READY,Caramelo is ready! Drag the soap to him.
+COMEBACK_TOAST,Welcome back! Return gift claimed.
+AFFECTION_TOAST,Friendship bond! +%d Embers
+TEMPER_AGITATED,restless
+TEMPER_CALM,calm
+TEMPER_PLAYFUL,playful
+TEMPER_SHY,shy
+PAYS,pays
+COLORBLIND_MODE,Colorblind mode (blue/orange band)
+ASSIST_WINDOW,Motor assistance (wider band and targets)
+ANALYTICS_CONSENT,Share anonymous usage data
+TRANSFER_TITLE,Transfer progress
+TRANSFER_EXPORT_DESC,Copies a signed code to paste on another device
+TRANSFER_COPY,COPY CODE
+TRANSFER_COPIED,Code copied! Paste it in Settings on the other device.
+TRANSFER_IMPORT,Restore progress
+TRANSFER_IMPORT_DESC,Pastes the copied code (replaces the current save)
+TRANSFER_PASTE,PASTE CODE
+TRANSFER_DONE,Progress restored!
+TRANSFER_INVALID,Invalid or corrupted code.

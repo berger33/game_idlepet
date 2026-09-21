@@ -540,6 +540,9 @@ func _sanitize_settings() -> void:
 	settings["haptics"] = bool(settings.get("haptics", true))
 	settings["reduced_particles"] = bool(settings.get("reduced_particles", false))
 	settings["eco_mode"] = bool(settings.get("eco_mode", false))
+	settings["colorblind"] = bool(settings.get("colorblind", false))
+	settings["assist_window"] = bool(settings.get("assist_window", false))
+	settings["analytics_consent"] = bool(settings.get("analytics_consent", false))
 
 
 func _refresh_daily_missions() -> void:
@@ -873,7 +876,7 @@ func register_pet_interaction(pet_id: String) -> int:
 	if reached_new_milestone and touches in [5, 20, 50]:
 		var ember_reward: int = 1 if touches == 5 else (2 if touches == 20 else 3)
 		embers += ember_reward
-		EventBus.toast_requested.emit("Laço de amizade! +%d Brasas" % ember_reward, Color("ff8fb1"))
+		EventBus.toast_requested.emit(Loc.t("AFFECTION_TOAST") % ember_reward, Color("ff8fb1"))
 	SaveManager.request_save()
 	return touches
 

@@ -5,6 +5,11 @@ config_version=5
 config/name="PetShop Tycoon: Do Banho à Rede"
 run/main_scene="res://scenes/main/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
+config/icon="res://art/ui/icon.png"
+boot_splash/bg_color=Color(1, 0.952941, 0.878431, 1)
+boot_splash/image="res://art/ui/splash.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
 
 [autoload]
 EventBus="*res://autoload/EventBus.gd"

@@ -62,10 +62,34 @@ func load_game() -> bool:
 	return false
 
 
+## Código de transferência (sem cloud save): o envelope assinado do save em
+## Base64, para copiar/colar entre aparelhos. O mesmo hash+chave do arquivo
+## protege contra edição; a versão passa pela migração normal.
+func export_code() -> String:
+	var json: String = JSON.stringify(GameState.to_dictionary())
+	var envelope: Dictionary = {"hash": _sha256(json + KEY), "payload": json}
+	return Marshalls.raw_to_base64(_xor(JSON.stringify(envelope).to_utf8_buffer()))
+
+
+func import_code(code: String) -> bool:
+	var data: Dictionary = _decode_envelope(code.strip_edges())
+	if data.is_empty():
+		return false
+	GameState.apply_dictionary(_migrate(data))
+	Analytics.track(&"save_imported", {"version": int(data.get("version", 0))})
+	save_game()
+	return true
+
+
 func _read_save(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
-	var encoded: String = FileAccess.get_file_as_string(path)
+	return _decode_envelope(FileAccess.get_file_as_string(path))
+
+
+func _decode_envelope(encoded: String) -> Dictionary:
+	if encoded.is_empty():
+		return {}
 	var decoded: PackedByteArray = _xor(Marshalls.base64_to_raw(encoded))
 	var parsed: Variant = JSON.parse_string(decoded.get_string_from_utf8())
 	if not parsed is Dictionary:

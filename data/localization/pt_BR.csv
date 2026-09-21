@@ -224,3 +224,39 @@ EVENT_GOAL_TITLE,META DO DIA
 EVENT_GOAL_DESC,%s: %d/%d atendimentos
 EVENT_GOAL_ANY,qualquer serviço
 EVENT_GOAL_REWARD,baú: +%d moedas e +%d Brasas
+TEACH_NEW_GESTURE,Gesto novo! Experimente sem pressa:
+TUT_STEP_1,Toque em um cliente da fila para atender
+TUT_STEP_2,Arraste %s até %s
+DRAG_TOOL_TO,Arraste %s da prateleira até %s
+QUEUE_WAITING,aguardando cliente
+RUSH_TOAST,PICO DO BAIRRO! Gorjetas dobradas e fila cheia!
+MASTERY_TOAST,Maestria de %s %s!
+RESULT_SPECIAL,★ pedido especial atendido!
+RESULT_BUDDY,• buddy na banheira dupla: +40%
+RESULT_ALMOST,QUASE LÁ!
+RESULT_RHYTHM,RITMO PERFEITO ×%d
+FAIL_TIMEOUT,O tempo acabou. Faça o movimento com mais ritmo!
+FAIL_OVERWASHED,%s demais. Solte assim que o aro entrar na faixa verde.
+FAIL_TOO_SOON,Leve a %s até a faixa verde antes de finalizar.
+FAIL_NO_PENALTY,Sem punição — tente de novo.
+PETTING_COUNT,carinho %d/50
+FIRST_PET_READY,Caramelo está pronto! Arraste o sabonete até ele.
+COMEBACK_TOAST,Bem-vindo de volta! Presente de retorno resgatado.
+AFFECTION_TOAST,Laço de amizade! +%d Brasas
+TEMPER_AGITATED,agitado
+TEMPER_CALM,calmo
+TEMPER_PLAYFUL,brincalhão
+TEMPER_SHY,tímido
+PAYS,paga
+COLORBLIND_MODE,Modo daltônico (azul/laranja na faixa)
+ASSIST_WINDOW,Assistência motora (faixa e alvos maiores)
+ANALYTICS_CONSENT,Compartilhar dados de uso anônimos
+TRANSFER_TITLE,Transferir progresso
+TRANSFER_EXPORT_DESC,Copia um código assinado para colar em outro aparelho
+TRANSFER_COPY,COPIAR CÓDIGO
+TRANSFER_COPIED,Código copiado! Cole em Ajustes no outro aparelho.
+TRANSFER_IMPORT,Restaurar progresso
+TRANSFER_IMPORT_DESC,Cola o código copiado (substitui o save atual)
+TRANSFER_PASTE,COLAR CÓDIGO
+TRANSFER_DONE,Progresso restaurado!
+TRANSFER_INVALID,Código inválido ou corrompido.

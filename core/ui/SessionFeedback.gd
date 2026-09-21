@@ -11,7 +11,7 @@ extends RefCounted
 static func show_comeback(main) -> void:
 	if not GameState.check_return_bonus():
 		return
-	main._show_toast("Bem-vindo de volta! Presente de retorno resgatado.", main.GREEN)
+	main._show_toast(Loc.t("COMEBACK_TOAST"), main.GREEN)
 	AudioManager.play(&"comeback")
 	HapticsManager.success()
 

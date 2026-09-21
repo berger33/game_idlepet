@@ -463,7 +463,7 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('world.tool_at(point)', main)
         self.assertIn('draw_arc(tool_position, 66.0', canvas)
         self.assertNotIn('for shelf_y:', canvas)
-        self.assertIn('✓  CONTINUAR', main)
+        self.assertIn('"✓  " + Loc.t("REVEAL_OK")', main)  # CONTINUAR localizado
         # O CTA morto "DOBRAR PONTUAÇÃO • EM BREVE" foi removido (auditoria C10);
         # ele não pode voltar sem um provedor de anúncios real.
         self.assertNotIn('EM BREVE', main)
@@ -1218,6 +1218,87 @@ class ChapterPresentationTests(unittest.TestCase):
             self.assertIn(token, audio)
         workflow = Path('.github/workflows/ci.yml').read_text(encoding='utf8')
         self.assertIn('gen_bgm.py --check', workflow)
+
+
+class AccessibilityAndPlatformTests(unittest.TestCase):
+    """§4/§9/§10 do plano: gesto ensinado, acessibilidade, transferência de save,
+    consentimento, back button, ícone/splash, preset Android e testes de domínio na CI."""
+
+    def test_new_gestures_are_taught_once(self):
+        flow = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        for token in ('func teach_service', 'func stop_teaching', 'services_taught',
+                      'SalonTuning.hint(service)', 'TEACH_NEW_GESTURE'):
+            self.assertIn(token, flow)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('tutorial.teach_service(current_service)', main)
+        self.assertIn('tutorial.stop_teaching()', main)
+        # Strings do onboarding/resultado saíram do código (EN/ES sem pt no meio).
+        for stale in ('"Caramelo está pronto!', '"aguardando cliente"', '"QUASE LÁ!"',
+                      '"PICO DO BAIRRO!', '"saiu limpinho!"', 'Sem punição — tente de novo."'):
+            self.assertNotIn(stale, main, stale)
+        self.assertNotIn('Bem-vindo de volta!', Path('core/ui/SessionFeedback.gd').read_text(encoding='utf8'))
+        self.assertNotIn('"Laço de amizade!', Path('autoload/GameState.gd').read_text(encoding='utf8'))
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('"TEMPER_AGITATED"', salon)
+        self.assertNotIn('"agitado"', salon)
+
+    def test_accessibility_options_reach_the_core_gesture(self):
+        gesture = Path('core/gameplay/GestureArt.gd').read_text(encoding='utf8')
+        self.assertIn('static func good_color', gesture)
+        self.assertIn('static func bad_color', gesture)
+        self.assertIn('"target_min": bath.target_minimum', gesture, 'faixa desenhada = janela real')
+        canvas = Path('core/gameplay/PetShopCanvas.gd').read_text(encoding='utf8')
+        self.assertIn('gesture_ui.get("target_min"', canvas)
+        self.assertIn('GestureArt.good_color(', canvas)
+        self.assertNotIn('ring_color = Color("ef5350")', canvas)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('settings.get("assist_window", false)', salon)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        for key in ('"colorblind"', '"assist_window"', '"analytics_consent"'):
+            self.assertIn(key, panel)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for key in ('colorblind', 'assist_window', 'analytics_consent'):
+            self.assertIn('settings["%s"] = bool(' % key, state)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('COLORBLIND_MODE', 'ASSIST_WINDOW', 'ANALYTICS_CONSENT', 'TEACH_NEW_GESTURE',
+                        'TRANSFER_COPY', 'TRANSFER_PASTE', 'TRANSFER_INVALID', 'QUEUE_WAITING',
+                        'FAIL_NO_PENALTY', 'TEMPER_SHY'):
+                self.assertIn(key, table)
+
+    def test_save_transfer_consent_and_back_button(self):
+        save = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
+        for token in ('func export_code', 'func import_code', 'func _decode_envelope',
+                      'GameState.apply_dictionary(_migrate(data))'):
+            self.assertIn(token, save)
+        analytics = Path('autoload/Analytics.gd').read_text(encoding='utf8')
+        self.assertIn('func consent_given', analytics)
+        self.assertIn('if not consent_given():', analytics)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('NOTIFICATION_WM_GO_BACK_REQUEST', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('SaveManager.export_code()', panel)
+        self.assertIn('SaveManager.import_code(DisplayServer.clipboard_get())', panel)
+
+    def test_platform_assets_and_domain_tests_in_ci(self):
+        project = Path('project.godot').read_text(encoding='utf8')
+        self.assertIn('config/icon="res://art/ui/icon.png"', project)
+        self.assertIn('boot_splash/image="res://art/ui/splash.png"', project)
+        for asset in ('art/ui/icon.png', 'art/ui/splash.png'):
+            raw = Path(asset).read_bytes()
+            self.assertEqual(raw[:8], b'\x89PNG\r\n\x1a\n', asset)
+        # O preset Android fica no template (decisão em GODOT_4_7_COMPATIBILITY.md:
+        # ativo, ele faz o editor procurar build-tools em máquinas sem SDK).
+        template = Path('docs/export_presets.android.template.cfg').read_text(encoding='utf8')
+        self.assertIn('platform="Android"', template)
+        self.assertIn('package/unique_name=', template)
+        self.assertNotIn('keystore/release_password="', template.replace('""', ''), 'nunca versionar senha')
+        workflow = Path('.github/workflows/ci.yml').read_text(encoding='utf8')
+        self.assertIn('tests/run_godot_tests.gd', workflow)
+        domain = Path('tests/run_godot_tests.gd').read_text(encoding='utf8')
+        for token in ('_test_prestige_and_research', '_test_save_migration', '_test_discovery',
+                      '_test_rewards_and_missions', '_test_liveops_schedule'):
+            self.assertIn(token, domain)
 
 
 if __name__=='__main__': unittest.main()
