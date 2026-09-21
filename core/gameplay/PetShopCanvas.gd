@@ -141,9 +141,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	shake_phase += delta
 	blink_force_time = maxf(0.0, blink_force_time - delta)
-	arrival_time = minf(1.0, arrival_time + delta * 2.8)
+	arrival_time = minf(1.0, arrival_time + delta * 1.8) # entrada 0.55s (antes 0.35s)
 	if departure_time >= 0.0:
-		departure_time = minf(1.0, departure_time + delta * 2.4)
+		departure_time = minf(1.0, departure_time + delta * 1.5) # saída 0.66s contemplativa (antes 0.41s)
 	celebration = maxf(0.0, celebration - delta)
 	condition_release = maxf(0.0, condition_release - delta * 1.6)
 	if celebration <= 0.0:

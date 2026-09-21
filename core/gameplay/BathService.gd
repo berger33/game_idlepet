@@ -195,8 +195,8 @@ func tick(delta: float) -> bool:
 			if zone_inside and hop_left <= 0.0:
 				progress = clampf(progress + hold_rate * delta, 0.0, 1.0)
 			else:
-				# Drenagem perceptível fora da zona (antes 0.016 = imperceptível)
-				progress = maxf(0.0, progress - 0.08 * delta)
+				# Drenagem suave fora da zona (0.06 vs 0.08) — penaliza sem frustrar
+				progress = maxf(0.0, progress - 0.06 * delta)
 	elif fill_mode == &"pulse":
 		pulse_time += delta
 	elif fill_mode == &"hold" and has_pointer and hold_rate > 0.0:

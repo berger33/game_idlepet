@@ -653,9 +653,10 @@ func _dismiss_result() -> void:
 					meta.open(&"settings")
 			, CONNECT_ONE_SHOT)
 func _refill_delay() -> float:
-	var base: float = 0.35 if rush_active else 1.1
+	# Respiro na fila: 3.8s normal (antes 1.1s), 1.4s no rush (antes 0.35s) — pet fica visível
+	var base: float = 1.4 if rush_active else 3.8
 	if GameState.establishment_tier >= 6:
-		base *= 0.5 # Nota10: segunda sala funcional fila 2x mais rápida
+		base *= 0.6 # segunda sala ainda ajuda, mas 40% menos frênetica (antes 0.5)
 	return base
 func _update_rush(delta: float) -> void:
 	if rush_active:
@@ -678,7 +679,7 @@ func _start_rush() -> void:
 	Analytics.track(&"rush_started", {})
 	for slot: int in 3:
 		if queue[slot].is_empty():
-			refill_timers[slot] = minf(refill_timers[slot], 0.5)
+			refill_timers[slot] = minf(refill_timers[slot], 1.2) # respiro rush (antes 0.5)
 func _end_rush() -> void:
 	rush_active = false
 	GameState.rush_combo_protection = false
@@ -724,7 +725,7 @@ func _on_queue_pressed(slot: int) -> void:
 	if not _can_select(slot):
 		return
 	if queue[slot].is_empty():
-		refill_timers[slot] = minf(refill_timers[slot], 0.25)
+		refill_timers[slot] = minf(refill_timers[slot], 0.80) # toque acelera mas ainda respirável (antes 0.25)
 		_show_toast("⏩ " + Loc.t("QUEUE_SPEEDUP"), GREEN)
 		AudioManager.play(&"tap")
 		HapticsManager.light()
@@ -792,9 +793,9 @@ func _process_queue(delta: float) -> void:
 			and slot != selected_slot
 			and bool(GameState.tutorial_complete)
 		):
-			var patience_drain: float = delta * (1.0 - Research.bonus(&"patience"))
+			var patience_drain: float = delta * 0.65 * (1.0 - Research.bonus(&"patience")) # 35% mais lento base
 			if rush_active:
-				patience_drain *= 0.5
+				patience_drain *= 0.45 # rush mais humano (antes 0.5)
 			if mood_buff_clients > 0:
 				patience_drain *= 0.9
 			if GameState.establishment_tier >= 6:
@@ -823,7 +824,7 @@ func _client_left(slot: int) -> void:
 	_show_toast(Loc.t("CLIENT_LEFT_COINS") % [leaver_name, lost], Color("ef5350"))
 	world.forced_state = &"sad"; world.forced_state_time = 1.2
 	Analytics.track(&"client_left", {"pet_id": String(client["pet"]), "lost_coins": lost})
-	queue[slot] = {}; refill_timers[slot] = 2.0 if not rush_active else 0.6
+	queue[slot] = {}; refill_timers[slot] = 3.5 if not rush_active else 1.2 # cliente foi embora: respiro maior (antes 2.0/0.6)
 	_update_queue_ui()
 func _update_queue_ui() -> void:
 	for slot: int in 3:
@@ -883,13 +884,14 @@ func _update_queue_ui() -> void:
 			queue_cards[slot].modulate.a = 1.0
 			queue_cards[slot].disabled = not _can_select(slot)
 func _configure_current_service() -> void:
-	var duration: float = {&"bath": 10.0, &"groom": 11.0, &"dry": 9.0, &"perfume": 8.0, &"style": 8.0}.get(current_service, 10.0)
-	var required_distance: float = {&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}.get(current_service, 1350.0)
+	# Ritmo confortável: serviços 40% mais longos para o pet respirar em cena
+	var duration: float = {&"bath": 14.0, &"groom": 16.0, &"dry": 13.0, &"perfume": 12.0, &"style": 12.0}.get(current_service, 14.0)
+	var required_distance: float = {&"bath": 2100.0, &"groom": 2400.0, &"dry": 1800.0, &"perfume": 1050.0, &"style": 1500.0}.get(current_service, 2100.0)
 	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
 	var pf: float = clampf(patience / 42.0, 0.6, 1.25) + GameState.staff_bonus(&"patience")
 	pf = RushTuning.patience_factor(pf, assistance_clients)
-	if GameState.services_completed == 0: pf *= 1.3; required_distance *= 0.8
-	if current_service == &"bath": required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
+	if GameState.services_completed == 0: pf *= 1.15; required_distance *= 0.85 # tutorial mais curto que antes 1.3/0.8 para não disparar
+	if current_service == &"bath": required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed") * 0.7 # staff acelera 30% menos
 	var wb: float = GameState.staff_bonus(&"perfect_window")
 	if current_service == &"groom": wb += GameState.staff_bonus(&"groom_quality")
 	wb = RushTuning.window_bonus(wb, assistance_clients)

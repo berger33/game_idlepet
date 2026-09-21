@@ -3,7 +3,7 @@ extends Node
 
 const DEFAULTS: Dictionary = {
 	"bath_base_reward": 52.0, # Realismo Guarulhos 2025: banho pequeno-medio R$40-60 => media R$52 (antes 12)
-	"bath_duration": 6.0,
+	"bath_duration": 8.5, # ritmo confortável: +40% para gesto respirar (antes 6.0)
 	"bath_target_min": 0.82,
 	"bath_target_max": 0.96,
 	"upgrade_cost_base": 55.0, # escalado 2.2x para manter ritmo 62h com prêmio medio 2.2x (antes 25)
@@ -17,8 +17,8 @@ const DEFAULTS: Dictionary = {
 	"interstitial_min_session_seconds": 1200,
 	"events_enabled": 1.0,
 	"event_boost_scale": 1.0,
-	"rush_interval_seconds": 240.0,
-	"rush_duration": 45.0,
+	"rush_interval_seconds": 360.0, # 6 min: pico respirável (antes 4 min)
+	"rush_duration": 30.0, # 30s de êxtase contido (antes 45s)
 	"rush_tip_mult": 2.0,
 	"upsell_chance": 0.35,
 	"upsell_tip_mult": 1.4,

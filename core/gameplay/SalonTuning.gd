@@ -12,7 +12,7 @@ extends RefCounted
 const GESTURES: Dictionary = {
 	&"bath": {"axis": &"any", "mode": &"rub", "cap": 90.0, "rate": 0.0},
 	&"groom": {"axis": &"vertical", "mode": &"stroke", "cap": 70.0, "rate": 0.0},
-	&"dry": {"axis": &"any", "mode": &"zone", "cap": 70.0, "rate": 0.30},
+	&"dry": {"axis": &"any", "mode": &"zone", "cap": 70.0, "rate": 0.20}, # -33% respire mais
 	&"perfume": {"axis": &"any", "mode": &"pulse", "cap": 90.0, "rate": 0.0},
 	&"style": {"axis": &"any", "mode": &"drop", "cap": 90.0, "rate": 0.0},
 }
@@ -71,20 +71,20 @@ static func apply(
 				stroke_axes_for(String(profile.get("id", ""))), 520.0 * breed_size_factor(profile)
 			)
 		&"dry":
-			# Secação: acompanhar o círculo que deriva. Raças pequenas = alvo
-			# maior e mais lento (mais fácil), grandes = mais rápido.
+			# Secação: acompanhar o círculo que deriva. Ritmo 20% mais lento para
+			# o gesto respirar; raio generoso mantém leitura sem punir.
 			var small: bool = breed_size_factor(profile) < 1.0
-			var radius: float = 88.0 if small else 76.0
-			var speed: float = 0.7 if small else 1.0
+			var radius: float = 92.0 if small else 80.0
+			var speed: float = 0.55 if small else 0.85
 			bath.configure_zone(body_center, radius, speed)
 		&"perfume":
-			# Perfume: 3 borrifadas, janela 50% do período (mais relaxante),
-			# período 1,5 s (antes 1,35) — dá tempo de respirar.
-			bath.configure_pulses(3, 1.5, 0.5)
+			# Perfume: 3 borrifadas, janela 42% (antes 50%) com período 1,7s
+			# — ritmo cadenciado, mínimo 3.4s de interação, não spam.
+			bath.configure_pulses(3, 1.7, 0.42)
 		&"style":
-			# Laço: encaixe de precisão na marca do pescoço. Raio menor
-			# (80) exige precisão, mas taxa maior (0,8) recompensa rápido.
-			bath.configure_drop(body_center + Vector2(0.0, -74.0), 80.0, 0.8)
+			# Laço: encaixe generoso (85) com taxa contida (0.50) — precisa
+			# segurar ~1.8s colado, não 0.7s, para valorizar o momento final.
+			bath.configure_drop(body_center + Vector2(0.0, -74.0), 85.0, 0.50)
 	# --- A2: temperamento e espécie mudam o jogo ---
 	var temperament: StringName = StringName(profile.get("temperament", "happy"))
 	var species: StringName = StringName(profile.get("species", "dog"))
@@ -117,10 +117,10 @@ static func apply(
 			&"clipper":
 				bath.stroke_quota *= 0.85
 			&"dryer":
-				bath.zone_speed *= 0.7
-				bath.hold_rate = clampf(bath.hold_rate * 1.5, 0.0, 0.5)
+				bath.zone_speed *= 0.75 # antes 0.70 — menos aceleração com maestria
+				bath.hold_rate = clampf(bath.hold_rate * 1.30, 0.0, 0.5) # antes 1.5
 			&"bow":
-				bath.drop_radius *= 1.4
+				bath.drop_radius *= 1.30 # antes 1.4 — bônus contido
 	# --- A3: exagero (overwashed) estreita a próxima janela até um acerto ---
 	if recovery_penalty:
 		bath.target_minimum = clampf(
@@ -288,9 +288,9 @@ static func base_reward(service: StringName) -> float:
 ## Sorteio de um cliente da fila: pet desbloqueado (buddy tem prioridade),
 ## serviço (evento do dia pesa), VIP, paciência e pedido especial (B2).
 static func make_client_for_pet(pet_id: String, services: Array[StringName]) -> Dictionary:
-	# Primeira impressão: garante Caramelo como primeiro cliente
+	# Primeira impressão: garante Caramelo como primeiro cliente (respiro maior)
 	var service: StringName = services[randi() % services.size()] if not services.is_empty() else &"bath"
-	var wait_total: float = randf_range(80.0, 90.0)
+	var wait_total: float = randf_range(95.0, 115.0)
 	return {
 		"pet": pet_id,
 		"service": service,
@@ -336,7 +336,7 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 		Economy.vip_chance(GameState.reviews_sum) * LiveOps.modifier_multiplier(&"vip_frequency")
 	)
 	var vip: bool = randf() < vip_chance
-	var wait_total: float = randf_range(60.0, 90.0) * (0.7 if vip else 1.0)
+	var wait_total: float = randf_range(90.0, 120.0) * (0.75 if vip else 1.0) # +40% paciência base, VIP 25% menos (antes 30%)
 	# B2: pedido especial (upsell) — a preferência do pet tem prioridade.
 	var special: StringName = &""
 	if randf() < RemoteConfig.get_float("upsell_chance") and services.size() > 1:
