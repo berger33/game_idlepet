@@ -59,9 +59,10 @@ func _draw() -> void:
 	var label_rect: Rect2 = Rect2(60.0, label_y, 960.0, 96.0)
 	draw_rect(label_rect, Color("263238", 0.96), true)
 	draw_rect(label_rect, Color("ffd54f", 0.85), false, 3.0)
-	# Seta apontando para o spotlight
-	var arrow_center: Vector2 = Vector2(r.position.x + r.size.x * 0.5, label_y + (96.0 if arrow_up else 0.0))
-	var arrow_tip: Vector2 = Vector2(r.position.x + r.size.x * 0.5, r.end.y + 6.0 if arrow_up else r.position.y - 6.0)
+	# Seta animada apontando para o spotlight — bounce + glow extra no passo 2 (prateleira)
+	var bounce: float = sin(pulse * 4.5) * 12.0
+	var arrow_center: Vector2 = Vector2(r.position.x + r.size.x * 0.5, label_y + (96.0 if arrow_up else 0.0) + bounce * 0.25)
+	var arrow_tip: Vector2 = Vector2(r.position.x + r.size.x * 0.5, (r.end.y + 6.0 + bounce) if arrow_up else (r.position.y - 6.0 - bounce))
 	var arrow_dir: float = 1.0 if arrow_up else -1.0
 	var tri: PackedVector2Array = PackedVector2Array([
 		arrow_tip,
@@ -69,6 +70,23 @@ func _draw() -> void:
 		arrow_center + Vector2(18.0, 14.0 * arrow_dir)
 	])
 	draw_colored_polygon(tri, Color("ffd54f", 0.95))
+	# Brilho extra no tip + segunda seta maior pulsante para tutorial 2/3 prateleira
+	draw_circle(arrow_tip, 10.0 + 4.0 * sin(pulse * 6.0), Color("ffd54f", 0.35 + 0.2 * sin(pulse * 6.0)))
+	var tri_big: PackedVector2Array = PackedVector2Array([
+		arrow_tip + Vector2(0, -8.0 * arrow_dir),
+		arrow_center + Vector2(-28.0, 22.0 * arrow_dir) + Vector2(0, bounce * 0.2),
+		arrow_center + Vector2(28.0, 22.0 * arrow_dir) + Vector2(0, bounce * 0.2)
+	])
+	draw_colored_polygon(tri_big, Color("ffd54f", 0.22 + 0.15 * sin(pulse * 4.5)))
+	# Linha tracejada animada conectando label ao alvo
+	var steps: int = 6
+	for s: int in steps:
+		if s % 2 == 0:
+			var t1: float = float(s) / float(steps)
+			var t2: float = float(s + 1) / float(steps) * 0.9
+			var p1: Vector2 = arrow_center.lerp(arrow_tip, t1)
+			var p2: Vector2 = arrow_center.lerp(arrow_tip, t2)
+			draw_line(p1, p2, Color("ffd54f", 0.55), 3.0)
 	draw_string(
 		GUIDE_FONT,
 		Vector2(80.0, label_y + 62.0),

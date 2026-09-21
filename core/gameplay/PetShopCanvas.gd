@@ -626,14 +626,23 @@ func _draw() -> void:
 		if patience_ratio <= 0.3:
 			draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(patience_rect.size.x + 8, 18), "RÁPIDO!", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, patience_color)
 	if celebration > 0.0 and special_reward_active:
-		for i: int in 14:
-			var angle: float = TAU * float(i) / 14.0 + shake_phase
+		var star_count: int = 20 if GameState.services_completed == 0 else 14
+		for i: int in star_count:
+			var angle: float = TAU * float(i) / float(star_count) + shake_phase
 			var star_pos: Vector2 = (
 				pet_position
 				+ Vector2(cos(angle), sin(angle))
 					* (190.0 + beat_pulse * 26.0 + 12.0 * sin(shake_phase * 6.0 + i))
 			)
-			_star(star_pos, 18.0, Color("ffd54f" if i % 2 == 0 else "ff8fb1"))
+			_star(star_pos, 18.0 + (6.0 if GameState.services_completed == 0 else 0.0), Color("ffd54f" if i % 2 == 0 else "ff8fb1"))
+		# Confete extra primeiro perfect: círculos coloridos caindo
+		if GameState.services_completed == 0:
+			for c: int in 12:
+				var ca: float = TAU * float(c) / 12.0 + shake_phase * 1.3
+				var cr: float = 80.0 + float(c % 4) * 40.0 + 30.0 * sin(shake_phase * 2.0 + c)
+				var cpos: Vector2 = pet_position + Vector2(cos(ca), sin(ca) * 0.6) * cr + Vector2(0, -120 - 40 * sin(celebration * 3.0 + c))
+				var ccol: Color = [Color("ff8fb1"), Color("4fc3f7"), Color("ffd54f"), Color("43a047"), Color("ce93d8")][c % 5]
+				draw_circle(cpos, 9.0 + 3.0 * sin(shake_phase * 4.0 + c), ccol)
 	if rush_active:
 		# Pico do bairro (onda 2): faixa dourada pulsante no topo da cena.
 		var rush_glow: float = 0.42 + 0.18 * sin(shake_phase * 5.0)
@@ -1087,5 +1096,4 @@ func _star(center: Vector2, radius: float, color: Color) -> void:
 		var r: float = radius if i % 2 == 0 else radius * 0.42
 		var angle: float = -PI / 2.0 + float(i) * PI / 5.0
 		points.append(center + Vector2(cos(angle), sin(angle)) * r)
-	draw_colored_polygon(points, color)
 

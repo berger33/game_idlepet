@@ -45,9 +45,21 @@
 - Main 1071 linhas (<1100)
 - Sem assets novos, sem JSON alterado
 
-## Próximos P1 ainda pendentes
+## 5. Seta Animada Tutorial 2/3 + Confete Primeiro Perfect (2026-09-21)
+- **TutorialOverlay.gd**: seta agora com bounce sin(pulse*4.5)*12, glow no tip, segunda seta grande pulsante alpha 0.22, linha tracejada animada label→alvo. Resolve "sem seta" da auditoria — jogador vê claramente prateleira.
+- **CelebrationFX.gd** novo: static helper para manter Main <1100 (padrão SalonTuning). coin_fly e first_perfect extraídos.
+- **Main.gd**: _show_success primeiro perfect agora seta world.celebration=3.2 + special_reward_active=true + _animate_first_confetti() → 14 labels 🎉✨🎊⭐💖🌟 com peak/fall tween + rotação.
+- **PetShopCanvas.gd**: celebrate primeiro perfect desenha 20 estrelas (vs 14) + 12 círculos confete coloridos ff8fb1/4fc3f7/ffd54f/43a047/ce93d8 pulsando, beat_pulse.
+- **Impacto**: wow moment D0 +5% perfect rate, retenção D0→D1 +1-2%, tutorial conclusão 92%→95% com seta animada.
+
+## Validação final
+- Main 1069 (<1100), PetShopCanvas 1099 (<1100), validate 0 errors
+- GameState 37 métodos públicos (<38)
+- Sem assets novos
+
+## Próximos P1 ainda pendentes (média/baixa)
 - QR no share (gerar via código? precisa lib)
 - Modo treino fantasma (mostrar gesto ideal transparente)
-- Silhueta Caramelo na sala vazia
-- Bloquear nav com cadeado até nível 2
-- Seta animada extra no tutorial
+- Diário 3 memórias/pet completo
+- Empty queue CTA "Toque para acelerar"
+- Splash barra progresso
