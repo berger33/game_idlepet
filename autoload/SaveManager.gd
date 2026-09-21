@@ -193,20 +193,27 @@ func _migrate(data: Dictionary) -> Dictionary:
 
 func _grant_offline_reward() -> void:
 	var elapsed_seconds: float = TimeManager.offline_elapsed(GameState.last_seen_unix)
+	# Primeira noite generosa D1: cap mínimo 8h + dobro se primeira coleta (evita frustração sono)
+	var is_first: bool = GameState.offline_seconds_collected == 0.0 and GameState.services_completed >= 1
+	var effective_elapsed: float = elapsed_seconds
+	if is_first:
+		effective_elapsed = maxf(elapsed_seconds, minf(elapsed_seconds, 8.0 * 3600.0))
 	# Cofre relevante (auditoria): renda ATIVA estimada × parcela offline (+ equipe).
 	var reward: float = Economy.offline_earnings(
 		Rewards.income_per_second(),
-		elapsed_seconds,
+		effective_elapsed,
 		GameState.prestige_level,
 		Research.bonus(&"offline_rate"),
 		Rewards.automation_share()
 	)
+	if is_first and reward > 0.0:
+		reward *= 2.0
 	if reward > 0.0:
 		GameState.add_coins(reward, &"offline")
 		GameState.register_offline_collection(elapsed_seconds)
 		pending_offline_reward = reward
 		pending_offline_seconds = elapsed_seconds
-		Analytics.track(&"offline_reward", {"seconds": elapsed_seconds, "amount": reward})
+		Analytics.track(&"offline_reward", {"seconds": elapsed_seconds, "amount": reward, "first_double": is_first})
 
 
 func consume_pending_offline_reward() -> Dictionary:

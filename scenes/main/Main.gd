@@ -167,6 +167,7 @@ func _process(delta: float) -> void:
 			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
 			if is_instance_valid(badge):
 				badge.visible = false
+		D1Retention.update_missions_badge(self, upgrades_pulse_time)
 		var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 		upgrades_button.position = Vector2(120, 150) if left_handed else Vector2(952, 150)
 	if bath.state == BathService.State.ACTIVE:
@@ -562,6 +563,13 @@ func _dismiss_result() -> void:
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	primary_button.hide()
 	_update_queue_ui()
+	# D1 retenção: daily auto-popup + notif prompt + tomorrow card (após 1-3 serviços)
+	if GameState.services_completed == 1:
+		D1Retention.show_daily_login(self)
+	if GameState.services_completed == 2:
+		D1Retention.show_tomorrow_card(self)
+	if GameState.services_completed == 3:
+		D1Retention.show_notif_prompt(self)
 	if GameState.services_completed == 1 and String(GameState.settings.get("shop_name", "")).is_empty():
 		_show_toast("🏷️ " + Loc.t("SHOP_NAME") + "? " + Loc.t("SHOP_NAME_HINT"), BLUE)
 		get_tree().create_timer(1.2).timeout.connect(func(): if not meta.is_open(): meta.open(&"settings"), CONNECT_ONE_SHOT)
@@ -899,6 +907,7 @@ func _build_interface() -> void:
 		col.add_theme_constant_override("separation", 2)
 		nav.add_child(col)
 		var nav_button: Button = _button("🔒" if locked else "", CHARCOAL if not locked else Color("90a4ae"), 72, 72)
+		nav_button.name = "Nav_%s" % String(sid)
 		if not locked:
 			nav_button.icon = NAV_ICONS[sid]
 		nav_button.tooltip_text = tip if not locked else "%s • %s" % [tip, Loc.t("NAV_LOCKED") % unlock_lv]
@@ -910,6 +919,8 @@ func _build_interface() -> void:
 		else:
 			nav_button.pressed.connect(func(): _show_toast(Loc.t("UPGRADES_LOCKED") % unlock_lv, Color("b0bec5")))
 		col.add_child(nav_button)
+		if sid == &"missions" and not locked:
+			D1Retention.ensure_missions_badge(self)
 		var nav_label: Label = Label.new()
 		nav_label.text = tip if not locked else "🔒 %s" % tip
 		nav_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

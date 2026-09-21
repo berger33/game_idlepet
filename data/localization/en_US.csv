@@ -32,6 +32,8 @@ ACH_UPGRADE_5,Ducha Poderosa
 ACH_UPGRADE_50,Estação dos Sonhos
 AFFECTION_TOAST,Friendship bond! +%d Embers
 ANALYTICS_CONSENT,Share anonymous usage data
+ASSIST_ACTIVE,💡 Assist active: %d client(s) left
+ASSIST_TOAST,💡 Assist: bigger window + patience for 3 clients!
 ASSIST_WINDOW,Motor assistance (wider band and targets)
 BACK,BACK TO PETSHOP
 BIA_HIRED,Bia joined the team! She earns on her own while you serve.
@@ -42,10 +44,15 @@ CHOOSE_CLIENT,Pick the next client from the queue
 CLAIM,CLAIM
 CLAIMED,CLAIMED
 CLIENT_LEFT,%s got tired of waiting and left.
+CLIENT_LEFT_COINS,💔 %s left! -%d coins
 COINS,Coins
 COLLECT,COLLECT
+COLLECTION_SUMMARY,PETS %d/%d • ACHIEVEMENTS %d/%d • COSMETICS %d
 COLLECTION_TITLE,COLLECTION
 COLORBLIND_MODE,Colorblind mode (blue/orange band)
+COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.
+COMBO_CHEST_TITLE,Rhythm Chest!
+COMBO_CHEST_TOAST,Combo ×%d chest! +%d coins and +%d Embers!
 COMEBACK_GIFT,+1 freeze and welcome coins!
 COMEBACK_TITLE,WELCOME BACK!
 COMEBACK_TOAST,Welcome back! Return gift claimed.
@@ -73,7 +80,15 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
+DAILY_AUTO_BODY,"Day %d: %d coins!
+Streak: %d days + %d freezes
+Day 7 = Legendary Mel Golden! Come back tomorrow for 2x."
+DAILY_AUTO_BONUS,🎁 Day 7 Bonus: Legendary pet!
+DAILY_AUTO_TITLE,Login Day %d!
+DAILY_CLAIMED_TOAST,Login claimed! +%d coins
 DAILY_LOGIN,DAILY LOGIN Day %d/7
+DAILY_SPIN_DESC,Spin 1×/day: scaled coins
+DAILY_SPIN_TITLE,Daily Spin
 DRAG_TOOL_TO,Drag %s from the shelf to %s
 ECO_MODE,Eco mode
 EMBERS,Embers
@@ -104,7 +119,16 @@ FAIL_TIMEOUT,Time ran out. Move with a bit more rhythm!
 FAIL_TOO_SOON,Bring the %s into the green band before finishing.
 FAVORITE_HINT,Tap to make your favorite — it visits more
 FAVORITE_SET,Favorite pet set!
+FILTER_ACCESSORY,BOWS
+FILTER_ALL,ALL
+FILTER_ALL_COSMETICS,ALL
+FILTER_BATH,TUBS
+FILTER_CATS,CATS
+FILTER_DOGS,DOGS
+FILTER_LEGENDARY,LEGENDARY
+FILTER_WALL,WALLS
 FINISH_BATH,FINISH BATH
+FIRST_BONUS,🎉 First perfect! +1 Ember!
 FIRST_PET_READY,Caramelo is ready! Drag the soap to him.
 FONT_SCALE,Font size
 FONT_SCALE_LARGE,Large
@@ -149,14 +173,32 @@ MISSION_NOTE,"Staff vocations: Bather speeds up baths, Groomer speeds everything
 MISSION_PERFECT,ON POINT %d/3
 MISSION_SERVICES,BATHS & GROOMS %d/5
 MISSION_UPGRADE,ALL SHINY %d/1
+MOOD_BUFF_TOAST,Salon is in rhythm! Queue more patient.
 MUSIC_VOLUME,Music
+NAV_COLLECTION,Pets
+NAV_LOCKED,Lv.%d
+NAV_MAP,Map
+NAV_MISSIONS,Missions
+NAV_SETTINGS,Settings
+NAV_SHOP,Shop
+NAV_STAFF,Staff
 NEIGHBORHOOD,NEIGHBORHOOD
 NEIGHBORHOOD_0,Friendly Neighbor
 NEIGHBORHOOD_1,Trusted Pet Shop
 NEIGHBORHOOD_2,Local Favorite
 NEIGHBORHOOD_3,Neighborhood Legend
 NEIGHBORHOOD_4,Eternal Icon
+NEW_TAG,New!
 NOTIFICATIONS,Return reminders
+NOTIF_ENABLED_TOAST,Notifications enabled! 🔔
+NOTIF_OFFLINE_BODY,%s earned %d coins while you were away! Come back to collect.
+NOTIF_OFFLINE_TITLE,Vault is full!
+NOTIF_PETS_BODY,%s is waiting in queue with %d friends. Your streak is %d days!
+NOTIF_PETS_TITLE,%s missed you!
+NOTIF_PROMPT_BODY,"We notify when vault is full and favorite pet returns. No spam, max 2x/day. Enable notifications?"
+NOTIF_PROMPT_NO,NOT NOW
+NOTIF_PROMPT_TITLE,Notify when vault full?
+NOTIF_PROMPT_YES,ENABLE
 NO_TIP,no tip this time
 OFF,off
 OFFLINE_BODY,%d min away • vault: +%d coins
@@ -182,6 +224,7 @@ PAYS,pays
 PERFECT,PERFECT!
 PERFECT_RESULT,PERFECT!
 PETTING_COUNT,petting %d/50
+PETTING_LIMIT,%s is full of affection!
 PET_AMORA_SIAMES,Amora
 PET_APOLO_BERNESE,Apolo
 PET_AURORA_RAGDOLL,Aurora
@@ -240,6 +283,9 @@ PRESTIGE_LOCKED,Reach level 15 and save up more coins
 PRESTIGE_LOST,"Restarts: coins, staff and career level (from 10)"
 PRESTIGE_PREVIEW,Inheritance: station Lv.%d • restart at level %d with every service
 PRESTIGE_TITLE,FRANCHISE
+PROOF_SOCIAL_LIVE,💬 %s: %s %s
+QUEUE_ARRIVING,Arriving
+QUEUE_RELOAD,Queue reloads in %0.1fs
 QUEUE_WAITING,waiting for a client
 RARITY_common,Common
 RARITY_epic,Epic
@@ -278,6 +324,8 @@ REVEAL_PET_ADOPTED,Visitor adopted!
 REVEAL_PET_HINT,Tap the pet during a service to pet it.
 REVEAL_PET_TITLE,New pet in your collection!
 REVEAL_SERVICE_TITLE,New service unlocked!
+RUSH_ACTIVE,🔥 RUSH ×2 — %ds
+RUSH_COOLDOWN,⏳ rush in %ds
 RUSH_TOAST,NEIGHBORHOOD RUSH! Double tips and a full queue!
 SAFE_AREA_NOTICE,Safe area adjusted for notch
 SEASON_ACTIVE,SEASON: %s — gift: %s
@@ -322,6 +370,12 @@ SKIP_TUTORIAL,SKIP TUTORIAL
 SOURCE_BTN_ACHIEVEMENT,ACHIEVEMENT
 SOURCE_BTN_SEASON,SEASON
 SOURCE_achievement,Achievement: combo of 20
+SPECIAL_ACCEPT,✓  ACCEPT (+40% tip)
+SPECIAL_DECLINE,NOT NOW
+SPECIAL_ORDER_NOTE,💰 Accept gives extra tip + keeps combo!
+SPECIAL_ORDER_TITLE,⭐ SPECIAL REQUEST
+SPIN_ACTION,SPIN
+SPIN_DONE,DONE
 STAFF_AUTOMATION,earns on their own +%d%% of your income (in play and in the vault)
 STAFF_BIA,Bia
 STAFF_DRA_LUNA,Dra. Luna
@@ -331,6 +385,7 @@ STAFF_SEU_ZE,Seu Zé
 STAFF_TEO,Téo
 STAFF_TITLE,STAFF
 STREAK_LINE,Streak: %d days • Freezes: %d
+STREAK_LOSS_NOTE,If you miss
 TEACH_NEW_GESTURE,New gesture! Take your time:
 TEMPER_AGITATED,restless
 TEMPER_CALM,calm
@@ -338,6 +393,10 @@ TEMPER_PLAYFUL,playful
 TEMPER_SHY,shy
 TIP_LINE,tip +%d%%
 TOMORROW,Tomorrow
+TOMORROW_CARD_BODY,"Tomorrow: %s
+%s
+Your streak: %d days. Come back for login bonus and daily spin!"
+TOMORROW_CARD_TITLE,Tomorrow: event + new pet!
 TOOL_BOW,Bow
 TOOL_CLIPPER,Clippers
 TOOL_DRYER,Dryer
@@ -379,7 +438,11 @@ WEEKLY_FEATURED,Featured this week
 WEEKLY_FEATURED_DESC,Community pick — rotates every Monday
 WEEKLY_NOTE,Resets on Monday • bigger rewards than daily ones
 WEEKLY_NOTE_SHORT,weekly
+WEEKLY_PROGRESS_PILL,📦 Weekly %d/%d • %d%% • Chest: %d/7 • %s
+WEEKLY_RESET_DAYS,resets in %d days
+WEEKLY_RESET_TOMORROW,resets tomorrow
 WEEKLY_TITLE,WEEKLY MISSIONS
+WELCOME_BONUS,🎁 Welcome bonus: +1 freeze!
 WMISSION_BATH,%d/40 baths
 WMISSION_COMBO,Combo %d/8
 WMISSION_PERFECT,%d/15 perfects
@@ -387,51 +450,3 @@ WMISSION_SPEND,%d/600 invested
 WMISSION_STYLE,%d/12 bows
 WMISSION_TIPS,%d/10 tips
 WMISSION_VIP,%d/3 VIP clients
-FILTER_ALL,ALL
-FILTER_DOGS,DOGS
-FILTER_CATS,CATS
-FILTER_LEGENDARY,LEGENDARY
-FILTER_ALL_COSMETICS,ALL
-FILTER_BATH,TUBS
-FILTER_WALL,WALLS
-FILTER_ACCESSORY,BOWS
-DAILY_SPIN_TITLE,Daily Spin
-DAILY_SPIN_DESC,Spin 1×/day: scaled coins, embers or freeze • Variable reward
-SPIN_ACTION,SPIN
-SPIN_DONE,DONE
-WEEKLY_PROGRESS_PILL,📦 Weekly %d/%d • %d%% • Chest: %d/7 • %s
-COLLECTION_SUMMARY,PETS %d/%d • ACHIEVEMENTS %d/%d • COSMETICS %d
-SPECIAL_ORDER_TITLE,⭐ SPECIAL REQUEST
-SPECIAL_ORDER_NOTE,💰 Accept gives extra tip + keeps combo!
-SPECIAL_ACCEPT,✓  ACCEPT (+40% tip)
-SPECIAL_DECLINE,NOT NOW
-CLIENT_LEFT_COINS,💔 %s left! -%d coins
-RUSH_ACTIVE,🔥 RUSH ×2 — %ds
-RUSH_COOLDOWN,⏳ rush in %ds
-ASSIST_TOAST,💡 Assist: bigger window + patience for 3 clients!
-MOOD_BUFF_TOAST,Salon is in rhythm! Queue more patient.
-PETTING_LIMIT,%s is full of affection!
-WEEKLY_RESET_TOMORROW,resets tomorrow
-WEEKLY_RESET_DAYS,resets in %d days
-STREAK_LOSS_NOTE,If you miss, -1 day (use ❄️ freeze!)
-ASSIST_ACTIVE,💡 Assist active: %d client(s) left
-QUEUE_ARRIVING,Arriving
-QUEUE_RELOAD,Queue reloads in %0.1fs
-PROOF_SOCIAL_LIVE,💬 %s: %s %s
-NEW_TAG,New!
-WELCOME_BONUS,🎁 Welcome bonus: +1 freeze!
-FIRST_BONUS,🎉 First perfect! +1 Ember!
-COMBO_CHEST_TITLE,Rhythm Chest!
-COMBO_CHEST_TOAST,Combo ×%d chest! +%d coins and +%d Embers!
-COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.
-NAV_LOCKED,Lv.%d
-NAV_MISSIONS,Missions
-NAV_COLLECTION,Pets
-NAV_STAFF,Staff
-NAV_SHOP,Shop
-NAV_MAP,Map
-NAV_SETTINGS,Settings
-NOTIF_OFFLINE_TITLE,Vault is full!
-NOTIF_OFFLINE_BODY,%s earned %d coins while you were away! Come back to collect.
-NOTIF_PETS_TITLE,%s missed you!
-NOTIF_PETS_BODY,%s is waiting in queue with %d friends. Your streak is %d days!

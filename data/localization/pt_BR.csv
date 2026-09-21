@@ -32,6 +32,8 @@ ACH_UPGRADE_5,Ducha Poderosa
 ACH_UPGRADE_50,Estação dos Sonhos
 AFFECTION_TOAST,Laço de amizade! +%d Brasas
 ANALYTICS_CONSENT,Compartilhar dados de uso anônimos
+ASSIST_ACTIVE,💡 Assistência ativa: %d cliente(s) restantes
+ASSIST_TOAST,💡 Assistência: janela maior + paciência por 3 clientes!
 ASSIST_WINDOW,Assistência motora (faixa e alvos maiores)
 BACK,VOLTAR AO PETSHOP
 BIA_HIRED,Bia entrou para a equipe! Ela rende sozinha enquanto você atende.
@@ -42,10 +44,15 @@ CHOOSE_CLIENT,Escolha o próximo cliente da fila
 CLAIM,COLETAR
 CLAIMED,COLETADO
 CLIENT_LEFT,%s cansou de esperar e foi embora.
+CLIENT_LEFT_COINS,💔 %s foi embora! -%d moedas
 COINS,Moedas
 COLLECT,COLETAR
+COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
 COLLECTION_TITLE,COLEÇÃO
 COLORBLIND_MODE,Modo daltônico (azul/laranja na faixa)
+COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
+COMBO_CHEST_TITLE,Baú do Ritmo!
+COMBO_CHEST_TOAST,Baú do combo ×%d! +%d moedas e +%d Brasas!
 COMEBACK_GIFT,+1 freeze e moedas de boas-vindas!
 COMEBACK_TITLE,BEM-VINDO DE VOLTA!
 COMEBACK_TOAST,Bem-vindo de volta! Presente de retorno resgatado.
@@ -73,7 +80,15 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
+DAILY_AUTO_BODY,"Dia %d: %d moedas!
+Sequência: %d dias + %d freezes
+Dia 7 = Mel Golden lendário! Volte amanhã para 2x moedas."
+DAILY_AUTO_BONUS,🎁 Bônus Dia 7: Pet lendário!
+DAILY_AUTO_TITLE,Login Dia %d!
+DAILY_CLAIMED_TOAST,Login coletado! +%d moedas
 DAILY_LOGIN,LOGIN DIÁRIO Dia %d/7
+DAILY_SPIN_DESC,Gire 1×/dia: moedas escaladas
+DAILY_SPIN_TITLE,Roleta Diária
 DRAG_TOOL_TO,Arraste %s da prateleira até %s
 ECO_MODE,Modo econômico
 EMBERS,Brasas
@@ -104,7 +119,16 @@ FAIL_TIMEOUT,O tempo acabou. Faça o movimento com mais ritmo!
 FAIL_TOO_SOON,Leve a %s até a faixa verde antes de finalizar.
 FAVORITE_HINT,Toque para tornar seu preferido — ele visita mais
 FAVORITE_SET,Pet preferido definido!
+FILTER_ACCESSORY,LAÇOS
+FILTER_ALL,TODOS
+FILTER_ALL_COSMETICS,TUDO
+FILTER_BATH,BANHEIRAS
+FILTER_CATS,GATOS
+FILTER_DOGS,CÃES
+FILTER_LEGENDARY,LENDÁRIOS
+FILTER_WALL,PAREDES
 FINISH_BATH,FINALIZAR BANHO
+FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
 FIRST_PET_READY,Caramelo está pronto! Arraste o sabonete até ele.
 FONT_SCALE,Tamanho da fonte
 FONT_SCALE_LARGE,Grande
@@ -149,14 +173,32 @@ MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tu
 MISSION_PERFECT,NA MEDIDA %d/3
 MISSION_SERVICES,BANHOS E TOSAS %d/5
 MISSION_UPGRADE,TUDO NOVINHO %d/1
+MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
 MUSIC_VOLUME,Música
+NAV_COLLECTION,Pets
+NAV_LOCKED,Nv.%d
+NAV_MAP,Mapa
+NAV_MISSIONS,Missões
+NAV_SETTINGS,Ajustes
+NAV_SHOP,Loja
+NAV_STAFF,Equipe
 NEIGHBORHOOD,BAIRRO
 NEIGHBORHOOD_0,Vizinho Amigo
 NEIGHBORHOOD_1,Pet Shop Confiável
 NEIGHBORHOOD_2,Queridinho do Bairro
 NEIGHBORHOOD_3,Lenda do Bairro
 NEIGHBORHOOD_4,Mitinho Eterno
+NEW_TAG,Novo!
 NOTIFICATIONS,Lembretes de retorno
+NOTIF_ENABLED_TOAST,Notificações ativadas! 🔔
+NOTIF_OFFLINE_BODY,%s rendeu %d moedas enquanto você estava fora! Volte para coletar.
+NOTIF_OFFLINE_TITLE,O cofre está cheio!
+NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!
+NOTIF_PETS_TITLE,%s sentiu sua falta!
+NOTIF_PROMPT_BODY,"Te avisamos quando o cofre encher e quando seu pet favorito voltar. Sem spam, 2x por dia max. Ativar notificações?"
+NOTIF_PROMPT_NO,AGORA NÃO
+NOTIF_PROMPT_TITLE,Cofre cheio te avisa?
+NOTIF_PROMPT_YES,ATIVAR
 NO_TIP,sem gorjeta desta vez
 OFF,desligado
 OFFLINE_BODY,%d min fora • cofre: +%d moedas
@@ -182,6 +224,7 @@ PAYS,paga
 PERFECT,PERFEITO!
 PERFECT_RESULT,PERFEITO!
 PETTING_COUNT,carinho %d/50
+PETTING_LIMIT,%s já está banhado de carinho!
 PET_AMORA_SIAMES,Amora
 PET_APOLO_BERNESE,Apolo
 PET_AURORA_RAGDOLL,Aurora
@@ -240,6 +283,9 @@ PRESTIGE_LOCKED,Alcance nível 15 e acumule mais moedas
 PRESTIGE_LOST,"Recomeça: moedas, equipe e nível de carreira (a partir do 10)"
 PRESTIGE_PREVIEW,Herança: estação Nv.%d • recomeça no nível %d com todos os serviços
 PRESTIGE_TITLE,FRANQUIA
+PROOF_SOCIAL_LIVE,💬 %s: %s %s
+QUEUE_ARRIVING,Chegando
+QUEUE_RELOAD,A fila recarrega em %0.1fs
 QUEUE_WAITING,aguardando cliente
 RARITY_common,Comum
 RARITY_epic,Épico
@@ -278,6 +324,8 @@ REVEAL_PET_ADOPTED,Visitante adotado!
 REVEAL_PET_HINT,Toque no pet durante o atendimento para fazer carinho.
 REVEAL_PET_TITLE,Novo pet na coleção!
 REVEAL_SERVICE_TITLE,Novo serviço liberado!
+RUSH_ACTIVE,🔥 PICO ×2 — %ds
+RUSH_COOLDOWN,⏳ pico em %ds
 RUSH_TOAST,PICO DO BAIRRO! Gorjetas dobradas e fila cheia!
 SAFE_AREA_NOTICE,Área segura ajustada para notch
 SEASON_ACTIVE,TEMPORADA: %s — presente: %s
@@ -322,6 +370,12 @@ SKIP_TUTORIAL,PULAR TUTORIAL
 SOURCE_BTN_ACHIEVEMENT,CONQUISTA
 SOURCE_BTN_SEASON,TEMPORADA
 SOURCE_achievement,Conquista: combo de 20
+SPECIAL_ACCEPT,✓  ACEITAR (+40% gorjeta)
+SPECIAL_DECLINE,AGORA NÃO
+SPECIAL_ORDER_NOTE,💰 Aceitar rende gorjeta extra + combo mantido!
+SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SPIN_ACTION,GIRAR
+SPIN_DONE,FEITO
 STAFF_AUTOMATION,rende sozinha +%d%% da sua renda (em jogo e no cofre)
 STAFF_BIA,Bia
 STAFF_DRA_LUNA,Dra. Luna
@@ -331,6 +385,7 @@ STAFF_SEU_ZE,Seu Zé
 STAFF_TEO,Téo
 STAFF_TITLE,EQUIPE
 STREAK_LINE,Sequência: %d dias • Freezes: %d
+STREAK_LOSS_NOTE,Se perder
 TEACH_NEW_GESTURE,Gesto novo! Experimente sem pressa:
 TEMPER_AGITATED,agitado
 TEMPER_CALM,calmo
@@ -338,6 +393,10 @@ TEMPER_PLAYFUL,brincalhão
 TEMPER_SHY,tímido
 TIP_LINE,gorjeta +%d%%
 TOMORROW,Amanhã
+TOMORROW_CARD_BODY,"Amanhã: %s
+%s
+Sua sequência: %d dias. Volte para não perder o bônus de login e a roleta diária!"
+TOMORROW_CARD_TITLE,Amanhã: evento + novo pet!
 TOOL_BOW,Laço
 TOOL_CLIPPER,Máquina de tosa
 TOOL_DRYER,Secador
@@ -379,7 +438,11 @@ WEEKLY_FEATURED,Em destaque esta semana
 WEEKLY_FEATURED_DESC,Escolhido pela comunidade — muda toda segunda
 WEEKLY_NOTE,Reinicia na segunda-feira • recompensas maiores que as diárias
 WEEKLY_NOTE_SHORT,semanal
+WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s
+WEEKLY_RESET_DAYS,reseta em %d dias
+WEEKLY_RESET_TOMORROW,reseta amanhã
 WEEKLY_TITLE,MISSÕES DA SEMANA
+WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
 WMISSION_BATH,%d/40 banhos
 WMISSION_COMBO,Combo %d/8
 WMISSION_PERFECT,%d/15 perfeitos
@@ -387,51 +450,3 @@ WMISSION_SPEND,%d/600 investidos
 WMISSION_STYLE,%d/12 laços
 WMISSION_TIPS,%d/10 gorjetas
 WMISSION_VIP,%d/3 clientes VIP
-FILTER_ALL,TODOS
-FILTER_DOGS,CÃES
-FILTER_CATS,GATOS
-FILTER_LEGENDARY,LENDÁRIOS
-FILTER_ALL_COSMETICS,TUDO
-FILTER_BATH,BANHEIRAS
-FILTER_WALL,PAREDES
-FILTER_ACCESSORY,LAÇOS
-DAILY_SPIN_TITLE,Roleta Diária
-DAILY_SPIN_DESC,Gire 1×/dia: moedas escaladas, brasas ou freeze • Recompensa variável
-SPIN_ACTION,GIRAR
-SPIN_DONE,FEITO
-WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s
-COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
-SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
-SPECIAL_ORDER_NOTE,💰 Aceitar rende gorjeta extra + combo mantido!
-SPECIAL_ACCEPT,✓  ACEITAR (+40% gorjeta)
-SPECIAL_DECLINE,AGORA NÃO
-CLIENT_LEFT_COINS,💔 %s foi embora! -%d moedas
-RUSH_ACTIVE,🔥 PICO ×2 — %ds
-RUSH_COOLDOWN,⏳ pico em %ds
-ASSIST_TOAST,💡 Assistência: janela maior + paciência por 3 clientes!
-MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
-PETTING_LIMIT,%s já está banhado de carinho!
-WEEKLY_RESET_TOMORROW,reseta amanhã
-WEEKLY_RESET_DAYS,reseta em %d dias
-STREAK_LOSS_NOTE,Se perder, -1 dia (use ❄️ freeze!)
-ASSIST_ACTIVE,💡 Assistência ativa: %d cliente(s) restantes
-QUEUE_ARRIVING,Chegando
-QUEUE_RELOAD,A fila recarrega em %0.1fs
-PROOF_SOCIAL_LIVE,💬 %s: %s %s
-NEW_TAG,Novo!
-WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
-FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
-COMBO_CHEST_TITLE,Baú do Ritmo!
-COMBO_CHEST_TOAST,Baú do combo ×%d! +%d moedas e +%d Brasas!
-COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
-NAV_LOCKED,Nv.%d
-NAV_MISSIONS,Missões
-NAV_COLLECTION,Pets
-NAV_STAFF,Equipe
-NAV_SHOP,Loja
-NAV_MAP,Mapa
-NAV_SETTINGS,Ajustes
-NOTIF_OFFLINE_TITLE,O cofre está cheio!
-NOTIF_OFFLINE_BODY,%s rendeu %d moedas enquanto você estava fora! Volte para coletar.
-NOTIF_PETS_TITLE,%s sentiu sua falta!
-NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!
