@@ -1,7 +1,7 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 11
+const SAVE_VERSION: int = 12
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
 ## Fração da estação/ferramentas herdada ao prestigiar e nível de recomeço
@@ -84,6 +84,12 @@ var active_play_seconds: float = 0.0
 var pet_affection: Dictionary = {}
 ## Pet preferido (buddy): entra na fila com prioridade e lidera a coleção.
 var favorite_pet: String = "caramelo"
+## Visitantes misteriosos (Discovery.gd): pet ainda bloqueado -> atendimentos.
+var visitor_progress: Dictionary = {}
+## Meta do dia do evento (LiveOps): atendimentos do serviço em destaque hoje.
+var event_goal_date: String = ""
+var event_goal_count: int = 0
+var event_goal_claimed: bool = false
 var settings: Dictionary = {
 	"music": 0.7, "sfx": 0.9, "haptics": true, "reduced_particles": false, "eco_mode": false
 }
@@ -371,6 +377,10 @@ func to_dictionary() -> Dictionary:
 		"active_play_seconds": active_play_seconds,
 		"pet_affection": pet_affection,
 		"favorite_pet": favorite_pet,
+		"visitor_progress": visitor_progress,
+		"event_goal_date": event_goal_date,
+		"event_goal_count": event_goal_count,
+		"event_goal_claimed": event_goal_claimed,
 		"settings": settings
 	}
 
@@ -448,6 +458,11 @@ func apply_dictionary(data: Dictionary) -> void:
 	favorite_pet = String(data.get("favorite_pet", "caramelo"))
 	if not unlocked_pets.has(favorite_pet):
 		favorite_pet = "caramelo"
+	visitor_progress = _safe_int_map(data.get("visitor_progress", {}), Discovery.VISITS_TO_ADOPT)
+	event_goal_date = String(data.get("event_goal_date", ""))
+	event_goal_count = maxi(0, int(data.get("event_goal_count", 0)))
+	event_goal_claimed = bool(data.get("event_goal_claimed", false))
+	_refresh_event_goal()
 	_sanitize_affection()
 	_reconcile_career_unlocks(false)
 	var saved_settings: Variant = data.get("settings", {})
@@ -662,6 +677,31 @@ func claim_weekly(mission_id: StringName) -> bool:
 	return true
 
 
+## Meta do dia do evento: zera quando o dia muda.
+func _refresh_event_goal() -> void:
+	var today: String = Time.get_date_string_from_system()
+	if event_goal_date == today:
+		return
+	event_goal_date = today
+	event_goal_count = 0
+	event_goal_claimed = false
+
+
+## Resgata a meta do dia (moedas escaladas + brasas). Uma vez por dia.
+func claim_event_goal() -> bool:
+	_refresh_event_goal()
+	if event_goal_claimed or event_goal_count < LiveOps.event_goal_target():
+		return false
+	event_goal_claimed = true
+	var coins_reward: int = Rewards.for_kind(&"event_goal", 300)
+	add_coins(float(coins_reward), &"event_goal")
+	embers += LiveOps.EVENT_GOAL_EMBERS
+	EventBus.currency_changed.emit(&"embers", float(embers))
+	Analytics.track(&"event_goal_claimed", {"weekday": LiveOps.weekday(), "coins": coins_reward})
+	SaveManager.request_save()
+	return true
+
+
 ## Sink de prestige (auditoria de retenção): 1 token de franquia vira 5 brasas.
 ## Fecha o loop da moeda órfã sem criar paywall nem segunda economia dura.
 func convert_franchise_token() -> bool:
@@ -744,9 +784,12 @@ func check_return_bonus() -> bool:
 	return true
 
 
-func _on_service_completed(_service_id: StringName, quality: StringName, reward: float) -> void:
+func _on_service_completed(service_id: StringName, quality: StringName, reward: float) -> void:
 	_refresh_daily_missions()
 	_refresh_weekly_missions()
+	_refresh_event_goal()
+	if LiveOps.event_goal_counts(service_id):
+		event_goal_count += 1
 	services_completed += 1
 	mission_progress["services"] = int(mission_progress.get("services", 0)) + 1
 	weekly_progress["services"] = int(weekly_progress.get("services", 0)) + 1

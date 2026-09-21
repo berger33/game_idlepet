@@ -30,7 +30,7 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 11', state)
+        self.assertIn('const SAVE_VERSION: int = 12', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)
@@ -38,7 +38,8 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('if version == 8:', migration)
         self.assertIn('if version == 9:', migration)
         self.assertIn('if version == 10:', migration)
-        self.assertIn('data["version"] = 11', migration)
+        self.assertIn('if version == 11:', migration)
+        self.assertIn('data["version"] = 12', migration)
         self.assertIn('data["research_ids"] = data.get("research_ids", [])', migration)
         self.assertIn('prestige_tokens_collected', migration)
         self.assertIn('tool_upgrade_levels', state)
@@ -163,7 +164,7 @@ class FoundationTests(unittest.TestCase):
             self.assertIn(token, state)
         self.assertIn('weekly_mission', Path('autoload/ContentDB.gd').read_text(encoding='utf8'))
         cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))['cosmetics']
-        self.assertEqual(len(cosmetics), 11)
+        self.assertGreaterEqual(len(cosmetics), 23)
         cosmetic_ids = {c['id'] for c in cosmetics}
         self.assertTrue(
             {'tub_mint', 'tub_lavender', 'bandana_red', 'scarf_caramel', 'crown_gold',
@@ -1111,6 +1112,79 @@ class ViralityTests(unittest.TestCase):
         for token in ('workflow_dispatch', '--export-release "Web Preview"',
                       'actions/deploy-pages', 'export_templates', 'actions/cache'):
             self.assertIn(token, workflow)
+
+
+class DiscoveryAndContentTests(unittest.TestCase):
+    """§5/§8 do plano: descoberta de pets pela fila, teto cosmético e meta do dia."""
+
+    def test_next_pet_visits_the_queue_before_unlocking(self):
+        discovery = Path('core/progression/Discovery.gd').read_text(encoding='utf8')
+        for token in ('const VISITS_TO_ADOPT: int = 3', 'static func candidate', 'static func roll_visitor',
+                      'static func register_service', 'GameState.unlocked_pets.append(pet_id)',
+                      '"adopted": true'):
+            self.assertIn(token, discovery)
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('Discovery.roll_visitor()', salon)
+        self.assertIn('"visitor": is_visitor', salon)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('current_visitor = bool(client.get("visitor", false))', main)
+        self.assertIn('Discovery.register_service(current_pet_id)', main)
+        self.assertIn('VISITOR_TAG', main)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('var visitor_progress: Dictionary = {}', state)
+        self.assertIn('"visitor_progress": visitor_progress', state)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('Discovery.progress(pet_id)', panel)
+        card = Path('core/ui/RevealCard.gd').read_text(encoding='utf8')
+        self.assertIn('REVEAL_PET_ADOPTED', card)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('VISITOR_TAG', 'VISITOR_PROGRESS', 'REVEAL_PET_ADOPTED'):
+                self.assertIn(key, table)
+
+    def test_cosmetic_catalog_is_data_driven_and_seasons_have_gifts(self):
+        cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))['cosmetics']
+        by_slot = {}
+        for item in cosmetics:
+            by_slot.setdefault(item['slot'], []).append(item)
+        self.assertGreaterEqual(len(by_slot['bath']), 12)
+        self.assertGreaterEqual(len(by_slot['wall']), 6)
+        # Toda banheira tem cor de espuma válida no catálogo (arte por dado).
+        for tub in by_slot['bath']:
+            self.assertRegex(tub.get('foam', ''), r'^[0-9a-fA-F]{6}$', tub['id'])
+        art = Path('core/gameplay/PetCosmeticsArt.gd').read_text(encoding='utf8')
+        self.assertIn('ContentDB.cosmetic(tub).get("foam", "")', art)
+        # Toda parede tem desenho procedural próprio.
+        for wall in by_slot['wall']:
+            self.assertIn('"%s"' % wall['id'], art, 'parede sem arte: ' + wall['id'])
+        # Cada temporada presenteia um cosmético que existe.
+        events = json.loads(Path('data/events.json').read_text(encoding='utf8'))
+        ids = {c['id'] for c in cosmetics}
+        for season in events['seasonal']:
+            self.assertIn(season['cosmetic'], ids, 'temporada sem presente: ' + season['id'])
+        # Preço: piso em moedas (dinâmico) ou brasas; itens sem preço têm origem.
+        for item in cosmetics:
+            if 'price' in item:
+                self.assertTrue(set(item['price']) <= {'coins', 'embers'})
+            else:
+                self.assertIn('source', item)
+
+    def test_event_goal_of_the_day(self):
+        liveops = Path('autoload/LiveOps.gd').read_text(encoding='utf8')
+        for token in ('func event_goal_target', 'func event_goal_counts', 'func event_goal_text',
+                      'EVENT_GOAL_FEATURED', 'EVENT_GOAL_EMBERS'):
+            self.assertIn(token, liveops)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        for token in ('func claim_event_goal', 'LiveOps.event_goal_counts(service_id)',
+                      '"event_goal_count": event_goal_count', 'func _refresh_event_goal',
+                      'Rewards.for_kind(&"event_goal", 300)'):
+            self.assertIn(token, state)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('GameState.claim_event_goal()', panel)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('EVENT_GOAL_TITLE', 'EVENT_GOAL_DESC', 'EVENT_GOAL_ANY', 'EVENT_GOAL_REWARD'):
+                self.assertIn(key, table)
 
 
 if __name__=='__main__': unittest.main()

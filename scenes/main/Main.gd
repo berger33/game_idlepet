@@ -72,6 +72,7 @@ var queue_service_labels: Array[Label] = []
 var queue_info_labels: Array[Label] = []
 var queue_bars: Array[ColorRect] = []
 var current_vip: bool = false
+var current_visitor: bool = false
 var last_tip_percent: int = 0
 var tutorial_overlay: Control
 var tutorial_skip_button: Button
@@ -367,6 +368,8 @@ func _finish_bath() -> void:
 			GameState.register_weekly_event(&"vip")
 		if current_service == &"style":
 			GameState.register_weekly_event(&"style")
+		if current_visitor:
+			Discovery.register_service(current_pet_id)
 		EventBus.service_completed.emit(current_service, quality, reward)
 		Analytics.track(
 			&"service_complete",
@@ -625,6 +628,7 @@ func _on_queue_pressed(slot: int) -> void:
 	selected_slot = slot
 	var client: Dictionary = queue[slot]
 	current_vip = bool(client.get("vip", false))
+	current_visitor = bool(client.get("visitor", false))
 	current_pet_id = String(client["pet"])
 	current_service = StringName(client["service"])
 	petting_count = 0
@@ -747,6 +751,8 @@ func _update_queue_ui() -> void:
 			var client_name: String = String(profile.get("name", "Pet"))
 			if bool(client["vip"]):
 				client_name = "VIP " + client_name
+			if bool(client.get("visitor", false)):
+				client_name = "✦ " + client_name
 			if String(client["pet"]) == GameState.favorite_pet:
 				# Buddy na fila: marcador localizado (investimento emocional visível).
 				client_name += " • " + Loc.t("BUDDY_TAG")
@@ -758,7 +764,11 @@ func _update_queue_ui() -> void:
 				service_text += " + ★"
 			queue_service_labels[slot].text = service_text
 			# B1: trade-offs explícitos — temperamento, pagamento e raridade.
-			queue_info_labels[slot].text = SalonTuning.queue_info_text(profile)
+			queue_info_labels[slot].text = (
+				Loc.t("VISITOR_TAG") % [Discovery.progress(String(client["pet"])), Discovery.VISITS_TO_ADOPT]
+				if bool(client.get("visitor", false))
+				else SalonTuning.queue_info_text(profile)
+			)
 			var border: Dictionary = SalonTuning.queue_border(profile)
 			queue_cards[slot].add_theme_stylebox_override(
 				"panel",

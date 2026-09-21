@@ -37,7 +37,9 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 			var pet_id: String = String(payload.get("id", ""))
 			var profile: Dictionary = ContentDB.pet(pet_id)
 			var rarity: String = String(profile.get("rarity", "common"))
-			spec["title"] = Loc.t("REVEAL_PET_TITLE")
+			spec["title"] = Loc.t(
+				"REVEAL_PET_ADOPTED" if bool(payload.get("adopted", false)) else "REVEAL_PET_TITLE"
+			)
 			spec["image"] = "res://art/pets/%s.png" % pet_id
 			spec["body"] = "%s • %s\n%s • %s\n\n%s" % [
 				String(profile.get("name", pet_id)),

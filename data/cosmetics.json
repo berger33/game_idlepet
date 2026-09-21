@@ -1,13 +1,28 @@
-{"schema_version":1,"cosmetics":[
-{"id":"tub_pink","name":"Banheira Rosa Shampoo","slot":"bath","rarity":"common","price":{"coins":300}},
-{"id":"tub_ocean","name":"Banheira Oceano","slot":"bath","rarity":"rare","price":{"embers":20}},
-{"id":"bandana_blue","name":"Bandana Azul","slot":"pet_accessory","rarity":"common","price":{"coins":150}},
-{"id":"crown_bubbles","name":"Coroa de Bolhas","slot":"pet_accessory","rarity":"epic","source":"achievement"},
-{"id":"wall_junina","name":"Parede de Arraiá","slot":"wall","rarity":"seasonal","source":"festa_junina"},
-{"id":"tub_mint","name":"Banheira Menta","slot":"bath","rarity":"common","price":{"coins":400}},
-{"id":"tub_lavender","name":"Banheira Lavanda","slot":"bath","rarity":"rare","price":{"embers":40}},
-{"id":"bandana_red","name":"Bandana Vermelha","slot":"pet_accessory","rarity":"common","price":{"coins":250}},
-{"id":"scarf_caramel","name":"Cachecol Caramelo","slot":"pet_accessory","rarity":"rare","price":{"embers":35}},
-{"id":"crown_gold","name":"Coroa Real","slot":"pet_accessory","rarity":"epic","price":{"embers":60}},
-{"id":"wall_beach","name":"Parede Praiana","slot":"wall","rarity":"rare","price":{"embers":30}}
-]}
+{
+  "schema_version":1,
+  "cosmetics":[
+    {"id":"tub_pink","name":"Banheira Rosa Shampoo","slot":"bath","rarity":"common","price":{"coins":300},"foam":"ffd1e0"},
+    {"id":"tub_ocean","name":"Banheira Oceano","slot":"bath","rarity":"rare","price":{"embers":20},"foam":"a5e6f2"},
+    {"id":"bandana_blue","name":"Bandana Azul","slot":"pet_accessory","rarity":"common","price":{"coins":150}},
+    {"id":"crown_bubbles","name":"Coroa de Bolhas","slot":"pet_accessory","rarity":"epic","source":"achievement"},
+    {"id":"wall_junina","name":"Parede de Arraiá","slot":"wall","rarity":"seasonal","source":"festa_junina"},
+    {"id":"tub_mint","name":"Banheira Menta","slot":"bath","rarity":"common","price":{"coins":400},"foam":"d9f2e4"},
+    {"id":"tub_lavender","name":"Banheira Lavanda","slot":"bath","rarity":"rare","price":{"embers":40},"foam":"e6dcf7"},
+    {"id":"bandana_red","name":"Bandana Vermelha","slot":"pet_accessory","rarity":"common","price":{"coins":250}},
+    {"id":"scarf_caramel","name":"Cachecol Caramelo","slot":"pet_accessory","rarity":"rare","price":{"embers":35}},
+    {"id":"crown_gold","name":"Coroa Real","slot":"pet_accessory","rarity":"epic","price":{"embers":60}},
+    {"id":"wall_beach","name":"Parede Praiana","slot":"wall","rarity":"rare","price":{"embers":30}},
+    {"id":"tub_sunset","name":"Banheira Pôr do Sol","slot":"bath","rarity":"common","price":{"coins":550},"foam":"ffd8b3"},
+    {"id":"tub_bubblegum","name":"Banheira Chiclete","slot":"bath","rarity":"common","price":{"coins":650},"foam":"ffb7d5"},
+    {"id":"tub_sky","name":"Banheira Céu","slot":"bath","rarity":"common","price":{"coins":700},"foam":"cfe8ff"},
+    {"id":"tub_lime","name":"Banheira Limão","slot":"bath","rarity":"common","price":{"coins":800},"foam":"e4f7c5"},
+    {"id":"tub_coral","name":"Banheira Coral","slot":"bath","rarity":"rare","price":{"embers":25},"foam":"ffc9c2"},
+    {"id":"tub_snow","name":"Banheira Neve","slot":"bath","rarity":"rare","price":{"embers":30},"foam":"f4fbff"},
+    {"id":"tub_gold","name":"Banheira Dourada","slot":"bath","rarity":"epic","price":{"embers":55},"foam":"ffe9a8"},
+    {"id":"tub_galaxy","name":"Banheira Galáxia","slot":"bath","rarity":"epic","price":{"embers":70},"foam":"d6c8ff"},
+    {"id":"wall_garden","name":"Parede Jardim","slot":"wall","rarity":"common","price":{"coins":900}},
+    {"id":"wall_stars","name":"Parede Estrelada","slot":"wall","rarity":"rare","price":{"embers":45}},
+    {"id":"wall_carnaval","name":"Parede de Confete","slot":"wall","rarity":"seasonal","source":"carnaval"},
+    {"id":"wall_natal","name":"Parede de Luzinhas","slot":"wall","rarity":"seasonal","source":"natal"}
+  ]
+}

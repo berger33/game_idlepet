@@ -20,8 +20,13 @@ static var _cosmetic_cache: Dictionary = {}
 
 
 ## Cosmético de banheira troca a cor da espuma e das bolhas em todo o banho.
+## A cor vem do catálogo (cosmetics.json "foam"): novas banheiras são só dados.
 static func bath_foam_color(shop) -> Color:
-	match String(shop.room_cosmetics.get("bath", "")):
+	var tub: String = String(shop.room_cosmetics.get("bath", ""))
+	var foam: String = String(ContentDB.cosmetic(tub).get("foam", ""))
+	if not foam.is_empty() and Color.html_is_valid(foam):
+		return Color.html(foam)
+	match tub:
 		"tub_pink":
 			return Color("ffd1e0")
 		"tub_ocean":
@@ -71,6 +76,14 @@ static func draw_room_cosmetics(shop) -> void:
 				Vector2(wave_x, wave_y + 60.0), 70.0, PI + 0.25, TAU - 0.25, 16,
 				Color("81d4fa", 0.9), 10
 			)
+	elif wall == "wall_garden":
+		_draw_wall_garden(shop)
+	elif wall == "wall_stars":
+		_draw_wall_stars(shop)
+	elif wall == "wall_carnaval":
+		_draw_wall_carnaval(shop)
+	elif wall == "wall_natal":
+		_draw_wall_natal(shop)
 	if String(shop.room_cosmetics.get("bath", "")).is_empty():
 		return
 	var tub_color: Color = bath_foam_color(shop).darkened(0.08)
@@ -230,3 +243,69 @@ static func _draw_accessory_polygons(
 				13.0 * fit,
 				Color(String(gems[1]), 0.9)
 			)
+
+
+## Jardim: canteiro de flores balançando (pétalas em círculo + miolo).
+static func _draw_wall_garden(shop) -> void:
+	var petals: Array[Color] = [Color("ff8fb1"), Color("ffd54f"), Color("ce93d8"), Color("4fc3f7")]
+	for i: int in 9:
+		var base: Vector2 = Vector2(110.0 + float(i) * 108.0, 340.0)
+		var sway: float = sin(shop.shake_phase * 1.6 + float(i)) * 5.0
+		shop.draw_line(base, base + Vector2(sway, -46.0), Color("7ed957"), 6)
+		var head: Vector2 = base + Vector2(sway, -52.0)
+		for petal: int in 5:
+			var angle: float = TAU * float(petal) / 5.0 + shop.shake_phase * 0.3
+			shop.draw_circle(head + Vector2(cos(angle), sin(angle)) * 13.0, 11.0, petals[i % petals.size()])
+		shop.draw_circle(head, 9.0, Color("fff59d"))
+
+
+## Estrelada: estrelas piscando em fases diferentes + lua.
+static func _draw_wall_stars(shop) -> void:
+	shop.draw_circle(Vector2(900, 270), 40.0, Color("fff3c4"))
+	shop.draw_circle(Vector2(916, 262), 34.0, Color("ffe3ec"))
+	for i: int in 14:
+		var seed_x: float = 80.0 + fmod(float(i) * 173.0, 900.0)
+		var seed_y: float = 240.0 + fmod(float(i) * 97.0, 110.0)
+		var twinkle: float = 0.55 + 0.45 * sin(shop.shake_phase * 2.2 + float(i) * 1.7)
+		var radius: float = 5.0 + 5.0 * twinkle
+		var glow: Color = Color("fff59d", twinkle)
+		var center: Vector2 = Vector2(seed_x, seed_y)
+		shop.draw_line(center - Vector2(radius, 0.0), center + Vector2(radius, 0.0), glow, 3)
+		shop.draw_line(center - Vector2(0.0, radius), center + Vector2(0.0, radius), glow, 3)
+
+
+## Carnaval: chuva de confete e serpentinas (presente da temporada).
+static func _draw_wall_carnaval(shop) -> void:
+	var colors: Array[Color] = [
+		Color("ef5350"), Color("ffd54f"), Color("4fc3f7"), Color("7ed957"), Color("ce93d8")
+	]
+	for i: int in 36:
+		var x: float = 60.0 + fmod(float(i) * 151.0, 960.0)
+		var fall: float = fmod(shop.shake_phase * 40.0 + float(i) * 37.0, 130.0)
+		var y: float = 236.0 + fall
+		var spin: float = shop.shake_phase * 3.0 + float(i)
+		var size: Vector2 = Vector2(14.0, 8.0 + 6.0 * absf(sin(spin)))
+		shop.draw_rect(Rect2(Vector2(x, y) - size * 0.5, size), colors[i % colors.size()])
+	for i: int in 4:
+		var start: Vector2 = Vector2(140.0 + float(i) * 260.0, 232.0)
+		var points: PackedVector2Array = PackedVector2Array()
+		for step: int in 12:
+			var t: float = float(step) / 11.0
+			points.append(start + Vector2(sin(t * 9.0 + shop.shake_phase) * 14.0, t * 120.0))
+		shop.draw_polyline(points, colors[(i + 2) % colors.size()], 5)
+
+
+## Natal tropical: varal de luzinhas piscando (presente da temporada).
+static func _draw_wall_natal(shop) -> void:
+	var colors: Array[Color] = [Color("ef5350"), Color("7ed957"), Color("ffd54f"), Color("4fc3f7")]
+	var points: PackedVector2Array = PackedVector2Array()
+	for i: int in 13:
+		var t: float = float(i) / 12.0
+		points.append(Vector2(60.0 + t * 960.0, 250.0 + sin(t * PI) * 60.0))
+	shop.draw_polyline(points, Color("455a64"), 4)
+	for i: int in 13:
+		var on: bool = sin(shop.shake_phase * 4.0 + float(i) * 1.3) > -0.2
+		var color: Color = colors[i % colors.size()]
+		shop.draw_circle(points[i] + Vector2(0.0, 16.0), 12.0, color if on else color.darkened(0.55))
+		if on:
+			shop.draw_circle(points[i] + Vector2(0.0, 16.0), 20.0, Color(color, 0.25))

@@ -279,6 +279,13 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 	if pet_id != GameState.favorite_pet and randf() < buddy_chance:
 		pet_id = GameState.favorite_pet
 		Analytics.track(&"buddy_spawned", {"pet_id": pet_id})
+	# Visitante misterioso (Discovery): o próximo pet da carreira aparece antes
+	# do nível dele; 3 atendimentos o adotam.
+	var visitor: String = Discovery.roll_visitor()
+	var is_visitor: bool = not visitor.is_empty()
+	if is_visitor:
+		pet_id = visitor
+		Analytics.track(&"visitor_spawned", {"pet_id": pet_id})
 	var service: StringName = services[randi() % services.size()]
 	# A fila segue o evento do dia: no dia temático, metade dos clientes
 	# chega com o serviço em destaque — o evento se sente andando pela porta.
@@ -311,6 +318,7 @@ static func make_client(services: Array[StringName]) -> Dictionary:
 		"pet": pet_id,
 		"service": service,
 		"vip": vip,
+		"visitor": is_visitor,
 		"special": special,
 		"wait_total": wait_total,
 		"wait_left": wait_total,

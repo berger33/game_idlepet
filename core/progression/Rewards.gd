@@ -25,6 +25,7 @@ const SECONDS: Dictionary = {
 	&"achievement": 240.0,
 	&"return_bonus": 900.0,
 	&"prestige_start": 60.0,
+	&"event_goal": 600.0,
 }
 ## Preços dinâmicos (segundos de renda) — sinks acompanham a curva.
 const COSMETIC_SECONDS: float = 600.0

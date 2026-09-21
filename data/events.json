@@ -10,8 +10,8 @@
     {"id":"saturday_combo","weekday":6,"name":"Sábado do Combo","service":"","service_multiplier":1.0,"modifier":"perfect_bonus","multiplier":1.5}
   ],
   "seasonal":[
-    {"id":"carnaval","months":[2,3],"cosmetic_set":"confete","cosmetic":"","exclusive_pet":"vira_lata_folioes"},
+    {"id":"carnaval","months":[2,3],"cosmetic_set":"confete","cosmetic":"wall_carnaval","exclusive_pet":"vira_lata_folioes"},
     {"id":"festa_junina","months":[6],"cosmetic_set":"arraia","cosmetic":"wall_junina","exclusive_pet":"salsicha_caipira"},
-    {"id":"natal","months":[12],"cosmetic_set":"natal_tropical","cosmetic":"","exclusive_pet":"spitz_neve"}
+    {"id":"natal","months":[12],"cosmetic_set":"natal_tropical","cosmetic":"wall_natal","exclusive_pet":"spitz_neve"}
   ]
 }

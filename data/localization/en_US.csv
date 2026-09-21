@@ -217,3 +217,10 @@ SHARE_SERVICE_STYLE,loved the new bow!
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_SAVED_GALLERY,Photo saved to Pictures/PetShopTycoon • caption copied
 SHARE_WEB,Opening share…
+VISITOR_TAG,visitor ✦ %d/%d
+VISITOR_PROGRESS,%s loved the visit! (%d/%d) — a bit more and it joins your collection
+REVEAL_PET_ADOPTED,Visitor adopted!
+EVENT_GOAL_TITLE,GOAL OF THE DAY
+EVENT_GOAL_DESC,%s: %d/%d services
+EVENT_GOAL_ANY,any service
+EVENT_GOAL_REWARD,chest: +%d coins and +%d Embers

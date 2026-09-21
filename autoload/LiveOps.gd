@@ -8,6 +8,11 @@ extends Node
 ## Nomes dos eventos vivem na localização: EVENT_0..EVENT_6 / SEASON_<id>.
 
 const GIFT_COLOR: Color = Color("ffd54f")
+## Meta do dia: atendimentos do serviço em destaque (ou de qualquer serviço
+## nos dias sem destaque) que pagam um baú — o evento vira motivo de sessão.
+const EVENT_GOAL_FEATURED: int = 20
+const EVENT_GOAL_ANY: int = 30
+const EVENT_GOAL_EMBERS: int = 2
 
 
 ## Entrada da agenda para hoje ({} com eventos desligados).
@@ -78,6 +83,34 @@ func modifier_multiplier(modifier: StringName) -> float:
 	if String(entry.get("modifier", "")) != String(modifier):
 		return 1.0
 	return 1.0 + maxf(0.0, float(entry.get("multiplier", 1.0)) - 1.0) * boost_scale()
+
+
+## Meta de atendimentos de hoje (0 com eventos desligados).
+func event_goal_target() -> int:
+	if not events_on():
+		return 0
+	return EVENT_GOAL_FEATURED if featured_service() != &"" else EVENT_GOAL_ANY
+
+
+## Este atendimento conta para a meta do dia?
+func event_goal_counts(service_id: StringName) -> bool:
+	if not events_on():
+		return false
+	var featured: StringName = featured_service()
+	return featured == &"" or featured == service_id
+
+
+## Texto da meta do dia: "Segunda do Banho: banho 12/20".
+func event_goal_text() -> String:
+	var featured: StringName = featured_service()
+	var subject: String = (
+		Loc.t(String(Goals.SERVICE_LABEL_KEY.get(String(featured), "SERVICE_BATH")))
+		if featured != &""
+		else Loc.t("EVENT_GOAL_ANY")
+	)
+	return Loc.t("EVENT_GOAL_DESC") % [
+		subject, mini(GameState.event_goal_count, event_goal_target()), event_goal_target()
+	]
 
 
 ## Temporada ativa neste mês ({} fora de temporada ou com eventos desligados).

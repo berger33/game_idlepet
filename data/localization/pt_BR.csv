@@ -217,3 +217,10 @@ SHARE_SERVICE_STYLE,amou o novo lacinho!
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_SAVED_GALLERY,Foto salva em Imagens/PetShopTycoon • legenda copiada
 SHARE_WEB,Abrindo o compartilhamento…
+VISITOR_TAG,visitante ✦ %d/%d
+VISITOR_PROGRESS,%s adorou a visita! (%d/%d) — mais um pouco e entra na coleção
+REVEAL_PET_ADOPTED,Visitante adotado!
+EVENT_GOAL_TITLE,META DO DIA
+EVENT_GOAL_DESC,%s: %d/%d atendimentos
+EVENT_GOAL_ANY,qualquer serviço
+EVENT_GOAL_REWARD,baú: +%d moedas e +%d Brasas

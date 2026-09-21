@@ -156,6 +156,14 @@ func _migrate(data: Dictionary) -> Dictionary:
 		)
 		data["daily_mission_ids"] = data.get("daily_mission_ids", [])
 		version = 11
+	if version == 11:
+		# v12: visitantes misteriosos (descoberta de pets pela fila).
+		data["version"] = 12
+		data["visitor_progress"] = data.get("visitor_progress", {})
+		data["event_goal_date"] = data.get("event_goal_date", "")
+		data["event_goal_count"] = int(data.get("event_goal_count", 0))
+		data["event_goal_claimed"] = bool(data.get("event_goal_claimed", false))
+		version = 12
 	return data
 
 

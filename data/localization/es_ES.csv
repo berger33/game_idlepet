@@ -217,3 +217,10 @@ SHARE_SERVICE_STYLE,¡le encantó el lazo nuevo!
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_SAVED_GALLERY,Foto guardada en Imágenes/PetShopTycoon • leyenda copiada
 SHARE_WEB,Abriendo para compartir…
+VISITOR_TAG,visitante ✦ %d/%d
+VISITOR_PROGRESS,¡A %s le encantó la visita! (%d/%d) — un poco más y entra en la colección
+REVEAL_PET_ADOPTED,¡Visitante adoptado!
+EVENT_GOAL_TITLE,META DEL DÍA
+EVENT_GOAL_DESC,%s: %d/%d atenciones
+EVENT_GOAL_ANY,cualquier servicio
+EVENT_GOAL_REWARD,cofre: +%d monedas y +%d Brasas

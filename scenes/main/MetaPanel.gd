@@ -120,6 +120,27 @@ func _build_missions() -> void:
 			GameState.claim_daily_reward()
 			AudioManager.play(&"coin")
 	)
+	# Meta do dia do evento (LiveOps): o evento vira motivo de sessão.
+	if LiveOps.event_goal_target() > 0:
+		var goal_ready: bool = (
+			GameState.event_goal_count >= LiveOps.event_goal_target()
+			and not GameState.event_goal_claimed
+		)
+		_info_row(
+			"%s • %s" % [Loc.t("EVENT_GOAL_TITLE"), LiveOps.current_event_name()],
+			"%s\n%s" % [
+				LiveOps.event_goal_text(),
+				Loc.t("EVENT_GOAL_REWARD") % [
+					Rewards.for_kind(&"event_goal", 300), LiveOps.EVENT_GOAL_EMBERS
+				],
+			],
+			Loc.t("CLAIMED") if GameState.event_goal_claimed else Loc.t("CLAIM"),
+			Color("4fc3f7"),
+			goal_ready,
+			func() -> void:
+				if GameState.claim_event_goal():
+					AudioManager.play(&"pass_claim")
+		)
 	# Diárias sorteadas do catálogo (Missions.gd): 3 regulares + épica, metas
 	# escaladas ao nível e moedas escaladas à renda.
 	for mission: Dictionary in Missions.today():
@@ -242,7 +263,11 @@ func _build_collection() -> void:
 				+ "♥ %d/50" % int(GameState.pet_affection.get(pet_id, 0))
 			)
 			if unlocked
-			else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
+			else (
+				Loc.t("VISITOR_TAG") % [Discovery.progress(pet_id), Discovery.VISITS_TO_ADOPT]
+				if Discovery.progress(pet_id) > 0
+				else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
+			)
 		)
 		sub.add_theme_font_size_override("font_size", 22)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("78909c"))
@@ -488,6 +513,8 @@ func _build_map() -> void:
 		"EVENTO: %s — %s\n"
 		% [LiveOps.current_event_name(), LiveOps.event_description_for(LiveOps.weekday())]
 	)
+	if LiveOps.event_goal_target() > 0:
+		text += Loc.t("EVENT_GOAL_TITLE") + ": " + LiveOps.event_goal_text() + "\n"
 	var season: Dictionary = LiveOps.active_seasonal()
 	if not season.is_empty():
 		var season_id: String = String(season.get("id", ""))
