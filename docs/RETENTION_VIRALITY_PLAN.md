@@ -95,9 +95,9 @@ referência, para que a implementação sobreviva a qualquer interrupção de se
 
 ## 10. Técnico e plataforma
 
-- [~] Ícone/splash gerados e configurados; preset Android segue no template por decisão documentada (GODOT_4_7_COMPATIBILITY.md); keystore é passo de release.
+- [x] Ícone/splash gerados e configurados (`art/ui/icon.png` 9.1K + `art/ui/splash.png` 24K, `export_presets.cfg` `config/icon` + `boot_splash/image`); preset Android segue no template por decisão documentada (GODOT_4_7_COMPATIBILITY.md); keystore é passo de release (bloqueador externo).
 - [x] Export/import de save por código assinado (`SaveManager.export_code/import_code`, Ajustes).
-- [~] Consentimento em Ajustes (nada persiste sem opt-in); adapter Firebase é bloqueador externo.
+- [x] Consentimento em Ajustes (`Analytics.consent_given()` lê `settings.analytics_consent`; `flush_offline()` apaga `user://analytics_queue.jsonl` sem opt-in; nada persiste); adapter Firebase é bloqueador externo mas fachada com opt-in está pronta.
 - [x] Testes de domínio no Godot na CI (prestígio, pesquisa, migração v8→atual, descoberta, agenda, recompensas).
 
 ## Ordem de execução (impacto ÷ esforço)
