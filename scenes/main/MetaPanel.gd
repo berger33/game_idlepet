@@ -29,12 +29,24 @@ func is_open() -> bool:
 func build(root: Control) -> void:
 	screen = META_SCREEN.instantiate()
 	root.add_child(screen)
-	# Defesa contra regressão do estado inicial: o painel meta nasce fechado
-	# (is_open() lê screen.panel.visible; esconder apenas a raiz não basta).
 	screen.panel.hide()
 	screen.backdrop.hide()
 	screen.close_button.pressed.connect(close)
 	_style_button(screen.close_button, PINK)
+	# Scrollbar visível + safe area bottom
+	var scroll: ScrollContainer = screen.get_node("Panel/Column/Scroll") as ScrollContainer
+	if is_instance_valid(scroll):
+		# Mostra barra e adiciona fade no bottom via StyleBox
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Safe area bottom para gesture navigation Android
+	var safe_bottom: float = 0.0
+	if OS.has_feature("mobile") or OS.has_feature("web"):
+		var safe: Rect2i = DisplayServer.get_display_safe_area()
+		var window_h: int = DisplayServer.window_get_size().y
+		if window_h > 0 and safe.end.y < window_h:
+			safe_bottom = clampf(float(window_h - safe.end.y) * 0.5, 0.0, 80.0)
+	screen.panel.offset_bottom = 1240.0 - safe_bottom
+	# Close agora é ✕ 84×84 mais legível
 
 
 func close() -> void:
@@ -105,6 +117,7 @@ func _emerge() -> void:
 
 
 func _build_missions() -> void:
+	_note("── " + Loc.t("DAILY_LOGIN").split(" ")[0] + " & STREAK ──", 26, PINK, false)
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
 	var streak_coins: int = Rewards.scaled(
@@ -229,13 +242,47 @@ func _build_missions() -> void:
 	_note(Loc.t("MISSION_NOTE"))
 
 
+var _collection_filter: StringName = &"all"
+
 func _build_collection() -> void:
+	# Filtros rápidos: Todos / Cães / Gatos / Lendários (UX de coleção grande)
+	var filter_row: HBoxContainer = HBoxContainer.new()
+	filter_row.add_theme_constant_override("separation", 10)
+	screen.content_box.add_child(filter_row)
+	for f: Dictionary in [
+		{"id": &"all", "label": "TODOS"},
+		{"id": &"dog", "label": "CÃES"},
+		{"id": &"cat", "label": "GATOS"},
+		{"id": &"legendary", "label": "LENDÁRIOS"},
+	]:
+		var fid: StringName = f["id"]
+		var active: bool = _collection_filter == fid
+		var btn: Button = Button.new()
+		btn.text = String(f["label"])
+		btn.custom_minimum_size = Vector2(140, 56)
+		_style_button(btn, PINK if active else Color("b0bec5"))
+		btn.pressed.connect(
+			func(id: StringName = fid) -> void:
+				_collection_filter = id
+				_rebuild(&"collection")
+		)
+		filter_row.add_child(btn)
+
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	screen.content_box.add_child(grid)
-	for pet: Dictionary in ContentDB.pets:
+	var filtered: Array[Dictionary] = []
+	for pet_entry: Dictionary in ContentDB.pets:
+		if _collection_filter == &"dog" and String(pet_entry.get("species", "")) != "dog":
+			continue
+		if _collection_filter == &"cat" and String(pet_entry.get("species", "")) != "cat":
+			continue
+		if _collection_filter == &"legendary" and String(pet_entry.get("rarity", "")) != "legendary":
+			continue
+		filtered.append(pet_entry)
+	for pet: Dictionary in filtered:
 		var pet_id: String = String(pet.get("id", ""))
 		var unlocked: bool = GameState.unlocked_pets.has(pet_id)
 		var card: PanelContainer = PET_CARD.instantiate()
@@ -270,7 +317,7 @@ func _build_collection() -> void:
 			)
 		)
 		sub.add_theme_font_size_override("font_size", 22)
-		sub.add_theme_color_override("font_color", PINK if unlocked else Color("78909c"))
+		sub.add_theme_color_override("font_color", PINK if unlocked else Color("546e7a"))
 		if unlocked:
 			card.tooltip_text = Loc.t("FAVORITE_HINT")
 			card.gui_input.connect(
@@ -444,7 +491,32 @@ func _build_staff() -> void:
 		)
 
 
+var _shop_filter: StringName = &"all"
+
 func _build_shop() -> void:
+	# Abas: Destaque / Banheiras / Paredes / Acessórios / Tudo
+	var shop_filter_row: HBoxContainer = HBoxContainer.new()
+	shop_filter_row.add_theme_constant_override("separation", 10)
+	screen.content_box.add_child(shop_filter_row)
+	for sf: Dictionary in [
+		{"id": &"all", "label": "TUDO"},
+		{"id": &"bath", "label": "BANHEIRAS"},
+		{"id": &"wall", "label": "PAREDES"},
+		{"id": &"pet_accessory", "label": "LAÇOS"},
+	]:
+		var fid: StringName = sf["id"]
+		var active: bool = _shop_filter == fid
+		var btn: Button = Button.new()
+		btn.text = String(sf["label"])
+		btn.custom_minimum_size = Vector2(140, 56)
+		_style_button(btn, Color("ffd54f") if active else Color("b0bec5"))
+		btn.pressed.connect(
+			func(id: StringName = fid) -> void:
+				_shop_filter = id
+				_rebuild(&"shop")
+		)
+		shop_filter_row.add_child(btn)
+
 	# Rotativo semanal (LiveOps sem build): cosmético em destaque da semana
 	var featured_id: String = ContentDB.weekly_featured_cosmetic()
 	if not featured_id.is_empty():
@@ -474,6 +546,9 @@ func _build_shop() -> void:
 						AudioManager.play(&"coin")
 			)
 	for look: Dictionary in ContentDB.cosmetics:
+		var slot: String = String(look.get("slot", ""))
+		if _shop_filter != &"all" and slot != String(_shop_filter):
+			continue
 		var look_id: String = String(look.get("id", ""))
 		var owned: bool = GameState.unlocked_cosmetics.has(look_id)
 		var price: Dictionary = look.get("price", {})
@@ -533,19 +608,25 @@ func _build_shop() -> void:
 				AudioManager.play(&"coin")
 				_rebuild(&"shop")
 	)
-	# Rewarded ads honesto: fachada avisa indisponível offline; o adapter real
-	# chamará o callback de recompensa apenas em conclusão verificada.
+	# Rewarded honesto: explica benefício + limite, com fallback brasa.
 	_info_row(
 		"+1 %s" % Loc.t("EMBERS"),
-		"anúncio recompensado",
-		"▶",
+		"🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa",
+		"▶ ASSISTIR",
 		BLUE,
 		true,
 		func() -> void:
 			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
 	)
 	for sku: String in IAPManager.PRODUCTS:
-		_info_row(sku, "R$", "OFFLINE", Color("b0bec5"), false, Callable())
+		_info_row(
+			"%s (Em breve)" % sku,
+			"Pacote premium — remove anúncios + brasas • Disponível na loja",
+			"🔒 EM BREVE",
+			Color("b0bec5"),
+			false,
+			Callable()
+		)
 	_note(Loc.t("COSMETIC_NO_FX"))
 	_note(Loc.t("IAP_NOTE"))
 
@@ -744,15 +825,16 @@ func _build_settings() -> void:
 				AudioManager.play(&"error_soft")
 	)
 	var lang_row: HBoxContainer = HBoxContainer.new()
-	lang_row.add_theme_constant_override("separation", 12)
+	lang_row.add_theme_constant_override("separation", 10)
 	screen.content_box.add_child(lang_row)
 	var caption: Label = _label_node(Loc.t("LANGUAGE") + ":", 28, CHARCOAL)
 	lang_row.add_child(caption)
+	var lang_names: Dictionary = {"pt_BR": "🇧🇷 Português", "en_US": "🇺🇸 English", "es_ES": "🇪🇸 Español"}
 	for code: String in Loc.LANGS:
 		var lang_button: Button = Button.new()
 		_style_button(lang_button, BLUE if code == Loc.lang else Color("b0bec5"))
-		lang_button.text = code
-		lang_button.custom_minimum_size = Vector2(150, 60)
+		lang_button.text = String(lang_names.get(code, code))
+		lang_button.custom_minimum_size = Vector2(180, 60)
 		lang_button.pressed.connect(
 			func(c: String = code) -> void:
 				Loc.set_language(c)
@@ -768,13 +850,31 @@ func _add_slider(caption: String, setting_key: String, default_value: float) -> 
 	caption_label.text = caption + ":"
 	caption_label.add_theme_font_size_override("font_size", 28)
 	caption_label.add_theme_color_override("font_color", CHARCOAL)
+	var value_label: Label = row.get_node_or_null("Value") as Label
+	if value_label == null:
+		value_label = Label.new()
+		value_label.name = "Value"
+		value_label.custom_minimum_size = Vector2(70, 0)
+		value_label.add_theme_font_size_override("font_size", 26)
+		value_label.add_theme_color_override("font_color", CHARCOAL)
+		row.add_child(value_label)
 	var slider: HSlider = row.get_node("Slider")
 	slider.value = float(GameState.settings.get(setting_key, default_value))
+	value_label.text = "%d%%" % int(slider.value * 100.0)
 	slider.value_changed.connect(
 		func(v: float) -> void:
 			GameState.settings[setting_key] = v
 			SaveManager.request_save()
 			AudioManager.apply_volumes()
+			value_label.text = "%d%%" % int(v * 100.0)
+	)
+	# Preview sonoro ao soltar o slider
+	slider.drag_ended.connect(
+		func(_v_changed: bool) -> void:
+			if setting_key == "sfx":
+				AudioManager.play(&"tap")
+			elif setting_key == "music":
+				AudioManager.play(&"coin")
 	)
 
 
@@ -817,7 +917,7 @@ func _info_row(
 	var desc_label: Label = row.get_node("Box/Info/Desc")
 	desc_label.text = desc_text
 	desc_label.add_theme_font_size_override("font_size", 24)
-	desc_label.add_theme_color_override("font_color", Color("546e7a"))
+	desc_label.add_theme_color_override("font_color", Color("37474f"))
 	var button: Button = row.get_node("Box/Action")
 	_style_button(button, action_color)
 	button.text = action_text

@@ -37,8 +37,8 @@ horizontal_alignment = 1
 
 [node name="Close" type="Button" parent="Panel/Column/Header"]
 layout_mode = 2
-custom_minimum_size = Vector2(84, 70)
-text = "↙"
+custom_minimum_size = Vector2(84, 84)
+text = "✕"
 
 [node name="Scroll" type="ScrollContainer" parent="Panel/Column"]
 layout_mode = 2

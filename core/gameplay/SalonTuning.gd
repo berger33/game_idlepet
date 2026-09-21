@@ -170,13 +170,15 @@ static func breed_size_factor(profile: Dictionary) -> float:
 	return 1.0
 
 
-## Linha de trade-offs do cartão da fila (B1): temperamento + pagamento.
+## Linha de trade-offs do cartão da fila (B1): temperamento + pagamento com $ legível.
 static func queue_info_text(profile: Dictionary) -> String:
 	var temperament: StringName = StringName(profile.get("temperament", "happy"))
 	var temperament_text: String = Loc.t(String(TEMPERAMENT_LABELS.get(temperament, "TEMPER_PLAYFUL")))
 	var tip: float = float(profile.get("base_tip", 1.0))
-	var pay_pips: String = "●" if tip < 1.4 else ("●●" if tip < 2.2 else "●●●")
-	return "%s  %s %s" % [temperament_text, Loc.t("PAYS"), pay_pips]
+	var pay_text: String = "$" if tip < 1.4 else ("$$" if tip < 2.2 else "$$$")
+	var rarity: StringName = StringName(profile.get("rarity", "common"))
+	var rarity_icon: String = {"common": "", "uncommon": "◆", "rare": "★", "epic": "✦", "legendary": "👑"}.get(rarity, "")
+	return "%s  %s %s %s" % [temperament_text, Loc.t("PAYS"), pay_text, rarity_icon]
 
 
 ## Borda do cartão pela raridade do pet (B1): leitura instantânea do valor.
@@ -209,18 +211,18 @@ static func service_sound(service: StringName) -> StringName:
 	)
 
 
-## Nome de exibição da ferramenta (tutorial e toasts).
+## Nome de exibição da ferramenta localizado (antes hardcoded pt-BR).
 static func tool_display_name(tool: StringName) -> String:
-	return (
-		{
-			&"soap": "o sabonete",
-			&"clipper": "a máquina de tosa",
-			&"dryer": "o secador",
-			&"perfume": "o perfume",
-			&"bow": "o lacinho",
-		}
-		. get(tool, "o utensílio")
-	)
+	var key: String = {
+		&"soap": "TOOL_SOAP",
+		&"clipper": "TOOL_CLIPPER",
+		&"dryer": "TOOL_DRYER",
+		&"perfume": "TOOL_PERFUME",
+		&"bow": "TOOL_BOW",
+	}.get(tool, "")
+	if not key.is_empty():
+		return Loc.t(key).to_lower()
+	return Loc.t("TOOL_SOAP").to_lower()
 
 
 ## Recompensa total de um atendimento (bônus de bairro + evento + carinho +
@@ -393,11 +395,15 @@ static func font_scale() -> float:
 
 ## Alguma melhoria está ao alcance agora (pulso do botão de upgrades).
 static func upgrades_affordable() -> bool:
+	return affordable_upgrades_count() > 0
+
+static func affordable_upgrades_count() -> int:
+	var count: int = 0
 	if GameState.bath_upgrade_level < GameState.MAX_CAREER_LEVEL:
 		if Economy.upgrade_cost(GameState.bath_upgrade_level) <= GameState.coins:
-			return true
+			count += 1
 	for tool_id: StringName in [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]:
 		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
 		if level < 30 and GameState.tool_upgrade_cost(tool_id) <= GameState.coins:
-			return true
-	return false
+			count += 1
+	return count

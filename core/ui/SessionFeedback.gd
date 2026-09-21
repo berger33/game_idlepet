@@ -60,22 +60,30 @@ static func show_offline_card(main) -> void:
 	RevealCard.enqueue(main, spec)
 
 
-## Toast curto no topo (EventBus.toast_requested → Main._show_toast → aqui).
+## Toast com fila: evita sobreposição empilhando com offset por toast existente.
 static func toast(main, message: String, color: Color) -> void:
+	var existing: int = main.toast_layer.get_child_count()
+	if existing >= 3:
+		# Se já tem 3, remove o mais antigo para não poluir
+		var oldest: Node = main.toast_layer.get_child(0)
+		if is_instance_valid(oldest):
+			oldest.queue_free()
+			existing -= 1
 	var label: Label = Label.new()
 	label.text = message
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 34)
+	label.add_theme_font_size_override("font_size", 32)
 	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_stylebox_override("normal", main._style(color, 24, 16))
+	label.add_theme_stylebox_override("normal", main._style(color, 22, 14))
 	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	label.position = Vector2(-360, 120)
-	label.size = Vector2(720, 78)
+	var y_base: float = 120.0 + existing * 88.0
+	label.position = Vector2(-360, y_base)
+	label.size = Vector2(720, 76)
 	main.toast_layer.add_child(label)
 	var tween: Tween = main.create_tween()
-	tween.tween_property(label, "position:y", 165.0, 0.22).set_trans(Tween.TRANS_BACK)
-	tween.tween_interval(1.4)
-	tween.tween_property(label, "modulate:a", 0.0, 0.3)
+	tween.tween_property(label, "position:y", y_base + 45.0, 0.22).set_trans(Tween.TRANS_BACK)
+	tween.tween_interval(1.6)
+	tween.tween_property(label, "modulate:a", 0.0, 0.35)
 	tween.tween_callback(label.queue_free)
 
 

@@ -601,19 +601,22 @@ func _draw() -> void:
 		if fill > 0.005:
 			draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * fill, 40, ring_color, 10.0)
 	if service_active:
-		# Barra de paciência (tempo restante do atendimento).
-		var patience_rect: Rect2 = Rect2(270, 128, 540, 14)
-		draw_rect(patience_rect, Color("263238", 0.55))
+		# Barra de paciência com rótulo ⏳ + altura maior 22px para acessibilidade.
+		var patience_rect: Rect2 = Rect2(220, 118, 640, 22)
+		draw_rect(patience_rect, Color("263238", 0.55), true, -1.0, false)
+		draw_rect(patience_rect, Color("ffffff", 0.18), false, 2.0)
 		var patience_ratio: float = clampf(service_time_ratio, 0.0, 1.0)
-		var patience_fill: Vector2 = Vector2(
-			patience_rect.size.x * patience_ratio, patience_rect.size.y
-		)
+		var patience_fill: Vector2 = Vector2(patience_rect.size.x * patience_ratio, patience_rect.size.y)
 		var patience_color: Color = GestureArt.good_color()
 		if patience_ratio <= 0.25:
 			patience_color = GestureArt.bad_color()
 		elif patience_ratio <= 0.5:
 			patience_color = Color("ffd54f")
 		draw_rect(Rect2(patience_rect.position, patience_fill), patience_color)
+		# Ícone e texto
+		draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(-36, 18), "⏳", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color.WHITE)
+		if patience_ratio <= 0.3:
+			draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(patience_rect.size.x + 8, 18), "RÁPIDO!", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, patience_color)
 	if celebration > 0.0 and special_reward_active:
 		for i: int in 14:
 			var angle: float = TAU * float(i) / 14.0 + shake_phase
