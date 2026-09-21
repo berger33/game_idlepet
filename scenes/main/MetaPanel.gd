@@ -332,12 +332,18 @@ func _build_collection() -> void:
 		name_label.add_theme_color_override("font_color", CHARCOAL)
 		var sub: Label = card.get_node("VBox/Sub")
 		var aff: int = int(GameState.pet_affection.get(pet_id, 0))
-		var mem: String = PetStories.affection_memory(pet_id, aff) if unlocked and aff >= 1 else ""
+		var diary: String = PetStories.diary_progress(pet_id, aff) if unlocked else ""
+		var all_mems: Array[String] = PetStories.all_memories(pet_id) if unlocked else []
+		var unlocked_mems: Array[String] = []
+		if aff >= 1 and all_mems.size() > 0: unlocked_mems.append(all_mems[0])
+		if aff >= 10 and all_mems.size() > 1: unlocked_mems.append(all_mems[1])
+		if aff >= 25 and all_mems.size() > 2: unlocked_mems.append(all_mems[2])
+		var mem_text: String = "\n".join(unlocked_mems) if not unlocked_mems.is_empty() else ""
 		sub.text = (
 			(
 				("★ " if GameState.favorite_pet == pet_id else "")
-				+ "♥ %d/50" % aff
-				+ ("\n%s" % mem if not mem.is_empty() else "")
+				+ "♥ %d/50 • %s" % [aff, diary]
+				+ ("\n%s" % mem_text if not mem_text.is_empty() else "")
 			)
 			if unlocked
 			else (
@@ -346,11 +352,12 @@ func _build_collection() -> void:
 				else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
 			)
 		)
-		sub.add_theme_font_size_override("font_size", 20 if not mem.is_empty() else 22)
+		sub.add_theme_font_size_override("font_size", 18 if not mem_text.is_empty() else 22)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("546e7a"))
 		if unlocked:
 			var bio_text: String = PetStories.bio(pet) if PetStories.has_method("bio") else ""
-			card.tooltip_text = "%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text] if not bio_text.is_empty() else Loc.t("FAVORITE_HINT")
+			var diary_full: String = "\n".join(all_mems) if not all_mems.is_empty() else ""
+			card.tooltip_text = "%s\n%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text, diary_full] if not bio_text.is_empty() else "%s\n%s" % [Loc.t("FAVORITE_HINT"), diary_full]
 			# Feedback visual P1: hover scale + pressed
 			card.pivot_offset = card.custom_minimum_size * 0.5
 			card.mouse_entered.connect(func(): card.create_tween().tween_property(card, "scale", Vector2(1.05, 1.05), 0.12))
@@ -663,13 +670,24 @@ func _build_shop() -> void:
 			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
 	)
 	for sku: String in IAPManager.PRODUCTS:
+		var rew: Dictionary = IAPManager.MOCK_REWARDS.get(StringName(sku), {})
+		var em: int = int(rew.get("embers", 0))
+		var ent: String = String(rew.get("entitlement", ""))
+		var desc: String = "Pacote premium — remove anúncios + brasas" if sku in ["starter_pack","no_ads"] else "+%d %s (mock offline)" % [em, Loc.t("EMBERS")] if em>0 else "Pacote premium"
+		if not ent.is_empty():
+			desc += " • %s" % ent
+		var has_ent: bool = IAPManager.has_entitlement(StringName(ent)) if not ent.is_empty() else false
+		var btn_label: String = Loc.t("OWNED") if has_ent else "%s • %s" % [Loc.t("BUY"), Loc.t("MOCK_TAG") if not IAPManager.provider_ready else ""]
 		_info_row(
-			"%s (Em breve)" % sku,
-			"Pacote premium — remove anúncios + brasas • Disponível na loja",
-			"🔒 EM BREVE",
-			Color("b0bec5"),
-			false,
-			Callable()
+			"%s%s" % [sku, " (mock)" if not IAPManager.provider_ready else ""],
+			desc,
+			btn_label,
+			Color("b0bec5") if has_ent else Color("ffd54f"),
+			not has_ent,
+			func(s: String = sku) -> void:
+				if IAPManager.purchase(StringName(s)):
+					AudioManager.play(&"coin")
+					_rebuild(&"shop")
 		)
 	_note(Loc.t("COSMETIC_NO_FX"))
 	_note(Loc.t("IAP_NOTE"))
@@ -845,10 +863,11 @@ func _build_settings() -> void:
 			EventBus.settings_changed.emit()
 	)
 	name_row.add_child(name_edit)
-	# Acessibilidade: paleta daltônica, assistência motora e mão esquerda.
+	# Acessibilidade: paleta daltônica, assistência motora, mão esquerda e modo treino fantasma.
 	_add_toggle(Loc.t("COLORBLIND_MODE"), "colorblind", false)
 	_add_toggle(Loc.t("ASSIST_WINDOW"), "assist_window", false)
 	_add_toggle(Loc.t("LEFT_HANDED_MODE"), "left_handed", false)
+	_add_toggle(Loc.t("TRAINING_GHOST"), "training_ghost", false)
 	# Consentimento de dados de uso (nada é gravado sem isto).
 	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)
 	# Transferência de progresso sem cloud save: código assinado no clipboard.

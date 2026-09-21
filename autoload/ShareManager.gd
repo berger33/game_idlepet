@@ -217,6 +217,35 @@ func _render_card(
 	)
 	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
 	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
+	# QR code no share (P1): gera via código sem lib externa
+	var qr_data: String = SHARE_URL if not SHARE_URL.is_empty() else "%s|%s|%d|%s" % [String(profile.get("id", "caramelo")), context, stars, String(GameState.settings.get("shop_name", "PetShop"))]
+	var qr_img: Image = QRCodeArt.generate_image(qr_data, 220)
+	var qr_tex: ImageTexture = ImageTexture.create_from_image(qr_img)
+	var qr_frame: PanelContainer = PanelContainer.new()
+	var qr_style: StyleBoxFlat = StyleBoxFlat.new()
+	qr_style.bg_color = Color.WHITE
+	qr_style.set_corner_radius_all(18)
+	qr_style.set_content_margin_all(10)
+	qr_frame.add_theme_stylebox_override("panel", qr_style)
+	qr_frame.position = Vector2(430, 1320)
+	qr_frame.size = Vector2(220, 260)
+	var qr_box: VBoxContainer = VBoxContainer.new()
+	qr_box.add_theme_constant_override("separation", 4)
+	qr_frame.add_child(qr_box)
+	var qr_pic: TextureRect = TextureRect.new()
+	qr_pic.texture = qr_tex
+	qr_pic.custom_minimum_size = Vector2(200, 200)
+	qr_pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	qr_box.add_child(qr_pic)
+	var qr_label: Label = Label.new()
+	qr_label.text = Loc.t("SHARE_QR_LABEL")
+	qr_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	qr_label.custom_minimum_size = Vector2(200, 40)
+	qr_label.add_theme_font_override("font", BODY_FONT)
+	qr_label.add_theme_font_size_override("font_size", 22)
+	qr_label.add_theme_color_override("font_color", Color("263238"))
+	qr_box.add_child(qr_label)
+	root.add_child(qr_frame)
 	await RenderingServer.frame_post_draw
 	var image: Image = null
 	var texture: ViewportTexture = viewport.get_texture()
@@ -279,6 +308,35 @@ func _render_achievement_card(achievement_id: String) -> Image:
 		root.add_child(_text(reward_text, 48, Color("ff8f00"), 950, TITLE_FONT))
 	var footer: String = SHARE_URL if not SHARE_URL.is_empty() else Loc.t("SHARE_HASHTAG")
 	root.add_child(_text(footer, 40, Color("ff8fb1"), 1780, TITLE_FONT))
+	# QR code também no cartão de conquista
+	var qr_data2: String = SHARE_URL if not SHARE_URL.is_empty() else "%s|%s" % [achievement_id, String(GameState.settings.get("shop_name", "PetShop"))]
+	var qr_img2: Image = QRCodeArt.generate_image(qr_data2, 220)
+	var qr_tex2: ImageTexture = ImageTexture.create_from_image(qr_img2)
+	var qr_frame2: PanelContainer = PanelContainer.new()
+	var qr_style2: StyleBoxFlat = StyleBoxFlat.new()
+	qr_style2.bg_color = Color.WHITE
+	qr_style2.set_corner_radius_all(18)
+	qr_style2.set_content_margin_all(10)
+	qr_frame2.add_theme_stylebox_override("panel", qr_style2)
+	qr_frame2.position = Vector2(430, 1080)
+	qr_frame2.size = Vector2(220, 260)
+	var qr_box2: VBoxContainer = VBoxContainer.new()
+	qr_box2.add_theme_constant_override("separation", 4)
+	qr_frame2.add_child(qr_box2)
+	var qr_pic2: TextureRect = TextureRect.new()
+	qr_pic2.texture = qr_tex2
+	qr_pic2.custom_minimum_size = Vector2(200, 200)
+	qr_pic2.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	qr_box2.add_child(qr_pic2)
+	var qr_label2: Label = Label.new()
+	qr_label2.text = Loc.t("SHARE_QR_LABEL")
+	qr_label2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	qr_label2.custom_minimum_size = Vector2(200, 40)
+	qr_label2.add_theme_font_override("font", BODY_FONT)
+	qr_label2.add_theme_font_size_override("font_size", 22)
+	qr_label2.add_theme_color_override("font_color", Color("263238"))
+	qr_box2.add_child(qr_label2)
+	root.add_child(qr_frame2)
 	await RenderingServer.frame_post_draw
 	var image: Image = null
 	var texture: ViewportTexture = viewport.get_texture()

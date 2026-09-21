@@ -154,10 +154,12 @@ HINT_PERFUME,Rocía cuando el anillo dorado brille (3 rociadas)
 HINT_STYLE,Encaja el lacito en la marca rosa y aguanta firme
 HIRE,CONTRATAR
 HIRED,EN EL EQUIPO
+IAP_MOCK_GRANTED,¡%s otorgado (mock offline)!,
 IAP_NOTE,Las compras reales llegan con la integración (offline: no disponible).
 LANGUAGE,Idioma
 LEFT_HANDED_MODE,Zurdo (estante a la izquierda)
 LEVEL_UP_TOAST,¡Nivel %d! +%d monedas
+LOADING,Cargando...,
 LOCKED,nv. %d
 MAP_TITLE,DEL BALDE AL IMPERIO
 MASTERY_TOAST,¡Maestría de %s %s!
@@ -173,6 +175,7 @@ MISSION_NOTE,"Vocaciones del equipo: Bañador acelera el baño, Peluquero aceler
 MISSION_PERFECT,A MEDIDA %d/3
 MISSION_SERVICES,BAÑOS Y CORTES %d/5
 MISSION_UPGRADE,TODO NUEVO %d/1
+MOCK_TAG,MOCK,
 MOOD_BUFF_TOAST,¡El salón está en ritmo! Cola más paciente.
 MUSIC_VOLUME,Música
 NAV_COLLECTION,Mascotas
@@ -286,6 +289,7 @@ PRESTIGE_TITLE,FRANQUICIA
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
 QUEUE_ARRIVING,Llegando
 QUEUE_RELOAD,La cola recarga en %0.1fs
+QUEUE_SPEEDUP,Toca para acelerar
 QUEUE_WAITING,esperando cliente
 RARITY_common,Común
 RARITY_epic,Épica
@@ -356,6 +360,7 @@ SHARE_CAPTION,¡Antes y después de %s en PetShop Tycoon! %s #PetShopTycoon
 SHARE_FAILED,Sin captura aún — termina un servicio
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_HEADLINE,antes y después en la peluquería
+SHARE_QR_LABEL,Escanea para jugar,
 SHARE_SAVED,¡Foto guardada en user://shares/!
 SHARE_SAVED_GALLERY,Foto guardada en Imágenes/PetShopTycoon • leyenda copiada
 SHARE_SERVICE_BATH,¡salió limpito del baño!
@@ -403,6 +408,7 @@ TOOL_CLIPPER,Máquina de corte
 TOOL_DRYER,Secador
 TOOL_PERFUME,Perfume
 TOOL_SOAP,Jabón
+TRAINING_GHOST,Fantasma de entrenamiento,
 TRANSFER_COPIED,¡Código copiado! Pégalo en Ajustes en el otro dispositivo.
 TRANSFER_COPY,COPIAR CÓDIGO
 TRANSFER_DONE,¡Progreso restaurado!

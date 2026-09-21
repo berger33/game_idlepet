@@ -154,10 +154,12 @@ HINT_PERFUME,Borrife quando o anel dourado acender (3 borrifadas)
 HINT_STYLE,Encaixe o lacinho na marca rosa e segure firme
 HIRE,CONTRATAR
 HIRED,NA EQUIPE
+IAP_MOCK_GRANTED,%s concedido (mock offline)!,
 IAP_NOTE,Compras reais chegam com a integração da loja (offline: indisponível).
 LANGUAGE,Idioma
 LEFT_HANDED_MODE,Mão esquerda (prateleira à esquerda)
 LEVEL_UP_TOAST,Nível %d! +%d moedas
+LOADING,Carregando...,
 LOCKED,nv. %d
 MAP_TITLE,DO BALDE AO IMPÉRIO
 MASTERY_TOAST,Maestria de %s %s!
@@ -173,6 +175,7 @@ MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tu
 MISSION_PERFECT,NA MEDIDA %d/3
 MISSION_SERVICES,BANHOS E TOSAS %d/5
 MISSION_UPGRADE,TUDO NOVINHO %d/1
+MOCK_TAG,MOCK,
 MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
 MUSIC_VOLUME,Música
 NAV_COLLECTION,Pets
@@ -286,6 +289,7 @@ PRESTIGE_TITLE,FRANQUIA
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
 QUEUE_ARRIVING,Chegando
 QUEUE_RELOAD,A fila recarrega em %0.1fs
+QUEUE_SPEEDUP,Toque para acelerar
 QUEUE_WAITING,aguardando cliente
 RARITY_common,Comum
 RARITY_epic,Épico
@@ -356,6 +360,7 @@ SHARE_CAPTION,Antes e depois de %s no PetShop Tycoon! %s #PetShopTycoon
 SHARE_FAILED,Sem captura ainda — termine um serviço
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_HEADLINE,antes & depois no banho e tosa
+SHARE_QR_LABEL,Escaneie para jogar,
 SHARE_SAVED,Foto salva em user://shares/!
 SHARE_SAVED_GALLERY,Foto salva em Imagens/PetShopTycoon • legenda copiada
 SHARE_SERVICE_BATH,saiu limpinho do banho!
@@ -403,6 +408,7 @@ TOOL_CLIPPER,Máquina de tosa
 TOOL_DRYER,Secador
 TOOL_PERFUME,Perfume
 TOOL_SOAP,Sabonete
+TRAINING_GHOST,Modo treino (fantasma),
 TRANSFER_COPIED,Código copiado! Cole em Ajustes no outro aparelho.
 TRANSFER_COPY,COPIAR CÓDIGO
 TRANSFER_DONE,Progresso restaurado!

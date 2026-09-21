@@ -98,6 +98,11 @@ var settings: Dictionary = {
 	"eco_mode": false,
 	"font_scale": 1.0,
 	"left_handed": false,
+	"training_ghost": false,
+	"colorblind": false,
+	"assist_window": false,
+	"analytics_consent": false,
+	"shop_name": "",
 }
 
 
@@ -551,6 +556,7 @@ func _sanitize_settings() -> void:
 	settings["analytics_consent"] = bool(settings.get("analytics_consent", false))
 	settings["font_scale"] = clampf(float(settings.get("font_scale", 1.0)), 0.8, 1.4)
 	settings["left_handed"] = bool(settings.get("left_handed", false))
+	settings["training_ghost"] = bool(settings.get("training_ghost", false))
 	settings["shop_name"] = String(settings.get("shop_name", "")).strip_edges().left(18)
 
 

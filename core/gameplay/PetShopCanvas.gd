@@ -464,6 +464,7 @@ func _draw() -> void:
 		_draw_pet(pet_center)
 		StationArt.draw_station_foreground(self)
 		_draw_affection_hearts(body_center)
+		GestureArt.draw_ghost(self, body_center)
 		GestureArt.draw_gesture_ui(self, body_center)
 		GestureArt.draw_buddy(self)
 	else:

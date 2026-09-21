@@ -41,6 +41,53 @@ static func _colorblind() -> bool:
 	return bool(GameState.settings.get("colorblind", false))
 
 
+static func draw_ghost(shop, body_center: Vector2) -> void:
+	if shop.gesture_ui.is_empty() or not shop.service_active or shop.room_empty:
+		return
+	if not bool(GameState.settings.get("training_ghost", false)):
+		return
+	var mode: StringName = StringName(shop.gesture_ui.get("mode", &""))
+	var ghost_col: Color = Color("ffffff", 0.18)
+	var ghost_line: Color = Color("4fc3f7", 0.35)
+	match mode:
+		&"stroke":
+			var axes: Array = shop.gesture_ui.get("axes", [])
+			for i: int in maxi(1, axes.size()):
+				var axis: StringName = StringName(axes[i]) if i < axes.size() else &"vertical"
+				var anchor: Vector2 = body_center + Vector2(-180.0, -88.0 + i * 88.0)
+				# Ghost ideal: linha tracejada translúcida + seta fantasma
+				shop.draw_circle(anchor, 42.0, ghost_col)
+				if axis == &"horizontal":
+					for s: int in 4:
+						var off: float = -24.0 + s * 16.0
+						shop.draw_line(anchor + Vector2(off, 0), anchor + Vector2(off + 8, 0), ghost_line, 6.0)
+				else:
+					for s: int in 4:
+						var off: float = -24.0 + s * 16.0
+						shop.draw_line(anchor + Vector2(0, off), anchor + Vector2(0, off + 8), ghost_line, 6.0)
+		&"zone":
+			var radius: float = float(shop.gesture_ui.get("zone_radius", 80.0))
+			# Ghost fixo no centro ideal (body_center) vs alvo móvel
+			shop.draw_circle(body_center, radius, ghost_col)
+			shop.draw_arc(body_center, radius, 0.0, TAU, 32, ghost_line, 4.0)
+			shop.draw_arc(body_center, radius * 0.6, 0.0, TAU, 16, Color(ghost_line, 0.2), 2.0)
+		&"pulse":
+			var base_radius: float = 148.0
+			shop.draw_arc(body_center, base_radius, 0.0, TAU, 40, ghost_line, 5.0)
+			shop.draw_circle(body_center, base_radius, Color("4fc3f7", 0.08))
+			var needed: int = maxi(1, int(shop.gesture_ui.get("pulses_needed", 3)))
+			for i: int in needed:
+				var pip: Vector2 = body_center + Vector2((i - (needed - 1) * 0.5) * 56.0, 240.0)
+				shop.draw_circle(pip, 18.0, Color("ffffff", 0.15))
+				shop.draw_arc(pip, 18.0, 0.0, TAU, 12, ghost_line, 3.0)
+		&"drop":
+			var radius: float = float(shop.gesture_ui.get("drop_radius", 80.0))
+			var ideal: Vector2 = body_center + Vector2(0, -20)
+			for seg: int in 12:
+				shop.draw_arc(ideal, radius, TAU * seg / 12.0 + 0.09, TAU * (seg + 1) / 12.0 - 0.09, 6, Color(ghost_line.r, ghost_line.g, ghost_line.b, 0.25), 4.0)
+			shop.draw_circle(ideal, 8.0, Color("ffffff", 0.15))
+
+
 static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 	if shop.gesture_ui.is_empty() or not shop.service_active or shop.room_empty:
 		return

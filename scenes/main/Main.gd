@@ -97,7 +97,13 @@ var pending_special_result: Dictionary = {}
 var last_stroke_index: int = 0
 var last_zone_inside: bool = false
 var perfume_hold_time: float = 0.0
+var splash: Dictionary = {}
+var splash_progress: float = 0.0
+var splash_done: bool = false
 func _ready() -> void:
+	splash = SplashArt.make_splash(self)
+	splash["root"].visible = false
+	splash_progress = 0.0
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bath = BathServiceScript.new()
 	_configure_current_service()
@@ -141,6 +147,15 @@ func _ready() -> void:
 			GameState.streak_freezes = 1
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
 func _process(delta: float) -> void:
+	# Splash barra progresso se carregamento >1s (P1)
+	if not splash_done:
+		splash_progress = minf(1.0, splash_progress + delta * 0.85)
+		var still: bool = SplashArt.update_splash(splash, delta, splash_progress)
+		if splash_progress >= 1.0:
+			SplashArt.hide_splash(splash)
+			splash_done = true
+		if not still:
+			splash_done = true
 	bubble_sound_gate = maxf(0.0, bubble_sound_gate - delta)
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
@@ -640,6 +655,14 @@ func _on_upsell_decline() -> void:
 func _on_queue_pressed(slot: int) -> void:
 	if not _can_select(slot):
 		return
+	if queue[slot].is_empty():
+		refill_timers[slot] = minf(refill_timers[slot], 0.25)
+		_show_toast("⏩ " + Loc.t("QUEUE_SPEEDUP"), GREEN)
+		AudioManager.play(&"tap")
+		HapticsManager.light()
+		Analytics.track(&"queue_sped_up", {"slot": slot})
+		_update_queue_ui()
+		return
 	selected_slot = slot
 	var client: Dictionary = queue[slot]
 	current_vip = bool(client.get("vip", false))
@@ -683,12 +706,10 @@ func _on_queue_pressed(slot: int) -> void:
 	if tutorial.step == 0:
 		tutorial.advance()
 func _can_select(slot: int) -> bool:
-	if queue[slot].is_empty() or selected_slot != -1:
-		return false
-	if is_instance_valid(result_panel) and result_panel.visible:
-		return false
-	if meta.is_open():
-		return false
+	if selected_slot != -1: return false
+	if is_instance_valid(result_panel) and result_panel.visible: return false
+	if meta.is_open(): return false
+	if queue[slot].is_empty(): return refill_timers[slot] > 0.15
 	return true
 func _process_queue(delta: float) -> void:
 	for slot: int in 3:
@@ -740,11 +761,10 @@ func _update_queue_ui() -> void:
 			var dots: String = ".".repeat(int(fmod(upgrades_pulse_time * 2.0, 3.0)) + 1)
 			queue_name_labels[slot].text = "%s%s" % [Loc.t("QUEUE_ARRIVING"), dots]
 			queue_service_labels[slot].text = "🐾 " + Loc.t("QUEUE_WAITING")
-			queue_info_labels[slot].text = Loc.t("QUEUE_RELOAD") % refill_timers[slot] if refill_timers[slot] > 0.0 else ""
-			queue_cards[slot].modulate.a = 0.55 + 0.15 * sin(upgrades_pulse_time * 3.0 + slot)
-			queue_cards[slot].add_theme_stylebox_override(
-				"panel", _style(Color("ffffff", 0.88), 26, 16, Color("b0bec5"), 3)
-			)
+			var reload_txt: String = Loc.t("QUEUE_RELOAD") % refill_timers[slot] if refill_timers[slot] > 0.0 else ""
+			queue_info_labels[slot].text = "%s\n👆 %s" % [reload_txt, Loc.t("QUEUE_SPEEDUP")] if not reload_txt.is_empty() else "👆 %s" % Loc.t("QUEUE_SPEEDUP")
+			queue_cards[slot].modulate.a = 0.75 + 0.20 * sin(upgrades_pulse_time * 3.0 + slot)
+			queue_cards[slot].add_theme_stylebox_override("panel", _style(Color("ffffff", 0.92), 26, 16, Color("4fc3f7"), 3))
 		else:
 			var pet_id_q: String = String(client["pet"])
 			var profile: Dictionary = ContentDB.pet(pet_id_q)
@@ -1038,52 +1058,17 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	parent.add_child(label)
 	return label
 func _button(text: String, color: Color, width: float, height: float) -> Button:
-	var button: Button = Button.new()
-	button.text = text
-	var min_h: float = maxf(height, 64.0) if height > 0.0 else 64.0
-	var min_w: float = width if width > 0.0 else 0.0
-	button.custom_minimum_size = Vector2(min_w, min_h)
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button.clip_text = false
-	var fs: float = SalonTuning.font_scale()
-	button.add_theme_font_size_override("font_size", int(30 * fs))
-	var is_light: bool = color.get_luminance() > 0.65 or color == Color("ffd54f")
-	var tc: Color = CHARCOAL if is_light else Color.WHITE
-	button.add_theme_color_override("font_color", tc)
-	button.add_theme_color_override("font_pressed_color", tc)
-	button.add_theme_color_override("font_hover_color", tc)
-	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
-	button.add_theme_stylebox_override("normal", _style(color, 32, 14))
-	button.add_theme_stylebox_override("hover", _style(color.lightened(0.10), 32, 14, Color.WHITE, 2))
-	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.15), 32, 14))
-	button.add_theme_stylebox_override("disabled", _style(Color("90a4ae"), 32, 14))
-	button.add_theme_stylebox_override("focus", _style(color, 32, 14, Color.WHITE, 3))
-	InteractionFX.bind_button(button)
-	return button
-func _style(
-	color: Color,
-	radius: int,
-	content_margin: int,
-	border_color: Color = Color.TRANSPARENT,
-	border_width: int = 0
-) -> StyleBoxFlat:
-	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = color
-	style.corner_radius_top_left = radius
-	style.corner_radius_top_right = radius
-	style.corner_radius_bottom_left = radius
-	style.corner_radius_bottom_right = radius
-	style.content_margin_left = content_margin
-	style.content_margin_right = content_margin
-	style.content_margin_top = content_margin
-	style.content_margin_bottom = content_margin
-	style.border_color = border_color
-	style.border_width_left = border_width
-	style.border_width_right = border_width
-	style.border_width_top = border_width
-	style.border_width_bottom = border_width
-	if radius >= 20:
-		style.shadow_color = Color("263238", 0.16)
-		style.shadow_size = 8
-		style.shadow_offset = Vector2(0, 6)
-	return style
+	var b: Button = Button.new(); b.text = text
+	b.custom_minimum_size = Vector2(width if width>0 else 0, maxf(height,64.0) if height>0 else 64.0)
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; b.clip_text=false
+	var fs: float = SalonTuning.font_scale(); b.add_theme_font_size_override("font_size", int(30*fs))
+	var tc: Color = CHARCOAL if color.get_luminance()>0.65 or color==Color("ffd54f") else Color.WHITE
+	for k: String in ["font_color","font_pressed_color","font_hover_color"]: b.add_theme_color_override(k, tc)
+	b.add_theme_color_override("font_disabled_color", Color("eceff1"))
+	b.add_theme_stylebox_override("normal", _style(color,32,14)); b.add_theme_stylebox_override("hover", _style(color.lightened(0.10),32,14,Color.WHITE,2))
+	b.add_theme_stylebox_override("pressed", _style(color.darkened(0.15),32,14)); b.add_theme_stylebox_override("disabled", _style(Color("90a4ae"),32,14))
+	b.add_theme_stylebox_override("focus", _style(color,32,14,Color.WHITE,3)); InteractionFX.bind_button(b); return b
+func _style(c: Color, r: int, m: int, bc: Color=Color.TRANSPARENT, bw: int=0) -> StyleBoxFlat:
+	var s: StyleBoxFlat = StyleBoxFlat.new(); s.bg_color=c; s.corner_radius_top_left=r; s.corner_radius_top_right=r; s.corner_radius_bottom_left=r; s.corner_radius_bottom_right=r
+	s.content_margin_left=m; s.content_margin_right=m; s.content_margin_top=m; s.content_margin_bottom=m; s.border_color=bc; s.border_width_left=bw; s.border_width_right=bw; s.border_width_top=bw; s.border_width_bottom=bw
+	if r>=20: s.shadow_color=Color("263238",0.16); s.shadow_size=8; s.shadow_offset=Vector2(0,6); return s

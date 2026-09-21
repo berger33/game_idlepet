@@ -154,10 +154,12 @@ HINT_PERFUME,Spray when the golden ring glows (3 sprays)
 HINT_STYLE,Fit the bow on the pink mark and hold tight
 HIRE,HIRE
 HIRED,ON THE TEAM
+IAP_MOCK_GRANTED,%s granted (offline mock)!,
 IAP_NOTE,Real purchases arrive with store integration (offline: unavailable).
 LANGUAGE,Language
 LEFT_HANDED_MODE,Left-handed (shelf on left)
 LEVEL_UP_TOAST,Level %d! +%d coins
+LOADING,Loading...,
 LOCKED,lv. %d
 MAP_TITLE,FROM BUCKET TO EMPIRE
 MASTERY_TOAST,%s mastery %s!
@@ -173,6 +175,7 @@ MISSION_NOTE,"Staff vocations: Bather speeds up baths, Groomer speeds everything
 MISSION_PERFECT,ON POINT %d/3
 MISSION_SERVICES,BATHS & GROOMS %d/5
 MISSION_UPGRADE,ALL SHINY %d/1
+MOCK_TAG,MOCK,
 MOOD_BUFF_TOAST,Salon is in rhythm! Queue more patient.
 MUSIC_VOLUME,Music
 NAV_COLLECTION,Pets
@@ -286,6 +289,7 @@ PRESTIGE_TITLE,FRANCHISE
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
 QUEUE_ARRIVING,Arriving
 QUEUE_RELOAD,Queue reloads in %0.1fs
+QUEUE_SPEEDUP,Tap to speed up
 QUEUE_WAITING,waiting for a client
 RARITY_common,Common
 RARITY_epic,Epic
@@ -356,6 +360,7 @@ SHARE_CAPTION,Before and after of %s in PetShop Tycoon! %s #PetShopTycoon
 SHARE_FAILED,No snapshot yet — finish a service
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_HEADLINE,before & after at the pet salon
+SHARE_QR_LABEL,Scan to play,
 SHARE_SAVED,Photo saved to user://shares/!
 SHARE_SAVED_GALLERY,Photo saved to Pictures/PetShopTycoon • caption copied
 SHARE_SERVICE_BATH,squeaky clean after the bath!
@@ -403,6 +408,7 @@ TOOL_CLIPPER,Clippers
 TOOL_DRYER,Dryer
 TOOL_PERFUME,Perfume
 TOOL_SOAP,Soap
+TRAINING_GHOST,Training ghost,
 TRANSFER_COPIED,Code copied! Paste it in Settings on the other device.
 TRANSFER_COPY,COPY CODE
 TRANSFER_DONE,Progress restored!

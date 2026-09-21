@@ -124,6 +124,7 @@ static func draw_title_plaque(shop) -> void:
 ## Estação de trabalho (desenhada ANTES do pet): sombra de contato + arte.
 ## A banheira acompanha o capítulo do estabelecimento: rústica no quintal
 ## (tier 1) e porcelana dourada a partir do tier 2.
+## Endgame Rede Regional (P1): segunda estação visual quando tier>=6 ou level>=10.
 static func draw_station(shop) -> void:
 	if shop.room_empty:
 		return
@@ -135,6 +136,7 @@ static func draw_station(shop) -> void:
 	if texture != null:
 		shop.draw_texture_rect(texture, _station_box(shop, key), false)
 		_draw_station_evolution(shop, cx, surface)
+		_draw_second_station(shop, cx, surface, key, texture)
 		return
 	match shop.service_mode:
 		&"bath":
@@ -148,6 +150,35 @@ static func draw_station(shop) -> void:
 		&"style":
 			_draw_ottoman(shop, cx, surface)
 	_draw_station_evolution(shop, cx, surface)
+	_draw_second_station(shop, cx, surface, key, texture)
+
+static func _draw_second_station(shop, cx: float, surface: float, key: StringName, tex: Texture2D) -> void:
+	var tier: int = int(shop.establishment_tier)
+	var lvl: int = int(shop.player_level)
+	if tier < 6 and lvl < 10:
+		return
+	# Segunda estação: deslocada à esquerda, 70% tamanho, alpha reduzido, indica Rede Regional
+	var second_cx: float = cx - 420.0
+	var second_surface: float = surface + 18.0
+	_ellipse(shop, Vector2(second_cx, second_surface + 8), 150.0, 18.0, Color(CHARCOAL, 0.10))
+	if tex != null and key != &"":
+		var box: Rect2 = _station_box(shop, key)
+		var w: float = box.size.x * 0.68
+		var h: float = box.size.y * 0.68
+		var second_box: Rect2 = Rect2(second_cx - w * 0.5, second_surface - h + (box.size.y - h), w, h)
+		shop.draw_texture_rect(tex, second_box, false)
+		# Faixa "FILIAL 2" sobre segunda estação
+		shop.draw_style_box(_panel_box(Color("ffd54f", 0.85), 8, Color("263238", 0.2), 2), Rect2(second_cx - 70, second_surface - h - 18, 140, 28))
+	else:
+		# Fallback vetorial segunda estação
+		shop.draw_style_box(_panel_box(Color(CREAM, 0.72), 24, Color(CHARCOAL, 0.22), 2), Rect2(second_cx - 110, second_surface - 24, 220, 36))
+	# Brilho de rede regional quando tier alto
+	if tier >= 8:
+		_ellipse(shop, Vector2(second_cx, second_surface), 120.0, 12.0, Color("ffd54f", 0.18))
+	# Texto FILIAL 2 (usa fonte do sistema se disponível)
+	var font: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf") as Font
+	if font != null:
+		shop.draw_string(font, Vector2(second_cx - 42, second_surface - 58), "FILIAL 2", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("263238", 0.85))
 
 
 ## Evolução visual a cada 10 níveis de estação (antes só o texto mudava).

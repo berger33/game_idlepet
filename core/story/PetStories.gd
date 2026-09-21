@@ -98,29 +98,82 @@ static func queue_story(profile: Dictionary, service: String = "") -> String:
 			need = " • %s" % _pick(arr, profile)
 	return "%s • %s%s" % [patience_text, pay_text, need]
 
+const PET_MEMORIES: Dictionary = {
+	"caramelo": [
+		"Primeiro carinho! %s ainda te cheira desconfiado, mas já abana o rabo.",
+		"%s te trouxe uma bolinha do quintal! Vocês são amigos de verdade agora.",
+		"%s dormiu na sua banheira e te considera família para sempre. 50 carinhos!",
+	],
+	"luna": [
+		"Luna chegou tímida, mas seu perfume acalmou ela no primeiro banho.",
+		"Luna agora pede colo toda vez que te vê — 15 carinhos de confiança.",
+		"Luna te deu um lacinho que ela mesma escolheu. Amizade eterna!",
+	],
+	"thor": [
+		"Thor rosnou no primeiro encontro, mas seu carinho quebrou o gelo.",
+		"Thor te protege na rua — 20 carinhos e ele late se alguém chega perto.",
+		"Thor é seu guardião oficial do pet shop. 50 carinhos de lealdade!",
+	],
+	"mimi": [
+		"Mimi te olhou de cima a baixo antes de aceitar o carinho.",
+		"Mimi ronrona só para você agora — 15 carinhos de aprovação felina.",
+		"Mimi trouxe um ratinho de brinquedo. Presente raro de gato!",
+	],
+	"bob": [
+		"Bob chegou pulando sem parar, quase derrubou a banheira.",
+		"Bob agora senta e espera o banho — 20 carinhos de disciplina.",
+		"Bob te considera seu humano favorito. 50 carinhos de energia infinita!",
+	],
+	"mel_golden": [
+		"Mel te encontrou no Dia 7 e nunca mais saiu do seu lado.",
+		"Mel nada no quintal e te traz folhas como presente — 25 carinhos.",
+		"Mel é a mascote lendária do seu império. História completa!",
+	],
+}
+
+const GENERIC_MEMORIES_PT: Array[String] = [
+	"Primeiro carinho! %s ainda te cheira desconfiado.",
+	"%s já te espera na porta — 15 carinhos de amizade crescendo.",
+	"%s te considera família! 50 carinhos, melhor amigo para sempre!",
+]
+
+const GENERIC_MEMORIES_EN: Array[String] = [
+	"First pet! %s still sniffs you suspiciously.",
+	"%s waits at the door now — 15 pets, friendship growing.",
+	"%s considers you family! 50 pets, best friend forever!",
+]
+
 static func affection_memory(pet_id: String, level: int) -> String:
-	var memories_pt: Dictionary = {
-		1: "Primeiro carinho! %s ainda te cheira desconfiado.",
-		5: "%s te trouxe uma bolinha! Laço de amizade nível 5.",
-		10: "10 carinhos! %s dormiu na sua banheira ontem.",
-		20: "%s te considera família! 20 carinhos, ele te espera na porta.",
-		25: "25! %s te deu um presente — bandana improvisada com pelo.",
-		50: "50 carinhos! %s é seu melhor amigo para sempre. História completa!",
-	}
-	var memories_en: Dictionary = {
-		1: "First pet! %s still sniffs you suspiciously.",
-		5: "%s brought a ball! Friendship level 5.",
-		10: "10 pets! %s slept in your tub yesterday.",
-		20: "%s considers you family! 20 pets, waits at the door.",
-		25: "25! %s gave a gift — improvised bandana.",
-		50: "50 pets! %s is your best friend forever. Full story!",
-	}
-	var dict: Dictionary = memories_en if _is_en() else memories_pt
-	var template: String = String(dict.get(level, ""))
-	if template.is_empty():
-		return ""
+	if level <= 0: return ""
+	var is_en: bool = _is_en()
+	var mems: Array = PET_MEMORIES.get(pet_id, [])
+	if mems.is_empty():
+		mems = GENERIC_MEMORIES_EN if is_en else GENERIC_MEMORIES_PT
+	var idx: int = 0
+	if level >= 25: idx = 2
+	elif level >= 10: idx = 1
+	var template: String = String(mems[mini(idx, mems.size() - 1)])
 	var name: String = ContentDB.pet_name(pet_id)
 	return template % name
+
+static func all_memories(pet_id: String) -> Array[String]:
+	var is_en: bool = _is_en()
+	var mems: Array = PET_MEMORIES.get(pet_id, [])
+	if mems.is_empty():
+		mems = GENERIC_MEMORIES_EN if is_en else GENERIC_MEMORIES_PT
+	var name: String = ContentDB.pet_name(pet_id)
+	var result: Array[String] = []
+	for m in mems:
+		result.append(String(m) % name)
+	return result
+
+static func diary_progress(pet_id: String, level: int) -> String:
+	var total: int = 3
+	var unlocked: int = 0
+	if level >= 1: unlocked += 1
+	if level >= 10: unlocked += 1
+	if level >= 25: unlocked += 1
+	return "%d/%d memórias" % [unlocked, total] if not _is_en() else "%d/%d memories" % [unlocked, total]
 
 static func result_thanks(profile: Dictionary, quality: StringName) -> String:
 	var temperament: StringName = StringName(profile.get("temperament", "happy"))
