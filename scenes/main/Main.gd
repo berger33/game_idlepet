@@ -470,7 +470,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		extra_line += "\n🐾 " + Loc.t("RESULT_BUDDY")
 	var coins_word: String = Loc.t("COINS")
 	var stars_text: String = "★".repeat(stars) + "☆".repeat(5 - stars)
-	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality == &"perfect")
+	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality)
 	var aff: int = int(GameState.pet_affection.get(current_pet_id, 0))
 	var mem: String = PetStories.affection_memory(current_pet_id, aff)
 	var proof: String = "💬 %s acabou de avaliar: %s" % [current_pet_name, stars_text]
@@ -857,11 +857,9 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 	else:
 		review_label.text = "★ %.1f" % GameState.review_average()
 	if is_instance_valid(goal_label):
-		var base_goal: String = Goals.hud_line()
-		# Nota10 P2-14: tip odds visível no HUD quando tier>=3
+		goal_label.text = Goals.hud_line()
 		if GameState.player_level >= 3:
-			base_goal += " • " + SalonTuning.tip_odds_text() if SalonTuning.has_method("tip_odds_text") else ""
-		goal_label.text = base_goal
+			goal_label.text += " • " + SalonTuning.tip_odds_text()
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level

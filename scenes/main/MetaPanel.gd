@@ -364,7 +364,7 @@ func _build_collection() -> void:
 		sub.add_theme_font_size_override("font_size", 18 if not mem_text.is_empty() else 22)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("546e7a"))
 		if unlocked:
-			var bio_text: String = PetStories.bio(pet) if PetStories.has_method("bio") else ""
+			var bio_text: String = PetStories.bio(pet)
 			var diary_full: String = "\n".join(all_mems) if not all_mems.is_empty() else ""
 			card.tooltip_text = "%s\n%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text, diary_full] if not bio_text.is_empty() else "%s\n%s" % [Loc.t("FAVORITE_HINT"), diary_full]
 			# Feedback visual P1: hover scale + pressed

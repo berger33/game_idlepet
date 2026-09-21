@@ -167,7 +167,7 @@ static func _draw_second_station(shop, cx: float, surface: float, key: StringNam
 	# Pesquisa second_branch adiciona +10% automation e +2h offline cap
 	var second_cx: float = cx - 420.0
 	var second_surface: float = surface + 18.0
-	var is_researched: bool = Research.owned("second_branch") if Research.has_method("owned") else false
+	var is_researched: bool = Research.owned("second_branch")
 	var auto_bonus: float = 0.15 + (0.10 if is_researched else 0.0)
 	_ellipse(shop, Vector2(second_cx, second_surface + 8), 150.0, 18.0, Color(CHARCOAL, 0.10))
 	if tex != null and key != &"":
