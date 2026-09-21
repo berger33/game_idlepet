@@ -1081,16 +1081,16 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	parent.add_child(label)
 	return label
 func _button(text: String, color: Color, width: float, height: float) -> Button:
-	var b: Button = Button.new(); b.text = text
-	b.custom_minimum_size = Vector2(width if width>0 else 0, maxf(height,64.0) if height>0 else 64.0)
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; b.clip_text=false
-	var fs: float = SalonTuning.font_scale(); b.add_theme_font_size_override("font_size", int(30*fs))
+	var button: Button = Button.new(); button.text = text
+	button.custom_minimum_size = Vector2(width if width>0 else 0, maxf(height,64.0) if height>0 else 64.0)
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; button.clip_text=false
+	var fs: float = SalonTuning.font_scale(); button.add_theme_font_size_override("font_size", int(30*fs))
 	var tc: Color = CHARCOAL if color.get_luminance()>0.65 or color==Color("ffd54f") else Color.WHITE
-	for k: String in ["font_color","font_pressed_color","font_hover_color"]: b.add_theme_color_override(k, tc)
-	b.add_theme_color_override("font_disabled_color", Color("eceff1"))
-	b.add_theme_stylebox_override("normal", _style(color,32,14)); b.add_theme_stylebox_override("hover", _style(color.lightened(0.10),32,14,Color.WHITE,2))
-	b.add_theme_stylebox_override("pressed", _style(color.darkened(0.15),32,14)); b.add_theme_stylebox_override("disabled", _style(Color("90a4ae"),32,14))
-	b.add_theme_stylebox_override("focus", _style(color,32,14,Color.WHITE,3)); InteractionFX.bind_button(b); return b
+	for k: String in ["font_color","font_pressed_color","font_hover_color"]: button.add_theme_color_override(k, tc)
+	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
+	button.add_theme_stylebox_override("normal", _style(color,32,14)); button.add_theme_stylebox_override("hover", _style(color.lightened(0.10),32,14,Color.WHITE,2))
+	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.15),32,14)); button.add_theme_stylebox_override("disabled", _style(Color("90a4ae"),32,14))
+	button.add_theme_stylebox_override("focus", _style(color,32,14,Color.WHITE,3)); InteractionFX.bind_button(button); return button
 func _style(c: Color, r: int, m: int, bc: Color=Color.TRANSPARENT, bw: int=0) -> StyleBoxFlat:
 	var s: StyleBoxFlat = StyleBoxFlat.new(); s.bg_color=c; s.corner_radius_top_left=r; s.corner_radius_top_right=r; s.corner_radius_bottom_left=r; s.corner_radius_bottom_right=r
 	s.content_margin_left=m; s.content_margin_right=m; s.content_margin_top=m; s.content_margin_bottom=m; s.border_color=bc; s.border_width_left=bw; s.border_width_right=bw; s.border_width_top=bw; s.border_width_bottom=bw

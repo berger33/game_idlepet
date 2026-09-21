@@ -4,8 +4,9 @@ extends Node
 ## Os efeitos deixaram de ser osciladores de runtime: cada ação tem o SEU
 ## instrumento, modelado fisicamente em `tools/gen_sfx.py` (fonte única) e
 ## versionado como WAV em `audio/sfx/` — 44,1 kHz, 16 bits, estéreo com sala
-## nos eventos e mono seco nos ticks de gesto. O jogo só carrega e mixa, sem
-## custo de síntese na inicialização:
+## nos eventos e mono seco nos ticks de gesto (SFX 44,1 kHz importado;
+## BGM procedural 22,05 kHz — cada AudioStreamWAV preserva seu mix_rate).
+## O jogo só carrega e mixa, sem custo de síntese na inicialização:
 ##   * banho — bolhas d'água (glissando de Minnaert) + respingo + corpo de água;
 ##   * tosa — tesourada: lâmina em varredura + ring metálico + batida;
 ##   * secagem — sopro de ar (ruído rosa) com brilho subindo + motor;
@@ -228,7 +229,7 @@ func _process(_delta: float) -> void:
 	if is_instance_valid(energy_player) and not is_equal_approx(
 		energy_player.volume_db, energy_target_db
 	):
-		energy_player.volume_db = move_toward(energy_player.volume_db, energy_target_db, 1.5)
+		energy_player.volume_db = move_toward(energy_player.volume_db, energy_target_db, 90.0 * _delta)
 
 
 ## Sliders de ajustes chamam isto para valer na hora (música inclusive).

@@ -61,7 +61,7 @@ func _grant_mock(sku: StringName) -> void:
 	SaveManager.request_save()
 	# Ledger mock para idempotência
 	if is_instance_valid(ledger):
-		var tx: String = "%s_mock_%d" % [String(sku), int(Time.get_unix_time_from_system())]
+		var tx: String = "%s_mock_%d_%05d" % [String(sku), int(Time.get_unix_time_from_system()), Time.get_ticks_msec() % 100000]
 		ledger.mark_processed(tx, sku)
 
 

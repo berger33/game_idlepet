@@ -51,5 +51,6 @@ func _load_csv(code: String) -> void:
 		var value: String = line.substr(separator + 1).strip_edges()
 		if value.begins_with("\"") and value.ends_with("\"") and value.length() >= 2:
 			value = value.substr(1, value.length() - 2).replace("\"\"", "\"")
+		value = value.replace("\\n", "\n")
 		parsed[key] = value
 	tables[code] = parsed

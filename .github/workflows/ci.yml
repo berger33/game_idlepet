@@ -5,10 +5,15 @@ on:
     branches: [main, "arena/*"]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   static:
     name: Lint + testes de dados/economia
     runs-on: ubuntu-latest
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -40,6 +45,7 @@ jobs:
   runtime:
     name: Godot headless (import + smoke test)
     runs-on: ubuntu-latest
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
       - name: Instalar Godot 4.7.2 headless
@@ -140,14 +146,4 @@ jobs:
             done
             status=1
           fi
-          exit $status
-          # Autoteste do detector: um script com colisão var/func DEVE falhar.
-          printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
-          if ./godot --headless --check-only --script res://probe_collision_selftest.gd > /dev/null 2>&1; then
-            echo "::error::detector de análise estática não registrou a colisão de teste"
-            status=1
-          else
-            echo "detector validado: script de teste com colisão falhou como esperado"
-          fi
-          rm -f probe_collision_selftest.gd
           exit $status

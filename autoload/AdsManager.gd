@@ -21,7 +21,7 @@ func request_rewarded(offer_type: StringName, _on_reward: Callable) -> bool:
 	)
 	if not is_rewarded_available():
 		EventBus.toast_requested.emit(
-			"Vídeo indisponível. Continue jogando normalmente.", Color("b0bec5")
+			Loc.t("ADS_REWARDED_UNAVAILABLE"), Color("b0bec5")
 		)
 		return false
 	# O adapter Android chama on_reward apenas no callback de conclusão verificado.

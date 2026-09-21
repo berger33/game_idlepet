@@ -80,9 +80,7 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
-DAILY_AUTO_BODY,"Day %d: %d coins!
-Streak: %d days + %d freezes
-Day 7 = Legendary Mel Golden! Come back tomorrow for 2x."
+DAILY_AUTO_BODY,Day %d: %d coins!\nStreak: %d days + %d freezes\nDay 7 = Legendary Mel Golden! Come back tomorrow for 2x.
 DAILY_AUTO_BONUS,🎁 Day 7 Bonus: Legendary pet!
 DAILY_AUTO_TITLE,Login Day %d!
 DAILY_CLAIMED_TOAST,Login claimed! +%d coins
@@ -154,12 +152,12 @@ HINT_PERFUME,Spray when the golden ring glows (3 sprays)
 HINT_STYLE,Fit the bow on the pink mark and hold tight
 HIRE,HIRE
 HIRED,ON THE TEAM
-IAP_MOCK_GRANTED,%s granted (offline mock)!,
+IAP_MOCK_GRANTED,%s granted (offline mock)!
 IAP_NOTE,Real purchases arrive with store integration (offline: unavailable).
 LANGUAGE,Language
 LEFT_HANDED_MODE,Left-handed (shelf on left)
 LEVEL_UP_TOAST,Level %d! +%d coins
-LOADING,Loading...,
+LOADING,Loading...
 LOCKED,lv. %d
 MAP_TITLE,FROM BUCKET TO EMPIRE
 MASTERY_TOAST,%s mastery %s!
@@ -175,7 +173,7 @@ MISSION_NOTE,"Staff vocations: Bather speeds up baths, Groomer speeds everything
 MISSION_PERFECT,ON POINT %d/3
 MISSION_SERVICES,BATHS & GROOMS %d/5
 MISSION_UPGRADE,ALL SHINY %d/1
-MOCK_TAG,MOCK,
+MOCK_TAG,MOCK
 MOOD_BUFF_TOAST,Salon is in rhythm! Queue more patient.
 MUSIC_VOLUME,Music
 NAV_COLLECTION,Pets
@@ -360,7 +358,7 @@ SHARE_CAPTION,Before and after of %s in PetShop Tycoon! %s #PetShopTycoon
 SHARE_FAILED,No snapshot yet — finish a service
 SHARE_HASHTAG,#PetShopTycoon
 SHARE_HEADLINE,before & after at the pet salon
-SHARE_QR_LABEL,Scan to play,
+SHARE_QR_LABEL,Scan to play
 SHARE_SAVED,Photo saved to user://shares/!
 SHARE_SAVED_GALLERY,Photo saved to Pictures/PetShopTycoon • caption copied
 SHARE_SERVICE_BATH,squeaky clean after the bath!
@@ -399,16 +397,14 @@ TEMPER_PLAYFUL,playful
 TEMPER_SHY,shy
 TIP_LINE,tip +%d%%
 TOMORROW,Tomorrow
-TOMORROW_CARD_BODY,"Tomorrow: %s
-%s
-Your streak: %d days. Come back for login bonus and daily spin!"
+TOMORROW_CARD_BODY,Tomorrow: %s\n%s\nYour streak: %d days. Come back for login bonus and daily spin!
 TOMORROW_CARD_TITLE,Tomorrow: event + new pet!
 TOOL_BOW,Bow
 TOOL_CLIPPER,Clippers
 TOOL_DRYER,Dryer
 TOOL_PERFUME,Perfume
 TOOL_SOAP,Soap
-TRAINING_GHOST,Training ghost,
+TRAINING_GHOST,Training ghost
 TRANSFER_COPIED,Code copied! Paste it in Settings on the other device.
 TRANSFER_COPY,COPY CODE
 TRANSFER_DONE,Progress restored!
@@ -480,3 +476,5 @@ SECOND_BRANCH_ACTIVE,BRANCH 2 ACTIVE • +15% automation • queue 2x faster
 WEEKLY_LAST_DAY,⏰ LAST DAY! %d/%d missions • %dh left
 DAILY_FEATURED,Daily Featured
 DAILY_FEATURED_DESC,Only today with discount!
+ADS_REWARDED_UNAVAILABLE,Video unavailable. Keep playing normally.
+ADS_REWARD_TOAST,Rewarded ad! +%d coins
