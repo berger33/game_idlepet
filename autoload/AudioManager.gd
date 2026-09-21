@@ -1,23 +1,34 @@
 extends Node
-## SFX procedurais leves: o core é audível sem depender de assets licenciados.
+## SFX com identidade própria por ação + música ambiente sintetizada aqui.
 ##
-## Design de som (revisão de conforto): a música ambiente ficou intocada e
-## TODOS os efeitos foram re-sintetizados para serem agradáveis e hipnóticos:
-##   * _pluck — "kalimba/caixinha de música": parciais harmônicos que decaem
-##     rápido + ataque suave (sem clique) + leve desafinação (chorus quente);
-##   * _bloop — gota d'água: varredura de pitch descendente com fase integrada;
-##   * _air — sopro de ruído filtrado (one-pole), determinístico;
-##   * tudo em pentatônica de Dó maior: qualquer sequência de SFX permanece
+## Os efeitos deixaram de ser osciladores de runtime: cada ação tem o SEU
+## instrumento, modelado fisicamente em `tools/gen_sfx.py` (fonte única) e
+## versionado como WAV em `audio/sfx/` — 44,1 kHz, 16 bits, estéreo com sala
+## nos eventos e mono seco nos ticks de gesto. O jogo só carrega e mixa, sem
+## custo de síntese na inicialização:
+##   * banho — bolhas d'água (glissando de Minnaert) + respingo + corpo de água;
+##   * tosa — tesourada: lâmina em varredura + ring metálico + batida;
+##   * secagem — sopro de ar (ruído rosa) com brilho subindo + motor;
+##   * laço — corda de náilon dedilhada (Karplus-Strong com detune);
+##   * perfume — aerossol: válvula + chiado do bico + ping de vidro;
+##   * UI/recompensas/erros/pets — marimba, harpa, tilinte, vidro, guinchos.
+##
+## Contratos que permanecem:
+##   * tudo em pentatônica de Dó maior: qualquer sequência de SFX continua
 ##     consonante com o loop ambiente (C, Am, F, G) — errar não "briga";
-##   * pool de 4 vozes (round-robin): sinos se sobrepõem em vez de cortar;
-##   * play_progress — o som do gesto SOBE a pentatônica junto com o
-##     progresso: 10 degraus por serviço, alternando com o degrau seguinte e
-##     micro-jitter de afinação. O jogador ouve a aproximação dos 100%;
-##     drenar ou passar da janela toca uma oitava abaixo (aviso de perda);
-##   * "window" — brilho de harpa ao entrar na faixa do perfect: dá para
-##     dosar o momento de soltar de ouvido.
+##   * pool de 4 vozes (round-robin): sons se sobrepõem em vez de cortar;
+##   * play_progress — o som do gesto SOBE com o progresso: 10 degraus por
+##     serviço, alternando com o degrau seguinte e micro-jitter de afinação.
+##     O jogador ouve a aproximação dos 100%; drenar ou passar da janela toca
+##     uma oitava abaixo (aviso de perda);
+##   * "window" — harpa de vidro ao entrar na faixa do perfect: dá para dosar
+##     o momento de soltar de ouvido;
+##   * a música (ambiente + camada de energia) segue sintetizada neste arquivo
+##     e não foi tocada — apenas os efeitos mudaram de fonte.
 
 const SAMPLE_RATE: int = 22050
+## WAVs de SFX versionados (gerados por tools/gen_sfx.py).
+const SFX_DIR: String = "res://audio/sfx/"
 ## Âncora de sincronia: VFX pulsam no compasso da música REAL em execução
 ## (get_playback_position), não em relógio próprio.
 const MUSIC_BPM: float = 96.0
@@ -30,9 +41,6 @@ const PENTATONIC: Array[float] = [
 	261.63, 293.66, 329.63, 392.00, 440.00,
 	523.25, 587.33, 659.26, 783.99, 880.00, 1046.50, 1174.66, 1318.51,
 ]
-## Fração do início de cada nota reservada ao fade-in (mata o "clique").
-const ATTACK: float = 0.12
-
 var voices: Array[AudioStreamPlayer] = []
 var voice_index: int = 0
 var music_player: AudioStreamPlayer
@@ -78,60 +86,42 @@ func _ready() -> void:
 
 
 func _build_sfx_cache() -> void:
-	# --- Ticks progressivos do gesto: 10 degraus de pentatônica (2 oitavas).
-	# A nota do tick sobe com o progresso — o jogador OUVE que está perto.
-	var bubble_ladder: Array = [
-		523.25, 587.33, 659.26, 783.99, 880.00,
-		1046.50, 1174.66, 1318.51, 1567.98, 1760.00,
-	]
-	_cache_ticks(&"bubble", &"bloop", bubble_ladder, 0.085, 0.05)
-	var clipper_ladder: Array = [
-		261.63, 293.66, 329.63, 392.00, 440.00,
-		523.25, 587.33, 659.26, 783.99, 880.00,
-	]
-	_cache_ticks(&"clipper", &"pluck", clipper_ladder, 0.05, 0.05)
-	var bow_ladder: Array = [
-		523.25, 587.33, 659.26, 783.99, 880.00,
-		1046.50, 1174.66, 1318.51, 1567.98, 1760.00,
-	]
-	_cache_ticks(&"bow", &"pluck", bow_ladder, 0.06, 0.05)
-	var dryer_brightness: Array = [
-		0.10, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37,
-	]
-	_cache_air_ticks(&"dryer", 0.14, 0.05, dryer_brightness)
-	# --- Perfume: cada borrifada sobe uma nota — a terceira É o perfect. ---
-	cache[&"spray_0"] = _spray(0.11, 1046.50)
-	cache[&"spray_1"] = _spray(0.11, 1174.66)
-	cache[&"spray_2"] = _spray(0.11, 1318.51)
+	# --- Ticks progressivos do gesto: 10 degraus que sobem com o progresso.
+	# A nota (banho/tosa/laço) ou o brilho (secagem) já vem assada no WAV de
+	# cada degrau — é isso que faz o jogador OUVIR a aproximação dos 100%.
+	_cache_ladder(&"bubble", 10)
+	_cache_ladder(&"clipper", 10)
+	_cache_ladder(&"dryer", 10)
+	_cache_ladder(&"bow", 10)
+	# --- Perfume: cada borrifada sobe uma nota (C6→D6→E6) — a 3ª é o perfect.
+	cache[&"spray_0"] = _load_sfx(&"spray_0")
+	cache[&"spray_1"] = _load_sfx(&"spray_1")
+	cache[&"spray_2"] = _load_sfx(&"spray_2")
 	cache[&"spray"] = cache[&"spray_0"]
-	# Aviso de janela perfeita: brilho de harpa "pode soltar".
-	cache[&"window"] = _pluck([1318.51, 1567.98], 0.1, 0.08)
+	# Aviso de janela perfeita: harpa de vidro "pode soltar".
+	cache[&"window"] = _load_sfx(&"window")
 	# --- Toques e painéis (frequentes: discretos) ---
-	cache[&"tap"] = _pluck([659.26], 0.045, 0.07)
-	cache[&"tool_pickup"] = _pluck([523.25, 659.26], 0.05, 0.09)
-	cache[&"panel_open"] = _pluck([392.00, 523.25, 659.26], 0.065, 0.10)
-	cache[&"equip"] = _pluck([587.33, 880.00], 0.055, 0.09)
+	cache[&"tap"] = _load_sfx(&"tap")
+	cache[&"tool_pickup"] = _load_sfx(&"tool_pickup")
+	cache[&"panel_open"] = _load_sfx(&"panel_open")
+	cache[&"equip"] = _load_sfx(&"equip")
 	# --- Serviço e recompensa ---
-	cache[&"service_start"] = _pluck([392.00, 523.25], 0.07, 0.11)
-	cache[&"coin"] = _pluck([880.00, 1046.50], 0.055, 0.10)
-	cache[&"perfect"] = _pluck([523.25, 659.26, 783.99, 1046.50], 0.09, 0.13)
-	cache[&"upgrade"] = _pluck([659.26, 783.99, 1046.50], 0.07, 0.11)
-	cache[&"level_up"] = _pluck(
-		[523.25, 587.33, 659.26, 783.99, 1046.50], 0.075, 0.12
-	)
-	cache[&"review"] = _pluck([783.99, 1046.50], 0.07, 0.10)
-	cache[&"pass_claim"] = _pluck([523.25, 659.26, 783.99, 1046.50], 0.08, 0.12)
-	cache[&"prestige"] = _pluck(
-		[523.25, 659.26, 783.99, 1046.50, 1318.51, 1568.00], 0.095, 0.13
-	)
-	cache[&"comeback"] = _pluck([392.00, 523.25, 659.26, 783.99], 0.085, 0.11)
-	cache[&"share_saved"] = _pluck([1046.50, 1318.51], 0.05, 0.09)
+	cache[&"service_start"] = _load_sfx(&"service_start")
+	cache[&"coin"] = _load_sfx(&"coin")
+	cache[&"perfect"] = _load_sfx(&"perfect")
+	cache[&"upgrade"] = _load_sfx(&"upgrade")
+	cache[&"level_up"] = _load_sfx(&"level_up")
+	cache[&"review"] = _load_sfx(&"review")
+	cache[&"pass_claim"] = _load_sfx(&"pass_claim")
+	cache[&"prestige"] = _load_sfx(&"prestige")
+	cache[&"comeback"] = _load_sfx(&"comeback")
+	cache[&"share_saved"] = _load_sfx(&"share_saved")
 	# --- Pets e erros: suaves, graves, sem bronca ---
-	cache[&"pet_happy"] = _bloop([783.99, 1046.50], 0.075, 0.10)
-	cache[&"pet_surprise"] = _bloop([392.00], 0.08, 0.09)
-	cache[&"error_soft"] = _pluck([196.00, 164.81], 0.07, 0.09)
-	cache[&"error"] = _pluck([164.81, 130.81], 0.09, 0.10)
-	cache[&"freeze"] = _pluck([1046.50, 783.99, 659.26], 0.07, 0.09)
+	cache[&"pet_happy"] = _load_sfx(&"pet_happy")
+	cache[&"pet_surprise"] = _load_sfx(&"pet_surprise")
+	cache[&"error_soft"] = _load_sfx(&"error_soft")
+	cache[&"error"] = _load_sfx(&"error")
+	cache[&"freeze"] = _load_sfx(&"freeze")
 
 
 func play(sfx: StringName) -> void:
@@ -186,6 +176,10 @@ func play_progress(sfx: StringName, progress: float, muted: bool = false) -> voi
 func _play_entry(sfx: StringName, pitch: float, volume_scale: float = 1.0) -> void:
 	if not cache.has(sfx):
 		return
+	# `as` (e não cast direto): o cache também guarda contadores de variantes.
+	var stream: AudioStreamWAV = cache[sfx] as AudioStreamWAV
+	if stream == null:
+		return
 	var sfx_volume: float = clampf(
 		clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0) * volume_scale,
 		0.0001,
@@ -194,7 +188,7 @@ func _play_entry(sfx: StringName, pitch: float, volume_scale: float = 1.0) -> vo
 	var voice: AudioStreamPlayer = _next_voice()
 	voice.pitch_scale = pitch
 	voice.volume_db = linear_to_db(sfx_volume)
-	voice.stream = cache[sfx]
+	voice.stream = stream
 	voice.play()
 
 
@@ -233,121 +227,24 @@ func apply_volumes() -> void:
 	music_player.volume_db = linear_to_db(music_volume * 0.22)
 
 
-## Registra N variantes de tick (uma por nota) + contador de ciclo + fallback.
-func _cache_ticks(
-	base: StringName, kind: StringName, notes: Array, note_duration: float, volume: float
-) -> void:
-	for i: int in notes.size():
+## Registra os N degraus de uma escada (um WAV por degrau) + o fallback no
+## degrau 0 + o contador de variantes usado pelo play_progress.
+func _cache_ladder(base: StringName, steps: int) -> void:
+	for i: int in steps:
 		var entry: StringName = StringName("%s_%d" % [base, i])
-		if kind == &"bloop":
-			cache[entry] = _bloop([float(notes[i])], note_duration, volume)
-		else:
-			cache[entry] = _pluck([float(notes[i])], note_duration, volume)
+		cache[entry] = _load_sfx(entry)
 	cache[base] = cache[StringName("%s_%d" % [base, 0])]
-	cache["variants_" + String(base)] = notes.size()
+	cache["variants_" + String(base)] = steps
 
 
-## Ticks de ar (secador): variantes variam o brilho do filtro, não a nota.
-func _cache_air_ticks(
-	base: StringName, duration: float, volume: float, cutoffs: Array
-) -> void:
-	for i: int in cutoffs.size():
-		cache[StringName("%s_%d" % [base, i])] = _air(duration, volume, float(cutoffs[i]))
-	cache[base] = cache[StringName("%s_%d" % [base, 0])]
-	cache["variants_" + String(base)] = cutoffs.size()
-
-
-## Nota "tocada": fundamental + oitava e terça-cima fracas que decaem antes
-## (timbre de kalimba), desafinação leve para calor, ataque suave e cauda
-## exponencial — sem transiente de clique em nenhum dos dois lados.
-func _pluck(frequencies: Array, note_duration: float, volume: float) -> AudioStreamWAV:
-	var frames_per_note: int = int(SAMPLE_RATE * note_duration)
-	var bytes: PackedByteArray = PackedByteArray()
-	bytes.resize(frames_per_note * frequencies.size() * 2)
-	for note: int in frequencies.size():
-		var frequency: float = float(frequencies[note])
-		for i: int in frames_per_note:
-			var t: float = float(i) / float(frames_per_note)
-			var env: float = minf(t / ATTACK, 1.0) * pow(1.0 - t, 2.4)
-			var phase: float = TAU * frequency * float(i) / SAMPLE_RATE
-			var wave: float = sin(phase)
-			wave += sin(TAU * frequency * 1.004 * float(i) / SAMPLE_RATE) * 0.24
-			wave += sin(phase * 2.0) * 0.30 * pow(1.0 - t, 1.4)
-			wave += sin(phase * 3.0) * 0.08 * pow(1.0 - t, 1.9)
-			bytes.encode_s16(
-				(note * frames_per_note + i) * 2, int(wave * env * 32767.0 * volume)
-			)
-	return _wav(bytes)
-
-
-## Gota d'água: a frequência desce (integrando a fase, sem "zipper") e o
-## envelope respira — lê como água em qualquer altura da pentatônica.
-func _bloop(frequencies: Array, note_duration: float, volume: float) -> AudioStreamWAV:
-	var frames_per_note: int = int(SAMPLE_RATE * note_duration)
-	var bytes: PackedByteArray = PackedByteArray()
-	bytes.resize(frames_per_note * frequencies.size() * 2)
-	for note: int in frequencies.size():
-		var target: float = float(frequencies[note])
-		var phase: float = 0.0
-		for i: int in frames_per_note:
-			var t: float = float(i) / float(frames_per_note)
-			var frequency: float = target + target * 0.45 * pow(1.0 - t, 1.3)
-			phase += TAU * frequency / SAMPLE_RATE
-			var env: float = minf(t / 0.18, 1.0) * pow(1.0 - t, 1.7)
-			var wave: float = sin(phase) + sin(phase * 2.0) * 0.12 * (1.0 - t)
-			bytes.encode_s16(
-				(note * frames_per_note + i) * 2, int(wave * env * 32767.0 * volume)
-			)
-	return _wav(bytes)
-
-
-## Sopro suave: ruído branco determinístico filtrado por one-pole — o corte
-## baixo vira "ar abafado" (secador), o alto vira "psst" curto (perfume).
-func _air(duration: float, volume: float, cutoff: float) -> AudioStreamWAV:
-	var frames: int = int(SAMPLE_RATE * duration)
-	var samples: PackedFloat32Array = PackedFloat32Array()
-	samples.resize(frames)
-	var filtered: float = 0.0
-	for i: int in frames:
-		var t: float = float(i) / float(frames)
-		var noise: float = fmod(sin(float(i) * 12.9898) * 43758.5453, 1.0) * 2.0 - 1.0
-		filtered += (noise - filtered) * cutoff
-		samples[i] = filtered * pow(sin(PI * t), 0.8)
-	return _wav_norm(samples, volume)
-
-
-## Borrifada: sopro brilhante com um ping pentatônico discreto por cima —
-## recompensa a borrifada certa sem assobio agudo.
-func _spray(volume: float, ping_hz: float) -> AudioStreamWAV:
-	var duration: float = 0.16
-	var frames: int = int(SAMPLE_RATE * duration)
-	var samples: PackedFloat32Array = PackedFloat32Array()
-	samples.resize(frames)
-	var filtered: float = 0.0
-	for i: int in frames:
-		var t: float = float(i) / float(frames)
-		var noise: float = fmod(sin(float(i) * 12.9898) * 43758.5453, 1.0) * 2.0 - 1.0
-		filtered += (noise - filtered) * 0.38
-		var air: float = filtered * pow(sin(PI * t), 0.7)
-		var ping_env: float = minf(t / ATTACK, 1.0) * pow(1.0 - t, 2.2)
-		var ping: float = sin(TAU * ping_hz * float(i) / SAMPLE_RATE) * ping_env * 0.25
-		samples[i] = air + ping
-	return _wav_norm(samples, volume)
-
-
-## Ruído tem pico ~2x maior que tom pelo mesmo volume; normalizar pelo pico
-## faz `volume` significar a mesma intensidade em qualquer timbre (0.95 é a
-## relação pico/volume medida nos plucks).
-func _wav_norm(samples: PackedFloat32Array, volume: float) -> AudioStreamWAV:
-	var peak: float = 0.0
-	for s: float in samples:
-		peak = maxf(peak, absf(s))
-	var scale: float = volume * 0.95 / peak if peak > 0.0 else 0.0
-	var bytes: PackedByteArray = PackedByteArray()
-	bytes.resize(samples.size() * 2)
-	for i: int in samples.size():
-		bytes.encode_s16(i * 2, int(samples[i] * scale * 32767.0))
-	return _wav(bytes)
+## Carrega um SFX versionado (WAV 44,1 kHz gerado por tools/gen_sfx.py).
+## Asset ausente não derruba o jogo: devolve null e _play_entry ignora.
+func _load_sfx(sfx: StringName) -> AudioStreamWAV:
+	var path: String = SFX_DIR + String(sfx) + ".wav"
+	if ResourceLoader.exists(path):
+		return load(path) as AudioStreamWAV
+	push_warning("AudioManager: SFX ausente: " + path)
+	return null
 
 
 func _ambient_loop() -> AudioStreamWAV:

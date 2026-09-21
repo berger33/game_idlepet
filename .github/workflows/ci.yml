@@ -26,6 +26,8 @@ jobs:
         run: python tools/validate_project.py
       - name: Verificação funcional das animações dos 50 pets (500 PNGs)
         run: python tools/verify_pet_animations.py
+      - name: SFX — assets em sync com o gerador (regeneração determinística)
+        run: python tools/gen_sfx.py --check
 
   runtime:
     name: Godot headless (import + smoke test)

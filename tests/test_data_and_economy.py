@@ -587,34 +587,58 @@ class EngagementWaveTests(unittest.TestCase):
 
 
 class SoundDesignTests(unittest.TestCase):
-    """Revisão de conforto sonoro: SFX agradáveis, pentatônicos, sem clique
-    de ataque, música ambiente intacta — e SOM PROGRESSIVO: a nota do gesto
-    sobe a pentatônica com o progresso, aviso grave ao drenar, chime na
-    janela perfeita e borrifadas do perfume subindo uma a uma."""
+    """Som com identidade por ação: cada gesto tem o SEU instrumento, modelado
+    fisicamente (água, tesoura, ar, corda, aerossol) e versionado como WAV de
+    44,1 kHz gerado por tools/gen_sfx.py — os osciladores de 8 bits em runtime
+    foram aposentados. Junto: a trilha progressiva (a nota sobe com o
+    progresso, aviso grave ao drenar, chime na janela perfeita, borrifadas
+    subindo uma a uma) e a música ambiente intocada."""
 
     def _read(self, path):
         return Path(path).read_text(encoding='utf8')
 
-    def test_audio_synth_contracts(self):
+    def _cached_names(self):
+        """Nomes que o AudioManager coloca no cache -> (sons, aliases)."""
+        cached, aliases = set(), set()
+        for line in self._read('autoload/AudioManager.gd').splitlines():
+            if line.startswith('\tcache[&"'):
+                name = line.split('"')[1]
+                cached.add(name)
+                if '= cache[&"' in line:  # alias: aponta para outro som
+                    aliases.add(name)
+            elif line.startswith('\t_cache_ladder(&"'):
+                base = line.split('(&"')[1].split('"')[0]
+                steps = int(line.rstrip().rstrip(')').split(', ')[1])
+                cached.update(f'{base}_{i}' for i in range(steps))
+                # _cache_ladder também guarda o degrau 0 no nome base
+                cached.add(base)
+                aliases.add(base)
+        return cached, aliases
+
+    def test_audio_contracts(self):
         audio = self._read('autoload/AudioManager.gd')
-        for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const ATTACK',
-                      'func play_progress', 'func play_gesture',
-                      'func _next_voice', 'func _pluck',
-                      'func _bloop', 'func _air', 'func _spray', 'func _wav_norm',
+        # mixer: pool de vozes, trilha progressiva, jitter e loader de assets
+        for token in ('const PENTATONIC', 'const VOICE_COUNT', 'const SFX_DIR',
+                      'res://audio/sfx/', 'func play_progress', 'func play_gesture',
+                      'func _next_voice', 'func _load_sfx', 'func _cache_ladder',
                       'randf_range(0.992, 1.008)'):
             self.assertIn(token, audio, token)
-        # som progressivo: borrifadas sobem C6→D6→E6 (a 3ª é o perfect),
-        # chime da janela perfeita e aviso de drenagem (oitava abaixo).
-        for token in ('cache[&"spray_0"] = _spray(0.11, 1046.50)',
-                      'cache[&"spray_1"] = _spray(0.11, 1174.66)',
-                      'cache[&"spray_2"] = _spray(0.11, 1318.51)',
-                      'cache[&"window"]', 'window_chime_armed', 'volume_scale = 0.5',
-                      '0.8 + 0.4'):
+        # escadas = um WAV por degrau; perfume sobe C6→D6→E6 (a 3ª é o
+        # perfect); chime da janela e aviso de drenagem (oitava abaixo) ficam.
+        for token in ('_cache_ladder(&"bubble", 10)', '_cache_ladder(&"clipper", 10)',
+                      '_cache_ladder(&"dryer", 10)', '_cache_ladder(&"bow", 10)',
+                      'cache[&"spray_0"] = _load_sfx(&"spray_0")',
+                      'cache[&"spray_1"] = _load_sfx(&"spray_1")',
+                      'cache[&"spray_2"] = _load_sfx(&"spray_2")',
+                      'cache[&"window"]', 'window_chime_armed',
+                      'volume_scale = 0.5', '0.8 + 0.4'):
             self.assertIn(token, audio, token)
-        # o sintetizador antigo (seno puro com ataque instantâneo = bip) e o
-        # apito de 3,1 kHz do contratempo foram aposentados.
-        self.assertNotIn('func _chime', audio)
-        self.assertNotIn('3100.0', audio)
+        # a síntese 8-bit em runtime (seno + ruído de hash) foi aposentada:
+        # o som agora vem do gerador versionado, não de osciladores no jogo.
+        for token in ('func _pluck', 'func _bloop', 'func _air(', 'func _spray',
+                      'func _wav_norm', 'func _cache_ticks', 'func _cache_air_ticks',
+                      'func _chime', 'const ATTACK', '3100.0'):
+            self.assertNotIn(token, audio, token)
         # música ambiente e sincronia de compasso intocadas (contrato fase 4).
         for token in ('func _ambient_loop', 'func beat_phase', 'func _energy_loop',
                       'get_playback_position', 'MUSIC_BPM'):
@@ -635,14 +659,7 @@ class SoundDesignTests(unittest.TestCase):
         self.assertNotIn('bubble_sound_gate = 0.11', main)
 
     def test_every_sfx_played_is_cached(self):
-        # parsing por operações de string (à prova de camadas de escape)
-        audio = self._read('autoload/AudioManager.gd')
-        cached = set()
-        for line in audio.splitlines():
-            if line.startswith('\tcache[&"'):
-                cached.add(line.split('"')[1])
-            elif line.startswith('\t_cache_ticks(&"') or line.startswith('\t_cache_air_ticks(&"'):
-                cached.add(line.split('(&"')[1].split('"')[0])
+        cached, _ = self._cached_names()
         played = set()
         for path in Path('.').rglob('*.gd'):
             if '.git' in path.parts or 'tools' in path.parts:
@@ -664,10 +681,30 @@ class SoundDesignTests(unittest.TestCase):
         # escada do perfume (spray_%d dinâmico no Main) e chime da janela
         self.assertTrue({'spray_0', 'spray_1', 'spray_2', 'window'} <= cached)
 
-    def test_sfx_synthesis_quality(self):
-        from gen_sfx_preview import parse_audio_manager, validate
-        errors = validate(parse_audio_manager())
-        self.assertEqual(errors, [], 'SFX fora do padrão de conforto')
+    def test_every_cached_sfx_ships_an_asset(self):
+        """Cada som do cache tem o WAV versionado — e não existe WAV órfão nem
+        arquivo fora do manifesto do gerador (fonte única)."""
+        from gen_sfx import all_names
+        cached, aliases = self._cached_names()
+        files = cached - aliases
+        shipped = {path.stem for path in Path('audio/sfx').glob('*.wav')}
+        self.assertEqual(files - shipped, set(), 'som no cache sem WAV em audio/sfx')
+        self.assertEqual(shipped - files, set(), 'WAV órfão (nada toca)')
+        self.assertEqual(shipped, set(all_names()), 'WAVs != manifesto do gerador')
+        # degrau 0 de cada escada + a primeira borrifada servem de fallback
+        self.assertTrue({'bubble', 'clipper', 'dryer', 'bow', 'spray'} <= aliases)
+
+    def test_sfx_assets_are_studio_quality(self):
+        """Valida os ARQUIVOS que embarcam (não a intenção do gerador):
+        44,1 kHz, estéreo nos eventos e mono nos ticks, sem clipping nem
+        offset DC nem degrau de silêncio nas bordas, ticks de loop bem abaixo
+        dos eventos e as escadas subindo de verdade degrau a degrau."""
+        from gen_sfx import (all_names, load_rendered, validate_assets,
+                             validate_manifest)
+        self.assertEqual(validate_manifest(), [], 'manifesto fora da pentatônica')
+        rendered = load_rendered()
+        self.assertEqual(set(rendered), set(all_names()))
+        self.assertEqual(validate_assets(rendered), [], 'SFX fora do padrão')
 
 
 if __name__=='__main__': unittest.main()
