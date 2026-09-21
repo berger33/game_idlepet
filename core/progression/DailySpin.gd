@@ -56,7 +56,7 @@ static func label_for(reward: Dictionary) -> String:
 	if type == "coins":
 		var mult: float = float(reward.get("mult", 1.0))
 		var amount: int = Rewards.scaled(Rewards.SECONDS[&"daily_mission"] * mult, int(50 * mult))
-		return "🪙 +%d moedas (%s)" % [amount, String(reward.get("label", ""))]
+		return "🪙 +%d %s (%s)" % [amount, Loc.t("COINS"), String(reward.get("label", ""))]
 	elif type == "embers":
 		return "🔥 +%d %s (%s)" % [int(reward.get("amount", 1)), Loc.t("EMBERS"), String(reward.get("label", ""))]
 	else:

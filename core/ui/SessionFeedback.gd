@@ -60,11 +60,10 @@ static func show_offline_card(main) -> void:
 	RevealCard.enqueue(main, spec)
 
 
-## Toast com fila: evita sobreposição empilhando com offset por toast existente.
+## Toast com fila: evita sobreposição, autowrap para textos longos, duração proporcional ao tamanho
 static func toast(main, message: String, color: Color) -> void:
 	var existing: int = main.toast_layer.get_child_count()
 	if existing >= 3:
-		# Se já tem 3, remove o mais antigo para não poluir
 		var oldest: Node = main.toast_layer.get_child(0)
 		if is_instance_valid(oldest):
 			oldest.queue_free()
@@ -72,17 +71,25 @@ static func toast(main, message: String, color: Color) -> void:
 	var label: Label = Label.new()
 	label.text = message
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 32)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size = Vector2(720, 0)
+	var fs: float = float(GameState.settings.get("font_scale", 1.0))
+	label.add_theme_font_size_override("font_size", int(28 * fs))
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_stylebox_override("normal", main._style(color, 22, 14))
 	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	var y_base: float = 120.0 + existing * 88.0
+	var y_base: float = 120.0 + existing * 96.0
 	label.position = Vector2(-360, y_base)
-	label.size = Vector2(720, 76)
+	label.size = Vector2(720, 0)
 	main.toast_layer.add_child(label)
+	# Espera layout calcular altura real
+	await main.get_tree().process_frame
+	var h: float = maxf(label.size.y, 76.0)
+	label.size.y = h
+	var duration: float = clampf(1.6 + float(message.length()) * 0.02, 1.6, 4.0)
 	var tween: Tween = main.create_tween()
 	tween.tween_property(label, "position:y", y_base + 45.0, 0.22).set_trans(Tween.TRANS_BACK)
-	tween.tween_interval(1.6)
+	tween.tween_interval(duration)
 	tween.tween_property(label, "modulate:a", 0.0, 0.35)
 	tween.tween_callback(label.queue_free)
 

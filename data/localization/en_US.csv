@@ -387,3 +387,34 @@ WMISSION_SPEND,%d/600 invested
 WMISSION_STYLE,%d/12 bows
 WMISSION_TIPS,%d/10 tips
 WMISSION_VIP,%d/3 VIP clients
+FILTER_ALL,ALL
+FILTER_DOGS,DOGS
+FILTER_CATS,CATS
+FILTER_LEGENDARY,LEGENDARY
+FILTER_ALL_COSMETICS,ALL
+FILTER_BATH,TUBS
+FILTER_WALL,WALLS
+FILTER_ACCESSORY,BOWS
+DAILY_SPIN_TITLE,Daily Spin
+DAILY_SPIN_DESC,Spin 1×/day: scaled coins, embers or freeze • Variable reward
+SPIN_ACTION,SPIN
+SPIN_DONE,DONE
+WEEKLY_PROGRESS_PILL,📦 Weekly %d/%d • %d%% • Chest: %d/7 • %s
+COLLECTION_SUMMARY,PETS %d/%d • ACHIEVEMENTS %d/%d • COSMETICS %d
+SPECIAL_ORDER_TITLE,⭐ SPECIAL REQUEST
+SPECIAL_ORDER_NOTE,💰 Accept gives extra tip + keeps combo!
+SPECIAL_ACCEPT,✓  ACCEPT (+40% tip)
+SPECIAL_DECLINE,NOT NOW
+CLIENT_LEFT_COINS,💔 %s left! -%d coins
+RUSH_ACTIVE,🔥 RUSH ×2 — %ds
+RUSH_COOLDOWN,⏳ rush in %ds
+ASSIST_TOAST,💡 Assist: bigger window + patience for 3 clients!
+MOOD_BUFF_TOAST,Salon is in rhythm! Queue more patient.
+PETTING_LIMIT,%s is full of affection!
+WEEKLY_RESET_TOMORROW,resets tomorrow
+WEEKLY_RESET_DAYS,resets in %d days
+STREAK_LOSS_NOTE,If you miss, -1 day (use ❄️ freeze!)
+ASSIST_ACTIVE,💡 Assist active: %d client(s) left
+QUEUE_ARRIVING,Arriving
+QUEUE_RELOAD,Queue reloads in %0.1fs
+PROOF_SOCIAL_LIVE,💬 %s: %s %s

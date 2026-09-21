@@ -387,3 +387,34 @@ WMISSION_SPEND,%d/600 investidos
 WMISSION_STYLE,%d/12 laços
 WMISSION_TIPS,%d/10 gorjetas
 WMISSION_VIP,%d/3 clientes VIP
+FILTER_ALL,TODOS
+FILTER_DOGS,CÃES
+FILTER_CATS,GATOS
+FILTER_LEGENDARY,LENDÁRIOS
+FILTER_ALL_COSMETICS,TUDO
+FILTER_BATH,BANHEIRAS
+FILTER_WALL,PAREDES
+FILTER_ACCESSORY,LAÇOS
+DAILY_SPIN_TITLE,Roleta Diária
+DAILY_SPIN_DESC,Gire 1×/dia: moedas escaladas, brasas ou freeze • Recompensa variável
+SPIN_ACTION,GIRAR
+SPIN_DONE,FEITO
+WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s
+COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
+SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SPECIAL_ORDER_NOTE,💰 Aceitar rende gorjeta extra + combo mantido!
+SPECIAL_ACCEPT,✓  ACEITAR (+40% gorjeta)
+SPECIAL_DECLINE,AGORA NÃO
+CLIENT_LEFT_COINS,💔 %s foi embora! -%d moedas
+RUSH_ACTIVE,🔥 PICO ×2 — %ds
+RUSH_COOLDOWN,⏳ pico em %ds
+ASSIST_TOAST,💡 Assistência: janela maior + paciência por 3 clientes!
+MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
+PETTING_LIMIT,%s já está banhado de carinho!
+WEEKLY_RESET_TOMORROW,reseta amanhã
+WEEKLY_RESET_DAYS,reseta em %d dias
+STREAK_LOSS_NOTE,Se perder, -1 dia (use ❄️ freeze!)
+ASSIST_ACTIVE,💡 Assistência ativa: %d cliente(s) restantes
+QUEUE_ARRIVING,Chegando
+QUEUE_RELOAD,A fila recarrega em %0.1fs
+PROOF_SOCIAL_LIVE,💬 %s: %s %s

@@ -308,7 +308,7 @@ func _react_to_pet_touch() -> void:
 		if pet_touch_gate <= 0.0:
 			pet_touch_gate = 0.6
 			world.react_to_touch()
-			_show_toast("%s já está banhado de carinho!" % current_pet_name, PINK)
+			_show_toast(Loc.t("PETTING_LIMIT") % current_pet_name, PINK)
 		return
 	pet_touch_gate = 0.35
 	petting_count += 1
@@ -417,7 +417,7 @@ func _finish_bath() -> void:
 				mood_buff_clients = 3
 				world.forced_state = &"happy_squash"
 				world.forced_state_time = 2.0
-				_show_toast("O salão está no ritmo! Fila mais paciente.", GREEN)
+				_show_toast(Loc.t("MOOD_BUFF_TOAST"), GREEN)
 				Analytics.track(&"mood_buff", {"streak": consecutive_perfects})
 		else:
 			consecutive_perfects = 0
@@ -506,7 +506,7 @@ func _fail(reason: StringName) -> void:
 	consecutive_fails += 1
 	if consecutive_fails >= 3:
 		assistance_clients = 3
-		_show_toast("💡 Assistência: janela maior + paciência por 3 clientes!", BLUE)
+		_show_toast(Loc.t("ASSIST_TOAST"), BLUE)
 		consecutive_fails = 0
 	EventBus.service_failed.emit(current_service, reason)
 	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason), "streak": consecutive_fails})
@@ -527,7 +527,7 @@ func _fail(reason: StringName) -> void:
 		hint = Loc.t("FAIL_TOO_SOON") % action_name
 	var assistance_line: String = ""
 	if assistance_clients > 0:
-		assistance_line = "\n💡 Assistência ativa: %d cliente(s) restantes" % assistance_clients
+		assistance_line = "\n" + Loc.t("ASSIST_ACTIVE") % assistance_clients
 	result_detail.text = "★★☆☆☆\n%s\n%s%s" % [hint, Loc.t("FAIL_NO_PENALTY"), assistance_line]
 	share_button.visible = false
 	_pop_panel(result_panel)
@@ -727,7 +727,7 @@ func _client_left(slot: int) -> void:
 	var profile: Dictionary = ContentDB.pet(leaver_id) if ContentDB.has_pet(leaver_id) else {}
 	var base: float = SalonTuning.base_reward(StringName(client.get("service", &"bath")))
 	var lost: int = int(base * float(profile.get("base_tip", 1.0)) * 1.2)
-	_show_toast("💔 %s foi embora! -%d moedas" % [leaver_name, lost], Color("ef5350"))
+	_show_toast(Loc.t("CLIENT_LEFT_COINS") % [leaver_name, lost], Color("ef5350"))
 	world.forced_state = &"sad"; world.forced_state_time = 1.2
 	Analytics.track(&"client_left", {"pet_id": String(client["pet"]), "lost_coins": lost})
 	queue[slot] = {}; refill_timers[slot] = 2.0 if not rush_active else 0.6
@@ -738,9 +738,9 @@ func _update_queue_ui() -> void:
 		var client: Dictionary = queue[slot]
 		if client.is_empty():
 			var dots: String = ".".repeat(int(fmod(upgrades_pulse_time * 2.0, 3.0)) + 1)
-			queue_name_labels[slot].text = "Chegando%s" % dots
+			queue_name_labels[slot].text = "%s%s" % [Loc.t("QUEUE_ARRIVING"), dots]
 			queue_service_labels[slot].text = "🐾 " + Loc.t("QUEUE_WAITING")
-			queue_info_labels[slot].text = "A fila recarrega em %0.1fs" % refill_timers[slot] if refill_timers[slot] > 0.0 else ""
+			queue_info_labels[slot].text = Loc.t("QUEUE_RELOAD") % refill_timers[slot] if refill_timers[slot] > 0.0 else ""
 			queue_cards[slot].modulate.a = 0.55 + 0.15 * sin(upgrades_pulse_time * 3.0 + slot)
 			queue_cards[slot].add_theme_stylebox_override(
 				"panel", _style(Color("ffffff", 0.88), 26, 16, Color("b0bec5"), 3)
@@ -1011,12 +1011,15 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.custom_minimum_size = Vector2(width, 82)
+	# Altura mínima 64px (acessibilidade) + autowrap para textos longos como prova social
+	label.custom_minimum_size = Vector2(width, 64)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.clip_text = false
 	var fs: float = SalonTuning.font_scale()
-	label.add_theme_font_size_override("font_size", int(33 * fs))
+	label.add_theme_font_size_override("font_size", int(28 * fs))
 	label.add_theme_color_override("font_color", CHARCOAL)
 	label.add_theme_stylebox_override(
-		"normal", _style(Color("ffffff", 0.95), 35, 12, color, 5)
+		"normal", _style(Color("ffffff", 0.97), 32, 12, color, 4)
 	)
 	parent.add_child(label)
 	return label
@@ -1024,15 +1027,24 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 func _button(text: String, color: Color, width: float, height: float) -> Button:
 	var button: Button = Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(width, height)
+	var min_h: float = maxf(height, 64.0) if height > 0.0 else 64.0
+	var min_w: float = width if width > 0.0 else 0.0
+	button.custom_minimum_size = Vector2(min_w, min_h)
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.clip_text = false
 	var fs: float = SalonTuning.font_scale()
-	button.add_theme_font_size_override("font_size", int(34 * fs))
-	button.add_theme_color_override("font_color", Color.WHITE)
-	button.add_theme_color_override("font_pressed_color", Color.WHITE)
-	button.add_theme_stylebox_override("normal", _style(color, 34, 14))
-	button.add_theme_stylebox_override("hover", _style(color.lightened(0.08), 34, 14))
-	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.12), 30, 18))
-	button.add_theme_stylebox_override("disabled", _style(Color("b0bec5"), 34, 14))
+	button.add_theme_font_size_override("font_size", int(30 * fs))
+	var is_light: bool = color.get_luminance() > 0.65 or color == Color("ffd54f")
+	var tc: Color = CHARCOAL if is_light else Color.WHITE
+	button.add_theme_color_override("font_color", tc)
+	button.add_theme_color_override("font_pressed_color", tc)
+	button.add_theme_color_override("font_hover_color", tc)
+	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
+	button.add_theme_stylebox_override("normal", _style(color, 32, 14))
+	button.add_theme_stylebox_override("hover", _style(color.lightened(0.10), 32, 14, Color.WHITE, 2))
+	button.add_theme_stylebox_override("pressed", _style(color.darkened(0.15), 32, 14))
+	button.add_theme_stylebox_override("disabled", _style(Color("90a4ae"), 32, 14))
+	button.add_theme_stylebox_override("focus", _style(color, 32, 14, Color.WHITE, 3))
 	InteractionFX.bind_button(button)
 	return button
 

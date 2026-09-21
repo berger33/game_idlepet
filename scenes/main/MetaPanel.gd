@@ -117,12 +117,13 @@ func _emerge() -> void:
 
 
 func _build_missions() -> void:
-	# ── Retenção P0: roleta diária (recompensa variável) + streak + perda ──
+	# ── Retenção P0: roleta diária (recompensa variável) + streak + perda ── localizados
 	var can_spin: bool = DailySpin.can_spin()
+	var spin_status: String = Loc.t("SPIN_DONE") if not can_spin else Loc.t("SPIN_ACTION")
 	_info_row(
-		"🎡 Roleta Diária • %s" % ("Disponível!" if can_spin else "Volta amanhã"),
-		"Gire 1×/dia: moedas escaladas, brasas ou freeze • Recompensa variável",
-		"GIRAR" if can_spin else "FEITO",
+		"🎡 %s • %s" % [Loc.t("DAILY_SPIN_TITLE"), spin_status],
+		Loc.t("DAILY_SPIN_DESC"),
+		Loc.t("SPIN_ACTION") if can_spin else Loc.t("SPIN_DONE"),
 		Color("ffd54f") if can_spin else Color("b0bec5"),
 		can_spin,
 		func() -> void:
@@ -139,7 +140,7 @@ func _build_missions() -> void:
 	)
 	var streak_note: String = Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes]
 	if not claimed_today:
-		streak_note += " • Se perder, -1 dia (use ❄️ freeze!)"
+		streak_note += " • " + Loc.t("STREAK_LOSS_NOTE")
 	_info_row(
 		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
 		"%d %s • %s" % [streak_coins, Loc.t("COINS"), streak_note],
@@ -230,8 +231,8 @@ func _build_missions() -> void:
 			weekly_done_count += 1
 	var weekly_total: int = ContentDB.weekly_missions.size()
 	var weekly_percent: int = int(float(weekly_done_count) / maxf(1.0, float(weekly_total)) * 100.0)
-	var reset_in: String = LiveOps.weekly_reset_label() if LiveOps.has_method("weekly_reset_label") else "reseta segunda"
-	_note("📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s" % [weekly_done_count, weekly_total, weekly_percent, weekly_done_count, reset_in], 26, Color("4fc3f7"), true)
+	var reset_in: String = LiveOps.weekly_reset_label()
+	_note(Loc.t("WEEKLY_PROGRESS_PILL") % [weekly_done_count, weekly_total, weekly_percent, weekly_done_count, reset_in], 26, Color("4fc3f7"), true)
 	_note(Loc.t("WEEKLY_TITLE"), 28, CHARCOAL, true)
 	for weekly: Dictionary in ContentDB.weekly_missions:
 		var weekly_id: String = String(weekly["id"])
@@ -271,21 +272,21 @@ func _build_missions() -> void:
 var _collection_filter: StringName = &"all"
 
 func _build_collection() -> void:
-	# Filtros rápidos: Todos / Cães / Gatos / Lendários (UX de coleção grande)
+	# Filtros rápidos: Todos / Cães / Gatos / Lendários (UX de coleção grande) — agora localizados
 	var filter_row: HBoxContainer = HBoxContainer.new()
 	filter_row.add_theme_constant_override("separation", 10)
 	screen.content_box.add_child(filter_row)
 	for f: Dictionary in [
-		{"id": &"all", "label": "TODOS"},
-		{"id": &"dog", "label": "CÃES"},
-		{"id": &"cat", "label": "GATOS"},
-		{"id": &"legendary", "label": "LENDÁRIOS"},
+		{"id": &"all", "label_key": "FILTER_ALL"},
+		{"id": &"dog", "label_key": "FILTER_DOGS"},
+		{"id": &"cat", "label_key": "FILTER_CATS"},
+		{"id": &"legendary", "label_key": "FILTER_LEGENDARY"},
 	]:
 		var fid: StringName = f["id"]
 		var active: bool = _collection_filter == fid
 		var btn: Button = Button.new()
-		btn.text = String(f["label"])
-		btn.custom_minimum_size = Vector2(140, 56)
+		btn.text = Loc.t(String(f["label_key"]))
+		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, PINK if active else Color("b0bec5"))
 		btn.pressed.connect(
 			func(id: StringName = fid) -> void:
@@ -359,7 +360,7 @@ func _build_collection() -> void:
 							_rebuild(&"collection")
 			)
 	_note(
-		"PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d"
+		Loc.t("COLLECTION_SUMMARY")
 		% [
 			GameState.unlocked_pets.size(),
 			ContentDB.pets.size(),
@@ -524,21 +525,21 @@ func _build_staff() -> void:
 var _shop_filter: StringName = &"all"
 
 func _build_shop() -> void:
-	# Abas: Destaque / Banheiras / Paredes / Acessórios / Tudo
+	# Abas: Destaque / Banheiras / Paredes / Acessórios / Tudo — agora localizadas + 64px altura mínima
 	var shop_filter_row: HBoxContainer = HBoxContainer.new()
 	shop_filter_row.add_theme_constant_override("separation", 10)
 	screen.content_box.add_child(shop_filter_row)
 	for sf: Dictionary in [
-		{"id": &"all", "label": "TUDO"},
-		{"id": &"bath", "label": "BANHEIRAS"},
-		{"id": &"wall", "label": "PAREDES"},
-		{"id": &"pet_accessory", "label": "LAÇOS"},
+		{"id": &"all", "label_key": "FILTER_ALL_COSMETICS"},
+		{"id": &"bath", "label_key": "FILTER_BATH"},
+		{"id": &"wall", "label_key": "FILTER_WALL"},
+		{"id": &"pet_accessory", "label_key": "FILTER_ACCESSORY"},
 	]:
 		var fid: StringName = sf["id"]
 		var active: bool = _shop_filter == fid
 		var btn: Button = Button.new()
-		btn.text = String(sf["label"])
-		btn.custom_minimum_size = Vector2(140, 56)
+		btn.text = Loc.t(String(sf["label_key"]))
+		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, Color("ffd54f") if active else Color("b0bec5"))
 		btn.pressed.connect(
 			func(id: StringName = fid) -> void:
@@ -993,13 +994,23 @@ func _label_node(text: String, size: int, color: Color) -> Label:
 
 
 func _style_button(button: Button, color: Color) -> void:
-	button.add_theme_font_size_override("font_size", 26)
-	button.add_theme_color_override("font_color", Color.WHITE)
-	button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	# Unificado com Main._button: radius 30 consistente, altura mínima 64, contraste adaptativo
+	var fs: float = float(GameState.settings.get("font_scale", 1.0))
+	button.add_theme_font_size_override("font_size", int(26 * fs))
+	# Texto adaptativo: amarelo claro ffd54f precisa texto escuro para contraste WCAG
+	var is_light: bool = color.get_luminance() > 0.65 or color == Color("ffd54f") or color == Color("ffeb3b")
+	var text_color: Color = CHARCOAL if is_light else Color.WHITE
+	button.add_theme_color_override("font_color", text_color)
+	button.add_theme_color_override("font_pressed_color", text_color)
+	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
+	button.add_theme_color_override("font_hover_color", text_color)
+	button.custom_minimum_size = Vector2(maxf(button.custom_minimum_size.x, 64.0), maxf(button.custom_minimum_size.y, 64.0))
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_stylebox_override("normal", StyleFactory.box(color, 30, 10))
-	button.add_theme_stylebox_override("hover", StyleFactory.box(color.lightened(0.08), 30, 10))
-	button.add_theme_stylebox_override("pressed", StyleFactory.box(color.darkened(0.12), 26, 14))
-	button.add_theme_stylebox_override("disabled", StyleFactory.box(Color("b0bec5"), 30, 10))
+	button.add_theme_stylebox_override("hover", StyleFactory.box(color.lightened(0.10), 30, 10, Color.WHITE, 2))
+	button.add_theme_stylebox_override("pressed", StyleFactory.box(color.darkened(0.15), 30, 10))
+	button.add_theme_stylebox_override("disabled", StyleFactory.box(Color("90a4ae"), 30, 10))
+	button.add_theme_stylebox_override("focus", StyleFactory.box(color, 30, 10, Color.WHITE, 3))
 	InteractionFX.bind_button(button)
 
 

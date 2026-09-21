@@ -387,3 +387,34 @@ WMISSION_SPEND,%d/600 invertido
 WMISSION_STYLE,%d/12 lazos
 WMISSION_TIPS,%d/10 propinas
 WMISSION_VIP,%d/3 clientes VIP
+FILTER_ALL,TODOS
+FILTER_DOGS,PERROS
+FILTER_CATS,GATOS
+FILTER_LEGENDARY,LEGENDARIOS
+FILTER_ALL_COSMETICS,TODO
+FILTER_BATH,BAÑERAS
+FILTER_WALL,PAREDES
+FILTER_ACCESSORY,LAZOS
+DAILY_SPIN_TITLE,Ruleta Diaria
+DAILY_SPIN_DESC,Gira 1×/día: monedas escaladas, brasas o freeze • Recompensa variable
+SPIN_ACTION,GIRAR
+SPIN_DONE,HECHO
+WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Cofre: %d/7 • %s
+COLLECTION_SUMMARY,MASCOTAS %d/%d • LOGROS %d/%d • COSMÉTICOS %d
+SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SPECIAL_ORDER_NOTE,💰 ¡Aceptar da propina extra + mantiene combo!
+SPECIAL_ACCEPT,✓  ACEPTAR (+40% propina)
+SPECIAL_DECLINE,AHORA NO
+CLIENT_LEFT_COINS,💔 ¡%s se fue! -%d monedas
+RUSH_ACTIVE,🔥 PICO ×2 — %ds
+RUSH_COOLDOWN,⏳ pico en %ds
+ASSIST_TOAST,💡 Asistencia: ventana mayor + paciencia por 3 clientes!
+MOOD_BUFF_TOAST,¡El salón está en ritmo! Cola más paciente.
+PETTING_LIMIT,¡%s ya está lleno de cariño!
+WEEKLY_RESET_TOMORROW,reinicia mañana
+WEEKLY_RESET_DAYS,reinicia en %d días
+STREAK_LOSS_NOTE,Si fallas, -1 día (¡usa ❄️ freeze!)
+ASSIST_ACTIVE,💡 Asistencia activa: %d cliente(s) restantes
+QUEUE_ARRIVING,Llegando
+QUEUE_RELOAD,La cola recarga en %0.1fs
+PROOF_SOCIAL_LIVE,💬 %s: %s %s

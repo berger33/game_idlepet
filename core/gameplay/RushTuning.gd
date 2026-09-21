@@ -8,14 +8,14 @@ static func update_rush_labels(rush_active: bool, rush_left: float, rush_cooldow
 		var total: float = RemoteConfig.get_float("rush_duration")
 		var ratio: float = clampf(rush_left / maxf(0.1, total), 0.0, 1.0)
 		if is_instance_valid(rush_label):
-			rush_label.text = "🔥 PICO ×2 — %ds" % int(ceilf(maxf(0.0, rush_left)))
+			rush_label.text = Loc.t("RUSH_ACTIVE") % int(ceilf(maxf(0.0, rush_left)))
 			rush_label.modulate = Color("ffd54f") if fmod(rush_left, 0.8) < 0.4 else Color("ff8f00")
 		if is_instance_valid(rush_bar):
 			rush_bar.value = ratio * 100.0
 			rush_bar.visible = true
 	else:
 		if is_instance_valid(rush_label):
-			rush_label.text = "⏳ pico em %ds" % int(ceilf(rush_cooldown)) if rush_cooldown <= 15.0 else ""
+			rush_label.text = Loc.t("RUSH_COOLDOWN") % int(ceilf(rush_cooldown)) if rush_cooldown <= 15.0 else ""
 		if is_instance_valid(rush_bar):
 			rush_bar.visible = false
 

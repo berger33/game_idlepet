@@ -135,14 +135,13 @@ func source_label(source: String) -> String:
 
 
 func weekly_reset_label() -> String:
-	# Conta até segunda (0=domingo): 0=hoje, 1=amanhã...
 	var w: int = weekday()
 	var days_left: int = (8 - w) % 7
 	if days_left == 0:
 		days_left = 7
 	if days_left == 1:
-		return "reseta amanhã"
-	return "reseta em %d dias" % days_left
+		return Loc.t("WEEKLY_RESET_TOMORROW")
+	return Loc.t("WEEKLY_RESET_DAYS") % days_left
 
 
 ## Presente de temporada: o cosmético da temporada ativa entra na coleção no
