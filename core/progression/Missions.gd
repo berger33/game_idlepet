@@ -119,9 +119,9 @@ static func label(mission: Dictionary) -> String:
 	return Loc.t(key) % [value(mission), target(mission)]
 
 
-## Texto da recompensa: "320 moedas" ou "5 Brasas".
+## Texto da recompensa: "R$ 320" (realismo) ou "5 Brasas".
 static func reward_text(mission: Dictionary) -> String:
 	var embers: int = ember_reward(mission)
 	if embers > 0:
 		return "%d %s" % [embers, Loc.t("EMBERS")]
-	return "%d %s" % [coin_reward(mission), Loc.t("COINS")]
+	return "%s %d" % [Loc.t("COINS"), coin_reward(mission)]

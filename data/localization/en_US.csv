@@ -44,16 +44,16 @@ CHOOSE_CLIENT,Pick the next client from the queue
 CLAIM,CLAIM
 CLAIMED,CLAIMED
 CLIENT_LEFT,%s got tired of waiting and left.
-CLIENT_LEFT_COINS,💔 %s left! -%d coins
-COINS,Coins
+CLIENT_LEFT_COINS,💔 %s left! -$%d
+COINS,$
 COLLECT,COLLECT
 COLLECTION_SUMMARY,PETS %d/%d • ACHIEVEMENTS %d/%d • COSMETICS %d
 COLLECTION_TITLE,COLLECTION
 COLORBLIND_MODE,Colorblind mode (blue/orange band)
 COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.
 COMBO_CHEST_TITLE,Rhythm Chest!
-COMBO_CHEST_TOAST,Combo ×%d chest! +%d coins and +%d Embers!
-COMEBACK_GIFT,+1 freeze and welcome coins!
+COMBO_CHEST_TOAST,Combo ×%d chest! +$%d and +%d Embers!
+COMEBACK_GIFT,+1 freeze and welcome $!
 COMEBACK_TITLE,WELCOME BACK!
 COMEBACK_TOAST,Welcome back! Return gift claimed.
 COSMETIC_NO_FX,Equipped cosmetics show up in your pet shop instantly
@@ -80,12 +80,12 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
-DAILY_AUTO_BODY,Day %d: %d coins!\nStreak: %d days + %d freezes\nDay 7 = Legendary Mel Golden! Come back tomorrow for 2x.
+DAILY_AUTO_BODY,Day %d: $%d!\nStreak: %d days + %d freezes\nDay 7 = Legendary Mel Golden! Come back tomorrow for 2x.
 DAILY_AUTO_BONUS,🎁 Day 7 Bonus: Legendary pet!
 DAILY_AUTO_TITLE,Login Day %d!
-DAILY_CLAIMED_TOAST,Login claimed! +%d coins
+DAILY_CLAIMED_TOAST,Login claimed! +$%d
 DAILY_LOGIN,DAILY LOGIN Day %d/7
-DAILY_SPIN_DESC,Spin 1×/day: scaled coins
+DAILY_SPIN_DESC,Spin 1×/day: scaled $
 DAILY_SPIN_TITLE,Daily Spin
 DRAG_TOOL_TO,Drag %s from the shelf to %s
 ECO_MODE,Eco mode
@@ -109,7 +109,7 @@ EVENT_DESC_5,twice the VIPs • perfume pays ×2
 EVENT_DESC_6,Perfect is worth +50%
 EVENT_GOAL_ANY,any service
 EVENT_GOAL_DESC,%s: %d/%d services
-EVENT_GOAL_REWARD,chest: +%d coins and +%d Embers
+EVENT_GOAL_REWARD,chest: +$%d and +%d Embers
 EVENT_GOAL_TITLE,GOAL OF THE DAY
 FAIL_NO_PENALTY,No penalty — try again.
 FAIL_OVERWASHED,Too much %s. Release as soon as the ring enters the green band.
@@ -156,7 +156,7 @@ IAP_MOCK_GRANTED,%s granted (offline mock)!
 IAP_NOTE,Real purchases arrive with store integration (offline: unavailable).
 LANGUAGE,Language
 LEFT_HANDED_MODE,Left-handed (shelf on left)
-LEVEL_UP_TOAST,Level %d! +%d coins
+LEVEL_UP_TOAST,Level %d! +$%d
 LOADING,Loading...
 LOCKED,lv. %d
 MAP_TITLE,FROM BUCKET TO EMPIRE
@@ -192,7 +192,7 @@ NEIGHBORHOOD_4,Eternal Icon
 NEW_TAG,New!
 NOTIFICATIONS,Return reminders
 NOTIF_ENABLED_TOAST,Notifications enabled! 🔔
-NOTIF_OFFLINE_BODY,%s earned %d coins while you were away! Come back to collect.
+NOTIF_OFFLINE_BODY,%s earned $%d while you were away! Come back to collect.
 NOTIF_OFFLINE_TITLE,Vault is full!
 NOTIF_PETS_BODY,%s is waiting in queue with %d friends. Your streak is %d days!
 NOTIF_PETS_TITLE,%s missed you!
@@ -202,7 +202,7 @@ NOTIF_PROMPT_TITLE,Notify when vault full?
 NOTIF_PROMPT_YES,ENABLE
 NO_TIP,no tip this time
 OFF,off
-OFFLINE_BODY,%d min away • vault: +%d coins
+OFFLINE_BODY,%d min away • vault: +$%d
 OFFLINE_DAILY,Daily login (day %d) ready to claim
 OFFLINE_DOUBLE_AD,DOUBLE (video)
 OFFLINE_DOUBLE_EMBER,DOUBLE (1 Ember)
@@ -277,11 +277,11 @@ PET_YUKI_SCOTTISH,Yuki
 PET_ZARA_ORIENTAL,Zara
 PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestige available: %d token(s) • current bonus +%.0f%% per service
-PRESTIGE_DONE,Franchise level %d! +10%% coins per level
+PRESTIGE_DONE,Franchise level %d! +10% $ per level
 PRESTIGE_GO,PRESTIGE
 PRESTIGE_KEEP,"Keeps: embers, pets, cosmetics, achievements, streak, pass, research and 25% of station/tools"
-PRESTIGE_LOCKED,Reach level 15 and save up more coins
-PRESTIGE_LOST,"Restarts: coins, staff and career level (from 10)"
+PRESTIGE_LOCKED,Reach level 15 and save up more $
+PRESTIGE_LOST,"Restarts: $, staff and career level (from 10)"
 PRESTIGE_PREVIEW,Inheritance: station Lv.%d • restart at level %d with every service
 PRESTIGE_TITLE,FRANCHISE
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
@@ -419,7 +419,7 @@ TUT_STEP_1,Tap a client in the queue to serve
 TUT_STEP_2,Drag %s to %s
 UPGRADES_LOCKED,Unlocks at level %d
 UPGRADES_MAXED,MAXED
-UPGRADES_MISSING,Missing %d coins
+UPGRADES_MISSING,Missing $%d
 UPGRADES_PER_LEVEL,per level
 UPGRADES_REWARD,reward
 UPGRADES_STATION,Bath station
@@ -436,7 +436,7 @@ VOCATION_MASSEUSE,Massage
 VOCATION_PERFECTIONIST,Perfectionist
 VOCATION_STYLIST,Stylist
 VOCATION_VETERINARY,Veterinarian
-WEEKLY_CHEST_TOAST,Weekly chest! +%d coins and +%d Embers
+WEEKLY_CHEST_TOAST,Weekly chest! +$%d and +%d Embers
 WEEKLY_FEATURED,Featured this week
 WEEKLY_FEATURED_DESC,Community pick — rotates every Monday
 WEEKLY_NOTE,Resets on Monday • bigger rewards than daily ones
@@ -477,4 +477,4 @@ WEEKLY_LAST_DAY,⏰ LAST DAY! %d/%d missions • %dh left
 DAILY_FEATURED,Daily Featured
 DAILY_FEATURED_DESC,Only today with discount!
 ADS_REWARDED_UNAVAILABLE,Video unavailable. Keep playing normally.
-ADS_REWARD_TOAST,Rewarded ad! +%d coins
+ADS_REWARD_TOAST,Rewarded ad! +$%d

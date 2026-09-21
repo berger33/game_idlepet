@@ -3,7 +3,8 @@ extends Node
 
 const SAVE_VERSION: int = 12
 const MAX_CAREER_LEVEL: int = 120
-const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
+## Custo base por raridade — escalado 2.2x para economia R$ realista (antes 150/400/900/2000)
+const HIRE_COSTS: Dictionary = {"common": 330, "rare": 880, "epic": 1980, "legendary": 4400}
 ## Fração da estação/ferramentas herdada ao prestigiar e nível de recomeço
 ## (todos os serviços abertos): prestigiar deixa de ser "perder 2h por +10%".
 const PRESTIGE_KEEP_RATIO: float = 0.25
@@ -171,8 +172,8 @@ func buy_bath_upgrade() -> bool:
 func tool_upgrade_cost(tool_id: StringName) -> float:
 	var level: int = clampi(int(tool_upgrade_levels.get(String(tool_id), 0)), 0, 30)
 	var base_cost: float = (
-		{&"soap": 18.0, &"clipper": 35.0, &"dryer": 55.0, &"perfume": 80.0, &"bow": 120.0}
-		. get(tool_id, 25.0)
+		{&"soap": 40.0, &"clipper": 77.0, &"dryer": 121.0, &"perfume": 176.0, &"bow": 264.0}
+		. get(tool_id, 55.0)
 	)
 	return ceil(base_cost * pow(1.24, level))
 

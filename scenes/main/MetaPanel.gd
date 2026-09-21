@@ -143,7 +143,7 @@ func _build_missions() -> void:
 		streak_note += " • " + Loc.t("STREAK_LOSS_NOTE")
 	_info_row(
 		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
-		"%d %s • %s" % [streak_coins, Loc.t("COINS"), streak_note],
+		"%s %d • %s" % [Loc.t("COINS"), streak_coins, streak_note],
 		Loc.t("CLAIMED") if claimed_today else Loc.t("CLAIM"),
 		GREEN,
 		not claimed_today,
@@ -208,10 +208,10 @@ func _build_missions() -> void:
 	var pass_reward: Dictionary = ContentDB.pass_day(GameState.pass_day_claimed + 1)
 	var pass_line: String = Loc.t("PASS_DONE")
 	if not pass_reward.is_empty():
-		pass_line = "%s • %d %s" % [
+		pass_line = "%s • %s %d" % [
 			Loc.t("PASS_DESC"),
-			Rewards.pass_day_coins(GameState.pass_day_claimed + 1),
 			Loc.t("COINS"),
+			Rewards.pass_day_coins(GameState.pass_day_claimed + 1),
 		]
 	_info_row(
 		Loc.t("PASS_TITLE") + " %d/28" % (GameState.pass_day_claimed + 1),
@@ -251,9 +251,7 @@ func _build_missions() -> void:
 		var weekly_ready: bool = value >= target and not weekly_done
 		var reward: Dictionary = weekly.get("reward", {})
 		var reward_text: String = (
-			"%d %s" % [
-				Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0))), Loc.t("COINS")
-			]
+			"%s %d" % [Loc.t("COINS"), Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0)))]
 			if reward.has("coins")
 			else "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
 		)
@@ -407,7 +405,7 @@ func _build_collection() -> void:
 		var reward_text: String = ""
 		if reward.has("coins"):
 			var c: int = Rewards.for_kind(&"achievement", int(reward.get("coins", 0)))
-			reward_text = "%d %s" % [c, Loc.t("COINS")]
+			reward_text = "%s %d" % [Loc.t("COINS"), c]
 		elif reward.has("embers"):
 			reward_text = "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
 		var action: String = Loc.t("SHARE_ACHIEVEMENT_BUTTON") if unlocked else Loc.t("LOCKED") % 1
@@ -451,8 +449,8 @@ func _build_upgrades() -> void:
 		var cost: float = Economy.upgrade_cost(station_level)
 		_info_row(
 			Loc.t("UPGRADES_STATION"),
-			"Nv.%d  •  +7,5%% %s  •  %d %s"
-			% [station_level, Loc.t("UPGRADES_PER_LEVEL"), int(cost), Loc.t("COINS")],
+			"Nv.%d  •  +7,5%% %s  •  %s %d"
+			% [station_level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(cost)],
 			Loc.t("UPGRADES_UPGRADE"),
 			GREEN,
 			cost <= GameState.coins,
@@ -499,8 +497,8 @@ func _build_upgrades() -> void:
 		else:
 			_info_row(
 				Loc.t(String(tool["key"])),
-				"Nv.%d/30  •  +4%% %s  •  %d %s"
-				% [level, Loc.t("UPGRADES_PER_LEVEL"), int(tool_cost), Loc.t("COINS")],
+				"Nv.%d/30  •  +4%% %s  •  %s %d"
+				% [level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(tool_cost)],
 				Loc.t("UPGRADES_UPGRADE"),
 				BLUE,
 				tool_cost <= GameState.coins,
@@ -539,7 +537,7 @@ func _build_staff() -> void:
 		_info_row(
 			ContentDB.staff_name(staff_id),
 			desc,
-			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %d" % [Loc.t("HIRE"), cost],
+			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %s %d" % [Loc.t("HIRE"), Loc.t("COINS"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
 			not hired and staff_id != "player" and GameState.coins >= float(cost),
 			func(sid: String = staff_id) -> void:
@@ -584,7 +582,7 @@ func _build_shop() -> void:
 		var daily_feat: Dictionary = ContentDB.cosmetic(daily_id)
 		if not daily_feat.is_empty():
 			var d_price: Dictionary = daily_feat.get("price", {})
-			var d_price_text: String = "%d %s" % [Rewards.cosmetic_price(daily_id), Loc.t("COINS")] if d_price.has("coins") else "%d %s" % [int(d_price.get("embers", 0)), Loc.t("EMBERS")]
+			var d_price_text: String = "%s %d" % [Loc.t("COINS"), Rewards.cosmetic_price(daily_id)] if d_price.has("coins") else "%d %s" % [int(d_price.get("embers", 0)), Loc.t("EMBERS")]
 			_info_row(
 				"☀️ %s • %s" % [Loc.t("DAILY_FEATURED") if Loc.t("DAILY_FEATURED") != "DAILY_FEATURED" else "Destaque do Dia", ContentDB.cosmetic_name(daily_id)],
 				Loc.t("DAILY_FEATURED_DESC") if Loc.t("DAILY_FEATURED_DESC") != "DAILY_FEATURED_DESC" else "Só hoje com desconto!",
@@ -604,8 +602,8 @@ func _build_shop() -> void:
 			var feat_price: Dictionary = featured.get("price", {})
 			var feat_price_text: String = ""
 			if feat_price.has("coins"):
-				feat_price_text = "%d %s" % [
-					Rewards.cosmetic_price(featured_id), Loc.t("COINS")
+				feat_price_text = "%s %d" % [
+					Loc.t("COINS"), Rewards.cosmetic_price(featured_id)
 				]
 			else:
 				feat_price_text = "%d %s" % [
@@ -635,7 +633,7 @@ func _build_shop() -> void:
 		var seasonal: bool = not ContentDB.seasonal(source).is_empty()
 		var price_text: String
 		if price.has("coins"):
-			price_text = "%d %s" % [Rewards.cosmetic_price(look_id), Loc.t("COINS")]
+			price_text = "%s %d" % [Loc.t("COINS"), Rewards.cosmetic_price(look_id)]
 		elif price.has("embers"):
 			price_text = "%d %s" % [int(price["embers"]), Loc.t("EMBERS")]
 		else:

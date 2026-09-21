@@ -125,12 +125,13 @@ func offline_earnings(
 
 
 func prestige_tokens(total_coins: float) -> int:
-	# Rebalanceado Nota 10: sqrt(total/250k) + garantia 1 token em 20k para Nv15
-	# Antes: sqrt(total/1M) → 1 token só em 1M (Nv45+), 10 tokens em 100M (40h)
-	# Agora: 20k→1, 250k→1, 1M→2, 4M→4, 10M→6, 25M→10, 100M→20 (D30 viável)
+	# Realismo R$ 2.2x: denominador escalado 550k (antes 250k) para manter
+	# pacing ~62h Lv120; com renda média 2.2x, total/250k daria tokens 1.48x
+	# mais rápido. Garantia ajustada 44k (20k*2.2), bônus linear 11M (5M*2.2).
+	# Agora: 44k→1, 550k→1, 2.2M→2, 8.8M→4, 22M→6, 55M→10, 220M→20 (D30 viável)
 	var t: float = maxf(0.0, total_coins)
-	var tokens: int = int(floor(sqrt(t / 250000.0)))
-	if tokens == 0 and t >= 20000.0:
+	var tokens: int = int(floor(sqrt(t / 550000.0)))
+	if tokens == 0 and t >= 44000.0:
 		tokens = 1
-	tokens += int(floor(t / 5000000.0))
+	tokens += int(floor(t / 11000000.0))
 	return tokens

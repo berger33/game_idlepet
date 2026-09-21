@@ -8,7 +8,7 @@
  "defaults": {
   "base_income": 1.0,
   "upgrade_income_growth": 1.075,
-  "upgrade_cost_base": 25,
+  "upgrade_cost_base": 55,
   "upgrade_cost_growth": 1.18,
   "offline_rate": 0.5,
   "offline_cap_hours": 2,

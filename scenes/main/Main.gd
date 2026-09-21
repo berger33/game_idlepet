@@ -480,7 +480,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		extra_line += "\n⭐ " + Loc.t("RESULT_SPECIAL")
 	if world.buddy_active:
 		extra_line += "\n🐾 " + Loc.t("RESULT_BUDDY")
-	var coins_word: String = Loc.t("COINS")
+	var coins_word: String = Loc.t("COINS") # agora "R$" / "$"
 	var stars_text: String = "★".repeat(stars) + "☆".repeat(5 - stars)
 	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality)
 	var aff: int = int(GameState.pet_affection.get(current_pet_id, 0))
@@ -497,7 +497,8 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		world.special_reward_active = true
 		_animate_first_confetti()
 	# ── Resultado dinâmico: resumo sempre visível, história colapsável em ⓘ ──
-	result_detail.text = "%s\n🪙 +%d %s  •  ✨ +%d XP\n%s" % [stars_text, int(reward), coins_word, xp_reward, tip_line]
+	# Economia realista: exibe como R$ 88 (antes 🪙 12 Moedas)
+	result_detail.text = "%s\n%s +%d  •  ✨ +%d XP\n%s" % [stars_text, coins_word, int(reward), xp_reward, tip_line]
 	result_detail.tooltip_text = ""
 	var extra_text: String = "%s\n%s%s" % [thanks, proof, extra_line]
 	extra_text = extra_text.strip_edges()
@@ -932,7 +933,7 @@ func _toggle_result_detail() -> void:
 	HapticsManager.light()
 
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
-	coin_label.text = "🪙 %d" % int(GameState.coins)
+	coin_label.text = "%s %d" % [Loc.t("COINS"), int(GameState.coins)]
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
 	combo_label.text = "NV.%d %d%% ×%d" % [GameState.player_level, xp_percent, maxi(1, GameState.combo)]
 	if GameState.reviews_total == 0:
@@ -1018,7 +1019,7 @@ func _build_interface() -> void:
 	top_bar_hbox.custom_minimum_size = Vector2(1020, 96)
 	top_bar_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_bar_scroll.add_child(top_bar_hbox)
-	coin_label = _pill(top_bar_hbox, "🪙 0", Color("ffd54f"), 210)
+	coin_label = _pill(top_bar_hbox, "%s 0" % Loc.t("COINS"), Color("ffd54f"), 210)
 	coin_label.tooltip_text = Loc.t("COINS")
 	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 175)
 	review_label.tooltip_text = "Reputação do bairro"

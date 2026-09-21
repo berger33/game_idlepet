@@ -36,8 +36,11 @@ const TOOL_MASTERY_STEPS: Array[int] = [100, 500, 2000]
 const RARITY_RANK: Dictionary = {
 	&"common": 0, &"uncommon": 1, &"rare": 2, &"epic": 3, &"legendary": 4
 }
-## Pagamento base por serviço (banho vem do RemoteConfig: bath_base_reward).
-const BASE_REWARDS: Dictionary = {&"groom": 20.0, &"dry": 24.0, &"perfume": 30.0, &"style": 38.0}
+## Pagamento base por serviço — valores realistas Guarulhos/SP 2025 (R$)
+## Pesquisa: banho pequeno 40-60, medio 60-80, grande 80-120; banho+tosa 70-90/90-130/130-180;
+## hidratação 30-50/50-70, perfume 10-30 extra. Média porte-médio usada como base.
+## bath vem do RemoteConfig (52), demais fixos aqui para manter economia data-driven.
+const BASE_REWARDS: Dictionary = {&"groom": 88.0, &"dry": 42.0, &"perfume": 38.0, &"style": 58.0}
 ## Teto de VIPs na fila mesmo com evento (VIP tem menos paciência; a fila
 ## inteira VIP viraria punição, não festa).
 const VIP_CHANCE_CAP: float = 0.5

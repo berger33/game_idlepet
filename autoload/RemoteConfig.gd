@@ -2,11 +2,11 @@ extends Node
 ## Defaults locais confiáveis; provedor Firebase pode sobrepor apenas chaves permitidas.
 
 const DEFAULTS: Dictionary = {
-	"bath_base_reward": 12.0,
+	"bath_base_reward": 52.0, # Realismo Guarulhos 2025: banho pequeno-medio R$40-60 => media R$52 (antes 12)
 	"bath_duration": 6.0,
 	"bath_target_min": 0.82,
 	"bath_target_max": 0.96,
-	"upgrade_cost_base": 25.0,
+	"upgrade_cost_base": 55.0, # escalado 2.2x para manter ritmo 62h com prêmio medio 2.2x (antes 25)
 	"upgrade_cost_growth": 1.18,
 	"upgrade_income_growth": 1.075,
 	"offline_rate": 0.18,  # parcela da renda ativa que o cofre rende fechado (Nota10: 0.15→0.18 base)

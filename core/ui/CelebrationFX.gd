@@ -9,7 +9,7 @@ static func coin_fly(main, amount: int) -> void:
 	var start: Vector2 = main.world.pet_focus()
 	var end: Vector2 = main.coin_label.global_position + main.coin_label.size * 0.5
 	var fly: Label = Label.new()
-	fly.text = "🪙 +%d" % amount
+	fly.text = "R$ +%d" % amount
 	fly.add_theme_font_size_override("font_size", int(32 * SalonTuning.font_scale()))
 	fly.add_theme_color_override("font_color", Color("ffd54f"))
 	fly.position = start

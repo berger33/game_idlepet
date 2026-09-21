@@ -61,7 +61,7 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 		&"achievement":
 			var reward: String = ""
 			if int(payload.get("coins", 0)) > 0:
-				reward = "+%d %s" % [int(payload["coins"]), Loc.t("COINS")]
+				reward = "%s +%d" % [Loc.t("COINS"), int(payload["coins"])]
 			elif int(payload.get("embers", 0)) > 0:
 				reward = "+%d %s" % [int(payload["embers"]), Loc.t("EMBERS")]
 			spec["title"] = Loc.t("REVEAL_ACHIEVEMENT_TITLE")
@@ -94,10 +94,10 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 			var coins: int = int(payload.get("coins", 0))
 			var embers: int = int(payload.get("embers", 0))
 			spec["title"] = Loc.t("COMBO_CHEST_TITLE")
-			spec["body"] = "%s\n\n%s\n🪙 +%d %s\n%s" % [
+			spec["body"] = "%s\n\n%s\n%s +%d\n%s" % [
 				Loc.t("COMBO_CHEST_BODY"),
 				Loc.t("COMBO_CHEST_TOAST") % [combo, coins, embers],
-				coins, Loc.t("COINS"),
+				Loc.t("COINS"), coins,
 				"🔥 +%d %s" % [embers, Loc.t("EMBERS")] if embers > 0 else ""
 			]
 			spec["color"] = Color("ffd54f")

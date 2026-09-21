@@ -44,16 +44,16 @@ CHOOSE_CLIENT,Escolha o próximo cliente da fila
 CLAIM,COLETAR
 CLAIMED,COLETADO
 CLIENT_LEFT,%s cansou de esperar e foi embora.
-CLIENT_LEFT_COINS,💔 %s foi embora! -%d moedas
-COINS,Moedas
+CLIENT_LEFT_COINS,💔 %s foi embora! -R$ %d
+COINS,R$
 COLLECT,COLETAR
 COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
 COLLECTION_TITLE,COLEÇÃO
 COLORBLIND_MODE,Modo daltônico (azul/laranja na faixa)
 COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
 COMBO_CHEST_TITLE,Baú do Ritmo!
-COMBO_CHEST_TOAST,Baú do combo ×%d! +%d moedas e +%d Brasas!
-COMEBACK_GIFT,+1 freeze e moedas de boas-vindas!
+COMBO_CHEST_TOAST,Baú do combo ×%d! +R$ %d e +%d Brasas!
+COMEBACK_GIFT,+1 freeze e R$ de boas-vindas!
 COMEBACK_TITLE,BEM-VINDO DE VOLTA!
 COMEBACK_TOAST,Bem-vindo de volta! Presente de retorno resgatado.
 COSMETIC_NO_FX,Cosméticos equipados aparecem no petshop na hora
@@ -80,12 +80,12 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
-DAILY_AUTO_BODY,Dia %d: %d moedas!\nSequência: %d dias + %d freezes\nDia 7 = Mel Golden lendário! Volte amanhã para 2x moedas.
+DAILY_AUTO_BODY,Dia %d: R$ %d!\nSequência: %d dias + %d freezes\nDia 7 = Mel Golden lendário! Volte amanhã para 2x moedas.
 DAILY_AUTO_BONUS,🎁 Bônus Dia 7: Pet lendário!
 DAILY_AUTO_TITLE,Login Dia %d!
-DAILY_CLAIMED_TOAST,Login coletado! +%d moedas
+DAILY_CLAIMED_TOAST,Login coletado! +R$ %d
 DAILY_LOGIN,LOGIN DIÁRIO Dia %d/7
-DAILY_SPIN_DESC,Gire 1×/dia: moedas escaladas
+DAILY_SPIN_DESC,Gire 1×/dia: R$ escalados
 DAILY_SPIN_TITLE,Roleta Diária
 DRAG_TOOL_TO,Arraste %s da prateleira até %s
 ECO_MODE,Modo econômico
@@ -109,7 +109,7 @@ EVENT_DESC_5,VIPs em dobro • perfume rende ×2
 EVENT_DESC_6,Perfect vale +50%
 EVENT_GOAL_ANY,qualquer serviço
 EVENT_GOAL_DESC,%s: %d/%d atendimentos
-EVENT_GOAL_REWARD,baú: +%d moedas e +%d Brasas
+EVENT_GOAL_REWARD,baú: +R$ %d e +%d Brasas
 EVENT_GOAL_TITLE,META DO DIA
 FAIL_NO_PENALTY,Sem punição — tente de novo.
 FAIL_OVERWASHED,%s demais. Solte assim que o aro entrar na faixa verde.
@@ -156,7 +156,7 @@ IAP_MOCK_GRANTED,%s concedido (mock offline)!
 IAP_NOTE,Compras reais chegam com a integração da loja (offline: indisponível).
 LANGUAGE,Idioma
 LEFT_HANDED_MODE,Mão esquerda (prateleira à esquerda)
-LEVEL_UP_TOAST,Nível %d! +%d moedas
+LEVEL_UP_TOAST,Nível %d! +R$ %d
 LOADING,Carregando...
 LOCKED,nv. %d
 MAP_TITLE,DO BALDE AO IMPÉRIO
@@ -192,7 +192,7 @@ NEIGHBORHOOD_4,Mitinho Eterno
 NEW_TAG,Novo!
 NOTIFICATIONS,Lembretes de retorno
 NOTIF_ENABLED_TOAST,Notificações ativadas! 🔔
-NOTIF_OFFLINE_BODY,%s rendeu %d moedas enquanto você estava fora! Volte para coletar.
+NOTIF_OFFLINE_BODY,%s rendeu R$ %d enquanto você estava fora! Volte para coletar.
 NOTIF_OFFLINE_TITLE,O cofre está cheio!
 NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!
 NOTIF_PETS_TITLE,%s sentiu sua falta!
@@ -202,7 +202,7 @@ NOTIF_PROMPT_TITLE,Cofre cheio te avisa?
 NOTIF_PROMPT_YES,ATIVAR
 NO_TIP,sem gorjeta desta vez
 OFF,desligado
-OFFLINE_BODY,%d min fora • cofre: +%d moedas
+OFFLINE_BODY,%d min fora • cofre: +R$ %d
 OFFLINE_DAILY,Login diário (dia %d) pronto para resgatar
 OFFLINE_DOUBLE_AD,DOBRAR (vídeo)
 OFFLINE_DOUBLE_EMBER,DOBRAR (1 Brasa)
@@ -277,11 +277,11 @@ PET_YUKI_SCOTTISH,Yuki
 PET_ZARA_ORIENTAL,Zara
 PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
-PRESTIGE_DONE,Franquia nível %d! +10%% de moedas por nível
+PRESTIGE_DONE,Franquia nível %d! +10% de R$ por nível
 PRESTIGE_GO,PRESTIGIAR
 PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe, pesquisa e 25% da estação/ferramentas"
-PRESTIGE_LOCKED,Alcance nível 15 e acumule mais moedas
-PRESTIGE_LOST,"Recomeça: moedas, equipe e nível de carreira (a partir do 10)"
+PRESTIGE_LOCKED,Alcance nível 15 e acumule mais R$
+PRESTIGE_LOST,"Recomeça: R$, equipe e nível de carreira (a partir do 10)"
 PRESTIGE_PREVIEW,Herança: estação Nv.%d • recomeça no nível %d com todos os serviços
 PRESTIGE_TITLE,FRANQUIA
 PROOF_SOCIAL_LIVE,💬 %s: %s %s
@@ -419,7 +419,7 @@ TUT_STEP_1,Toque em um cliente da fila para atender
 TUT_STEP_2,Arraste %s até %s
 UPGRADES_LOCKED,Desbloqueia no nível %d
 UPGRADES_MAXED,MÁXIMO
-UPGRADES_MISSING,Faltam %d moedas
+UPGRADES_MISSING,Faltam R$ %d
 UPGRADES_PER_LEVEL,por nível
 UPGRADES_REWARD,de recompensa
 UPGRADES_STATION,Estação de banho
@@ -436,7 +436,7 @@ VOCATION_MASSEUSE,Massagem
 VOCATION_PERFECTIONIST,Perfeccionista
 VOCATION_STYLIST,Estilista
 VOCATION_VETERINARY,Veterinário
-WEEKLY_CHEST_TOAST,Baú da semana! +%d moedas e +%d Brasas
+WEEKLY_CHEST_TOAST,Baú da semana! +R$ %d e +%d Brasas
 WEEKLY_FEATURED,Em destaque esta semana
 WEEKLY_FEATURED_DESC,Escolhido pela comunidade — muda toda segunda
 WEEKLY_NOTE,Reinicia na segunda-feira • recompensas maiores que as diárias
@@ -477,4 +477,4 @@ WEEKLY_LAST_DAY,⏰ ÚLTIMO DIA! %d/%d missões • %dh restantes
 DAILY_FEATURED,Destaque do Dia
 DAILY_FEATURED_DESC,Só hoje com desconto!
 ADS_REWARDED_UNAVAILABLE,Vídeo indisponível. Continue jogando normalmente.
-ADS_REWARD_TOAST,Anúncio recompensado! +%d moedas
+ADS_REWARD_TOAST,Anúncio recompensado! +R$ %d

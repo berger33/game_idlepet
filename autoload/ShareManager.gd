@@ -305,7 +305,7 @@ func _render_achievement_card(achievement_id: String) -> Image:
 	var embers: int = int(reward.get("embers", 0))
 	if coins > 0 or embers > 0:
 		if coins > 0:
-			reward_text = "+%d %s" % [coins, Loc.t("COINS")]
+			reward_text = "%s +%d" % [Loc.t("COINS"), coins]
 		if embers > 0:
 			var sep: String = " • " if not reward_text.is_empty() else ""
 			reward_text += sep + "+%d %s" % [embers, Loc.t("EMBERS")]
