@@ -89,6 +89,19 @@ static func enqueue_kind(main: Control, kind: StringName, payload: Dictionary) -
 			]
 			spec["color"] = Color("ffd54f")
 			spec["sound"] = &"pass_claim"
+		&"combo_chest":
+			var combo: int = int(payload.get("combo", 10))
+			var coins: int = int(payload.get("coins", 0))
+			var embers: int = int(payload.get("embers", 0))
+			spec["title"] = Loc.t("COMBO_CHEST_TITLE")
+			spec["body"] = "%s\n\n%s\n🪙 +%d %s\n%s" % [
+				Loc.t("COMBO_CHEST_BODY"),
+				Loc.t("COMBO_CHEST_TOAST") % [combo, coins, embers],
+				coins, Loc.t("COINS"),
+				"🔥 +%d %s" % [embers, Loc.t("EMBERS")] if embers > 0 else ""
+			]
+			spec["color"] = Color("ffd54f")
+			spec["sound"] = &"coin"
 		_:
 			return
 	enqueue(main, spec)

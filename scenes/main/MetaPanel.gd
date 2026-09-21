@@ -504,9 +504,12 @@ func _build_staff() -> void:
 		var passive_key: String = "PASSIVE_" + String(passive.get("type", "speed")).to_upper()
 		var cost: int = GameState.hire_cost(staff_id)
 		var automation: int = int(roundf(float(member.get("automation", 0.0)) * 100.0))
+		var dialogue: String = StaffStories.dialogue_for(staff_id, GameState.player_level)
 		var desc: String = "%s • %s" % [Loc.t(GameState.staff_vocation(staff_id)), Loc.t(passive_key)]
 		if automation > 0:
 			desc += "\n" + Loc.t("STAFF_AUTOMATION") % automation
+		if not dialogue.is_empty():
+			desc += "\n💬 %s" % dialogue
 		_info_row(
 			ContentDB.staff_name(staff_id),
 			desc,

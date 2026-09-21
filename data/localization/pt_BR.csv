@@ -421,3 +421,6 @@ PROOF_SOCIAL_LIVE,💬 %s: %s %s
 NEW_TAG,Novo!
 WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
 FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
+COMBO_CHEST_TITLE,Baú do Ritmo!
+COMBO_CHEST_TOAST,Baú do combo ×%d! +%d moedas e +%d Brasas!
+COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.

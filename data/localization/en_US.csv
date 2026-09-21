@@ -421,3 +421,6 @@ PROOF_SOCIAL_LIVE,💬 %s: %s %s
 NEW_TAG,New!
 WELCOME_BONUS,🎁 Welcome bonus: +1 freeze!
 FIRST_BONUS,🎉 First perfect! +1 Ember!
+COMBO_CHEST_TITLE,Rhythm Chest!
+COMBO_CHEST_TOAST,Combo ×%d chest! +%d coins and +%d Embers!
+COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.

@@ -487,6 +487,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
 	primary_button.disabled = false
 	primary_button.show()
+	_animate_coin_fly(int(reward))
 	_refresh_economy()
 func _fail(reason: StringName) -> void:
 	bath.state = BathService.State.FAILED
@@ -811,6 +812,28 @@ func _refresh_proof_social() -> void:
 	proof_label.text = RushTuning.proof_text()
 	proof_label.modulate.a = 0.0
 	proof_label.create_tween().tween_property(proof_label, "modulate:a", 1.0, 0.25)
+func _animate_coin_fly(amount: int) -> void:
+	if not is_instance_valid(coin_label) or not is_instance_valid(world): return
+	if bool(GameState.settings.get("reduced_particles", false)): return
+	var start: Vector2 = world.pet_focus()
+	var end: Vector2 = coin_label.global_position + coin_label.size * 0.5
+	var fly: Label = Label.new()
+	fly.text = "🪙 +%d" % amount
+	fly.add_theme_font_size_override("font_size", int(32 * SalonTuning.font_scale()))
+	fly.add_theme_color_override("font_color", Color("ffd54f"))
+	fly.position = start
+	fly.z_index = 100
+	add_child(fly)
+	var tween: Tween = fly.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(fly, "position", end, 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(fly, "scale", Vector2(0.6, 0.6), 0.7)
+	tween.tween_property(fly, "modulate:a", 0.0, 0.7).set_delay(0.4)
+	tween.chain().tween_callback(fly.queue_free)
+	# Pulso no pill de moedas
+	coin_label.scale = Vector2(1.15, 1.15)
+	coin_label.create_tween().tween_property(coin_label, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK)
+
 func _show_toast(message: String, color: Color) -> void:
 	SessionFeedback.toast(self, message, color)
 func _connect_events() -> void:

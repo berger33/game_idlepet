@@ -821,6 +821,17 @@ func _on_service_completed(service_id: StringName, quality: StringName, reward: 
 	best_combo = maxi(best_combo, combo)
 	weekly_progress["combo_max"] = maxi(int(weekly_progress.get("combo_max", 0)), combo)
 	mission_progress["combo_reached"] = maxi(int(mission_progress.get("combo_reached", 0)), combo)
+	# P1: baú misterioso a cada 10 de combo (recompensa variável forte D7)
+	if combo > 0 and combo % 10 == 0:
+		var chest_coins: int = Rewards.scaled(120.0, 80)
+		var chest_embers: int = 1 if randf() < 0.35 else 0
+		add_coins(float(chest_coins), &"combo_chest")
+		if chest_embers > 0:
+			embers += chest_embers
+			EventBus.currency_changed.emit(&"coins", coins)
+		EventBus.toast_requested.emit(Loc.t("COMBO_CHEST_TOAST") % [combo, chest_coins, chest_embers], Color("ffd54f"))
+		EventBus.reveal_requested.emit(&"combo_chest", {"combo": combo, "coins": chest_coins, "embers": chest_embers})
+		Analytics.track(&"combo_chest", {"combo": combo, "coins": chest_coins, "embers": chest_embers})
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
 		EventBus.toast_requested.emit(Loc.t("BIA_HIRED"), Color("7ed957"))
