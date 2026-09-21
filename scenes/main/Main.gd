@@ -48,6 +48,9 @@ var upgrades_pulse_time: float = 0.0
 var result_panel: PanelContainer
 var result_title: Label
 var result_detail: Label
+var result_detail_extra: Label
+var result_expand_btn: Button
+var result_expanded: bool = false
 var dragging: bool = false
 var bubble_sound_gate: float = 0.0
 var toast_layer: Control
@@ -86,6 +89,12 @@ var rush_label: Label
 var rush_bar: ProgressBar
 var proof_label: Label
 var proof_timer: float = 0.0
+var top_bar_scroll: ScrollContainer
+var top_bar_hbox: HBoxContainer
+var goal_collapsed: bool = true
+var goal_expand_btn: Button
+var goal_full_text: String = ""
+var goal_preview_text: String = ""
 var pending_special: StringName = &""
 var special_active: bool = false
 var special_multiplier: float = 1.0
@@ -294,7 +303,10 @@ func _move_pointer(point: Vector2) -> void:
 			var correct_pos: Vector2 = world.tool_shelf_position(required_tool)
 			tutorial_overlay.show_step(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), "👉 Use %s aqui!" % SalonTuning.tool_display_name(required_tool))
 			var timer: SceneTreeTimer = get_tree().create_timer(1.2)
-			timer.timeout.connect(func() -> void: if tutorial_overlay.active: tutorial_overlay.finish())
+			timer.timeout.connect(func() -> void:
+				if tutorial_overlay.active:
+					tutorial_overlay.finish()
+			)
 		return
 	var contact_resumed: bool = not world.tool_contact_valid
 	world.set_tool_contact(true)
@@ -484,7 +496,26 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		world.celebration = 3.2
 		world.special_reward_active = true
 		_animate_first_confetti()
-	result_detail.text = "%s\n🪙 +%d %s  •  ✨ +%d XP\n%s\n%s\n%s%s" % [stars_text, int(reward), coins_word, xp_reward, tip_line, thanks, proof, extra_line]
+	# ── Resultado dinâmico: resumo sempre visível, história colapsável em ⓘ ──
+	result_detail.text = "%s\n🪙 +%d %s  •  ✨ +%d XP\n%s" % [stars_text, int(reward), coins_word, xp_reward, tip_line]
+	result_detail.tooltip_text = ""
+	var extra_text: String = "%s\n%s%s" % [thanks, proof, extra_line]
+	extra_text = extra_text.strip_edges()
+	if is_instance_valid(result_detail_extra):
+		if not extra_text.is_empty():
+			result_detail_extra.text = extra_text
+			result_detail_extra.tooltip_text = extra_text
+			result_detail_extra.visible = false
+			result_expanded = false
+			if is_instance_valid(result_expand_btn):
+				result_expand_btn.text = "ⓘ  Ver história"
+				result_expand_btn.visible = true
+		else:
+			result_detail_extra.text = ""
+			result_detail_extra.visible = false
+			if is_instance_valid(result_expand_btn):
+				result_expand_btn.visible = false
+				result_expanded = false
 	consecutive_fails = 0
 	assistance_clients = 0
 	if result_panel.has_meta("xp_bar"):
@@ -560,7 +591,26 @@ func _fail(reason: StringName) -> void:
 	var assistance_line: String = ""
 	if assistance_clients > 0:
 		assistance_line = "\n" + Loc.t("ASSIST_ACTIVE") % assistance_clients
-	result_detail.text = "★★☆☆☆\n%s\n%s%s" % [hint, Loc.t("FAIL_NO_PENALTY"), assistance_line]
+	# ── Fail dinâmico: dica curta + detalhe colapsável ──
+	result_detail.text = "★★☆☆☆\n%s" % hint
+	result_detail.tooltip_text = hint
+	var fail_extra: String = "%s%s" % [Loc.t("FAIL_NO_PENALTY"), assistance_line]
+	fail_extra = fail_extra.strip_edges()
+	if is_instance_valid(result_detail_extra):
+		if not fail_extra.is_empty():
+			result_detail_extra.text = fail_extra
+			result_detail_extra.tooltip_text = fail_extra
+			result_detail_extra.visible = false
+			result_expanded = false
+			if is_instance_valid(result_expand_btn):
+				result_expand_btn.text = "ⓘ  Ver dica"
+				result_expand_btn.visible = true
+		else:
+			result_detail_extra.text = ""
+			result_detail_extra.visible = false
+			if is_instance_valid(result_expand_btn):
+				result_expand_btn.visible = false
+				result_expanded = false
 	share_button.visible = false
 	_pop_panel(result_panel)
 	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
@@ -597,7 +647,10 @@ func _dismiss_result() -> void:
 		var daily_shown: bool = GameState.settings.get("daily_popup_shown_today", "") == Time.get_date_string_from_system()
 		_show_toast("🏷️ " + Loc.t("SHOP_NAME") + "? " + Loc.t("SHOP_NAME_HINT"), BLUE)
 		if not daily_shown:
-			get_tree().create_timer(2.5).timeout.connect(func(): if not meta.is_open() and not result_panel.visible and not upsell_panel.visible: meta.open(&"settings"), CONNECT_ONE_SHOT)
+			get_tree().create_timer(2.5).timeout.connect(func() -> void:
+				if not meta.is_open() and not result_panel.visible and not upsell_panel.visible:
+					meta.open(&"settings")
+			, CONNECT_ONE_SHOT)
 func _refill_delay() -> float:
 	var base: float = 0.35 if rush_active else 1.1
 	if GameState.establishment_tier >= 6:
@@ -808,7 +861,16 @@ func _update_queue_ui() -> void:
 				else SalonTuning.queue_info_text(profile)
 			)
 			var story_line: String = PetStories.queue_story(profile, String(client.get("service", "bath")))
-			queue_info_labels[slot].text = "%s\n%s" % [base_info, story_line] if not story_line.is_empty() else base_info
+			# ── Fila dinâmica: compacta 1 linha + ⓘ para história ──
+			if not story_line.is_empty():
+				# mostra só trade-off essencial, história vira detalhe sob demanda
+				queue_info_labels[slot].text = base_info + "  ⓘ"
+				queue_info_labels[slot].tooltip_text = story_line
+				queue_cards[slot].tooltip_text = story_line + "\n" + base_info
+			else:
+				queue_info_labels[slot].text = base_info
+				queue_info_labels[slot].tooltip_text = ""
+				queue_cards[slot].tooltip_text = base_info
 			var border: Dictionary = SalonTuning.queue_border(profile)
 			# D0: borda verde no recomendado
 			var border_color: Color = GREEN if slot == 0 and GameState.services_completed == 0 else border["color"]
@@ -848,6 +910,27 @@ func _available_services() -> Array[StringName]:
 		if GameState.player_level >= int(SERVICE_UNLOCK_LEVELS[service]):
 			result.append(service)
 	return result if not result.is_empty() else [&"bath"]
+func _toggle_goal_expand() -> void:
+	goal_collapsed = not goal_collapsed
+	_refresh_economy()
+	AudioManager.play(&"tap")
+	HapticsManager.light()
+
+func _toggle_result_detail() -> void:
+	result_expanded = not result_expanded
+	if is_instance_valid(result_detail_extra):
+		result_detail_extra.visible = result_expanded
+		# quando expandido muda texto do botão para recolher
+		if is_instance_valid(result_expand_btn):
+			result_expand_btn.text = "▴  Recolher" if result_expanded else "ⓘ  Ver história"
+			result_expand_btn.visible = true
+		result_detail_extra.modulate.a = 0.0 if result_expanded else 1.0
+		if result_expanded:
+			var tw: Tween = result_detail_extra.create_tween()
+			tw.tween_property(result_detail_extra, "modulate:a", 1.0, 0.18)
+	AudioManager.play(&"tap")
+	HapticsManager.light()
+
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "🪙 %d" % int(GameState.coins)
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
@@ -856,10 +939,38 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		review_label.text = "★ %s" % Loc.t("NEW_TAG") if Loc.t("NEW_TAG") != "NEW_TAG" else "★ Novo!"
 	else:
 		review_label.text = "★ %.1f" % GameState.review_average()
+	# ── Top bar dinâmico: esconde pílulas secundárias quando vazias ──
+	if is_instance_valid(proof_label) and is_instance_valid(rush_label):
+		var show_rush: bool = rush_active or rush_cooldown < 30.0
+		if rush_label.text.is_empty() and not show_rush:
+			rush_label.visible = false
+			rush_bar.visible = false
+		else:
+			rush_label.visible = true
+		proof_label.visible = not proof_label.text.is_empty()
 	if is_instance_valid(goal_label):
-		goal_label.text = Goals.hud_line()
+		goal_full_text = Goals.hud_line()
 		if GameState.player_level >= 3:
-			goal_label.text += " • " + SalonTuning.tip_odds_text()
+			goal_full_text += " • " + SalonTuning.tip_odds_text()
+		# progressive disclosure: preview colapsado + botão ⓘ
+		if goal_full_text.length() > 54 or goal_full_text.contains("•"):
+			var parts: PackedStringArray = goal_full_text.split(" • ")
+			goal_preview_text = parts[0]
+			if parts.size() > 1:
+				goal_preview_text += " • " + parts[1].left(18).strip_edges() + ("…" if parts[1].length() > 18 else "")
+				if parts.size() > 2:
+					goal_preview_text += " …"
+			goal_label.text = goal_preview_text if goal_collapsed else goal_full_text
+			goal_label.tooltip_text = goal_full_text
+			if is_instance_valid(goal_expand_btn):
+				goal_expand_btn.visible = true
+				goal_expand_btn.text = "ⓘ" if goal_collapsed else "▴"
+				goal_expand_btn.tooltip_text = "Ver detalhes" if goal_collapsed else "Recolher"
+		else:
+			goal_label.text = goal_full_text
+			goal_label.tooltip_text = ""
+			if is_instance_valid(goal_expand_btn):
+				goal_expand_btn.visible = false
 	if is_instance_valid(world):
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
@@ -893,15 +1004,28 @@ func _build_interface() -> void:
 	add_child(world)
 	var safe_top: float = SalonTuning.safe_area_top()
 	var font_scale: float = SalonTuning.font_scale()
-	var top_bar: HBoxContainer = HBoxContainer.new()
-	top_bar.position = Vector2(30, 32 + safe_top)
-	top_bar.size = Vector2(1020, 96)
-	top_bar.add_theme_constant_override("separation", 12)
-	add_child(top_bar)
-	coin_label = _pill(top_bar, "🪙 0", Color("ffd54f"), 210)
-	review_label = _pill(top_bar, "★ 5.0", PINK, 175)
-	combo_label = _pill(top_bar, "×1", GREEN, 185)
-	rush_label = _pill(top_bar, "", Color("ff8f00"), 165)
+	# ── Top bar dinâmico: Scroll horizontal com prioridade visual ──
+	top_bar_scroll = ScrollContainer.new()
+	top_bar_scroll.position = Vector2(30, 32 + safe_top)
+	top_bar_scroll.size = Vector2(1020, 96)
+	top_bar_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	top_bar_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	top_bar_scroll.clip_contents = true
+	add_child(top_bar_scroll)
+	top_bar_hbox = HBoxContainer.new()
+	top_bar_hbox.add_theme_constant_override("separation", 12)
+	# largura permite overflow swipe (conteúdo não corta sensação)
+	top_bar_hbox.custom_minimum_size = Vector2(1020, 96)
+	top_bar_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_bar_scroll.add_child(top_bar_hbox)
+	coin_label = _pill(top_bar_hbox, "🪙 0", Color("ffd54f"), 210)
+	coin_label.tooltip_text = Loc.t("COINS")
+	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 175)
+	review_label.tooltip_text = "Reputação do bairro"
+	combo_label = _pill(top_bar_hbox, "×1", GREEN, 185)
+	combo_label.tooltip_text = "Combo e nível"
+	rush_label = _pill(top_bar_hbox, "", Color("ff8f00"), 165)
+	rush_label.tooltip_text = "Evento rush"
 	rush_bar = ProgressBar.new()
 	rush_bar.custom_minimum_size = Vector2(165, 14)
 	rush_bar.max_value = 100.0
@@ -909,15 +1033,29 @@ func _build_interface() -> void:
 	rush_bar.visible = false
 	rush_bar.add_theme_stylebox_override("background", _style(Color("000000", 0.2), 7, 0))
 	rush_bar.add_theme_stylebox_override("fill", _style(Color("ffd54f"), 7, 0))
-	top_bar.add_child(rush_bar)
-	proof_label = _pill(top_bar, "", Color("4fc3f7"), 210)
+	top_bar_hbox.add_child(rush_bar)
+	proof_label = _pill(top_bar_hbox, "", Color("4fc3f7"), 210)
+	proof_label.tooltip_text = "Prova social do bairro"
 	proof_label.add_theme_font_size_override("font_size", 18)
 	var goal_row: HBoxContainer = HBoxContainer.new()
 	goal_row.position = Vector2(30, 505 + safe_top)
+	goal_row.add_theme_constant_override("separation", 8)
 	add_child(goal_row)
 	goal_label = _pill(goal_row, "", Color("ce93d8"), 620)
 	goal_label.custom_minimum_size = Vector2(620, 52)
 	goal_label.add_theme_font_size_override("font_size", int(20 * font_scale))
+	goal_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	goal_label.tooltip_text = ""
+	goal_expand_btn = _button("ⓘ", Color("f3e5f5"), 52, 52)
+	goal_expand_btn.tooltip_text = "Ver meta completa"
+	goal_expand_btn.add_theme_font_size_override("font_size", 20)
+	goal_expand_btn.add_theme_color_override("font_color", Color("6a1b9a"))
+	goal_expand_btn.add_theme_stylebox_override("normal", _style(Color("f3e5f5"), 26, 6))
+	goal_expand_btn.add_theme_stylebox_override("hover", _style(Color("e1bee7"), 26, 6, Color.WHITE, 1))
+	goal_expand_btn.add_theme_stylebox_override("pressed", _style(Color("ce93d8"), 26, 6))
+	goal_expand_btn.pressed.connect(_toggle_goal_expand)
+	goal_row.add_child(goal_expand_btn)
+	goal_expand_btn.visible = false
 	queue_row = HBoxContainer.new()
 	queue_row.position = Vector2(45, 310 + safe_top)
 	queue_row.size = Vector2(990, 175)
@@ -1026,6 +1164,10 @@ func _build_interface() -> void:
 	result_panel = result_ui["panel"]
 	result_title = result_ui["title"]
 	result_detail = result_ui["detail"]
+	result_detail_extra = result_ui.get("detail_extra", null)
+	result_expand_btn = result_ui.get("expand_btn", null)
+	if is_instance_valid(result_expand_btn):
+		result_expand_btn.pressed.connect(_toggle_result_detail)
 	primary_button = result_ui["primary"]
 	share_button = result_ui["share"]
 	if result_ui.has("xp_bar"):

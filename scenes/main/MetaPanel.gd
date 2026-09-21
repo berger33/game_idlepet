@@ -1010,18 +1010,79 @@ func _info_row(
 	row.add_theme_stylebox_override(
 		"panel", StyleFactory.box(Color("ffffff", 0.9), 24, 16, PINK, 3)
 	)
+	var box: HBoxContainer = row.get_node("Box")
+	var info_vbox: VBoxContainer = row.get_node("Box/Info")
 	var name_label: Label = row.get_node("Box/Info/Name")
 	name_label.text = name_text
 	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", CHARCOAL)
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var desc_label: Label = row.get_node("Box/Info/Desc")
-	desc_label.text = desc_text
 	desc_label.add_theme_font_size_override("font_size", 24)
 	desc_label.add_theme_color_override("font_color", Color("37474f"))
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# ── Dinâmico: progressive disclosure ──
+	# Descrições longas (>75 chars ou multi-linha) começam colapsadas com preview + botão ⓘ
+	var is_long: bool = desc_text.length() > 75 or desc_text.contains("\n")
+	var preview_text: String = desc_text
+	if is_long:
+		if desc_text.contains("\n"):
+			preview_text = desc_text.split("\n")[0] + " …"
+		elif desc_text.length() > 75:
+			preview_text = desc_text.substr(0, 72).strip_edges() + "…"
+		# quando há preview, mostra só preview colapsado
+		desc_label.text = preview_text
+		desc_label.tooltip_text = desc_text  # acessível via long-press
+	else:
+		desc_label.text = desc_text
 	var button: Button = row.get_node("Box/Action")
 	_style_button(button, action_color)
 	button.text = action_text
 	button.disabled = not enabled
+	# botão de detalhe dinâmico só quando há conteúdo extra
+	var expand_btn: Button = null
+	if is_long:
+		expand_btn = Button.new()
+		expand_btn.text = "ⓘ"
+		expand_btn.custom_minimum_size = Vector2(56, 56)
+		expand_btn.tooltip_text = "Ver detalhes"
+		# estilo compacto, circular
+		expand_btn.add_theme_font_size_override("font_size", 22)
+		expand_btn.add_theme_color_override("font_color", Color("546e7a"))
+		expand_btn.add_theme_color_override("font_hover_color", CHARCOAL)
+		expand_btn.add_theme_stylebox_override("normal", StyleFactory.box(Color("eceff1"), 28, 6))
+		expand_btn.add_theme_stylebox_override("hover", StyleFactory.box(Color("cfd8dc"), 28, 6, Color.WHITE, 1))
+		expand_btn.add_theme_stylebox_override("pressed", StyleFactory.box(Color("b0bec5"), 28, 6))
+		expand_btn.add_theme_stylebox_override("focus", StyleFactory.box(Color("eceff1"), 28, 6, PINK, 2))
+		InteractionFX.bind_button(expand_btn)
+		# insere antes do botão de ação para hierarquia visual: [ⓘ][Ação]
+		var idx: int = box.get_children().find(button)
+		box.add_child(expand_btn)
+		box.move_child(expand_btn, maxi(0, idx))
+		var expanded: bool = false
+		expand_btn.pressed.connect(func() -> void:
+			expanded = not expanded
+			if expanded:
+				desc_label.text = desc_text
+				expand_btn.text = "▴"
+				expand_btn.tooltip_text = "Recolher"
+				# feedback suave
+				desc_label.modulate.a = 0.0
+				var t: Tween = desc_label.create_tween()
+				t.tween_property(desc_label, "modulate:a", 1.0, 0.14)
+				AudioManager.play(&"tap")
+			else:
+				desc_label.text = preview_text
+				expand_btn.text = "ⓘ"
+				expand_btn.tooltip_text = "Ver detalhes"
+				AudioManager.play(&"tap")
+		)
+		# toque longo na linha toda também expande
+		row.gui_input.connect(func(event: InputEvent) -> void:
+			if event is InputEventScreenTouch and event.pressed and event is InputEventScreenTouch:
+				# duplo toque rápido não, só feedback
+				pass
+		)
 	if enabled and on_action.is_valid():
 		button.pressed.connect(
 			func() -> void:

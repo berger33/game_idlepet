@@ -10,7 +10,7 @@ const GREEN: Color = Color("43a047")
 const CHARCOAL: Color = Color("263238")
 
 
-## Painel de resultado: reposicionado para ver pet celebrando + XP bar + hierarquia + autowrap para thanks/memória
+## Painel de resultado: hierarquia respirada — resumo sempre visível, história/extra colapsável
 static func build_result_panel(
 	parent: Control,
 	style: Callable,
@@ -35,13 +35,35 @@ static func build_result_panel(
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.custom_minimum_size = Vector2(860, 0)
 	column.add_child(title)
+	# Resumo essencial: estrelas + moedas + XP + tip — sempre visível, sem poluição
 	var detail: Label = Label.new()
 	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	detail.add_theme_font_size_override("font_size", 28)
+	detail.add_theme_font_size_override("font_size", 30)
 	detail.add_theme_color_override("font_color", Color.WHITE)
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail.custom_minimum_size = Vector2(840, 0)
 	column.add_child(detail)
+	# Detalhe expansível: agradecimento + prova social + memória — vem colapsado com ⓘ
+	var detail_extra: Label = Label.new()
+	detail_extra.name = "DetailExtra"
+	detail_extra.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	detail_extra.add_theme_font_size_override("font_size", 24)
+	detail_extra.add_theme_color_override("font_color", Color("e0f7fa"))
+	detail_extra.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail_extra.custom_minimum_size = Vector2(840, 0)
+	detail_extra.visible = false
+	column.add_child(detail_extra)
+	var expand_btn: Button = Button.new()
+	expand_btn.name = "ExpandBtn"
+	expand_btn.text = "ⓘ  Ver história"
+	expand_btn.custom_minimum_size = Vector2(340, 56)
+	expand_btn.add_theme_font_size_override("font_size", 22)
+	expand_btn.add_theme_color_override("font_color", Color("b2ebf2"))
+	expand_btn.add_theme_stylebox_override("normal", style.call(Color("263238", 0.0), 20, 8))
+	expand_btn.add_theme_stylebox_override("hover", style.call(Color("ffffff", 0.08), 20, 8))
+	expand_btn.add_theme_stylebox_override("pressed", style.call(Color("ffffff", 0.14), 20, 8))
+	expand_btn.visible = false
+	column.add_child(expand_btn)
 	var xp_bar: ColorRect = ColorRect.new()
 	xp_bar.custom_minimum_size = Vector2(760, 14)
 	xp_bar.color = Color("4fc3f7", 0.35)
@@ -57,7 +79,9 @@ static func build_result_panel(
 	actions.add_child(share)
 	panel.hide()
 	return {
-		"panel": panel, "title": title, "detail": detail, "primary": primary, "share": share, "xp_bar": xp_bar,
+		"panel": panel, "title": title, "detail": detail,
+		"detail_extra": detail_extra, "expand_btn": expand_btn,
+		"primary": primary, "share": share, "xp_bar": xp_bar,
 	}
 
 
@@ -110,13 +134,15 @@ static func build_upsell_panel(
 	return {"panel": panel, "body": body, "accept": accept, "decline": decline}
 
 
-## Cartão da fila: nome, pedido, trade-offs com $ + barra mais alta 14px + fundo + autowrap para storytelling
+## Cartão da fila: nome, pedido, trade-offs com $ + barra 14px — dinâmico 1 linha + ⓘ
 static func build_queue_card(style: Callable, button: Callable) -> Dictionary:
 	var card: Button = button.call("", Color("ffffff", 0.96), 320, 210)
 	card.add_theme_stylebox_override(
 		"panel", style.call(Color("ffffff", 0.97), 26, 14, PINK, 4)
 	)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	# tooltip mostra história completa; preview fica limpo 1 linha
+	card.tooltip_text = ""
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -134,12 +160,17 @@ static func build_queue_card(style: Callable, button: Callable) -> Dictionary:
 	var service_label: Label = Label.new()
 	service_label.add_theme_font_size_override("font_size", 20)
 	service_label.add_theme_color_override("font_color", Color("37474f"))
-	service_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	service_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	service_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	service_label.custom_minimum_size = Vector2(296, 0)
 	column.add_child(service_label)
 	var info_label: Label = Label.new()
 	info_label.add_theme_font_size_override("font_size", 18)
 	info_label.add_theme_color_override("font_color", Color("4e342e"))
-	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# dinâmico: 1 linha compacta, história vira ⓘ + tooltip (evita 2 linhas lotadas)
+	info_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	info_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_label.clip_text = true
 	info_label.custom_minimum_size = Vector2(296, 0)
 	column.add_child(info_label)
 	var bar_bg: ColorRect = ColorRect.new()
