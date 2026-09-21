@@ -1071,4 +1071,5 @@ func _button(text: String, color: Color, width: float, height: float) -> Button:
 func _style(c: Color, r: int, m: int, bc: Color=Color.TRANSPARENT, bw: int=0) -> StyleBoxFlat:
 	var s: StyleBoxFlat = StyleBoxFlat.new(); s.bg_color=c; s.corner_radius_top_left=r; s.corner_radius_top_right=r; s.corner_radius_bottom_left=r; s.corner_radius_bottom_right=r
 	s.content_margin_left=m; s.content_margin_right=m; s.content_margin_top=m; s.content_margin_bottom=m; s.border_color=bc; s.border_width_left=bw; s.border_width_right=bw; s.border_width_top=bw; s.border_width_bottom=bw
-	if r>=20: s.shadow_color=Color("263238",0.16); s.shadow_size=8; s.shadow_offset=Vector2(0,6); return s
+	if r>=20: s.shadow_color=Color("263238",0.16); s.shadow_size=8; s.shadow_offset=Vector2(0,6)
+	return s
