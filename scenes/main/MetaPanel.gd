@@ -117,15 +117,32 @@ func _emerge() -> void:
 
 
 func _build_missions() -> void:
+	# ── Retenção P0: roleta diária (recompensa variável) + streak + perda ──
+	var can_spin: bool = DailySpin.can_spin()
+	_info_row(
+		"🎡 Roleta Diária • %s" % ("Disponível!" if can_spin else "Volta amanhã"),
+		"Gire 1×/dia: moedas escaladas, brasas ou freeze • Recompensa variável",
+		"GIRAR" if can_spin else "FEITO",
+		Color("ffd54f") if can_spin else Color("b0bec5"),
+		can_spin,
+		func() -> void:
+			var reward: Dictionary = DailySpin.spin()
+			if not reward.is_empty():
+				AudioManager.play(&"coin")
+				EventBus.toast_requested.emit(DailySpin.label_for(reward), Color("ffd54f"))
+	)
 	_note("── " + Loc.t("DAILY_LOGIN").split(" ")[0] + " & STREAK ──", 26, PINK, false)
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
 	var streak_coins: int = Rewards.scaled(
 		float(Rewards.SECONDS[&"streak_day"]) * next_day, 25 * next_day
 	)
+	var streak_note: String = Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes]
+	if not claimed_today:
+		streak_note += " • Se perder, -1 dia (use ❄️ freeze!)"
 	_info_row(
 		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
-		"%d %s" % [streak_coins, Loc.t("COINS")],
+		"%d %s • %s" % [streak_coins, Loc.t("COINS"), streak_note],
 		Loc.t("CLAIMED") if claimed_today else Loc.t("CLAIM"),
 		GREEN,
 		not claimed_today,
@@ -206,6 +223,15 @@ func _build_missions() -> void:
 				AudioManager.play(&"coin")
 	)
 	_note(Loc.t("MISSIONS_NO_ADS"))
+	# Progresso dotado + escassez: pílula de progresso semanal e timer
+	var weekly_done_count: int = 0
+	for w: Dictionary in ContentDB.weekly_missions:
+		if GameState.claimed_weeklies.has(String(w.get("id", ""))):
+			weekly_done_count += 1
+	var weekly_total: int = ContentDB.weekly_missions.size()
+	var weekly_percent: int = int(float(weekly_done_count) / maxf(1.0, float(weekly_total)) * 100.0)
+	var reset_in: String = LiveOps.weekly_reset_label() if LiveOps.has_method("weekly_reset_label") else "reseta segunda"
+	_note("📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s" % [weekly_done_count, weekly_total, weekly_percent, weekly_done_count, reset_in], 26, Color("4fc3f7"), true)
 	_note(Loc.t("WEEKLY_TITLE"), 28, CHARCOAL, true)
 	for weekly: Dictionary in ContentDB.weekly_missions:
 		var weekly_id: String = String(weekly["id"])
@@ -304,10 +330,13 @@ func _build_collection() -> void:
 		name_label.add_theme_font_size_override("font_size", 24)
 		name_label.add_theme_color_override("font_color", CHARCOAL)
 		var sub: Label = card.get_node("VBox/Sub")
+		var aff: int = int(GameState.pet_affection.get(pet_id, 0))
+		var mem: String = PetStories.affection_memory(pet_id, aff) if unlocked and aff >= 1 else ""
 		sub.text = (
 			(
 				("★ " if GameState.favorite_pet == pet_id else "")
-				+ "♥ %d/50" % int(GameState.pet_affection.get(pet_id, 0))
+				+ "♥ %d/50" % aff
+				+ ("\n%s" % mem if not mem.is_empty() else "")
 			)
 			if unlocked
 			else (
@@ -316,10 +345,11 @@ func _build_collection() -> void:
 				else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
 			)
 		)
-		sub.add_theme_font_size_override("font_size", 22)
+		sub.add_theme_font_size_override("font_size", 20 if not mem.is_empty() else 22)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("546e7a"))
 		if unlocked:
-			card.tooltip_text = Loc.t("FAVORITE_HINT")
+			var bio_text: String = PetStories.bio(pet) if PetStories.has_method("bio") else ""
+			card.tooltip_text = "%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text] if not bio_text.is_empty() else Loc.t("FAVORITE_HINT")
 			card.gui_input.connect(
 				func(event: InputEvent, pid: String = pet_id) -> void:
 					if event is InputEventScreenTouch and event.pressed:
@@ -674,10 +704,19 @@ func _build_map() -> void:
 	)
 	for entry: Dictionary in ContentDB.career.get("establishments", []):
 		var unlock_level: int = int(entry.get("unlock_level", 1))
+		var tier_id: int = int(entry.get("tier", 1))
 		var marker: String = "✓" if GameState.player_level >= unlock_level else "□"
-		text += "%s %s — nível %d\n" % [marker, entry.get("name", "Petshop"), unlock_level]
+		var story: Dictionary = ChapterStories.intro(tier_id)
+		var act: String = String(story.get("act", ""))
+		var char_name: String = String(story.get("char", ""))
+		var snippet: String = String(story.get("text", "")).left(90)
+		text += "%s %s — nível %d\n  %s • %s: %s...\n" % [marker, entry.get("name", "Petshop"), unlock_level, act, char_name, snippet]
 	text += "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
 	_note(text, 28, CHARCOAL, true)
+	# Ato atual
+	var current_tier: int = ContentDB.establishment_for_level(GameState.player_level)
+	var current_story: String = ChapterStories.narrative_for_reveal(current_tier)
+	_note("📖 %s" % current_story, 24, Color("5d4037"), true)
 	var tokens: int = GameState.prestige_tokens_available()
 	var bonus_percent: float = (
 		(Economy.prestige_coin_multiplier(GameState.prestige_level) - 1.0) * 100.0

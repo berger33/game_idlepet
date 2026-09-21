@@ -134,6 +134,17 @@ func source_label(source: String) -> String:
 	return "%s • %s" % [seasonal_name(source), Loc.t("SEASON_WHEN_" + source)]
 
 
+func weekly_reset_label() -> String:
+	# Conta até segunda (0=domingo): 0=hoje, 1=amanhã...
+	var w: int = weekday()
+	var days_left: int = (8 - w) % 7
+	if days_left == 0:
+		days_left = 7
+	if days_left == 1:
+		return "reseta amanhã"
+	return "reseta em %d dias" % days_left
+
+
 ## Presente de temporada: o cosmético da temporada ativa entra na coleção no
 ## primeiro boot do período ("exclusivo" = edição; volta no ano seguinte).
 ## Idempotente: unlocked_cosmetics já persiste, então nunca presenteia duas vezes.

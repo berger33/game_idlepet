@@ -1,5 +1,4 @@
 extends Control
-## Playable Core: chegada → servir → esfregar → timing → moedas/review/save.
 
 const BathServiceScript: Script = preload("res://core/gameplay/BathService.gd")
 const PetShopCanvasScript: Script = preload("res://core/gameplay/PetShopCanvas.gd")
@@ -61,7 +60,6 @@ var pet_touch_gate: float = 0.0
 var meta: MetaPanel
 var dragged_tool: StringName = &""
 var wrong_tool_gate: float = 0.0
-## Fila de clientes (até 3): o jogador escolhe quem atender — decisão real.
 var queue: Array[Dictionary] = [{}, {}, {}]
 var selected_slot: int = -1
 var refill_timers: Array[float] = [0.0, 0.0, 0.0]
@@ -77,15 +75,18 @@ var last_tip_percent: int = 0
 var tutorial_overlay: Control
 var tutorial_skip_button: Button
 var tutorial := TutorialFlow.new()
-## Onda 1: consequências visíveis + penalidade de recuperação pós-exagero.
 var recovery_penalty: bool = false
 var consecutive_perfects: int = 0
+var consecutive_fails: int = 0
 var mood_buff_clients: int = 0
-## Onda 2: pico do bairro e pedidos especiais (upsell).
+var assistance_clients: int = 0
 var rush_cooldown: float = 240.0
 var rush_left: float = 0.0
 var rush_active: bool = false
 var rush_label: Label
+var rush_bar: ProgressBar
+var proof_label: Label
+var proof_timer: float = 0.0
 var pending_special: StringName = &""
 var special_active: bool = false
 var special_multiplier: float = 1.0
@@ -93,10 +94,8 @@ var upsell_panel: PanelContainer
 var upsell_label: Label
 var upsell_accept: Button
 var upsell_decline: Button
-## Onda 3: maestria e carinho com limite por cliente.
 var petting_count: int = 0
 var pending_special_result: Dictionary = {}
-## Feedback por gesto: rastreia mudanças para SFX/haptics.
 var last_stroke_index: int = 0
 var last_zone_inside: bool = false
 var perfume_hold_time: float = 0.0
@@ -112,14 +111,11 @@ func _ready() -> void:
 	_update_queue_ui()
 	_connect_events()
 	_refresh_economy()
-	# Onda 2: o pico do bairro começa a contar desde a abertura.
 	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
 	SessionFeedback.show_offline_card(self)
 	SessionFeedback.show_comeback(self)
 	if GameState.tutorial_complete:
 		LiveOps.claim_seasonal_gift()  # Temporada do mês presenteia seu cosmético.
-	# Retenção: o opt-in de lembretes persiste nos ajustes; sincroniza antes de
-	# agendar (sem isso o gatilho externo nunca era armado).
 	NotificationManager.permission_granted = bool(
 		GameState.settings.get("notifications", false)
 	)
@@ -145,7 +141,6 @@ func _process(delta: float) -> void:
 		if affordable_count > 0:
 			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.2)
 			upgrades_button.modulate = Color.WHITE.lerp(Color("d7ffb8"), pulse * 0.6)
-			# Badge numérico de upgrades acessíveis (antes só pulso sutil)
 			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
 			if badge == null:
 				badge = Label.new()
@@ -165,7 +160,6 @@ func _process(delta: float) -> void:
 			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
 			if is_instance_valid(badge):
 				badge.visible = false
-		# Left-handed: espelha botão de melhorias para não conflitar com prateleira
 		var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 		upgrades_button.position = Vector2(120, 150) if left_handed else Vector2(952, 150)
 	if bath.state == BathService.State.ACTIVE:
@@ -176,7 +170,6 @@ func _process(delta: float) -> void:
 		world.service_time_ratio = bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
 		world.gesture_ui = GestureArt.gesture_snapshot(bath)
 		world.playful_hop = bath.hopping
-		# Instrução reativa: Perfect pulsante + aviso de passou
 		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
 			if not instruction_label.text.begins_with("✓"):
 				instruction_label.text = "✓ SOLTE PARA PERFEITO!"
@@ -185,7 +178,6 @@ func _process(delta: float) -> void:
 			instruction_label.text = "⚠ PASSOU! SOLTE E TENTE DE NOVO"
 			instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.88), 34, 14, Color.WHITE, 3))
 		elif bath.progress > 0.05 and bath.progress < bath.target_minimum:
-			# Volta ao hint se saiu da janela (evita ficar preso em PERFEITO)
 			var hint_text: String = SalonTuning.hint(current_service)
 			if instruction_label.text != hint_text and not instruction_label.text.begins_with("⚠"):
 				instruction_label.text = hint_text
@@ -275,7 +267,6 @@ func _move_pointer(point: Vector2) -> void:
 			wrong_tool_gate = 1.2
 			_show_toast("Use %s neste pedido" % SalonTuning.tool_display_name(required_tool), Color("ffd54f"))
 			AudioManager.play(&"error_soft")
-			# Ajuda visual: aponta para prateleira correta por 1.2s
 			var correct_pos: Vector2 = world.tool_shelf_position(required_tool)
 			tutorial_overlay.show_step(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), "👉 Use %s aqui!" % SalonTuning.tool_display_name(required_tool))
 			var timer: SceneTreeTimer = get_tree().create_timer(1.2)
@@ -314,7 +305,6 @@ func _react_to_pet_touch() -> void:
 	if pet_touch_gate > 0.35:
 		return
 	if petting_count >= int(RemoteConfig.get_float("petting_max_per_client")):
-		# C3: carinho segue rendendo reação, mas o afeto tem teto por cliente.
 		if pet_touch_gate <= 0.0:
 			pet_touch_gate = 0.6
 			world.react_to_touch()
@@ -337,14 +327,10 @@ func _rub(point: Vector2) -> void:
 	world.react_to_service(bath.progress)
 	world.spawn_bubble(point)
 	if bubble_sound_gate <= 0.0:
-		# Trilha progressiva do gesto (AudioManager): a nota sobe a pentatônica
-		# junto com o avanço e um chime avisa a janela perfeita — dosa de ouvido.
 		AudioManager.play_gesture(current_service, bath)
 		bubble_sound_gate = 0.16
 	EventBus.service_progress.emit(bath.progress)
 
-## Botão voltar (Android): fecha o painel aberto ou o resultado; nunca sai
-## do jogo por acidente no meio de um atendimento.
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
@@ -424,12 +410,10 @@ func _finish_bath() -> void:
 		)
 		if quality == &"perfect":
 			Analytics.track(&"perfect_service")
-		# A3: recuperação — qualquer acerto limpa a penalidade do exagero.
 		recovery_penalty = false
 		if quality == &"perfect":
 			consecutive_perfects += 1
 			if consecutive_perfects >= 2:
-				# Ritmo do salão: a fila inteira perde paciência mais devagar.
 				mood_buff_clients = 3
 				world.forced_state = &"happy_squash"
 				world.forced_state_time = 2.0
@@ -437,7 +421,6 @@ func _finish_bath() -> void:
 				Analytics.track(&"mood_buff", {"streak": consecutive_perfects})
 		else:
 			consecutive_perfects = 0
-		# Onda 2: pedido especial (upsell) — oferecer antes do resultado.
 		var client: Dictionary = queue[selected_slot] if selected_slot >= 0 else {}
 		var offered: StringName = StringName(client.get("special", &""))
 		if not special_active and offered != &"" and offered != current_service:
@@ -472,18 +455,22 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		extra_line += "\n🐾 " + Loc.t("RESULT_BUDDY")
 	var coins_word: String = Loc.t("COINS")
 	var stars_text: String = "★".repeat(stars) + "☆".repeat(5 - stars)
-	# Detalhe com ícones para leitura rápida (antes parede de texto)
-	result_detail.text = "%s\n🪙 +%d %s  •  ✨ +%d XP\n%s\n%s%s" % [stars_text, int(reward), coins_word, xp_reward, tip_line, current_pet_name, extra_line]
-	# XP bar: mostra progresso antes→depois
+	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality == &"perfect")
+	var aff: int = int(GameState.pet_affection.get(current_pet_id, 0))
+	var mem: String = PetStories.affection_memory(current_pet_id, aff)
+	var proof: String = "💬 %s acabou de avaliar: %s" % [current_pet_name, stars_text]
+	if not mem.is_empty():
+		proof += "\n%s" % mem
+	result_detail.text = "%s\n🪙 +%d %s  •  ✨ +%d XP\n%s\n%s\n%s%s" % [stars_text, int(reward), coins_word, xp_reward, tip_line, thanks, proof, extra_line]
+	consecutive_fails = 0
+	assistance_clients = 0
 	if result_panel.has_meta("xp_bar"):
 		var xp_bar: ColorRect = result_panel.get_meta("xp_bar") as ColorRect
 		if is_instance_valid(xp_bar):
 			var before_ratio: float = clampf(float(GameState.player_xp) / maxf(1.0, GameState.xp_to_next_level()), 0.0, 1.0)
-			# Simula depois do XP ganho para animação
 			var after_xp: int = GameState.player_xp + xp_reward
 			var after_ratio: float = clampf(float(after_xp) / maxf(1.0, GameState.xp_to_next_level()), 0.0, 1.0)
 			xp_bar.color = Color("263238", 0.35)
-			# Barra interna animada
 			var fill: ColorRect = xp_bar.get_node_or_null("Fill") as ColorRect
 			if fill == null:
 				fill = ColorRect.new()
@@ -508,8 +495,6 @@ func _fail(reason: StringName) -> void:
 	dragged_tool = &""
 	world.gesture_ui = {}
 	world.playful_hop = false
-	# A3: o pet REAGE ao erro — tonto no exagero, triste no tempo esgotado;
-	# exagerar estreita a janela do próximo atendimento até um acerto.
 	if reason == &"overwashed":
 		world.forced_state = &"dizzy"
 		world.forced_state_time = 3.0
@@ -518,12 +503,16 @@ func _fail(reason: StringName) -> void:
 		world.forced_state = &"sad"
 		world.forced_state_time = 2.5
 	consecutive_perfects = 0
+	consecutive_fails += 1
+	if consecutive_fails >= 3:
+		assistance_clients = 3
+		_show_toast("💡 Assistência: janela maior + paciência por 3 clientes!", BLUE)
+		consecutive_fails = 0
 	EventBus.service_failed.emit(current_service, reason)
-	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason)})
+	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason), "streak": consecutive_fails})
 	world.react_to_failure()
 	AudioManager.play(&"error_soft" if reason == &"timeout" else &"error")
 	HapticsManager.light()
-	# Feedback visual extra para surdos: instrução já mostra falha, mas reforça com cor
 	instruction_label.text = "💔 " + Loc.t("RESULT_ALMOST")
 	instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.9), 34, 14, Color.WHITE, 4))
 	result_title.text = Loc.t("RESULT_ALMOST")
@@ -536,7 +525,10 @@ func _fail(reason: StringName) -> void:
 		hint = Loc.t("FAIL_OVERWASHED") % action_name.capitalize()
 	else:
 		hint = Loc.t("FAIL_TOO_SOON") % action_name
-	result_detail.text = "★★☆☆☆\n%s\n%s" % [hint, Loc.t("FAIL_NO_PENALTY")]
+	var assistance_line: String = ""
+	if assistance_clients > 0:
+		assistance_line = "\n💡 Assistência ativa: %d cliente(s) restantes" % assistance_clients
+	result_detail.text = "★★☆☆☆\n%s\n%s%s" % [hint, Loc.t("FAIL_NO_PENALTY"), assistance_line]
 	share_button.visible = false
 	_pop_panel(result_panel)
 	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
@@ -563,38 +555,28 @@ func _dismiss_result() -> void:
 	pending_special_result = {}
 	special_multiplier = 1.0
 	mood_buff_clients = maxi(0, mood_buff_clients - 1)
+	if assistance_clients > 0:
+		assistance_clients -= 1
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	primary_button.hide()
 	_update_queue_ui()
 
-## Recarga da fila: o pico do bairro (Onda 2) traz clientes bem mais rápido.
 func _refill_delay() -> float:
 	return 0.35 if rush_active else 1.1
 
-## Pico do bairro (B3): janela periódica com gorjetas ×2, recarga rápida e
-## proteção de combo — o jogador corre para aproveitar antes de acabar.
 func _update_rush(delta: float) -> void:
 	if rush_active:
 		rush_left -= delta
-		if is_instance_valid(rush_label):
-			rush_label.text = "PICO ×2 — %ds" % int(ceilf(maxf(0.0, rush_left)))
-			rush_label.modulate = (
-				Color("ffd54f") if fmod(rush_left, 0.8) < 0.4 else Color("ff8f00")
-			)
-		if rush_left <= 0.0:
-			_end_rush()
-	elif (
-		bool(GameState.tutorial_complete)
-		and not result_panel.visible
-		and not upsell_panel.visible
-	):
-		rush_cooldown -= delta
-		if is_instance_valid(rush_label):
-			rush_label.text = (
-				"pico em %ds" % int(ceilf(rush_cooldown)) if rush_cooldown <= 10.0 else ""
-			)
-		if rush_cooldown <= 0.0:
-			_start_rush()
+		if rush_left <= 0.0: _end_rush()
+	else:
+		if bool(GameState.tutorial_complete) and not result_panel.visible and not upsell_panel.visible:
+			rush_cooldown -= delta
+			if rush_cooldown <= 0.0: _start_rush()
+	RushTuning.update_rush_labels(rush_active, rush_left, rush_cooldown, rush_label, rush_bar)
+	proof_timer -= delta
+	if proof_timer <= 0.0:
+		proof_timer = randf_range(8.0, 12.0)
+		_refresh_proof_social()
 
 func _start_rush() -> void:
 	rush_active = true
@@ -613,8 +595,6 @@ func _end_rush() -> void:
 	if is_instance_valid(rush_label):
 		rush_label.text = ""
 
-## Upsell (B2): oferecer o serviço extra ANTES do resultado — aceitar abre
-## um novo atendimento com gorjeta extra; recusar segue direto pro resultado.
 func _offer_special(
 	offered: StringName, quality: StringName, reward: float, stars: int
 ) -> void:
@@ -672,8 +652,6 @@ func _on_queue_pressed(slot: int) -> void:
 	world.set_service_layout(current_service)
 	world.set_pet_profile(profile)
 	world.affection_level = int(GameState.pet_affection.get(current_pet_id, 0))
-	# Banheira dupla (Onda 3, marco 30): o buddy entra junto e é atendido em
-	# paralelo — o atendimento paga +40% sem segundo gesto.
 	world.buddy_active = (
 		GameState.bath_upgrade_level >= 30
 		and GameState.favorite_pet != current_pet_id
@@ -722,9 +700,6 @@ func _process_queue(delta: float) -> void:
 			and slot != selected_slot
 			and bool(GameState.tutorial_complete)
 		):
-			# Onda 2: pico deixa a fila mais paciente (dá pra atender todos);
-			# A3: sequência de perfects deixa o salão "no ritmo" (-10%);
-			# pesquisa "Comportamento Animal" drena a paciência mais devagar.
 			var patience_drain: float = delta * (1.0 - Research.bonus(&"patience"))
 			if rush_active:
 				patience_drain *= 0.5
@@ -733,7 +708,6 @@ func _process_queue(delta: float) -> void:
 			queue[slot]["wait_left"] = float(queue[slot]["wait_left"]) - patience_drain
 			if float(queue[slot]["wait_left"]) <= 0.0:
 				_client_left(slot)
-	# Barras de paciência: agora bar é filho de bar_bg (296px), mais alta 14px + fundo.
 	for slot: int in 3:
 		var client: Dictionary = queue[slot]
 		if client.is_empty():
@@ -749,16 +723,14 @@ func _process_queue(delta: float) -> void:
 func _client_left(slot: int) -> void:
 	var client: Dictionary = queue[slot]
 	var leaver_id: String = String(client["pet"])
-	var leaver_name: String = ""
-	if ContentDB.has_pet(leaver_id):
-		leaver_name = ContentDB.pet_name(leaver_id)
-	else:
-		leaver_name = String(ContentDB.pet(leaver_id).get("name", "Alguém"))
-	_show_toast(Loc.t("CLIENT_LEFT") % leaver_name, Color("ef5350"))
-	# Sem reputação por cliente perdido (antes somava +3★ — ir embora "pagava").
-	Analytics.track(&"client_left", {"pet_id": String(client["pet"])})
-	queue[slot] = {}
-	refill_timers[slot] = 2.0 if not rush_active else 0.6
+	var leaver_name: String = ContentDB.pet_name(leaver_id) if ContentDB.has_pet(leaver_id) else String(ContentDB.pet(leaver_id).get("name", "Alguém"))
+	var profile: Dictionary = ContentDB.pet(leaver_id) if ContentDB.has_pet(leaver_id) else {}
+	var base: float = SalonTuning.base_reward(StringName(client.get("service", &"bath")))
+	var lost: int = int(base * float(profile.get("base_tip", 1.0)) * 1.2)
+	_show_toast("💔 %s foi embora! -%d moedas" % [leaver_name, lost], Color("ef5350"))
+	world.forced_state = &"sad"; world.forced_state_time = 1.2
+	Analytics.track(&"client_left", {"pet_id": String(client["pet"]), "lost_coins": lost})
+	queue[slot] = {}; refill_timers[slot] = 2.0 if not rush_active else 0.6
 	_update_queue_ui()
 
 func _update_queue_ui() -> void:
@@ -788,11 +760,13 @@ func _update_queue_ui() -> void:
 			if StringName(client.get("special", &"")) != &"":
 				service_text += " + ★"
 			queue_service_labels[slot].text = service_text
-			queue_info_labels[slot].text = (
+			var base_info: String = (
 				Loc.t("VISITOR_TAG") % [Discovery.progress(String(client["pet"])), Discovery.VISITS_TO_ADOPT]
 				if bool(client.get("visitor", false))
 				else SalonTuning.queue_info_text(profile)
 			)
+			var story_line: String = PetStories.queue_story(profile, String(client.get("service", "bath")))
+			queue_info_labels[slot].text = "%s\n%s" % [base_info, story_line] if not story_line.is_empty() else base_info
 			var border: Dictionary = SalonTuning.queue_border(profile)
 			queue_cards[slot].add_theme_stylebox_override(
 				"panel",
@@ -805,18 +779,16 @@ func _configure_current_service() -> void:
 	var duration: float = {&"bath": 10.0, &"groom": 11.0, &"dry": 9.0, &"perfume": 8.0, &"style": 8.0}.get(current_service, 10.0)
 	var required_distance: float = {&"bath": 1350.0, &"groom": 1550.0, &"dry": 1250.0, &"perfume": 1050.0, &"style": 900.0}.get(current_service, 1350.0)
 	var patience: float = float(ContentDB.pet(current_pet_id).get("patience", 42))
-	var patience_factor: float = clampf(patience / 42.0, 0.6, 1.25) + GameState.staff_bonus(&"patience")
-	if current_service == &"bath":
-		required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
-	var window_bonus: float = GameState.staff_bonus(&"perfect_window")
-	if current_service == &"groom":
-		window_bonus += GameState.staff_bonus(&"groom_quality")
-	var target_min: float = RemoteConfig.get_float("bath_target_min")
-	var target_max: float = minf(RemoteConfig.get_float("bath_target_max") + window_bonus, 1.0)
-	if current_service == &"perfume":
-		target_min = 0.95
-		target_max = 1.0
-	bath.configure(duration * patience_factor, target_min, target_max, required_distance)
+	var pf: float = clampf(patience / 42.0, 0.6, 1.25) + GameState.staff_bonus(&"patience")
+	pf = RushTuning.patience_factor(pf, assistance_clients)
+	if current_service == &"bath": required_distance *= 1.0 - GameState.staff_bonus(&"bath_speed")
+	var wb: float = GameState.staff_bonus(&"perfect_window")
+	if current_service == &"groom": wb += GameState.staff_bonus(&"groom_quality")
+	wb = RushTuning.window_bonus(wb, assistance_clients)
+	var t_min: float = RemoteConfig.get_float("bath_target_min")
+	var t_max: float = minf(RemoteConfig.get_float("bath_target_max") + wb, 1.0)
+	if current_service == &"perfume": t_min = 0.95; t_max = 1.0
+	bath.configure(duration * pf, t_min, t_max, required_distance)
 	var gesture: Dictionary = SalonTuning.GESTURES.get(current_service, SalonTuning.GESTURES[&"bath"])
 	bath.configure_gesture(gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"])
 	SalonTuning.apply(bath, current_service, ContentDB.pet(current_pet_id), GameState.tool_upgrade_levels, recovery_penalty, world.pet_focus() if is_instance_valid(world) else Vector2(540, 990))
@@ -843,9 +815,14 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
 		world.set_cosmetics(GameState.active_cosmetics)
-	# Barra de paciência com rótulo visual quando ativa
 	if is_instance_valid(world) and world.service_active:
 		world.service_time_ratio = bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
+
+func _refresh_proof_social() -> void:
+	if not is_instance_valid(proof_label): return
+	proof_label.text = RushTuning.proof_text()
+	proof_label.modulate.a = 0.0
+	proof_label.create_tween().tween_property(proof_label, "modulate:a", 1.0, 0.25)
 
 func _show_toast(message: String, color: Color) -> void:
 	SessionFeedback.toast(self, message, color)
@@ -875,7 +852,16 @@ func _build_interface() -> void:
 	review_label = _pill(top_bar, "★ 5.0", PINK, 175)
 	combo_label = _pill(top_bar, "×1", GREEN, 185)
 	rush_label = _pill(top_bar, "", Color("ff8f00"), 165)
-	# Reduzido para caber em 1020px com fonte grande (1.2) — antes estourava 990px.
+	rush_bar = ProgressBar.new()
+	rush_bar.custom_minimum_size = Vector2(165, 14)
+	rush_bar.max_value = 100.0
+	rush_bar.show_percentage = false
+	rush_bar.visible = false
+	rush_bar.add_theme_stylebox_override("background", _style(Color("000000", 0.2), 7, 0))
+	rush_bar.add_theme_stylebox_override("fill", _style(Color("ffd54f"), 7, 0))
+	top_bar.add_child(rush_bar)
+	proof_label = _pill(top_bar, "", Color("4fc3f7"), 210)
+	proof_label.add_theme_font_size_override("font_size", 18)
 
 	var goal_row: HBoxContainer = HBoxContainer.new()
 	goal_row.position = Vector2(30, 505 + safe_top)
@@ -883,7 +869,6 @@ func _build_interface() -> void:
 	goal_label = _pill(goal_row, "", Color("ce93d8"), 620)
 	goal_label.custom_minimum_size = Vector2(620, 52)
 	goal_label.add_theme_font_size_override("font_size", int(20 * font_scale))
-	# Fila de clientes: 3 cartões tocáveis com nome, pedido, paciência e VIP.
 	queue_row = HBoxContainer.new()
 	queue_row.position = Vector2(45, 310 + safe_top)
 	queue_row.size = Vector2(990, 175)
@@ -899,7 +884,6 @@ func _build_interface() -> void:
 		queue_info_labels.append(card_ui["info"])
 		queue_bars.append(card_ui["bar"])
 
-	# Navegação: ícones com label curta abaixo (mobile não tem hover) + evento.
 	var nav: HBoxContainer = HBoxContainer.new()
 	nav.position = Vector2(30, 145 + safe_top)
 	nav.add_theme_constant_override("separation", 10)
@@ -934,7 +918,6 @@ func _build_interface() -> void:
 	event_pill.add_theme_font_size_override("font_size", 20)
 	event_pill.custom_minimum_size = Vector2(210, 56)
 
-	# HUD flutuante sem rodapé sólido: cenário continua visível até a borda inferior.
 	var action_hud: VBoxContainer = VBoxContainer.new()
 	action_hud.position = Vector2(45, 1350)
 	action_hud.size = Vector2(990, 260)
@@ -953,8 +936,6 @@ func _build_interface() -> void:
 	)
 	instruction_label.custom_minimum_size = Vector2(990, 72)
 	action_hud.add_child(instruction_label)
-	# Painel de melhorias: botão redondo único no canto superior direito
-	# (substitui os dois botões grandes do HUD de ação).
 	upgrades_button = _button("", Color("7ed957", 0.96), 86, 86)
 	upgrades_button.position = Vector2(952, 150)
 	upgrades_button.icon = UPGRADES_ICON
@@ -986,12 +967,9 @@ func _build_interface() -> void:
 	result_detail = result_ui["detail"]
 	primary_button = result_ui["primary"]
 	share_button = result_ui["share"]
-	# XP bar opcional (nova hierarquia de resultado)
 	if result_ui.has("xp_bar"):
-		# Guardamos via metadata do painel para uso no _show_success
 		result_panel.set_meta("xp_bar", result_ui["xp_bar"])
 
-	# Onda 2: painel de pedido especial (upsell) — decisão antes do resultado.
 	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel(
 		self, _style, _button, _on_upsell_accept, _on_upsell_decline
 	)
@@ -1005,7 +983,6 @@ func _build_interface() -> void:
 	toast_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(toast_layer)
 
-	# Spotlight por cima de tudo (input passa direto: guia não-bloqueante).
 	tutorial_overlay = TutorialOverlayScript.new()
 	tutorial_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
