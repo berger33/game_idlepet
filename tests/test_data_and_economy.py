@@ -1029,9 +1029,10 @@ class MomentsAndGoalsTests(unittest.TestCase):
         bus = Path('autoload/EventBus.gd').read_text(encoding='utf8')
         self.assertIn('signal reveal_requested(kind: StringName, payload: Dictionary)', bus)
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
-        for kind in ('&"pet"', '&"chapter"', '&"achievement"', '&"service"'):
-            self.assertIn('EventBus.reveal_requested.emit(%s' % kind, state,
-                          'momento %s ainda não é um cartão' % kind)
+        import re
+        for kind in ('pet', 'chapter', 'achievement', 'service'):
+            self.assertRegex(state, r'EventBus\.reveal_requested\.emit\(\s*&"%s"' % kind,
+                             'momento %s ainda não é um cartão' % kind)
         for stale in ('"Novo pet: %s, %s!"', '"Novo capítulo: %s!"', '"NOVO! "',
                       'ACHIEVEMENT_TOAST'):
             self.assertNotIn(stale, state)
@@ -1066,7 +1067,7 @@ class MomentsAndGoalsTests(unittest.TestCase):
             for key in ('GOAL_LINE', 'GOAL_NEXT_LEVEL', 'GOAL_PRESTIGE', 'GOAL_PET',
                         'GOAL_SERVICE', 'GOAL_CHAPTER'):
                 self.assertIn(key, table)
-            self.assertEqual(table['GOAL_LINE'].count('%'), 4)
+            self.assertEqual(table['GOAL_LINE'].count('%'), 5)  # %s %d %d%%
         salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
         self.assertIn('var buddy_chance: float = 0.25 + 0.15', salon)
         self.assertNotIn('randf() < 0.4:', salon)
