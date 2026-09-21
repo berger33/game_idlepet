@@ -71,8 +71,8 @@ PRESTIGE_TITLE,FRANCHISE
 PRESTIGE_DESC,Prestige available: %d token(s) • current bonus +%.0f%% per service
 PRESTIGE_GO,PRESTIGE
 PRESTIGE_LOCKED,Reach level 15 and save up more coins
-PRESTIGE_KEEP,"Keeps: embers, pets, cosmetics, achievements, streak, pass and records"
-PRESTIGE_LOST,"Restarts: coins, upgrades, staff and career level"
+PRESTIGE_KEEP,"Keeps: embers, pets, cosmetics, achievements, streak, pass, research and 25% of station/tools"
+PRESTIGE_LOST,"Restarts: coins, staff and career level (from 10)"
 PRESTIGE_DONE,Franchise level %d! +10%% coins per level
 EVENT_0,Family Sunday
 EVENT_1,Bath Monday
@@ -159,3 +159,25 @@ RESEARCH_EFFECT_patience,pet patience +%d%%
 RESEARCH_EFFECT_offline_rate,offline vault +%d%%
 RESEARCH_TOAST,Research complete: %s
 RESEARCH_NOTE,"Cost in parentheses is franchise tokens (earned by prestiging). Effects are permanent and survive prestige."
+OFFLINE_TITLE,While you were away
+OFFLINE_BODY,%d min away • vault: +%d coins
+OFFLINE_STAFF,Your staff earned on their own: +%d%% of your income
+OFFLINE_TODAY,Today: %s — %s
+OFFLINE_DAILY,Daily login (day %d) ready to claim
+COLLECT,COLLECT
+OFFLINE_DOUBLE_EMBER,DOUBLE (1 Ember)
+OFFLINE_DOUBLE_AD,DOUBLE (video)
+WEEKLY_CHEST_TOAST,Weekly chest! +%d coins and +%d Embers
+BIA_HIRED,Bia joined the team! She earns on her own while you serve.
+LEVEL_UP_TOAST,Level %d! +%d coins
+ACHIEVEMENT_TOAST,Achievement unlocked!
+MISSIONS_NO_ADS,Missions never require an ad or a purchase.
+STAFF_AUTOMATION,earns on their own +%d%% of your income (in play and in the vault)
+PRESTIGE_PREVIEW,Inheritance: station Lv.%d • restart at level %d with every service
+CLIENT_LEFT,%s got tired of waiting and left.
+MISSION_METRIC_services,SERVICES %d/%d
+MISSION_METRIC_perfect,PERFECTS %d/%d
+MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_upgrades,UPGRADES %d/%d
+MISSION_METRIC_four_plus_reviews,4★+ REVIEWS %d/%d
+MISSION_METRIC_combo_reached,COMBO %d/%d

@@ -11,6 +11,7 @@ const WEEKLY_PATH: String = "res://data/weekly_missions.json"
 const SERVICE_LAYOUTS_PATH: String = "res://data/service_layouts.json"
 const EVENTS_PATH: String = "res://data/events.json"
 const RESEARCH_PATH: String = "res://data/research.json"
+const DAILY_PATH: String = "res://data/daily_missions.json"
 
 var pets: Array[Dictionary] = []
 var pets_by_id: Dictionary = {}
@@ -33,6 +34,9 @@ var seasonal_by_id: Dictionary = {}
 ## Árvore de pesquisa da franquia (research.json): sink dos tokens de prestígio.
 var research_nodes: Array[Dictionary] = []
 var research_by_id: Dictionary = {}
+## Catálogo de missões diárias (daily_missions.json) — sorteio em Missions.gd.
+var daily_missions: Array[Dictionary] = []
+var daily_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -81,6 +85,11 @@ func _ready() -> void:
 		var node_id: String = String(node.get("id", ""))
 		if not node_id.is_empty() and not research_by_id.has(node_id):
 			research_by_id[node_id] = node
+	daily_missions = _load_array(DAILY_PATH, "missions")
+	for mission: Dictionary in daily_missions:
+		var mission_id: String = String(mission.get("id", ""))
+		if not mission_id.is_empty() and not daily_by_id.has(mission_id):
+			daily_by_id[mission_id] = mission
 
 
 func cosmetic(id: String) -> Dictionary:
@@ -107,6 +116,10 @@ func seasonal(id: String) -> Dictionary:
 
 func research(id: String) -> Dictionary:
 	return research_by_id.get(id, {})
+
+
+func daily_mission(id: String) -> Dictionary:
+	return daily_by_id.get(id, {})
 
 
 ## Recompensa do dia N do pass (1..28); retorna {} fora do intervalo.

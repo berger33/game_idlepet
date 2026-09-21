@@ -16,6 +16,50 @@ static func show_comeback(main) -> void:
 	HapticsManager.success()
 
 
+## Cartão "Enquanto você estava fora" (substitui o toast do cofre): minutos,
+## moedas, parte da equipe, evento de hoje e login diário pendente. Dobrar
+## custa 1 brasa (ou um vídeo recompensado, quando o adapter existir) —
+## sink honesto da moeda escassa com valor imediato e legível.
+static func show_offline_card(main) -> void:
+	var offline: Dictionary = SaveManager.consume_pending_offline_reward()
+	if offline.is_empty():
+		return
+	var minutes: int = int(float(offline["seconds"]) / 60.0)
+	var reward: int = int(offline["reward"])
+	var body: String = Loc.t("OFFLINE_BODY") % [minutes, reward]
+	var share: int = int(roundf(Rewards.automation_share() * 100.0))
+	if share > 0:
+		body += "\n" + Loc.t("OFFLINE_STAFF") % share
+	body += "\n" + Loc.t("OFFLINE_TODAY") % [
+		LiveOps.current_event_name(), LiveOps.event_description_for(LiveOps.weekday())
+	]
+	if not GameState.is_daily_claimed_today():
+		body += "\n" + Loc.t("OFFLINE_DAILY") % (GameState.daily_streak % 7 + 1)
+	var spec: Dictionary = {
+		"title": Loc.t("OFFLINE_TITLE"),
+		"body": body,
+		"color": Color("ffd54f"),
+		"primary": Loc.t("COLLECT"),
+		"sound": &"coin",
+	}
+	var grant_double: Callable = func() -> void:
+		GameState.add_coins(float(reward), &"offline_double")
+		Analytics.track(&"offline_doubled", {"amount": reward})
+		AudioManager.play(&"coin")
+	if reward > 0 and AdsManager.is_rewarded_available():
+		spec["secondary"] = Loc.t("OFFLINE_DOUBLE_AD")
+		spec["on_secondary"] = func() -> void:
+			AdsManager.request_rewarded(&"offline_double", grant_double)
+	elif reward > 0 and GameState.embers >= 1:
+		spec["secondary"] = Loc.t("OFFLINE_DOUBLE_EMBER")
+		spec["on_secondary"] = func() -> void:
+			GameState.embers -= 1
+			EventBus.currency_changed.emit(&"embers", float(GameState.embers))
+			Analytics.track(&"currency_spent", {"currency": "embers", "sink": "offline_double"})
+			grant_double.call()
+	RevealCard.enqueue(main, spec)
+
+
 ## Abre uma seção do painel meta. Mediado porque os botões de navegação são
 ## criados antes do MetaPanel existir; o acesso ao painel acontece só no clique.
 static func open_meta(main, section: StringName, origin: Control) -> void:

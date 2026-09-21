@@ -1,9 +1,13 @@
 extends Node
 ## Estado autoritativo serializável da sessão.
 
-const SAVE_VERSION: int = 10
+const SAVE_VERSION: int = 11
 const MAX_CAREER_LEVEL: int = 120
 const HIRE_COSTS: Dictionary = {"common": 150, "rare": 400, "epic": 900, "legendary": 2000}
+## Fração da estação/ferramentas herdada ao prestigiar e nível de recomeço
+## (todos os serviços abertos): prestigiar deixa de ser "perder 2h por +10%".
+const PRESTIGE_KEEP_RATIO: float = 0.25
+const PRESTIGE_START_LEVEL: int = 10
 ## Glossário da equipe: o que cada passivo faz em uma palavra (a UI explica a
 ## vocação sem exigir decisão prévia do jogador).
 const STAFF_VOCATION: Dictionary = {
@@ -40,6 +44,9 @@ var five_star_reviews: int = 0
 var total_perfect_services: int = 0
 var offline_seconds_collected: float = 0.0
 var prestige_level: int = 0
+## Tokens de franquia já concedidos por prestígio (Economy.prestige_tokens(total)
+## é cumulativo; antes subtraía-se o nº de prestígios e tokens saíam em dobro).
+var prestige_tokens_collected: int = 0
 ## Pesquisa da franquia (data/research.json): nós comprados com tokens de
 ## franquia. Meta permanente — sobrevive ao prestígio (ver Research.gd).
 var research_ids: Array[String] = []
@@ -51,9 +58,13 @@ var achievement_ids: Array[String] = []
 var unlocked_cosmetics: Array[String] = []
 ## Slot ativo por categoria: "bath" | "pet_accessory" | "wall" -> cosmetic id.
 var active_cosmetics: Dictionary = {}
-var mission_progress: Dictionary = {"services": 0, "perfect": 0, "upgrades": 0}
+var mission_progress: Dictionary = {
+	"services": 0, "perfect": 0, "upgrades": 0, "four_plus_reviews": 0, "combo_reached": 0
+}
 var claimed_missions: Array[String] = []
 var missions_date: String = ""
+## Missões do dia sorteadas do catálogo (data/daily_missions.json) — ver Missions.gd.
+var daily_mission_ids: Array[String] = []
 ## Missões semanais: reiniciam na segunda-feira (chave = dia unix da semana).
 var weekly_progress: Dictionary = {
 	"services": 0, "perfect": 0, "combo_max": 0, "tips": 0, "style": 0, "vip": 0, "spend": 0
@@ -86,15 +97,17 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	active_play_seconds += delta
-	if not hired_staff.has("bia"):
+	if hired_staff.size() <= 1:
 		return
+	# Equipe como automação (idle de verdade): cada contratado rende uma fração
+	# da renda ativa estimada sozinho (staff.json "automation"), a cada 5 s.
 	passive_accumulator += delta
 	if passive_accumulator >= 5.0:
 		var cycles: int = int(passive_accumulator / 5.0)
 		passive_accumulator -= cycles * 5.0
-		add_coins(
-			float(cycles) * 2.0 * Economy.income_multiplier(bath_upgrade_level), &"staff_idle"
-		)
+		var passive: float = Rewards.passive_income_per_second() * 5.0 * float(cycles)
+		if passive >= 1.0:
+			add_coins(floor(passive), &"staff_idle")
 
 
 func add_coins(amount: float, source: StringName) -> void:
@@ -188,11 +201,13 @@ func staff_bonus(passive_type: StringName) -> float:
 	return total
 
 
+## Custo de contratação: piso por raridade, escalado a minutos de renda atual
+## (sink que acompanha a curva — antes 150–2000 fixos, triviais após 1h).
 func hire_cost(staff_id: String) -> int:
 	var rarity: String = String(
 		ContentDB.staff_by_id.get(staff_id, {}).get("rarity", "common")
 	)
-	return int(HIRE_COSTS.get(rarity, 150))
+	return Rewards.hire_price(staff_id, int(HIRE_COSTS.get(rarity, 150)))
 
 
 func hire_staff(staff_id: String) -> bool:
@@ -215,7 +230,7 @@ func buy_cosmetic(cosmetic_id: String) -> bool:
 	var price: Dictionary = entry.get("price", {})
 	if price.is_empty():
 		return false
-	var coin_price: int = int(price.get("coins", 0))
+	var coin_price: int = Rewards.cosmetic_price(cosmetic_id)
 	var ember_price: int = int(price.get("embers", 0))
 	if coins < float(coin_price) or embers < ember_price:
 		return false
@@ -254,37 +269,40 @@ func active_cosmetic(slot: String) -> String:
 
 ## Prestígio: tokens disponíveis ainda não convertidos em nível de franquia.
 func prestige_tokens_available() -> int:
-	return maxi(0, Economy.prestige_tokens(total_coins) - prestige_level)
+	return maxi(0, Economy.prestige_tokens(total_coins) - prestige_tokens_collected)
 
 
 func can_prestige() -> bool:
 	return prestige_tokens_available() > 0 and player_level >= 15
 
 
-## Reinicia o progresso da corrida em troca de tokens de franquia (+10%/nível).
-## Mantém brasas, pets, cosméticos, conquistas, streak/passe e o total acumulado.
+## Reinicia a corrida em troca de tokens de franquia (+10%/nível). Mantém
+## brasas, pets, cosméticos, conquistas, streak/passe, pesquisa, o total
+## acumulado, 25% da estação/ferramentas e recomeça no nível 10.
 func perform_prestige() -> bool:
 	if not can_prestige():
 		return false
 	var gain: int = prestige_tokens_available()
 	franchise_tokens += gain
+	prestige_tokens_collected += gain
 	prestige_level += 1
-	coins = 150.0
-	bath_upgrade_level = 0
+	bath_upgrade_level = int(bath_upgrade_level * PRESTIGE_KEEP_RATIO)
 	for tool: String in tool_upgrade_levels:
-		tool_upgrade_levels[tool] = 0
+		tool_upgrade_levels[tool] = int(int(tool_upgrade_levels[tool]) * PRESTIGE_KEEP_RATIO)
 	tool_uses = {}
 	rush_combo_protection = false
 	combo = 0
-	player_level = 1
+	player_level = PRESTIGE_START_LEVEL
 	player_xp = 0
-	mission_progress = {"services": 0, "perfect": 0, "upgrades": 0}
-	claimed_missions.clear()
+	_refresh_daily_missions()
 	hired_staff = ["player"]
-	establishment_tier = 1
+	establishment_tier = ContentDB.establishment_for_level(player_level)
+	# Caixa inicial da nova corrida: um minuto da renda do recomeço (piso 150).
+	coins = float(Rewards.for_kind(&"prestige_start", 150))
 	Analytics.track(&"prestige_performed", {"level": prestige_level, "tokens": gain})
 	SaveManager.request_save()
 	return true
+
 
 
 func register_review(stars: int) -> void:
@@ -293,6 +311,9 @@ func register_review(stars: int) -> void:
 	reviews_sum += safe_stars
 	if safe_stars == 5:
 		five_star_reviews += 1
+	if safe_stars >= 4:
+		_refresh_daily_missions()
+		mission_progress["four_plus_reviews"] = int(mission_progress.get("four_plus_reviews", 0)) + 1
 	EventBus.review_received.emit(safe_stars)
 
 
@@ -321,6 +342,7 @@ func to_dictionary() -> Dictionary:
 		"total_perfect_services": total_perfect_services,
 		"offline_seconds_collected": offline_seconds_collected,
 		"prestige_level": prestige_level,
+		"prestige_tokens_collected": prestige_tokens_collected,
 		"research_ids": research_ids,
 		"last_seen_unix": Time.get_unix_time_from_system(),
 		"tutorial_complete": tutorial_complete,
@@ -332,6 +354,7 @@ func to_dictionary() -> Dictionary:
 		"mission_progress": mission_progress,
 		"claimed_missions": claimed_missions,
 		"missions_date": missions_date,
+		"daily_mission_ids": daily_mission_ids,
 		"weekly_progress": weekly_progress,
 		"claimed_weeklies": claimed_weeklies,
 		"week_start": week_start,
@@ -377,6 +400,9 @@ func apply_dictionary(data: Dictionary) -> void:
 	)
 	offline_seconds_collected = maxf(0.0, float(data.get("offline_seconds_collected", 0.0)))
 	prestige_level = clampi(int(data.get("prestige_level", 0)), 0, 100)
+	prestige_tokens_collected = maxi(
+		prestige_level, int(data.get("prestige_tokens_collected", prestige_level))
+	)
 	research_ids = _valid_research_array(data.get("research_ids", []))
 	Research.invalidate_cache()
 	last_seen_unix = maxi(0, int(data.get("last_seen_unix", 0)))
@@ -389,13 +415,12 @@ func apply_dictionary(data: Dictionary) -> void:
 		hired_staff.push_front("player")
 	achievement_ids = _safe_string_array(data.get("achievement_ids", []))
 	unlocked_cosmetics = _safe_string_array(data.get("unlocked_cosmetics", []))
-	mission_progress = _safe_dictionary(
-		data.get("mission_progress", {}), {"services": 0, "perfect": 0, "upgrades": 0}
-	)
-	for metric: String in ["services", "perfect", "upgrades"]:
+	mission_progress = _safe_dictionary(data.get("mission_progress", {}), {})
+	for metric: String in Missions.PROGRESS_KEYS:
 		mission_progress[metric] = maxi(0, int(mission_progress.get(metric, 0)))
 	claimed_missions = _safe_string_array(data.get("claimed_missions", []))
 	missions_date = String(data.get("missions_date", ""))
+	daily_mission_ids = _safe_string_array(data.get("daily_mission_ids", []))
 	weekly_progress = _safe_dictionary(
 		data.get("weekly_progress", {}),
 		{"services": 0, "perfect": 0, "combo_max": 0, "tips": 0, "style": 0, "vip": 0, "spend": 0}
@@ -504,11 +529,15 @@ func _sanitize_settings() -> void:
 
 func _refresh_daily_missions() -> void:
 	var today: String = Time.get_date_string_from_system()
-	if missions_date == today:
+	if missions_date == today and not daily_mission_ids.is_empty():
 		return
+	if missions_date != today:
+		claimed_missions.clear()
+		mission_progress = {}
+		for metric: String in Missions.PROGRESS_KEYS:
+			mission_progress[metric] = 0
 	missions_date = today
-	claimed_missions.clear()
-	mission_progress = {"services": 0, "perfect": 0, "upgrades": 0}
+	daily_mission_ids = Missions.roll_for_day(today, player_level)
 
 
 func is_daily_claimed_today() -> bool:
@@ -539,7 +568,9 @@ func claim_daily_reward() -> int:
 	daily_streak = daily_streak % 7 + 1
 	best_streak = maxi(best_streak, daily_streak)
 	last_daily_claim = today
-	var reward: int = 25 * daily_streak
+	var reward: int = Rewards.scaled(
+		float(Rewards.SECONDS[&"streak_day"]) * daily_streak, 25 * daily_streak
+	)
 	if daily_streak == 7 and not unlocked_pets.has("mel_golden"):
 		unlocked_pets.append("mel_golden")
 	if daily_streak in [3, 5, 7]:
@@ -554,19 +585,21 @@ func claim_daily_reward() -> int:
 func claim_mission(mission_id: StringName) -> bool:
 	_refresh_daily_missions()
 	var id: String = String(mission_id)
-	if claimed_missions.has(id):
+	if claimed_missions.has(id) or not daily_mission_ids.has(id):
 		return false
-	var mission_ready: bool = (
-		(id == "daily_bath_5" and int(mission_progress.get("services", 0)) >= 5)
-		or (id == "daily_perfect_3" and int(mission_progress.get("perfect", 0)) >= 3)
-		or (id == "daily_upgrade_1" and int(mission_progress.get("upgrades", 0)) >= 1)
-	)
-	if not mission_ready:
+	var mission: Dictionary = ContentDB.daily_mission(id)
+	if mission.is_empty() or not Missions.is_ready(mission):
 		return false
 	claimed_missions.append(id)
-	add_coins(75, &"daily_mission")
-	Analytics.track(&"daily_mission_complete", {"id": id})
-	if claimed_missions.size() >= 3:
+	var coin_reward: int = Missions.coin_reward(mission)
+	if coin_reward > 0:
+		add_coins(float(coin_reward), &"daily_mission")
+	var ember_reward: int = Missions.ember_reward(mission)
+	if ember_reward > 0:
+		embers += ember_reward
+		EventBus.currency_changed.emit(&"embers", float(embers))
+	Analytics.track(&"daily_mission_complete", {"id": id, "epic": Missions.is_epic(mission)})
+	if Missions.regular_claimed_count() >= Missions.REGULAR_COUNT:
 		_advance_pass()
 	SaveManager.request_save()
 	return true
@@ -618,7 +651,9 @@ func claim_weekly(mission_id: StringName) -> bool:
 	claimed_weeklies.append(id)
 	var reward: Dictionary = data.get("reward", {})
 	if reward.has("coins"):
-		add_coins(float(int(reward["coins"])), &"weekly_mission")
+		add_coins(
+			float(Rewards.for_kind(&"weekly_mission", int(reward["coins"]))), &"weekly_mission"
+		)
 	if reward.has("embers"):
 		embers += int(reward["embers"])
 		EventBus.currency_changed.emit(&"embers", float(embers))
@@ -652,12 +687,10 @@ func check_weekly_chest() -> bool:
 			return false
 	weekly_chest_week = week_start
 	embers += 3
-	add_coins(200.0, &"weekly_chest")
+	var chest_coins: int = Rewards.for_kind(&"weekly_chest", 200)
+	add_coins(float(chest_coins), &"weekly_chest")
 	EventBus.currency_changed.emit(&"embers", float(embers))
-	EventBus.toast_requested.emit(
-		"Baú da semana! Todas as missões semanais: +200 moedas e +3 Brasas",
-		Color("ffd54f"),
-	)
+	EventBus.toast_requested.emit(Loc.t("WEEKLY_CHEST_TOAST") % [chest_coins, 3], Color("ffd54f"))
 	Analytics.track(&"weekly_mission_complete", {"id": "weekly_chest"})
 	SaveManager.request_save()
 	return true
@@ -682,7 +715,7 @@ func claim_pass_day() -> bool:
 	var reward: Dictionary = ContentDB.pass_day(pass_day_claimed + 1)
 	pass_day_claimed += 1
 	if reward.has("coins"):
-		add_coins(float(reward["coins"]), &"pass")
+		add_coins(float(Rewards.pass_day_coins(pass_day_claimed)), &"pass")
 	if reward.has("embers"):
 		embers += int(reward["embers"])
 		EventBus.currency_changed.emit(&"coins", coins)
@@ -703,7 +736,9 @@ func check_return_bonus() -> bool:
 		return false
 	last_return_day = today
 	streak_freezes += 1
-	add_coins(float(200 + 25 * mini(player_level, 20)), &"return_bonus")
+	add_coins(
+		float(Rewards.for_kind(&"return_bonus", 200 + 25 * mini(player_level, 20))), &"return_bonus"
+	)
 	Analytics.track(&"return_bonus", {"absent_hours": absent_hours})
 	SaveManager.request_save()
 	return true
@@ -730,11 +765,10 @@ func _on_service_completed(_service_id: StringName, quality: StringName, reward:
 		combo_grace_used = false
 	best_combo = maxi(best_combo, combo)
 	weekly_progress["combo_max"] = maxi(int(weekly_progress.get("combo_max", 0)), combo)
+	mission_progress["combo_reached"] = maxi(int(mission_progress.get("combo_reached", 0)), combo)
 	if services_completed >= 8 and not hired_staff.has("bia"):
 		hired_staff.append("bia")
-		EventBus.toast_requested.emit(
-			"Bia foi contratada! Produção automática de moedas no banho.", Color("7ed957")
-		)
+		EventBus.toast_requested.emit(Loc.t("BIA_HIRED"), Color("7ed957"))
 	_add_xp(15 if quality == &"perfect" else 10)
 	add_coins(reward, &"service")
 	_check_achievements()
@@ -753,11 +787,11 @@ func _add_xp(amount: int) -> void:
 	while player_level < MAX_CAREER_LEVEL and player_xp >= xp_to_next_level():
 		player_xp -= xp_to_next_level()
 		player_level += 1
-		var level_reward: int = 20 + player_level * 5
+		var level_reward: int = Rewards.for_kind(&"level_up", 20 + player_level * 5)
 		coins += level_reward
 		total_coins += level_reward
 		EventBus.toast_requested.emit(
-			"Nível %d! +%d moedas" % [player_level, level_reward], Color("4fc3f7")
+			Loc.t("LEVEL_UP_TOAST") % [player_level, level_reward], Color("4fc3f7")
 		)
 		AudioManager.play(&"level_up")
 		HapticsManager.success()
@@ -907,17 +941,18 @@ func _unlock_achievement(id: String, coins_reward: int = 0, embers_reward: int =
 	if achievement_ids.has(id):
 		return
 	achievement_ids.append(id)
-	if coins_reward > 0:
-		add_coins(coins_reward, &"achievement")
+	var scaled_coins: int = Rewards.for_kind(&"achievement", coins_reward) if coins_reward > 0 else 0
+	if scaled_coins > 0:
+		add_coins(scaled_coins, &"achievement")
 	if embers_reward > 0:
 		embers += embers_reward
 	Analytics.track(&"collection_unlock", {"id": id, "category": "achievement"})
 	var reward_text: String = ""
-	if coins_reward > 0:
-		reward_text = " +%d moedas" % coins_reward
+	if scaled_coins > 0:
+		reward_text = " +%d %s" % [scaled_coins, Loc.t("COINS")]
 	elif embers_reward > 0:
-		reward_text = " +%d Brasas" % embers_reward
-	EventBus.toast_requested.emit("Conquista desbloqueada!" + reward_text, Color("ffd54f"))
+		reward_text = " +%d %s" % [embers_reward, Loc.t("EMBERS")]
+	EventBus.toast_requested.emit(Loc.t("ACHIEVEMENT_TOAST") + reward_text, Color("ffd54f"))
 
 
 func _on_service_failed(_service_id: StringName, _reason: StringName) -> void:

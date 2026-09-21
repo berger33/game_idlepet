@@ -109,7 +109,7 @@ func _ready() -> void:
 	_refresh_economy()
 	# Onda 2: o pico do bairro começa a contar desde a abertura.
 	rush_cooldown = RemoteConfig.get_float("rush_interval_seconds")
-	_show_pending_offline_reward()
+	SessionFeedback.show_offline_card(self)
 	SessionFeedback.show_comeback(self)
 	if GameState.tutorial_complete:
 		LiveOps.claim_seasonal_gift()  # Temporada do mês presenteia seu cosmético.
@@ -720,8 +720,8 @@ func _client_left(slot: int) -> void:
 	var leaver_name: String = String(
 		ContentDB.pet(String(client["pet"])).get("name", "Alguém")
 	)
-	_show_toast("%s cansou de esperar e foi embora." % leaver_name, Color("ef5350"))
-	GameState.register_review(3)
+	_show_toast(Loc.t("CLIENT_LEFT") % leaver_name, Color("ef5350"))
+	# Sem reputação por cliente perdido (antes somava +3★ — ir embora "pagava").
 	Analytics.track(&"client_left", {"pet_id": String(client["pet"])})
 	queue[slot] = {}
 	refill_timers[slot] = 2.0 if not rush_active else 0.6
@@ -842,18 +842,6 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		world.upgrade_level = GameState.bath_upgrade_level
 		world.player_level = GameState.player_level
 		world.set_cosmetics(GameState.active_cosmetics)
-
-
-func _show_pending_offline_reward() -> void:
-	var offline: Dictionary = SaveManager.consume_pending_offline_reward()
-	if offline.is_empty():
-		return
-	var minutes: int = int(float(offline["seconds"]) / 60.0)
-	_show_toast(
-		"Cofre offline (%d min): +%d moedas" % [minutes, int(offline["reward"])],
-		Color("ffd54f"),
-	)
-	AudioManager.play(&"coin")
 
 
 func _show_toast(message: String, color: Color) -> void:

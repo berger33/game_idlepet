@@ -147,14 +147,27 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["version"] = 10
 		data["research_ids"] = data.get("research_ids", [])
 		version = 10
+	if version == 10:
+		# v11: tokens de prestígio contados de forma cumulativa (bug do dobro) e
+		# missões diárias sorteadas do catálogo.
+		data["version"] = 11
+		data["prestige_tokens_collected"] = int(
+			data.get("prestige_tokens_collected", data.get("prestige_level", 0))
+		)
+		data["daily_mission_ids"] = data.get("daily_mission_ids", [])
+		version = 11
 	return data
 
 
 func _grant_offline_reward() -> void:
 	var elapsed_seconds: float = TimeManager.offline_elapsed(GameState.last_seen_unix)
-	var rate: float = 0.015 * Economy.income_multiplier(GameState.bath_upgrade_level)
+	# Cofre relevante (auditoria): renda ATIVA estimada × parcela offline (+ equipe).
 	var reward: float = Economy.offline_earnings(
-		rate, elapsed_seconds, GameState.prestige_level, Research.bonus(&"offline_rate")
+		Rewards.income_per_second(),
+		elapsed_seconds,
+		GameState.prestige_level,
+		Research.bonus(&"offline_rate"),
+		Rewards.automation_share()
 	)
 	if reward > 0.0:
 		GameState.add_coins(reward, &"offline")

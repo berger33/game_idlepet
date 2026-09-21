@@ -71,8 +71,8 @@ PRESTIGE_TITLE,FRANQUIA
 PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
 PRESTIGE_GO,PRESTIGIAR
 PRESTIGE_LOCKED,Alcance nível 15 e acumule mais moedas
-PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe e recordes"
-PRESTIGE_LOST,"Recomeça: moedas, melhorias, equipe e nível de carreira"
+PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe, pesquisa e 25% da estação/ferramentas"
+PRESTIGE_LOST,"Recomeça: moedas, equipe e nível de carreira (a partir do 10)"
 PRESTIGE_DONE,Franquia nível %d! +10%% de moedas por nível
 EVENT_0,Domingo da Família
 EVENT_1,Segunda do Banho
@@ -159,3 +159,25 @@ RESEARCH_EFFECT_patience,paciência dos pets +%d%%
 RESEARCH_EFFECT_offline_rate,cofre offline +%d%%
 RESEARCH_TOAST,Pesquisa concluída: %s
 RESEARCH_NOTE,"Custo entre parênteses em tokens de franquia (ganhos ao prestigiar). Efeitos permanentes: sobrevivem ao prestígio."
+OFFLINE_TITLE,Enquanto você estava fora
+OFFLINE_BODY,%d min fora • cofre: +%d moedas
+OFFLINE_STAFF,Sua equipe rendeu sozinha: +%d%% da sua renda
+OFFLINE_TODAY,Hoje: %s — %s
+OFFLINE_DAILY,Login diário (dia %d) pronto para resgatar
+COLLECT,COLETAR
+OFFLINE_DOUBLE_EMBER,DOBRAR (1 Brasa)
+OFFLINE_DOUBLE_AD,DOBRAR (vídeo)
+WEEKLY_CHEST_TOAST,Baú da semana! +%d moedas e +%d Brasas
+BIA_HIRED,Bia entrou para a equipe! Ela rende sozinha enquanto você atende.
+LEVEL_UP_TOAST,Nível %d! +%d moedas
+ACHIEVEMENT_TOAST,Conquista desbloqueada!
+MISSIONS_NO_ADS,Missões nunca exigem anúncio ou compra.
+STAFF_AUTOMATION,rende sozinha +%d%% da sua renda (em jogo e no cofre)
+PRESTIGE_PREVIEW,Herança: estação Nv.%d • recomeça no nível %d com todos os serviços
+CLIENT_LEFT,%s cansou de esperar e foi embora.
+MISSION_METRIC_services,ATENDIMENTOS %d/%d
+MISSION_METRIC_perfect,PERFECTS %d/%d
+MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_upgrades,MELHORIAS %d/%d
+MISSION_METRIC_four_plus_reviews,AVALIAÇÕES 4★+ %d/%d
+MISSION_METRIC_combo_reached,COMBO %d/%d

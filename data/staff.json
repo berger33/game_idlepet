@@ -1,11 +1,11 @@
 {
   "schema_version":1,
   "staff":[
-    {"id":"player","name":"Você","specialty":"general","rarity":"common","passive":{"type":"speed","value":0.0},"max_level":20},
-    {"id":"bia","name":"Bia","specialty":"bath","rarity":"common","passive":{"type":"bath_speed","value":0.05},"max_level":20},
-    {"id":"teo","name":"Téo","specialty":"grooming","rarity":"common","passive":{"type":"groom_quality","value":0.05},"max_level":20},
-    {"id":"dra_luna","name":"Dra. Luna","specialty":"veterinary","rarity":"rare","passive":{"type":"veterinary_xp","value":0.12},"max_level":20},
-    {"id":"seu_ze","name":"Seu Zé","specialty":"management","rarity":"epic","passive":{"type":"patience","value":0.15},"max_level":20},
-    {"id":"maya","name":"Maya","specialty":"all","rarity":"legendary","passive":{"type":"perfect_window","value":0.08},"max_level":20}
+    {"id":"player","name":"Você","specialty":"general","rarity":"common","passive":{"type":"speed","value":0.0},"max_level":20,"automation":0.0},
+    {"id":"bia","name":"Bia","specialty":"bath","rarity":"common","passive":{"type":"bath_speed","value":0.05},"max_level":20,"automation":0.04},
+    {"id":"teo","name":"Téo","specialty":"grooming","rarity":"common","passive":{"type":"groom_quality","value":0.05},"max_level":20,"automation":0.04},
+    {"id":"dra_luna","name":"Dra. Luna","specialty":"veterinary","rarity":"rare","passive":{"type":"veterinary_xp","value":0.12},"max_level":20,"automation":0.06},
+    {"id":"seu_ze","name":"Seu Zé","specialty":"management","rarity":"epic","passive":{"type":"patience","value":0.15},"max_level":20,"automation":0.08},
+    {"id":"maya","name":"Maya","specialty":"all","rarity":"legendary","passive":{"type":"perfect_window","value":0.08},"max_level":20,"automation":0.1}
   ]
 }

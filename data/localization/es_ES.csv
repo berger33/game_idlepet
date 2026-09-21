@@ -71,8 +71,8 @@ PRESTIGE_TITLE,FRANQUICIA
 PRESTIGE_DESC,Prestigio disponible: %d ficha(s) • bono actual +%.0f%% por servicio
 PRESTIGE_GO,PRESTIGIAR
 PRESTIGE_LOCKED,Llega al nivel 15 y junta más monedas
-PRESTIGE_KEEP,"Conserva: brasas, mascotas, cosméticos, logros, racha, pase y récords"
-PRESTIGE_LOST,"Reinicia: monedas, mejoras, equipo y nivel de carrera"
+PRESTIGE_KEEP,"Mantiene: brasas, mascotas, cosméticos, logros, racha, pase, investigación y 25% de estación/herramientas"
+PRESTIGE_LOST,"Reinicia: monedas, equipo y nivel de carrera (desde el 10)"
 PRESTIGE_DONE,¡Franquicia nivel %d! +10%% de monedas por nivel
 EVENT_0,Domingo de Familia
 EVENT_1,Lunes de Baño
@@ -159,3 +159,25 @@ RESEARCH_EFFECT_patience,paciencia de las mascotas +%d%%
 RESEARCH_EFFECT_offline_rate,caja offline +%d%%
 RESEARCH_TOAST,Investigación completada: %s
 RESEARCH_NOTE,"Costo entre paréntesis en tokens de franquicia (ganados al prestigiar). Efectos permanentes: sobreviven al prestigio."
+OFFLINE_TITLE,Mientras estabas fuera
+OFFLINE_BODY,%d min fuera • caja: +%d monedas
+OFFLINE_STAFF,Tu equipo rindió solo: +%d%% de tus ingresos
+OFFLINE_TODAY,Hoy: %s — %s
+OFFLINE_DAILY,Login diario (día %d) listo para reclamar
+COLLECT,RECOGER
+OFFLINE_DOUBLE_EMBER,DUPLICAR (1 Brasa)
+OFFLINE_DOUBLE_AD,DUPLICAR (vídeo)
+WEEKLY_CHEST_TOAST,¡Cofre semanal! +%d monedas y +%d Brasas
+BIA_HIRED,¡Bia se unió al equipo! Rinde sola mientras atiendes.
+LEVEL_UP_TOAST,¡Nivel %d! +%d monedas
+ACHIEVEMENT_TOAST,¡Logro desbloqueado!
+MISSIONS_NO_ADS,Las misiones nunca exigen anuncio ni compra.
+STAFF_AUTOMATION,rinde sola +%d%% de tus ingresos (en juego y en la caja)
+PRESTIGE_PREVIEW,Herencia: estación Nv.%d • reinicia en el nivel %d con todos los servicios
+CLIENT_LEFT,%s se cansó de esperar y se fue.
+MISSION_METRIC_services,ATENCIONES %d/%d
+MISSION_METRIC_perfect,PERFECTS %d/%d
+MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_upgrades,MEJORAS %d/%d
+MISSION_METRIC_four_plus_reviews,RESEÑAS 4★+ %d/%d
+MISSION_METRIC_combo_reached,COMBO %d/%d

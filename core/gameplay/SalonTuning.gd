@@ -35,6 +35,8 @@ const TOOL_MASTERY_STEPS: Array[int] = [100, 500, 2000]
 const RARITY_RANK: Dictionary = {
 	&"common": 0, &"uncommon": 1, &"rare": 2, &"epic": 3, &"legendary": 4
 }
+## Pagamento base por serviço (banho vem do RemoteConfig: bath_base_reward).
+const BASE_REWARDS: Dictionary = {&"groom": 20.0, &"dry": 24.0, &"perfume": 30.0, &"style": 38.0}
 ## Teto de VIPs na fila mesmo com evento (VIP tem menos paciência; a fila
 ## inteira VIP viraria punição, não festa).
 const VIP_CHANCE_CAP: float = 0.5
@@ -210,16 +212,7 @@ static func tool_display_name(tool: StringName) -> String:
 static func compute_reward(ctx: Dictionary) -> Dictionary:
 	var service: StringName = ctx["service"]
 	var quality: StringName = ctx["quality"]
-	var base_reward: float = (
-		{
-			&"bath": RemoteConfig.get_float("bath_base_reward"),
-			&"groom": 20.0,
-			&"dry": 24.0,
-			&"perfume": 30.0,
-			&"style": 38.0,
-		}
-		. get(service, 12.0)
-	)
+	var base_reward: float = base_reward(service)
 	var affection: int = int(GameState.pet_affection.get(String(ctx["pet_id"]), 0))
 	var affection_multiplier: float = 1.0 + minf(50.0, affection) * 0.005
 	var tip_multiplier: float = (
@@ -258,6 +251,14 @@ static func compute_reward(ctx: Dictionary) -> Dictionary:
 		* float(ctx["special"])
 	)
 	return {"reward": reward, "tip_percent": int(roundf((tip_multiplier - 1.0) * 100.0))}
+
+
+## Pagamento base de cada serviço (fonte única: pagamento real e estimativa
+## de renda em Rewards.income_per_second).
+static func base_reward(service: StringName) -> float:
+	if service == &"bath":
+		return RemoteConfig.get_float("bath_base_reward")
+	return float(BASE_REWARDS.get(service, 12.0))
 
 
 ## Sorteio de um cliente da fila: pet desbloqueado (buddy tem prioridade),

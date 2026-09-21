@@ -30,15 +30,17 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 10', state)
+        self.assertIn('const SAVE_VERSION: int = 11', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)
         self.assertIn('if version == 7:', migration)
         self.assertIn('if version == 8:', migration)
         self.assertIn('if version == 9:', migration)
-        self.assertIn('data["version"] = 10', migration)
+        self.assertIn('if version == 10:', migration)
+        self.assertIn('data["version"] = 11', migration)
         self.assertIn('data["research_ids"] = data.get("research_ids", [])', migration)
+        self.assertIn('prestige_tokens_collected', migration)
         self.assertIn('tool_upgrade_levels', state)
         self.assertIn('active_cosmetics', state)
 
@@ -204,11 +206,33 @@ class FoundationTests(unittest.TestCase):
             self.assertIn(f'_unlock_achievement("{achievement["id"]}"', source)
         self.assertIn('unlocked_cosmetics.append("crown_bubbles")', source)
 
-    def test_daily_mission_rewards_match_the_hud_contract(self):
+    def test_daily_missions_come_from_the_catalog(self):
+        """Diárias sorteadas do catálogo (3 regulares + épica), metas escaladas
+        e moedas escaladas à renda — antes eram 3 fixas triviais no código."""
         catalog = json.loads(Path('data/daily_missions.json').read_text(encoding='utf8'))
-        active = {mission['id']: mission for mission in catalog['missions'][:3]}
-        self.assertEqual(set(active), {'daily_bath_5', 'daily_perfect_3', 'daily_upgrade_1'})
-        self.assertTrue(all(mission['reward'] == {'coins': 75} for mission in active.values()))
+        missions = catalog['missions']
+        regular = [m for m in missions if not m.get('epic')]
+        epic = [m for m in missions if m.get('epic')]
+        self.assertGreaterEqual(len(regular), 4, 'precisa de variedade para sortear 3')
+        self.assertEqual(len(epic), 1)
+        gd = Path('core/progression/Missions.gd').read_text(encoding='utf8')
+        for metric in {m['metric'] for m in missions}:
+            self.assertIn('"%s"' % metric, gd, 'métrica sem mapeamento de progresso')
+            for code in ('pt_BR', 'en_US', 'es_ES'):
+                self.assertIn('MISSION_METRIC_' + metric, _loc_table(code))
+        self.assertIn('rng.seed = hash(day_key)', gd)
+        self.assertIn('const REGULAR_COUNT: int = 3', gd)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('daily_mission_ids = Missions.roll_for_day(today, player_level)', state)
+        self.assertIn('Missions.is_ready(mission)', state)
+        self.assertIn('Missions.regular_claimed_count() >= Missions.REGULAR_COUNT', state)
+        self.assertNotIn('id == "daily_bath_5"', state)
+        for key in ('four_plus_reviews', 'combo_reached'):
+            self.assertIn('mission_progress["%s"]' % key, state)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('Missions.today()', panel)
+        content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
+        self.assertIn('res://data/daily_missions.json', content)
 
     def test_drag_tools_and_individual_upgrades_are_complete(self):
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
@@ -902,6 +926,100 @@ class LiveOpsAndResearchTests(unittest.TestCase):
         panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
         self.assertIn('func _build_research', panel)
         self.assertIn('Research.buy(nid)', panel)
+
+
+class EconomyScalingTests(unittest.TestCase):
+    """Auditoria de retenção (§1/§2 do RETENTION_VIRALITY_PLAN): recompensas e
+    sinks em segundos de renda, cofre offline relevante, equipe como automação,
+    prestígio com herança e o bug dos tokens em dobro."""
+
+    def test_rewards_are_expressed_in_seconds_of_income(self):
+        rewards = Path('core/progression/Rewards.gd').read_text(encoding='utf8')
+        self.assertIn('static func income_per_second', rewards)
+        self.assertIn('Economy.service_reward(', rewards)
+        self.assertIn('static func scaled(seconds: float, minimum: int = 0)', rewards)
+        for kind in ('daily_mission', 'weekly_mission', 'weekly_chest', 'pass_day',
+                     'streak_day', 'level_up', 'achievement', 'return_bonus', 'prestige_start'):
+            self.assertIn('&"%s"' % kind, rewards)
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        # Cada faucet fixo passou pelo escalonamento (piso = valor antigo).
+        for token in ('Rewards.for_kind(&"weekly_mission"', 'Rewards.for_kind(&"weekly_chest", 200)',
+                      'Rewards.pass_day_coins(pass_day_claimed)', 'Rewards.SECONDS[&"streak_day"]',
+                      'Rewards.for_kind(&"level_up", 20 + player_level * 5)',
+                      'Rewards.for_kind(&"achievement", coins_reward)',
+                      'Rewards.for_kind(&"return_bonus"', 'Rewards.for_kind(&"prestige_start", 150)'):
+            self.assertIn(token, state)
+        for stale in ('add_coins(75, &"daily_mission")', 'add_coins(200.0, &"weekly_chest")',
+                      'var reward: int = 25 * daily_streak', 'var level_reward: int = 20 + player_level * 5'):
+            self.assertNotIn(stale, state)
+        # Sinks acompanham a curva: preços dinâmicos na compra E na vitrine.
+        self.assertIn('Rewards.hire_price(staff_id', state)
+        self.assertIn('Rewards.cosmetic_price(cosmetic_id)', state)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('Rewards.cosmetic_price(look_id)', panel)
+        self.assertIn('GameState.hire_cost(staff_id)', panel)
+        # Fonte única do pagamento base (compute_reward e estimativa de renda).
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        self.assertIn('static func base_reward(service: StringName)', salon)
+        self.assertIn('var base_reward: float = base_reward(service)', salon)
+
+    def test_offline_vault_and_staff_automation_are_meaningful(self):
+        remote = Path('autoload/RemoteConfig.gd').read_text(encoding='utf8')
+        self.assertIn('"offline_rate": 0.15', remote)
+        economy = Path('autoload/Economy.gd').read_text(encoding='utf8')
+        self.assertIn('automation_share: float = 0.0', economy)
+        save = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
+        self.assertIn('Rewards.income_per_second()', save)
+        self.assertIn('Rewards.automation_share()', save)
+        self.assertNotIn('0.015 * Economy.income_multiplier', save)
+        staff = json.loads(Path('data/staff.json').read_text(encoding='utf8'))['staff']
+        hired = [m for m in staff if m['id'] != 'player']
+        self.assertTrue(all(0.0 < m['automation'] <= 0.12 for m in hired))
+        self.assertEqual(next(m for m in staff if m['id'] == 'player')['automation'], 0.0)
+        # Raridade maior rende mais sozinha (ordem legendary > epic > rare > common).
+        by_rarity = {m['rarity']: m['automation'] for m in hired}
+        self.assertGreater(by_rarity['legendary'], by_rarity['epic'])
+        self.assertGreater(by_rarity['epic'], by_rarity['rare'])
+        self.assertGreater(by_rarity['rare'], by_rarity['common'])
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('Rewards.passive_income_per_second()', state)
+        self.assertNotIn('hired_staff.has("bia"):\n\t\treturn', state)
+        # Cartão de retorno com dobro por brasa/vídeo no lugar do toast.
+        feedback = Path('core/ui/SessionFeedback.gd').read_text(encoding='utf8')
+        for token in ('static func show_offline_card', 'OFFLINE_DOUBLE_EMBER', 'OFFLINE_DOUBLE_AD',
+                      'RevealCard.enqueue', 'consume_pending_offline_reward'):
+            self.assertIn(token, feedback)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('SessionFeedback.show_offline_card(self)', main)
+        self.assertNotIn('func _show_pending_offline_reward', main)
+        self.assertNotIn('GameState.register_review(3)', main)
+        card = Path('core/ui/RevealCard.gd').read_text(encoding='utf8')
+        self.assertIn('static func enqueue', card)
+        self.assertIn('main._button(', card)
+        self.assertNotIn('Button.new()', card)
+
+    def test_prestige_tokens_are_cumulative_and_prestige_has_inheritance(self):
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        self.assertIn('Economy.prestige_tokens(total_coins) - prestige_tokens_collected', state)
+        self.assertIn('prestige_tokens_collected += gain', state)
+        self.assertIn('const PRESTIGE_KEEP_RATIO: float = 0.25', state)
+        self.assertIn('const PRESTIGE_START_LEVEL: int = 10', state)
+        self.assertIn('bath_upgrade_level = int(bath_upgrade_level * PRESTIGE_KEEP_RATIO)', state)
+        self.assertIn('player_level = PRESTIGE_START_LEVEL', state)
+        self.assertNotIn('coins = 150.0', state)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('PRESTIGE_PREVIEW', panel)
+        # Bug de exibição: o painel mostrava o multiplicador (1.1) como "+1%".
+        self.assertIn('- 1.0) * 100.0', panel)
+        # Reprodução do bug do dobro com a fórmula antiga vs. a nova.
+        import math
+        tokens = lambda total: int(math.floor(math.sqrt(total / 1e6)))
+        old_level, old_granted, new_collected, new_granted = 0, 0, 0, 0
+        for total in (9e6, 16e6, 25e6):
+            old_granted += tokens(total) - old_level; old_level += 1
+            gain = tokens(total) - new_collected; new_granted += gain; new_collected += gain
+        self.assertEqual(old_granted, 9)
+        self.assertEqual(new_granted, tokens(25e6))
 
 
 if __name__=='__main__': unittest.main()

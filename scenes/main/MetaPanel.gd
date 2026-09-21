@@ -107,9 +107,12 @@ func _emerge() -> void:
 func _build_missions() -> void:
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
+	var streak_coins: int = Rewards.scaled(
+		float(Rewards.SECONDS[&"streak_day"]) * next_day, 25 * next_day
+	)
 	_info_row(
 		Loc.t("DAILY_LOGIN") % (GameState.daily_streak if claimed_today else next_day),
-		"25×dia",
+		"%d %s" % [streak_coins, Loc.t("COINS")],
 		Loc.t("CLAIMED") if claimed_today else Loc.t("CLAIM"),
 		GREEN,
 		not claimed_today,
@@ -117,36 +120,21 @@ func _build_missions() -> void:
 			GameState.claim_daily_reward()
 			AudioManager.play(&"coin")
 	)
-	var services: int = int(GameState.mission_progress.get("services", 0))
-	var perfects: int = int(GameState.mission_progress.get("perfect", 0))
-	var upgrades: int = int(GameState.mission_progress.get("upgrades", 0))
-	var missions: Array[Dictionary] = [
-		{
-			"id": &"daily_bath_5",
-			"label": Loc.t("MISSION_SERVICES") % mini(services, 5),
-			"done": services >= 5,
-		},
-		{
-			"id": &"daily_perfect_3",
-			"label": Loc.t("MISSION_PERFECT") % mini(perfects, 3),
-			"done": perfects >= 3,
-		},
-		{
-			"id": &"daily_upgrade_1",
-			"label": Loc.t("MISSION_UPGRADE") % mini(upgrades, 1),
-			"done": upgrades >= 1,
-		},
-	]
-	for mission: Dictionary in missions:
-		var claimed: bool = GameState.claimed_missions.has(String(mission["id"]))
+	# Diárias sorteadas do catálogo (Missions.gd): 3 regulares + épica, metas
+	# escaladas ao nível e moedas escaladas à renda.
+	for mission: Dictionary in Missions.today():
+		var mission_id: String = String(mission["id"])
+		var claimed: bool = GameState.claimed_missions.has(mission_id)
+		var ready: bool = Missions.is_ready(mission)
+		var epic: bool = Missions.is_epic(mission)
 		_info_row(
-			String(mission["label"]) + " • 75",
-			"moedas",
+			("★ " if epic else "") + Missions.label(mission),
+			"%s • %s" % [String(mission.get("name", mission_id)), Missions.reward_text(mission)],
 			Loc.t("CLAIMED") if claimed else Loc.t("CLAIM"),
-			GREEN,
-			bool(mission["done"]) and not claimed,
-			func(mission_id: StringName = mission["id"]) -> void:
-				GameState.claim_mission(mission_id)
+			Color("ce93d8") if epic else GREEN,
+			ready and not claimed,
+			func(mid: String = mission_id) -> void:
+				GameState.claim_mission(mid)
 				AudioManager.play(&"coin")
 		)
 	_note(
@@ -166,9 +154,16 @@ func _build_missions() -> void:
 	)
 	var pass_ready: bool = GameState.pass_day_claimed < GameState.pass_day_unlocked
 	var pass_reward: Dictionary = ContentDB.pass_day(GameState.pass_day_claimed + 1)
+	var pass_line: String = Loc.t("PASS_DONE")
+	if not pass_reward.is_empty():
+		pass_line = "%s • %d %s" % [
+			Loc.t("PASS_DESC"),
+			Rewards.pass_day_coins(GameState.pass_day_claimed + 1),
+			Loc.t("COINS"),
+		]
 	_info_row(
 		Loc.t("PASS_TITLE") + " %d/28" % (GameState.pass_day_claimed + 1),
-		Loc.t("PASS_DESC") if not pass_reward.is_empty() else Loc.t("PASS_DONE"),
+		pass_line,
 		Loc.t("CLAIM") if pass_ready else "%d/28" % GameState.pass_day_unlocked,
 		GREEN if pass_ready else Color("b0bec5"),
 		pass_ready,
@@ -176,7 +171,7 @@ func _build_missions() -> void:
 			if GameState.claim_pass_day():
 				AudioManager.play(&"coin")
 	)
-	_note("Missões nunca exigem anúncio ou compra.")
+	_note(Loc.t("MISSIONS_NO_ADS"))
 	_note(Loc.t("WEEKLY_TITLE"), 28, CHARCOAL, true)
 	for weekly: Dictionary in ContentDB.weekly_missions:
 		var weekly_id: String = String(weekly["id"])
@@ -186,7 +181,9 @@ func _build_missions() -> void:
 		var weekly_ready: bool = value >= target and not weekly_done
 		var reward: Dictionary = weekly.get("reward", {})
 		var reward_text: String = (
-			"%d moedas" % int(reward.get("coins", 0))
+			"%d %s" % [
+				Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0))), Loc.t("COINS")
+			]
 			if reward.has("coins")
 			else "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
 		)
@@ -368,14 +365,13 @@ func _build_staff() -> void:
 		var passive: Dictionary = member.get("passive", {})
 		var passive_key: String = "PASSIVE_" + String(passive.get("type", "speed")).to_upper()
 		var cost: int = GameState.hire_cost(staff_id)
+		var automation: int = int(roundf(float(member.get("automation", 0.0)) * 100.0))
+		var desc: String = "%s • %s" % [Loc.t(GameState.staff_vocation(staff_id)), Loc.t(passive_key)]
+		if automation > 0:
+			desc += "\n" + Loc.t("STAFF_AUTOMATION") % automation
 		_info_row(
 			String(member.get("name", staff_id)),
-			"%s • %s • %s"
-				% [
-					String(member.get("specialty", "")),
-					Loc.t(GameState.staff_vocation(staff_id)),
-					Loc.t(passive_key)
-				],
+			desc,
 			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %d" % [Loc.t("HIRE"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
 			not hired and staff_id != "player" and GameState.coins >= float(cost),
@@ -397,7 +393,7 @@ func _build_shop() -> void:
 		var seasonal: bool = not ContentDB.seasonal(source).is_empty()
 		var price_text: String
 		if price.has("coins"):
-			price_text = "%d moedas" % int(price["coins"])
+			price_text = "%d %s" % [Rewards.cosmetic_price(look_id), Loc.t("COINS")]
 		elif price.has("embers"):
 			price_text = "%d %s" % [int(price["embers"]), Loc.t("EMBERS")]
 		else:
@@ -512,9 +508,17 @@ func _build_map() -> void:
 	text += "\nA jornada foi balanceada para 50+ horas, sem bloquear ações ou compras."
 	_note(text, 28, CHARCOAL, true)
 	var tokens: int = GameState.prestige_tokens_available()
+	var bonus_percent: float = (
+		(Economy.prestige_coin_multiplier(GameState.prestige_level) - 1.0) * 100.0
+	)
+	var kept_station: int = int(GameState.bath_upgrade_level * GameState.PRESTIGE_KEEP_RATIO)
 	_info_row(
 		"%s Nv.%d" % [Loc.t("PRESTIGE_TITLE"), GameState.prestige_level],
-		Loc.t("PRESTIGE_DESC") % [tokens, Economy.prestige_coin_multiplier(GameState.prestige_level)],
+		(
+			Loc.t("PRESTIGE_DESC") % [tokens, bonus_percent]
+			+ "\n"
+			+ Loc.t("PRESTIGE_PREVIEW") % [kept_station, GameState.PRESTIGE_START_LEVEL]
+		),
 		Loc.t("PRESTIGE_GO") if GameState.can_prestige() else Loc.t("PRESTIGE_LOCKED"),
 		Color("ce93d8") if GameState.can_prestige() else Color("b0bec5"),
 		GameState.can_prestige(),

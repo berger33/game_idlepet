@@ -87,17 +87,25 @@ func service_reward(
 	)
 
 
-## research_bonus: soma de "offline_rate" da pesquisa da franquia (0..1).
+## Cofre offline. rate_per_second = renda ATIVA estimada (Rewards.income_per_second);
+## offline_rate (remoto) é a parcela dela que o salão rende fechado (0,15 = 2h
+## fora ≈ 18 min de jogo), automation_share soma a equipe contratada e
+## research_bonus é a pesquisa "Clínica Móvel". Cap em horas cresce com o prestígio.
 func offline_earnings(
-	rate_per_second: float, elapsed_seconds: float, prestige_level: int, research_bonus: float = 0.0
+	rate_per_second: float,
+	elapsed_seconds: float,
+	prestige_level: int,
+	research_bonus: float = 0.0,
+	automation_share: float = 0.0
 ) -> float:
 	var cap_hours: float = minf(24.0, RemoteConfig.get_float("offline_cap_hours") + prestige_level)
 	var clamped_seconds: float = clampf(elapsed_seconds, 0.0, cap_hours * 3600.0)
+	var share: float = RemoteConfig.get_float("offline_rate") + clampf(automation_share, 0.0, 0.6)
 	return floor(
 		(
 			rate_per_second
 			* clamped_seconds
-			* RemoteConfig.get_float("offline_rate")
+			* share
 			* (1.0 + prestige_level * 0.05)
 			* (1.0 + clampf(research_bonus, 0.0, 1.0))
 		)
