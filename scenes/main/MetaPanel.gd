@@ -493,17 +493,25 @@ func _build_album() -> void:
 		var vbox: VBoxContainer = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 6)
 		card.add_child(vbox)
+		# Thumb com COVER (preenche 240×90 sem letterbox) + clip arredondado — corrige squish do CENTERED
+		var thumb_wrap: PanelContainer = PanelContainer.new()
+		thumb_wrap.custom_minimum_size = Vector2(240, 90)
+		thumb_wrap.clip_contents = true
+		thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
+		vbox.add_child(thumb_wrap)
 		var thumb: TextureRect = TextureRect.new()
 		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		thumb.custom_minimum_size = Vector2(240, 90)
-		# tenta carregar primeiro pet da foto
+		thumb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		thumb.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		# tenta carregar primeiro pet da foto — corta topo levemente para focar no rosto
 		var first_pet: String = String(pets[0]) if pets.size() > 0 else "caramelo"
 		var tpath: String = "res://art/pets/%s.png" % first_pet
 		if ResourceLoader.exists(tpath):
 			thumb.texture = load(tpath)
-		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.9)
-		vbox.add_child(thumb)
+		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.94)
+		thumb_wrap.add_child(thumb)
 		var nlabel: Label = Label.new()
 		nlabel.text = names if not names.is_empty() else "Foto"
 		nlabel.add_theme_font_size_override("font_size", 18)

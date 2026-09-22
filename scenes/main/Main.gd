@@ -5,7 +5,7 @@ const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfum
 const NAV_ICONS: Dictionary = {
 	&"missions": preload("res://art/ui/icons/missions.png"),
 	&"collection": preload("res://art/ui/icons/collection.png"),
-	&"album": preload("res://art/ui/icons/collection.png"),
+	&"album": preload("res://art/ui/icons/album.png"),
 	&"staff": preload("res://art/ui/icons/staff.png"),
 	&"shop": preload("res://art/ui/icons/shop.png"),
 	&"map": preload("res://art/ui/icons/map.png"),
@@ -117,6 +117,9 @@ var perfume_hold_time: float = 0.0
 var splash: Dictionary = {}
 var splash_progress: float = 0.0
 var splash_done: bool = false
+# Cache de estilos da instruction_label (evita alocar StyleBoxFlat 60×/s)
+var _instr_styles: Dictionary = {}
+var _last_instr_key: StringName = &""
 # ── Parquinho / Creche ──
 var park_service: ParkService
 var park_canvas: Control
@@ -268,18 +271,27 @@ func _process(delta: float) -> void:
 		world.service_time_ratio = bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
 		world.gesture_ui = GestureArt.gesture_snapshot(bath)
 		world.playful_hop = bath.hopping
+		# Estilo cacheado: 3 estados (perfect / over / hint) — sem alocar StyleBox a cada frame
+		if _instr_styles.is_empty():
+			_instr_styles[&"perfect"] = _style(Color(GREEN, 0.92), 34, 14, Color.WHITE, 4)
+			_instr_styles[&"over"] = _style(Color("ef5350", 0.88), 34, 14, Color.WHITE, 3)
+			_instr_styles[&"hint"] = _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2)
 		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
-			if not instruction_label.text.begins_with("✓"):
+			if _last_instr_key != &"perfect":
+				_last_instr_key = &"perfect"
 				instruction_label.text = "✓ SOLTE PARA PERFEITO!"
-				instruction_label.add_theme_stylebox_override("normal", _style(Color(GREEN, 0.92), 34, 14, Color.WHITE, 4))
+				instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"perfect"] as StyleBoxFlat)
 		elif bath.progress > bath.target_maximum:
-			instruction_label.text = "⚠ PASSOU! SOLTE E TENTE DE NOVO"
-			instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.88), 34, 14, Color.WHITE, 3))
+			if _last_instr_key != &"over":
+				_last_instr_key = &"over"
+				instruction_label.text = "⚠ PASSOU! SOLTE E TENTE DE NOVO"
+				instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"over"] as StyleBoxFlat)
 		elif bath.progress > 0.05 and bath.progress < bath.target_minimum:
-			var hint_text: String = SalonTuning.hint(current_service)
-			if instruction_label.text != hint_text and not instruction_label.text.begins_with("⚠"):
+			if _last_instr_key != &"hint":
+				var hint_text: String = SalonTuning.hint(current_service)
+				_last_instr_key = &"hint"
 				instruction_label.text = hint_text
-				instruction_label.add_theme_stylebox_override("normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2))
+				instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
 		if bath.fill_mode == &"stroke":
 			if bath.stroke_index != last_stroke_index and bath.stroke_index > 0:
 				AudioManager.play(&"tool_pickup")
@@ -310,6 +322,7 @@ func _process(delta: float) -> void:
 		last_stroke_index = 0
 		last_zone_inside = false
 		perfume_hold_time = 0.0
+		_last_instr_key = &""
 	world.tool_levels = GameState.tool_upgrade_levels
 	world.rush_active = rush_active
 	world.vip_active = current_vip
@@ -468,6 +481,9 @@ func _on_primary_pressed() -> void:
 		queue_row.visible = true
 		park_canvas.visible = false
 		instruction_label.text = Loc.t("CHOOSE_CLIENT")
+		if _instr_styles.has(&"hint"):
+			instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
+		_last_instr_key = &""
 		_update_queue_ui()
 func _start_bath() -> void:
 	bath.start_service()
@@ -736,6 +752,9 @@ func _dismiss_result() -> void:
 	mood_buff_clients = maxi(0, mood_buff_clients - 1)
 	if assistance_clients > 0: assistance_clients -= 1
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
+	if _instr_styles.has(&"hint"):
+		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
+	_last_instr_key = &""
 	primary_button.hide()
 	_update_queue_ui()
 	if GameState.services_completed == 1: D1Retention.show_daily_login(self)
@@ -1391,6 +1410,11 @@ func _close_park() -> void:
 	if park_service != null:
 		park_service.state = ParkService.State.IDLE
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
+	if _instr_styles.has(&"hint"):
+		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
+	else:
+		instruction_label.add_theme_stylebox_override("normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2))
+	_last_instr_key = &""
 	_update_park_button()
 	AudioManager.play(&"tap")
 

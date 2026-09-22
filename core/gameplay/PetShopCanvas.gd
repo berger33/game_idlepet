@@ -174,7 +174,9 @@ func _process(delta: float) -> void:
 		micro_idle_state = &""
 	if not room_empty:
 		micro_idle_timer -= delta
-		if micro_idle_timer <= 0.0 and micro_idle_state.is_empty() and forced_state.is_empty() and celebration <= 0.0 and reaction_time <= 0.0:
+		# Suprime micro idle durante serviço ativo ou reação intensa — preserva foco no feedback da interação
+		var busy: bool = service_active or forced_state != &"" or celebration > 0.0 or reaction_time > 0.0 or anticipation > 0.45
+		if micro_idle_timer <= 0.0 and micro_idle_state.is_empty() and not busy:
 			var seed_rand: float = randf()
 			micro_idle_state = PetAnimationTuning.micro_idle_name(shake_phase, empty_room_time, temperament, affection_level, seed_rand)
 			micro_idle_time = PetAnimationTuning.micro_idle_duration(micro_idle_state)
@@ -967,22 +969,24 @@ func _draw_illustrated_pet(center: Vector2) -> void:
 	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
 	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
 	_draw_pet_state_layer(blink_layer, blink_pulse, sprite_size, tint)
-	# ── Eye tracking highlight (pupila brilho) ──
+	# ── Eye tracking highlight (pupila brilho) — clampado no branco do olho ──
 	if blink_pulse < 0.5 and overlay_state not in [&"dizzy", &"sad"] and not room_empty:
 		# posição estimada olhos no sprite local (0,0 = pés)
 		var eye_left_local: Vector2 = Vector2(-52, -170 -22) * (sprite_size / 390.0)
 		var eye_right_local: Vector2 = Vector2(52, -170 -22) * (sprite_size / 390.0)
 		var glint_size: float = 5.0 if affection_level < 25 else 6.5
 		if anticipation > 0.5:
-			glint_size += 1.5
-		# eye_offset já em px mundo, converter para local sprite (divide por scale aprox)
-		var eye_off_local: Vector2 = eye_offset * 0.6
+			glint_size += 1.2
+		# eye_offset já em px mundo → local; clamp a 6 px para nunca sair do olho (raio do olho ≈ 17)
+		var eye_off_local: Vector2 = eye_offset * 0.55
+		if eye_off_local.length() > 6.5:
+			eye_off_local = eye_off_local.normalized() * 6.5
 		# desenha brilho branco + pupila offset
 		draw_circle(eye_left_local + eye_off_local, glint_size, Color("ffffff", 0.92))
 		draw_circle(eye_right_local + eye_off_local, glint_size, Color("ffffff", 0.92))
-		# pupila escura pequena offset
-		draw_circle(eye_left_local + eye_off_local * 0.5, 3.2, Color("263238", 0.85))
-		draw_circle(eye_right_local + eye_off_local * 0.5, 3.2, Color("263238", 0.85))
+		# pupila escura pequena offset (metade do deslocamento)
+		draw_circle(eye_left_local + eye_off_local * 0.48, 3.2, Color("263238", 0.85))
+		draw_circle(eye_right_local + eye_off_local * 0.48, 3.2, Color("263238", 0.85))
 		# nariz wiggle micro idle
 		if micro_idle_state == &"nose_wiggle":
 			var nose_pos: Vector2 = Vector2(0, -170 + 20) * (sprite_size / 390.0)
