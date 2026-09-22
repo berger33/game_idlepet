@@ -346,13 +346,13 @@ func pet_focus() -> Vector2:
 func react_to_touch() -> String:
 	var reactions: PackedStringArray
 	if temperament == &"fearful" or temperament == &"anxious":
-		reactions = ["Carinho ajuda!", "Agora estou tranquilo!", "Mais devagarzinho!"]
+		reactions = [Loc.t("REACT_FEARFUL_1"), Loc.t("REACT_FEARFUL_2"), Loc.t("REACT_FEARFUL_3")]
 	elif temperament == &"irritated":
-		reactions = ["Ei! ...tá, gostei.", "Só mais um carinho!", "Au! Que surpresa!"]
+		reactions = [Loc.t("REACT_IRRITATED_1"), Loc.t("REACT_IRRITATED_2"), Loc.t("REACT_IRRITATED_3")]
 	elif species == &"cat":
-		reactions = ["Prrrrr...", "Miau! Gostei!", "Carinho aprovado!"]
+		reactions = [Loc.t("REACT_CAT_1"), Loc.t("REACT_CAT_2"), Loc.t("REACT_CAT_3")]
 	else:
-		reactions = ["Amei o carinho!", "Au au! De novo!", "Você é meu humano favorito!"]
+		reactions = [Loc.t("REACT_HAPPY_1"), Loc.t("REACT_HAPPY_2"), Loc.t("REACT_HAPPY_3")]
 	reaction_kind = &"love"
 	reaction_time = 1.25
 	pet_happy = true
@@ -527,7 +527,7 @@ func _draw() -> void:
 	_draw_tool_shelf()
 	if upgrade_level > 0:
 		draw_style_box(level_box, Rect2(70, 500, 250, 78))
-		draw_string(UI_TITLE_FONT, Vector2(95, 552), "ESTAÇÃO  Nv.%d" % upgrade_level, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
+		draw_string(UI_TITLE_FONT, Vector2(95, 552), Loc.t("HUD_STATION_LEVEL") % upgrade_level, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
 	# ── Entrada/saída + bob por temperamento + pulso áudio ──
 	var beat_pulse: float = pow(1.0 - AudioManager.beat_phase(), 3.0)
 	var is_small: bool = PetAnimationTuning.is_small_breed(breed_name)
@@ -622,7 +622,7 @@ func _draw() -> void:
 		draw_rect(Rect2(patience_rect.position, patience_fill), patience_color)
 		draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(-36, 18), "⏳", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color.WHITE)
 		if patience_ratio <= 0.3:
-			draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(patience_rect.size.x + 8, 18), "RÁPIDO!", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, patience_color)
+			draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(patience_rect.size.x + 8, 18), Loc.t("HUD_RAPIDO"), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, patience_color)
 	PetVFXArt.draw_celebration(self, beat_pulse)
 	if rush_active:
 		var rush_glow: float = 0.42 + 0.18 * sin(shake_phase * 5.0)

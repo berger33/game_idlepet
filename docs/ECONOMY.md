@@ -4,6 +4,7 @@
 Upgrade cedo em 2–3 serviços, escolha em 20–40 s, sink com efeito visível, offline generoso mas inferior à interação, e progressão sem vender exclusividade. Números são hipótese e mudam apenas por experimento/cohort documentado.
 
 ## Fórmulas implementadas
+- Base realista Guarulhos/SP 2025 (RemoteConfig/Data): `bath_base_reward = 52` (banho pequeno-médio R$40-60), `BASE_REWARDS = {groom: 88, dry: 42, perfume: 38, style: 58}` — valores pesquisados 2026-09-21 (banho+tosa 70-90/90-130, hidratação 30-50, perfume +10-30 extra), antes `12` genérico corrigido em `1148797`.
 - Serviço: `floor(base × 1.075^estação × (1 + utensílio×0.04) × qualidade × combo)`.
 - O crescimento da estação foi reduzido de 15% para **7,5% por nível**; metade do bônus anterior.
 - Quality: Good 1,15; Perfect 1,5.

@@ -488,3 +488,17 @@ SERVICE_VERB_GROOM,recortar
 SERVICE_VERB_DRY,secar
 SERVICE_VERB_PERFUME,perfumar
 SERVICE_VERB_STYLE,poner un lazo
+REACT_FEARFUL_1,¡Las caricias ayudan!
+REACT_FEARFUL_2,¡Ahora estoy tranquilo!
+REACT_FEARFUL_3,¡Más despacito!
+REACT_IRRITATED_1,"¡Eh! ...vale, me gustó."
+REACT_IRRITATED_2,¡Solo una caricia más!
+REACT_IRRITATED_3,¡Guau! ¡Qué sorpresa!
+REACT_CAT_1,Prrrr...
+REACT_CAT_2,¡Miau! ¡Me gustó!
+REACT_CAT_3,¡Caricia aprobada!
+REACT_HAPPY_1,¡Amé la caricia!
+REACT_HAPPY_2,¡Guau guau! ¡Otra vez!
+REACT_HAPPY_3,¡Eres mi humano favorito!
+HUD_RAPIDO,¡RÁPIDO!
+HUD_STATION_LEVEL,ESTACIÓN  Nv.%d

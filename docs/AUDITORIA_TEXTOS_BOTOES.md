@@ -1,13 +1,13 @@
 # Auditoria de Textos e Botões — UX Writing & UI
 
-**Data:** 2026-09-21 · **Branch:** arena/01a0c221-game-idlepet
+**Data:** 2026-09-22 · **Branch:** arena/01a0c45c-game-idlepet@222a6f4 (follow-up: 504 chaves, P1 100% corrigido)
 **Escopo:** todos os textos visíveis ao jogador + formatos de botões/pills/cards/toasts
 
 ## 1. Inventário de Textos
 
 ### 1.1 Localização
-- 389 chaves em pt_BR.csv, en_US, es_ES (paridade 100%)
-- 169 chaves usadas via Loc.t() estático, 0 faltando, 219 extras usadas via dinâmico (EVENT_%d, RARITY_*, etc)
+- 504 chaves em pt_BR.csv, en_US, es_ES (paridade 100%) — 389 base + 115 adicionadas (P0 26 + P1 10 ROOM/SERVICE_VERB + 14 REACT/HUD + 65 pré-existentes)
+- 183 chaves usadas via Loc.t() estático, 0 faltando, 221 extras via dinâmico (EVENT_%d, RARITY_*, etc) — +14 REACT/HUD +10 ROOM/SERVICE_VERB
 - Cobertura: missões, loja, coleção, equipe, mapa, ajustes, tutorial, compartilhamento, offline, prestígio, pesquisa
 
 ### 1.2 Hardcoded encontrados (antes da correção)
@@ -41,16 +41,16 @@
 - **_button** (Main): Button 72x72 nav, 86x86 upgrades, 320x185 queue card (Button), 0x110 primary result, 0x72 share. Radius 34→32, margin 14, hover lightened 0.08→0.10 + borda branca 2, pressed darkened 0.12→0.15, disabled b0bec5→90a4ae. Bind InteractionFX (scale + haptics).
 - **_style_button** (MetaPanel): similar mas radius 30, font 26, disabled b0bec5. Usado em info_row action, filtros, close, font scale, lang.
 - **info_row Action**: 200x64 do tscn, texto via _style_button.
-- **pet_card**: PanelContainer 196x240, não botão mas com gui_input para favorite — touch target bom, mas sem feedback visual de pressed. Deveria ter hover.
-- **slider_row**: HSlider 420x40, step 0.05 — bom.
+- **pet_card**: PanelContainer 196x240, gui_input favorite — agora com hover scale 1.05 + pressed 0.95 + tween 0.08s (P1 corrigido).
+- **slider_row**: HSlider 420x40, step 0.05 — agora com labels 0%/100% + tooltip 0%—100% + Value % (P1 corrigido).
 - **close**: 84x84 "✕" — bom, mas font size default pequeno, agora escala com font_scale.
 
 ### 2.2 Problemas de formato
 | Problema | Onde | Impacto | Correção aplicada |
 |---|---|---|---|
 | **Touch target <64px** | filtros 140x56, shop 140x56 | Falha WCAG, dedo grande erra | 150x64 mínimo |
-| **Contraste baixo** | botão amarelo ffd54f com texto branco (1.2:1) | Ilegível | Texto adaptativo: luminance>0.65 → CHARCOAL |
-| **Contraste baixo** | GREEN 7ed957 branco 1.6:1 | Limite | Mantido mas hover com borda branca 2 ajuda; considerar escurecer GREEN para 5fae43 futuro |
+| **Contraste baixo** | botão amarelo ffd54f com texto branco (1.41:1) | Ilegível | WCAG max-ratio: _ideal_text_color() escolhe CHARCOAL (9.33:1) — PASS AA |
+| **Contraste baixo** | GREEN 7ed957 branco 1.76:1 / 43a047 3.30:1 | Falha AA | Corrigido: GREEN 43a047→2e7d32 (5.13:1 com branco, PASS AA) + _ideal_text_color() max-ratio (PINK 6.15:1, BLUE 6.57:1) |
 | **Disabled ilegível** | b0bec5 + branco | 1.5:1 | Mudado para 90a4ae + eceff1 + mantém disabled |
 | **Radius inconsistente** | pressed 30 vs normal 34 | Salto visual | Unificado 32 (Main) e 30 (Meta) |
 | **Texto truncado** | pill 210px + font 33*1.2=39px "💬 Ana: Caramelo amou o banho! ★★★★★" 45 chars | Overflow | Autowrap WORD_SMART + min 64px altura + font 28 base |
@@ -71,7 +71,8 @@
 ## 3. Melhorias Implementadas (P0)
 
 ### 3.1 Localização
-- 26 novas chaves: FILTER_ALL, FILTER_DOGS, FILTER_CATS, FILTER_LEGENDARY, FILTER_ALL_COSMETICS, FILTER_BATH, FILTER_WALL, FILTER_ACCESSORY, DAILY_SPIN_TITLE/DESC, SPIN_ACTION/DONE, WEEKLY_PROGRESS_PILL, COLLECTION_SUMMARY, SPECIAL_ORDER_TITLE/NOTE/ACCEPT/DECLINE, CLIENT_LEFT_COINS, RUSH_ACTIVE/COOLDOWN, ASSIST_TOAST, MOOD_BUFF_TOAST, PETTING_LIMIT, WEEKLY_RESET_TOMORROW/DAYS, STREAK_LOSS_NOTE, ASSIST_ACTIVE, QUEUE_ARRIVING/RELOAD
+- 26 novas chaves P0: FILTER_ALL, FILTER_DOGS, FILTER_CATS, FILTER_LEGENDARY, FILTER_ALL_COSMETICS, FILTER_BATH, FILTER_WALL, FILTER_ACCESSORY, DAILY_SPIN_TITLE/DESC, SPIN_ACTION/DONE, WEEKLY_PROGRESS_PILL, COLLECTION_SUMMARY, SPECIAL_ORDER_TITLE/NOTE/ACCEPT/DECLINE, CLIENT_LEFT_COINS, RUSH_ACTIVE/COOLDOWN, ASSIST_TOAST, MOOD_BUFF_TOAST, PETTING_LIMIT, WEEKLY_RESET_TOMORROW/DAYS, STREAK_LOSS_NOTE, ASSIST_ACTIVE, QUEUE_ARRIVING/RELOAD
+- 24 novas chaves P1 2026-09-21: ROOM_BATH/GROOM/DRY/PERFUME/STYLE (5), SERVICE_VERB_BATH/GROOM/DRY/PERFUME/STYLE (5), REACT_FEARFUL_1-3/IRRI_1-3/CAT_1-3/HAPPY_1-3 (12), HUD_RAPIDO, HUD_STATION_LEVEL (2) — PetShopCanvas 100% Loc.t, SalonTuning perfume maestria
 - PetStories agora com EN fallback: _is_en() checa Loc.lang, usa dicionários EN para bio/queue/memory/thanks
 - DailySpin label_for usa COINS via Loc.t
 - LiveOps weekly_reset_label usa Loc.t
@@ -96,17 +97,23 @@
 - Upsell: SPECIAL_* localizados
 - Streak: STREAK_LOSS_NOTE localizado
 
-## 4. O que ainda pode melhorar (P1)
+## 4. O que foi corrigido em P1 (2026-09-22 — branch arena/01a0c45c-game-idlepet@222a6f4 + follow-up)
 
-- **Casing**: padronizar ALL CAPS apenas para CTA primário (CONTINUAR, GIRAR, ACEITAR), secundário Title Case (Usar, Em uso) — atualmente BUY=COMPRAR ALL CAPS ok, mas EQUIP=USAR ALL CAPS deveria ser Title? Decisão de design, manter por enquanto.
-- **Tamanho de fonte**: com font_scale 1.2, pill 28*1.2=33px ainda grande para 150px width com texto "LENDÁRIOS" 9 chars — testar truncamento. Sugere reduzir para 22*scale em filtros.
-- **Ícones**: NAV_ICONS 72px, mas sem label de acessibilidade para leitor de tela. Adicionar tooltip_text já existe, bom.
-- **Contraste GREEN**: 7ed957 luminance 0.6, branco 1.6:1 falha WCAG AA (precisa 4.5:1). Sugere trocar GREEN para 4caf50 ou usar texto CHARCOAL no GREEN.
-- **Pet card**: sem feedback pressed, adicionar StyleFactory box com scale 0.95 no gui_input.
-- **Slider**: sem valor mínimo/máximo label, só % — poderia mostrar "0% / 100%".
-- **Empty states**: fila vazia "Chegando..." com dots animados bom, mas poderia ter "Toque para acelerar" CTA.
-- **Erros**: TRANSFER_INVALID toast vermelho ef5350 com branco ok, mas poderia ter botão "Tentar novamente".
-- **Onboarding**: textos de tutorial TUT_STEP_1/2 já localizados, mas poderiam ter seta visual além de spotlight.
+- **Contraste GREEN**: 7ed957 1.76:1 → 43a047 3.30:1 → 2e7d32 5.13:1 PASS AA com branco; _ideal_text_color() WCAG max-ratio em Main e MetaPanel (PINK 6.15:1, BLUE 6.57:1, YELLOW 9.33:1)
+- **Pet card**: feedback pressed scale 0.95 + hover 1.05 já existente (MetaPanel._build_collection mouse_entered/ gui_input) — validado, sem pendência
+- **Slider**: labels 0% / 100% adicionados em MetaPanel._add_slider (MinLabel/MaxLabel 18px 90a4ae) + tooltip 0%—100% + Value %
+- **Empty states**: fila vazia já exibe "Chegando…" + dots animados + "Toque para acelerar" CTA (Main._update_queue_ui) — validado
+- **Reações pet**: PetShopCanvas.react_to_touch() hardcoded PT → 12 chaves REACT_* via Loc.t (3 fearful/anxious, 3 irritated, 3 cat, 3 happy) + HUD_RAPIDO/HUD_STATION_LEVEL
+- **Títulos sala**: PetShopCanvas ROOM_* hardcoded PT → 5 chaves ROOM_* via Loc.t (BANHO & ESPUMA etc)
+- **Verbos serviço**: Main SERVICE_LABELS hardcoded PT → 5 chaves SERVICE_VERB_* via Loc.t (_service_verb())
+- **Maestria perfume**: SalonTuning apply() sem perfume → map perfume→perfume + pulse_window*1.30
+
+## 4b. O que ainda pode melhorar (P2 — opcional)
+
+- **Casing**: ALL CAPS apenas CTA primário; EQUIP=USAR poderia ser Title Case — decisão de design, manter
+- **Tamanho fonte filtros**: 28*1.2=33px em 150px "LENDÁRIOS" 9 chars — considerar 22*scale se truncar em 720p
+- **Erros**: TRANSFER_INVALID toast poderia ter botão "Tentar novamente" — hoje só toast ef5350
+- **Onboarding**: TUT_STEP_1/2 já têm spotlight; seta visual adicional seria polish
 
 ## 5. Checklist de validação
 
@@ -114,13 +121,14 @@
 - [x] Nenhum texto hardcoded em pt_BR sem chave (exceto mock prova social que é intencionalmente fake mas agora usa template)
 - [x] Botões >=64px altura
 - [x] Autowrap para textos longos
-- [x] Contraste adaptativo para amarelo
+- [x] Contraste WCAG AA max-ratio para amarelo/GREEN/PINK/BLUE (2e7d32 5.13:1 PASS)
 - [x] Focus state para teclado
 - [x] Hover com borda branca
 - [x] Disabled legível
 - [x] Toast duração proporcional
 - [x] Result e queue card sem overflow
-- [x] Filtros localizados
+- [x] Filtros + ROOM_* + SERVICE_VERB_* + REACT_* + HUD_* localizados (504 chaves)
+- [x] Maestria perfume (pulse_window*1.30) + slider 0%/100% + economia 52/88 documentada
 - [x] validate_project.py 0 errors
 
 ## 6. Próximos passos

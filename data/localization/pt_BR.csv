@@ -488,3 +488,17 @@ SERVICE_VERB_GROOM,tosar
 SERVICE_VERB_DRY,secar
 SERVICE_VERB_PERFUME,perfumar
 SERVICE_VERB_STYLE,colocar lacinho
+REACT_FEARFUL_1,Carinho ajuda!
+REACT_FEARFUL_2,Agora estou tranquilo!
+REACT_FEARFUL_3,Mais devagarzinho!
+REACT_IRRITATED_1,"Ei! ...tá, gostei."
+REACT_IRRITATED_2,Só mais um carinho!
+REACT_IRRITATED_3,Au! Que surpresa!
+REACT_CAT_1,Prrrrr...
+REACT_CAT_2,Miau! Gostei!
+REACT_CAT_3,Carinho aprovado!
+REACT_HAPPY_1,Amei o carinho!
+REACT_HAPPY_2,Au au! De novo!
+REACT_HAPPY_3,Você é meu humano favorito!
+HUD_RAPIDO,RÁPIDO!
+HUD_STATION_LEVEL,ESTAÇÃO  Nv.%d

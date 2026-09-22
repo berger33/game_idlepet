@@ -6,7 +6,7 @@ extends Node
 ## (brasas + IAP honesto + rewarded ads), mapa e ajustes com sliders.
 ## Tudo emerge do painel (pivot na origem + cascata scale-in).
 
-const GREEN: Color = Color("43a047")
+const GREEN: Color = Color("2e7d32") # WCAG AA 5.13:1 com branco (antes 43a047 3.30:1)
 const BLUE: Color = Color("4fc3f7")
 const PINK: Color = Color("ff8fb1")
 const CHARCOAL: Color = Color("263238")
@@ -948,6 +948,23 @@ func _add_slider(caption: String, setting_key: String, default_value: float) -> 
 	caption_label.text = caption + ":"
 	caption_label.add_theme_font_size_override("font_size", 28)
 	caption_label.add_theme_color_override("font_color", CHARCOAL)
+	# P1: labels min/max para acessibilidade — antes só % atual
+	var min_label: Label = Label.new()
+	min_label.name = "MinLabel"
+	min_label.text = "0%"
+	min_label.add_theme_font_size_override("font_size", 18)
+	min_label.add_theme_color_override("font_color", Color("90a4ae"))
+	min_label.custom_minimum_size = Vector2(40, 0)
+	min_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	row.add_child(min_label)
+	row.move_child(min_label, 1)
+	var max_label: Label = Label.new()
+	max_label.name = "MaxLabel"
+	max_label.text = "100%"
+	max_label.add_theme_font_size_override("font_size", 18)
+	max_label.add_theme_color_override("font_color", Color("90a4ae"))
+	max_label.custom_minimum_size = Vector2(50, 0)
+	max_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var value_label: Label = row.get_node_or_null("Value") as Label
 	if value_label == null:
 		value_label = Label.new()
@@ -956,7 +973,15 @@ func _add_slider(caption: String, setting_key: String, default_value: float) -> 
 		value_label.add_theme_font_size_override("font_size", 26)
 		value_label.add_theme_color_override("font_color", CHARCOAL)
 		row.add_child(value_label)
+	# posiciona 100% antes do valor atual para ordem: Caption | 0% | Slider | 100% | 42%
+	var v_idx: int = row.get_children().find(value_label)
+	if v_idx != -1:
+		row.add_child(max_label)
+		row.move_child(max_label, v_idx)
+	else:
+		row.add_child(max_label)
 	var slider: HSlider = row.get_node("Slider")
+	slider.tooltip_text = "0% — 100%"
 	slider.value = float(GameState.settings.get(setting_key, default_value))
 	value_label.text = "%d%%" % int(slider.value * 100.0)
 	slider.value_changed.connect(
@@ -1112,13 +1137,22 @@ func _label_node(text: String, size: int, color: Color) -> Label:
 	return label
 
 
+func _relative_luminance(c: Color) -> float:
+	var rs: float = c.r; var gs: float = c.g; var bs: float = c.b
+	rs = rs / 12.92 if rs <= 0.04045 else pow((rs + 0.055) / 1.055, 2.4)
+	gs = gs / 12.92 if gs <= 0.04045 else pow((gs + 0.055) / 1.055, 2.4)
+	bs = bs / 12.92 if bs <= 0.04045 else pow((bs + 0.055) / 1.055, 2.4)
+	return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+func _ideal_text_color(bg: Color) -> Color:
+	var lb: float = _relative_luminance(bg); var lw: float = 1.0; var lc: float = _relative_luminance(CHARCOAL)
+	var cr_white: float = (maxf(lb, lw) + 0.05) / (minf(lb, lw) + 0.05)
+	var cr_char: float = (maxf(lb, lc) + 0.05) / (minf(lb, lc) + 0.05)
+	return CHARCOAL if cr_char > cr_white else Color.WHITE
 func _style_button(button: Button, color: Color) -> void:
-	# Unificado com Main._button: radius 30 consistente, altura mínima 64, contraste adaptativo
+	# Unificado com Main._button: radius 30 consistente, altura mínima 64, contraste WCAG (escolhe maior ratio)
 	var fs: float = float(GameState.settings.get("font_scale", 1.0))
 	button.add_theme_font_size_override("font_size", int(26 * fs))
-	# Texto adaptativo: amarelo claro ffd54f precisa texto escuro para contraste WCAG
-	var is_light: bool = color.get_luminance() > 0.65 or color == Color("ffd54f") or color == Color("ffeb3b")
-	var text_color: Color = CHARCOAL if is_light else Color.WHITE
+	var text_color: Color = _ideal_text_color(color)
 	button.add_theme_color_override("font_color", text_color)
 	button.add_theme_color_override("font_pressed_color", text_color)
 	button.add_theme_color_override("font_disabled_color", Color("eceff1"))
