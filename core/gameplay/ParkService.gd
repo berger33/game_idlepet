@@ -137,7 +137,7 @@ func finish() -> StringName:
 			perfect = progress >= 0.96
 			state = State.COMPLETE
 			return &"perfect" if perfect else &"good"
-		elif progress >= 0.45:
+		elif progress >= 0.62:
 			state = State.COMPLETE
 			return &"good"
 		else:

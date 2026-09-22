@@ -1049,11 +1049,11 @@ func _setup_park() -> void:
 	park_button.add_theme_stylebox_override("pressed", _style(Color("689f38", 1.0), 43, 8, Color.WHITE, 4))
 	park_button.pressed.connect(_on_park_button)
 	add_child(park_button)
-	# Painel de escolha de atividade (3 botões)
+	# Painel de escolha de atividade (3 botões) — 560h evita sobrepor instruction_label em 1350
 	park_choose_panel = PanelContainer.new()
 	park_choose_panel.visible = false
-	park_choose_panel.position = Vector2(60, 760)
-	park_choose_panel.size = Vector2(960, 620)
+	park_choose_panel.position = Vector2(60, 740)
+	park_choose_panel.size = Vector2(960, 560)
 	park_choose_panel.add_theme_stylebox_override("panel", _style(Color.WHITE, 28, 18, Color("8bc34a"), 4))
 	add_child(park_choose_panel)
 	var vbox: VBoxContainer = VBoxContainer.new()

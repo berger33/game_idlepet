@@ -488,29 +488,29 @@ func _build_album() -> void:
 		var date: String = String(photo.get("date", ""))
 		var perfect: bool = bool(photo.get("perfect", false))
 		var card: PanelContainer = PanelContainer.new()
-		card.custom_minimum_size = Vector2(260, 220)
+		card.custom_minimum_size = Vector2(260, 250)
 		card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
 		var vbox: VBoxContainer = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 6)
 		card.add_child(vbox)
-		# Thumb com COVER (preenche 240×90 sem letterbox) + clip arredondado — corrige squish do CENTERED
+		# Thumb 4:3 (240×180) COVER + clip 12px — evita letterbox e preserva rosto do pet (240×90 cortava 62%)
 		var thumb_wrap: PanelContainer = PanelContainer.new()
-		thumb_wrap.custom_minimum_size = Vector2(240, 90)
+		thumb_wrap.custom_minimum_size = Vector2(240, 150)
 		thumb_wrap.clip_contents = true
 		thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
 		vbox.add_child(thumb_wrap)
 		var thumb: TextureRect = TextureRect.new()
 		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		thumb.custom_minimum_size = Vector2(240, 90)
+		thumb.custom_minimum_size = Vector2(240, 150)
 		thumb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		thumb.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		# tenta carregar primeiro pet da foto — corta topo levemente para focar no rosto
+		# tenta carregar primeiro pet da foto — offset vertical foca rosto (pet centralizado em 512)
 		var first_pet: String = String(pets[0]) if pets.size() > 0 else "caramelo"
 		var tpath: String = "res://art/pets/%s.png" % first_pet
 		if ResourceLoader.exists(tpath):
 			thumb.texture = load(tpath)
-		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.94)
+		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.96)
 		thumb_wrap.add_child(thumb)
 		var nlabel: Label = Label.new()
 		nlabel.text = names if not names.is_empty() else "Foto"
