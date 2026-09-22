@@ -85,6 +85,15 @@ var active_play_seconds: float = 0.0
 var pet_affection: Dictionary = {}
 ## Pet preferido (buddy): entra na fila com prioridade e lidera a coleção.
 var favorite_pet: String = "caramelo"
+## Parquinho / Creche (Park): loop fora da banheira — cuidado, afeto e recompensa a cada X tempo.
+var park_pets: Array[String] = [] # 3 pets no parquinho, rotaciona a cada sessão
+var park_cooldown_until: int = 0 # unix timestamp quando pode jogar de novo
+var park_plays_total: int = 0
+var park_plays_today: int = 0
+var park_today_key: String = ""
+var park_last_activity: String = "ball" # ball | treat | photo
+var park_streak: int = 0 # dias consecutivos com pelo menos 1 play no parquinho
+var park_best_streak: int = 0
 ## Visitantes misteriosos (Discovery.gd): pet ainda bloqueado -> atendimentos.
 var visitor_progress: Dictionary = {}
 ## Meta do dia do evento (LiveOps): atendimentos do serviço em destaque hoje.
@@ -393,6 +402,14 @@ func to_dictionary() -> Dictionary:
 		"active_play_seconds": active_play_seconds,
 		"pet_affection": pet_affection,
 		"favorite_pet": favorite_pet,
+		"park_pets": park_pets,
+		"park_cooldown_until": park_cooldown_until,
+		"park_plays_total": park_plays_total,
+		"park_plays_today": park_plays_today,
+		"park_today_key": park_today_key,
+		"park_last_activity": park_last_activity,
+		"park_streak": park_streak,
+		"park_best_streak": park_best_streak,
 		"visitor_progress": visitor_progress,
 		"event_goal_date": event_goal_date,
 		"event_goal_count": event_goal_count,
@@ -474,6 +491,18 @@ func apply_dictionary(data: Dictionary) -> void:
 	favorite_pet = String(data.get("favorite_pet", "caramelo"))
 	if not unlocked_pets.has(favorite_pet):
 		favorite_pet = "caramelo"
+	park_pets = _valid_pet_array(data.get("park_pets", []))
+	if park_pets.size() != 3:
+		park_pets.clear()
+	park_cooldown_until = maxi(0, int(data.get("park_cooldown_until", 0)))
+	park_plays_total = maxi(0, int(data.get("park_plays_total", 0)))
+	park_plays_today = maxi(0, int(data.get("park_plays_today", 0)))
+	park_today_key = String(data.get("park_today_key", ""))
+	park_last_activity = String(data.get("park_last_activity", "ball"))
+	if park_last_activity not in ["ball", "treat", "photo"]:
+		park_last_activity = "ball"
+	park_streak = clampi(int(data.get("park_streak", 0)), 0, 3650)
+	park_best_streak = clampi(int(data.get("park_best_streak", 0)), park_streak, 3650)
 	visitor_progress = _safe_int_map(data.get("visitor_progress", {}), Discovery.VISITS_TO_ADOPT)
 	event_goal_date = String(data.get("event_goal_date", ""))
 	event_goal_count = maxi(0, int(data.get("event_goal_count", 0)))
@@ -919,6 +948,101 @@ func register_pet_interaction(pet_id: String) -> int:
 		EventBus.toast_requested.emit(Loc.t("AFFECTION_TOAST") % ember_reward, Color("ff8fb1"))
 	SaveManager.request_save()
 	return touches
+
+
+## ── Parquinho (Park) ── segunda área fora da banheira, a cada X tempo
+func park_cooldown_seconds() -> float:
+	return RemoteConfig.get_float("park_cooldown_seconds") if RemoteConfig.values.has("park_cooldown_seconds") else 7200.0
+
+func park_can_play() -> bool:
+	return Time.get_unix_time_from_system() >= park_cooldown_until
+
+func park_remaining_seconds() -> int:
+	return maxi(0, park_cooldown_until - int(Time.get_unix_time_from_system()))
+
+func park_ensure_pets() -> void:
+	if park_pets.size() == 3 and park_pets.all(func(id): return unlocked_pets.has(id)):
+		return
+	# escolhe 3 pets distintos: favorito + 2 aleatórios desbloqueados
+	var pool: Array[String] = unlocked_pets.duplicate()
+	if pool.is_empty():
+		pool = ["caramelo"]
+	park_pets.clear()
+	if unlocked_pets.has(favorite_pet):
+		park_pets.append(favorite_pet)
+		pool.erase(favorite_pet)
+	pool.shuffle()
+	while park_pets.size() < 3 and not pool.is_empty():
+		park_pets.append(pool.pop_front())
+	while park_pets.size() < 3:
+		park_pets.append(pool[randi() % pool.size()] if not pool.is_empty() else "caramelo")
+	SaveManager.request_save()
+
+func park_pick_activity() -> String:
+	# rotaciona ball → treat → photo → ball ... mas com peso do último
+	var options: Array[String] = ["ball", "treat", "photo"]
+	if park_last_activity in options:
+		var idx: int = options.find(park_last_activity)
+		return options[(idx + 1) % options.size()] if randf() < 0.7 else options[randi() % options.size()]
+	return options[randi() % options.size()]
+
+func park_start_session(activity: String) -> void:
+	park_last_activity = activity
+	park_ensure_pets()
+	Analytics.track(&"park_started", {"activity": activity, "pets": park_pets})
+
+func park_complete(activity: String, success: bool, perfect: bool) -> Dictionary:
+	# cooldown
+	park_cooldown_until = int(Time.get_unix_time_from_system()) + int(park_cooldown_seconds())
+	park_plays_total += 1
+	# streak diário do parquinho
+	var today: String = Time.get_date_string_from_system()
+	if park_today_key != today:
+		if park_today_key.is_empty():
+			park_streak = 1
+		else:
+			var yesterday: String = Time.get_date_string_from_unix_time(Time.get_unix_time_from_system() - 86400)
+			park_streak = park_streak + 1 if park_today_key == yesterday else 1
+		park_today_key = today
+		park_plays_today = 1
+		park_best_streak = maxi(park_best_streak, park_streak)
+	else:
+		park_plays_today += 1
+	# recompensas
+	var coins_reward: int = 0
+	var affection_gain: int = 0
+	var ember_gain: int = 0
+	if success:
+		var base: float = RemoteConfig.get_float("park_reward_coins") if RemoteConfig.values.has("park_reward_coins") else 35.0
+		coins_reward = int(base * (1.5 if perfect else 1.0) * (1.0 + float(park_streak) * 0.05))
+		affection_gain = 2 if perfect else 1
+		ember_gain = 1 if perfect and randf() < 0.25 else 0
+		add_coins(float(coins_reward), &"park")
+		if ember_gain > 0:
+			embers += ember_gain
+			EventBus.currency_changed.emit(&"embers", float(embers))
+		for pid: String in park_pets:
+			var prev: int = int(pet_affection.get(pid, 0))
+			pet_affection[pid] = clampi(prev + affection_gain, 0, 50)
+			if prev < 5 and int(pet_affection[pid]) >= 5:
+				embers += 1
+				EventBus.toast_requested.emit(Loc.t("AFFECTION_TOAST") % 1, Color("ff8fb1"))
+		# missão semanal: parquinho conta como "perfect" e "services"
+		weekly_progress["perfect"] = int(weekly_progress.get("perfect", 0)) + (1 if perfect else 0)
+		weekly_progress["services"] = int(weekly_progress.get("services", 0)) + 1
+		_check_achievements()
+		# achievement parquinho
+		if park_plays_total == 1:
+			_unlock_achievement("park_first", 20)
+		if park_plays_total >= 10:
+			_unlock_achievement("park_10", 0, 2)
+		if park_plays_total >= 50:
+			_unlock_achievement("park_50", 0, 5)
+		if park_streak >= 7:
+			_unlock_achievement("park_streak_7", 0, 3)
+	Analytics.track(&"park_completed", {"activity": activity, "success": success, "perfect": perfect, "coins": coins_reward})
+	SaveManager.request_save()
+	return {"coins": coins_reward, "affection": affection_gain, "embers": ember_gain, "streak": park_streak}
 
 
 func _reconcile_career_unlocks(show_feedback: bool) -> void:

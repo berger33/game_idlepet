@@ -502,3 +502,27 @@ REACT_HAPPY_2,Au au! De novo!
 REACT_HAPPY_3,Você é meu humano favorito!
 HUD_RAPIDO,RÁPIDO!
 HUD_STATION_LEVEL,ESTAÇÃO  Nv.%d
+PARK_BUTTON,Parquinho
+PARK_TITLE,Parquinho — escolha a brincadeira
+PARK_BALL,Jogar bolinha
+PARK_TREAT,Esconder petisco
+PARK_PHOTO,Foto do grupo
+PARK_CLOSE,Fechar
+PARK_READY,Pronto!
+PARK_COOLDOWN,Volta em %s
+PARK_COOLDOWN_TOAST,Parquinho volta em %s — os pets estão tirando uma soneca!
+PARK_CHOOSE,Escolha como cuidar dos 3 no quintal
+PARK_STREAK,🔥 %d dias seguidos no parquinho
+PARK_STREAK_BONUS,🔥 %d dias seguidos!
+PARK_HINT_BALL,🎾 Arraste a bolinha até o pet do meio!
+PARK_HINT_TREAT,🦴 Toque no pote com o petisco escondido!
+PARK_HINT_PHOTO,📸 Espere o alinhamento e toque em FOTO!
+PARK_SHUTTER,FOTO!
+PARK_PERFECT,⭐ Perfeito no parquinho!
+PARK_SUCCESS_EXTRA,%s adoraram o quintal com você!
+PARK_PERFECT_EXTRA,Foto perfeita! As memórias vão para a coleção.
+PARK_FAIL,Quase! Tente de novo
+PARK_FAIL_HINT,Os pets se distraíram — tente outra brincadeira!
+PARK_FAIL_EXTRA,Sem penalidade na fila. Volta quando o cooldown acabar!
+PARK_LOCKED,Desbloqueia após o 1º atendimento
+PARK_LOCKED_TOAST,Termine seu primeiro atendimento para liberar o Parquinho!

@@ -502,3 +502,27 @@ REACT_HAPPY_2,Woof woof! Again!
 REACT_HAPPY_3,You're my favorite human!
 HUD_RAPIDO,HURRY!
 HUD_STATION_LEVEL,STATION  Lv.%d
+PARK_BUTTON,Playground
+PARK_TITLE,Playground — pick a game
+PARK_BALL,Fetch ball
+PARK_TREAT,Hide treat
+PARK_PHOTO,Group photo
+PARK_CLOSE,Close
+PARK_READY,Ready!
+PARK_COOLDOWN,Back in %s
+PARK_COOLDOWN_TOAST,Playground back in %s — pets are napping!
+PARK_CHOOSE,Choose how to care for the 3 in the yard
+PARK_STREAK,🔥 %d-day park streak
+PARK_STREAK_BONUS,🔥 %d days in a row!
+PARK_HINT_BALL,🎾 Drag the ball to the middle pet!
+PARK_HINT_TREAT,🦴 Tap the bowl with the hidden treat!
+PARK_HINT_PHOTO,📸 Wait for alignment and tap PHOTO!
+PARK_SHUTTER,SNAP!
+PARK_PERFECT,⭐ Playground perfect!
+PARK_SUCCESS_EXTRA,%s loved the yard with you!
+PARK_PERFECT_EXTRA,Perfect shot! Memories go to the collection.
+PARK_FAIL,Almost! Try again
+PARK_FAIL_HINT,Pets got distracted — try another game!
+PARK_FAIL_EXTRA,No queue penalty. Come back after cooldown!
+PARK_LOCKED,Unlocks after 1st service
+PARK_LOCKED_TOAST,Finish your first service to unlock the Playground!

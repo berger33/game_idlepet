@@ -23,6 +23,10 @@ const DEFAULTS: Dictionary = {
 	"upsell_chance": 0.35,
 	"upsell_tip_mult": 1.4,
 	"petting_max_per_client": 5.0,
+	# Parquinho / Creche — loop fora da banheira (fantasia cuidador no parquinho)
+	"park_cooldown_seconds": 7200.0, # 2h entre sessões — LiveOps ajusta sem build
+	"park_reward_coins": 52.0, # base = mesmo piso do banho (escala com streak 5% / dia)
+	"park_reward_affection": 1.0,
 	# Economia escalável via remote: multiplicadores que afetam Rewards.gd
 	"cosmetic_price_scale": 1.0,
 	"hire_price_scale": 1.0,
@@ -60,6 +64,9 @@ const RANGES: Dictionary = {
 	"hire_price_scale": Vector2(0.1, 5.0),
 	"reward_scale": Vector2(0.1, 5.0),
 	"offline_cap_scale": Vector2(0.5, 3.0),
+	"park_cooldown_seconds": Vector2(60.0, 86400.0),
+	"park_reward_coins": Vector2(5.0, 500.0),
+	"park_reward_affection": Vector2(1.0, 5.0),
 }
 # Chaves que aceitam string (JSON ou id) — tamanho limitado para evitar abuso.
 const STRING_KEYS: Array[String] = [
