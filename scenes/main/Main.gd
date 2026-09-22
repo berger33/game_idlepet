@@ -5,6 +5,7 @@ const MENU_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfum
 const NAV_ICONS: Dictionary = {
 	&"missions": preload("res://art/ui/icons/missions.png"),
 	&"collection": preload("res://art/ui/icons/collection.png"),
+	&"album": preload("res://art/ui/icons/collection.png"),
 	&"staff": preload("res://art/ui/icons/staff.png"),
 	&"shop": preload("res://art/ui/icons/shop.png"),
 	&"map": preload("res://art/ui/icons/map.png"),
@@ -81,6 +82,7 @@ var last_tip_percent: int = 0
 var tutorial_overlay: Control
 var tutorial_skip_button: Button
 var missions_button: Button
+var album_button: Button
 var tutorial := TutorialFlow.new()
 var recovery_penalty: bool = false
 var consecutive_perfects: int = 0
@@ -212,6 +214,30 @@ func _process(delta: float) -> void:
 			if is_instance_valid(badge):
 				badge.visible = false
 		D1Retention.update_missions_badge(self, upgrades_pulse_time)
+	# Álbum badge quando concurso liberado (sábado + 1 perfect)
+	if is_instance_valid(album_button) and not album_button.disabled:
+		if GameState.park_can_claim_contest():
+			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.0)
+			album_button.modulate = Color.WHITE.lerp(Color("ffd54f"), pulse * 0.45)
+			var abadge: Label = album_button.get_node_or_null("Badge") as Label
+			if abadge == null:
+				abadge = Label.new()
+				abadge.name = "Badge"
+				abadge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				abadge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+				abadge.add_theme_font_size_override("font_size", 26)
+				abadge.add_theme_color_override("font_color", Color.WHITE)
+				abadge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 18, 6))
+				abadge.custom_minimum_size = Vector2(38, 38)
+				abadge.position = Vector2(44, -10)
+				album_button.add_child(abadge)
+			abadge.text = "★"
+			abadge.visible = true
+		else:
+			album_button.modulate = Color.WHITE
+			var abadge: Label = album_button.get_node_or_null("Badge") as Label
+			if is_instance_valid(abadge):
+				abadge.visible = false
 	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 	upgrades_button.position = Vector2(120, 150) if left_handed else Vector2(952, 150)
 	if is_instance_valid(park_button):
@@ -1039,6 +1065,15 @@ func _setup_park() -> void:
 		btn.add_theme_stylebox_override("hover", _style(Color("ffe0b2"), 22, 10, Color.WHITE, 3))
 		btn.pressed.connect(_start_park_activity.bind(StringName(act["id"])))
 		vbox.add_child(btn)
+	var album_btn: Button = _button("📖  %s (%d)" % [(Loc.t("ALBUM_TITLE") if Loc.t("ALBUM_TITLE") != "ALBUM_TITLE" else "Álbum"), GameState.park_photos.size()], Color("e1bee7"), 900, 68)
+	album_btn.add_theme_font_size_override("font_size", 24)
+	album_btn.add_theme_color_override("font_color", Color("4a148c"))
+	album_btn.tooltip_text = Loc.t("ALBUM_TROPHIES") % GameState.park_trophies if Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % GameState.park_trophies
+	album_btn.pressed.connect(func() -> void:
+		_close_park()
+		meta.open(&"album")
+	)
+	vbox.add_child(album_btn)
 	var close_btn: Button = _button(Loc.t("PARK_CLOSE") if Loc.t("PARK_CLOSE") != "PARK_CLOSE" else "✕  Fechar", Color("90a4ae"), 900, 56)
 	close_btn.add_theme_font_size_override("font_size", 22)
 	close_btn.pressed.connect(_close_park)
@@ -1524,10 +1559,11 @@ func _build_interface() -> void:
 	nav.add_theme_constant_override("separation", 10)
 	add_child(nav)
 	# Progressive disclosure P1: reduz sobrecarga D0, libera gradualmente
-	var nav_unlocks: Dictionary = {&"missions": 1, &"collection": 1, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1}
+	var nav_unlocks: Dictionary = {&"missions": 1, &"collection": 1, &"album": 2, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1}
 	for item: Dictionary in [
 		{"id": "missions", "tip_key": "NAV_MISSIONS"},
 		{"id": "collection", "tip_key": "NAV_COLLECTION"},
+		{"id": "album", "tip_key": "NAV_ALBUM"},
 		{"id": "staff", "tip_key": "NAV_STAFF"},
 		{"id": "shop", "tip_key": "NAV_SHOP"},
 		{"id": "map", "tip_key": "NAV_MAP"},
@@ -1545,6 +1581,8 @@ func _build_interface() -> void:
 		nav_button.name = "Nav_%s" % String(sid)
 		if sid == &"missions":
 			missions_button = nav_button
+		if sid == &"album":
+			album_button = nav_button
 		if not locked:
 			nav_button.icon = NAV_ICONS[sid]
 		nav_button.tooltip_text = tip if not locked else "%s • %s" % [tip, Loc.t("NAV_LOCKED") % unlock_lv]

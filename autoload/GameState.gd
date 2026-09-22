@@ -94,6 +94,10 @@ var park_today_key: String = ""
 var park_last_activity: String = "ball" # ball | treat | photo
 var park_streak: int = 0 # dias consecutivos com pelo menos 1 play no parquinho
 var park_best_streak: int = 0
+## Álbum & Concurso: fotos perfeitas do parquinho viram coleção; sábado tem capa
+var park_photos: Array[Dictionary] = [] # {pets: Array[String], date: String, perfect: bool, activity: String, ts: int}
+var park_contest_claimed_week: String = "" # _week_key da última entrega de troféu
+var park_trophies: int = 0
 ## Visitantes misteriosos (Discovery.gd): pet ainda bloqueado -> atendimentos.
 var visitor_progress: Dictionary = {}
 ## Meta do dia do evento (LiveOps): atendimentos do serviço em destaque hoje.
@@ -410,6 +414,9 @@ func to_dictionary() -> Dictionary:
 		"park_last_activity": park_last_activity,
 		"park_streak": park_streak,
 		"park_best_streak": park_best_streak,
+		"park_photos": park_photos,
+		"park_contest_claimed_week": park_contest_claimed_week,
+		"park_trophies": park_trophies,
 		"visitor_progress": visitor_progress,
 		"event_goal_date": event_goal_date,
 		"event_goal_count": event_goal_count,
@@ -503,6 +510,9 @@ func apply_dictionary(data: Dictionary) -> void:
 		park_last_activity = "ball"
 	park_streak = clampi(int(data.get("park_streak", 0)), 0, 3650)
 	park_best_streak = clampi(int(data.get("park_best_streak", 0)), park_streak, 3650)
+	park_photos = _safe_photos_array(data.get("park_photos", []))
+	park_contest_claimed_week = String(data.get("park_contest_claimed_week", ""))
+	park_trophies = clampi(int(data.get("park_trophies", 0)), 0, 999)
 	visitor_progress = _safe_int_map(data.get("visitor_progress", {}), Discovery.VISITS_TO_ADOPT)
 	event_goal_date = String(data.get("event_goal_date", ""))
 	event_goal_count = maxi(0, int(data.get("event_goal_count", 0)))
@@ -553,6 +563,30 @@ func _safe_tool_levels(value: Variant) -> Dictionary:
 		result[tool_id] = clampi(int(source.get(tool_id, 0)), 0, 30)
 	return result
 
+
+func _safe_photos_array(value: Variant) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not value is Array:
+		return result
+	for item: Variant in value:
+		if item is Dictionary:
+			var d: Dictionary = item
+			# sanitiza pets
+			var pets: Array[String] = _valid_pet_array(d.get("pets", []))
+			if pets.is_empty():
+				continue
+			var safe: Dictionary = {
+				"pets": pets,
+				"date": String(d.get("date", "")),
+				"perfect": bool(d.get("perfect", false)),
+				"activity": String(d.get("activity", "photo")),
+				"ts": maxi(0, int(d.get("ts", 0))),
+				"coins": clampi(int(d.get("coins", 0)), 0, 10000),
+			}
+			result.append(safe)
+			if result.size() >= 50:
+				break
+	return result
 
 func _safe_int_map(value: Variant, max_value: int) -> Dictionary:
 	var source: Dictionary = value if value is Dictionary else {}
@@ -1040,9 +1074,83 @@ func park_complete(activity: String, success: bool, perfect: bool) -> Dictionary
 			_unlock_achievement("park_50", 0, 5)
 		if park_streak >= 7:
 			_unlock_achievement("park_streak_7", 0, 3)
+	# Álbum: foto perfeita (só photo perfect entra no álbum, mas qualquer perfect pode guardar memória)
+	if success and perfect and activity == "photo":
+		park_add_photo({"pets": park_pets.duplicate(), "date": today, "perfect": true, "activity": activity, "ts": int(Time.get_unix_time_from_system()), "coins": coins_reward})
 	Analytics.track(&"park_completed", {"activity": activity, "success": success, "perfect": perfect, "coins": coins_reward})
 	SaveManager.request_save()
 	return {"coins": coins_reward, "affection": affection_gain, "embers": ember_gain, "streak": park_streak}
+
+
+## ── Álbum & Concurso ──
+func park_add_photo(entry: Dictionary) -> void:
+	# limita a 50 fotos para não inchar o save
+	park_photos.append(entry)
+	if park_photos.size() > 50:
+		park_photos = park_photos.slice(park_photos.size() - 50, park_photos.size())
+	SaveManager.request_save()
+
+func park_photos_this_week() -> Array[Dictionary]:
+	var week: String = _week_key()
+	var result: Array[Dictionary] = []
+	for p: Dictionary in park_photos:
+		var ts: int = int(p.get("ts", 0))
+		if ts <= 0:
+			continue
+		var days: int = int(floor(float(ts) / 86400.0))
+		var p_week: String = str(days - ((days + 3) % 7))
+		if p_week == week:
+			result.append(p)
+	return result
+
+func park_best_photo() -> Dictionary:
+	for i: int in range(park_photos.size() - 1, -1, -1):
+		if bool(park_photos[i].get("perfect", false)):
+			return park_photos[i]
+	return {}
+
+func park_is_saturday() -> bool:
+	return int(Time.get_datetime_dict_from_system()["weekday"]) == 6 # 0 dom, 6 sáb
+
+func park_can_claim_contest() -> bool:
+	var week: String = _week_key()
+	if park_contest_claimed_week == week:
+		return false
+	if not park_is_saturday() and park_photos_this_week().size() == 0:
+		# fora de sábado só mostra coletável se já tem foto na semana; claim só no sábado
+		return false
+	# exige 1 perfect na semana
+	for p: Dictionary in park_photos_this_week():
+		if bool(p.get("perfect", false)):
+			return park_is_saturday()
+	return false
+
+func park_contest_progress() -> Dictionary:
+	var week_photos: Array[Dictionary] = park_photos_this_week()
+	var perfects: int = 0
+	for p: Dictionary in week_photos:
+		if bool(p.get("perfect", false)):
+			perfects += 1
+	return {"total": week_photos.size(), "perfects": perfects, "claimed": park_contest_claimed_week == _week_key(), "is_saturday": park_is_saturday()}
+
+func park_claim_contest() -> Dictionary:
+	if not park_can_claim_contest():
+		return {}
+	var week: String = _week_key()
+	park_contest_claimed_week = week
+	park_trophies += 1
+	var coins_reward: int = Rewards.for_kind(&"weekly_chest", 200)
+	var embers_reward: int = 3
+	add_coins(float(coins_reward), &"park_contest")
+	embers += embers_reward
+	EventBus.currency_changed.emit(&"embers", float(embers))
+	# cosmético de capa (se não tem, dá crown_gold simulado como troféu)
+	if not unlocked_cosmetics.has("crown_gold") and ContentDB.cosmetic("crown_gold").has("price"):
+		pass # já é de conquista; troféu é simbólico via park_trophies
+	_unlock_achievement("park_contest_win", 0, 2)
+	Analytics.track(&"park_contest_claimed", {"week": week, "trophies": park_trophies})
+	SaveManager.request_save()
+	return {"coins": coins_reward, "embers": embers_reward, "trophies": park_trophies}
 
 
 func _reconcile_career_unlocks(show_feedback: bool) -> void:

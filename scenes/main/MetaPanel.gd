@@ -85,6 +85,9 @@ func _rebuild(section: StringName) -> void:
 		&"collection":
 			screen.title_label.text = Loc.t("COLLECTION_TITLE")
 			_build_collection()
+		&"album":
+			screen.title_label.text = Loc.t("ALBUM_TITLE") if Loc.t("ALBUM_TITLE") != "ALBUM_TITLE" else "ÁLBUM"
+			_build_album()
 		&"staff":
 			screen.title_label.text = Loc.t("STAFF_TITLE")
 			_build_staff()
@@ -429,6 +432,101 @@ func _build_collection() -> void:
 						EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY"), BLUE)
 		)
 
+
+func _build_album() -> void:
+	# Topo: troféus + progresso semanal
+	_info_row(
+		"🏆 %s" % (Loc.t("ALBUM_TROPHIES") % GameState.park_trophies if Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % GameState.park_trophies),
+		Loc.t("ALBUM_CONTEST_DESC") if Loc.t("ALBUM_CONTEST_DESC") != "ALBUM_CONTEST_DESC" else "Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!",
+		"",
+		Color("ffd54f"),
+		false,
+		Callable()
+	)
+	var prog: Dictionary = GameState.park_contest_progress()
+	_info_row(
+		Loc.t("ALBUM_WEEK") if Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
+		(Loc.t("ALBUM_WEEK_PROGRESS") % [int(prog.get("total", 0)), int(prog.get("perfects", 0))] if Loc.t("ALBUM_WEEK_PROGRESS") != "ALBUM_WEEK_PROGRESS" else "Fotos esta semana: %d (perfeitas %d)" % [int(prog.get("total", 0)), int(prog.get("perfects", 0))]),
+		Loc.t("ALBUM_CLAIMED") if bool(prog.get("claimed", false)) else (Loc.t("ALBUM_CLAIM") if Loc.t("ALBUM_CLAIM") != "ALBUM_CLAIM" else "COLETAR CAPA"),
+		GREEN if GameState.park_can_claim_contest() else Color("b0bec5"),
+		GameState.park_can_claim_contest(),
+		func() -> void:
+			var rew: Dictionary = GameState.park_claim_contest()
+			if not rew.is_empty():
+				AudioManager.play(&"perfect")
+				HapticsManager.success()
+				EventBus.toast_requested.emit(Loc.t("ALBUM_CLAIM_TOAST") % [int(rew.get("coins", 0)), int(rew.get("embers", 0))] if Loc.t("ALBUM_CLAIM_TOAST") != "ALBUM_CLAIM_TOAST" else "Capa! +%d R$ e +%d brasas" % [int(rew.get("coins", 0)), int(rew.get("embers", 0))], Color("ffd54f"))
+	)
+	if not bool(prog.get("is_saturday", false)):
+		_note(Loc.t("ALBUM_SATURDAY_HINT") if Loc.t("ALBUM_SATURDAY_HINT") != "ALBUM_SATURDAY_HINT" else "O concurso abre no sábado — continue fotografando!", 22, Color("90a4ae"))
+	else:
+		if int(prog.get("perfects", 0)) == 0:
+			_note(Loc.t("ALBUM_SATURDAY_NEED") if Loc.t("ALBUM_SATURDAY_NEED") != "ALBUM_SATURDAY_NEED" else "Faça 1 foto 📸 perfeita hoje para concorrer à capa!", 22, PINK)
+	# Grid de fotos
+	if GameState.park_photos.is_empty():
+		_note(Loc.t("ALBUM_EMPTY") if Loc.t("ALBUM_EMPTY") != "ALBUM_EMPTY" else "Nenhuma foto ainda — faça um 📸 perfeito no Parquinho! (arraste treat/photo e acerte o timing)", 24, Color("90a4ae"), true)
+		return
+	_note(Loc.t("ALBUM_GRID_TITLE") if Loc.t("ALBUM_GRID_TITLE") != "ALBUM_GRID_TITLE" else "MEMÓRIAS DO QUINTAL", 26, CHARCOAL)
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 12)
+	screen.content_box.add_child(grid)
+	# mostra mais recentes primeiro, max 18
+	var photos: Array[Dictionary] = GameState.park_photos.duplicate()
+	photos.reverse()
+	var shown: int = 0
+	for photo: Dictionary in photos:
+		if shown >= 18:
+			break
+		shown += 1
+		var pets: Array = photo.get("pets", [])
+		var names: String = ""
+		for pid: Variant in pets:
+			names += ContentDB.pet_name(String(pid)) + " "
+		names = names.strip_edges().replace(" ", ", ")
+		var date: String = String(photo.get("date", ""))
+		var perfect: bool = bool(photo.get("perfect", false))
+		var card: PanelContainer = PanelContainer.new()
+		card.custom_minimum_size = Vector2(260, 220)
+		card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
+		var vbox: VBoxContainer = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 6)
+		card.add_child(vbox)
+		var thumb: TextureRect = TextureRect.new()
+		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		thumb.custom_minimum_size = Vector2(240, 90)
+		# tenta carregar primeiro pet da foto
+		var first_pet: String = String(pets[0]) if pets.size() > 0 else "caramelo"
+		var tpath: String = "res://art/pets/%s.png" % first_pet
+		if ResourceLoader.exists(tpath):
+			thumb.texture = load(tpath)
+		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.9)
+		vbox.add_child(thumb)
+		var nlabel: Label = Label.new()
+		nlabel.text = names if not names.is_empty() else "Foto"
+		nlabel.add_theme_font_size_override("font_size", 18)
+		nlabel.add_theme_color_override("font_color", CHARCOAL)
+		nlabel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(nlabel)
+		var dlabel: Label = Label.new()
+		dlabel.text = "%s • %s" % [date, "⭐ PERFEITA" if perfect else "boa"]
+		dlabel.add_theme_font_size_override("font_size", 16)
+		dlabel.add_theme_color_override("font_color", PINK if perfect else Color("90a4ae"))
+		vbox.add_child(dlabel)
+		var share_btn: Button = Button.new()
+		share_btn.text = Loc.t("ALBUM_SHARE") if Loc.t("ALBUM_SHARE") != "ALBUM_SHARE" else "COMPARTILHAR"
+		share_btn.custom_minimum_size = Vector2(240, 44)
+		_style_button(share_btn, BLUE if perfect else Color("b0bec5"))
+		share_btn.pressed.connect(func(p: Dictionary = photo) -> void:
+			var caption: String = Loc.t("ALBUM_SHARE_CAPTION") % [String(p.get("date", "")), names] if Loc.t("ALBUM_SHARE_CAPTION") != "ALBUM_SHARE_CAPTION" else "Minha capa do Parquinho em %s com %s! #PetShopTycoon" % [String(p.get("date", "")), names]
+			DisplayServer.clipboard_set(caption)
+			EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY") if Loc.t("SHARE_SAVED_GALLERY") != "SHARE_SAVED_GALLERY" else "Legenda copiada!", BLUE)
+		)
+		vbox.add_child(share_btn)
+		grid.add_child(card)
+	_note(Loc.t("ALBUM_FOOTER") if Loc.t("ALBUM_FOOTER") != "ALBUM_FOOTER" else "Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!", 22, Color("90a4ae"), true)
 
 ## Painel de melhorias: estação + os cinco utensílios. Tudo que era botão
 ## grande no HUD de ação agora vive aqui, comprável com moedas.

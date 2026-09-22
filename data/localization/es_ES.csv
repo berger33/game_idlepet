@@ -526,3 +526,19 @@ PARK_FAIL_HINT,¡Se distrajeron — prueba otro juego!
 PARK_FAIL_EXTRA,Sin penalización. ¡Vuelve tras el enfriamiento!
 PARK_LOCKED,Se desbloquea tras el 1er servicio
 PARK_LOCKED_TOAST,¡Termina tu primer servicio para desbloquear el Parque!
+NAV_ALBUM,Álbum
+ALBUM_TITLE,ÁLBUM DEL PARQUE
+ALBUM_TROPHIES,Trofeos: %d
+ALBUM_CONTEST_DESC,¡Toda foto 📸 perfecta en el Parque va aquí! El sábado el barrio elige la portada.
+ALBUM_WEEK,ESTA SEMANA
+ALBUM_WEEK_PROGRESS,Fotos esta semana: %d (perfectas %d)
+ALBUM_CLAIM,RECOGER PORTADA
+ALBUM_CLAIMED,RECOGIDO
+ALBUM_CLAIM_TOAST,¡Portada! +%d monedas y +%d brasas!
+ALBUM_SATURDAY_HINT,¡El concurso abre el sábado — sigue fotografiando!
+ALBUM_SATURDAY_NEED,¡Haz 1 foto 📸 perfecta hoy para competir!
+ALBUM_EMPTY,¡Sin fotos aún — consigue un 📸 perfecto en el Parque!
+ALBUM_GRID_TITLE,RECUERDOS DEL PATIO
+ALBUM_SHARE,COMPARTIR
+ALBUM_SHARE_CAPTION,¡Mi portada del Parque el %s con %s! #PetShopTycoon
+ALBUM_FOOTER,Consejo: las fotos 📸 perfectas dan +2 afecto y son recuerdos. ¡El sábado 1 perfecta vale trofeo!

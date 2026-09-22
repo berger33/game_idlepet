@@ -526,3 +526,19 @@ PARK_FAIL_HINT,Pets got distracted — try another game!
 PARK_FAIL_EXTRA,No queue penalty. Come back after cooldown!
 PARK_LOCKED,Unlocks after 1st service
 PARK_LOCKED_TOAST,Finish your first service to unlock the Playground!
+NAV_ALBUM,Album
+ALBUM_TITLE,PLAYGROUND ALBUM
+ALBUM_TROPHIES,Trophies: %d
+ALBUM_CONTEST_DESC,Every perfect 📸 photo in the Playground goes here. On Saturday the neighborhood picks the cover!
+ALBUM_WEEK,THIS WEEK
+ALBUM_WEEK_PROGRESS,Photos this week: %d (perfect %d)
+ALBUM_CLAIM,COLLECT COVER
+ALBUM_CLAIMED,COLLECTED
+ALBUM_CLAIM_TOAST,Cover! +%d coins and +%d embers!
+ALBUM_SATURDAY_HINT,Contest opens on Saturday — keep shooting!
+ALBUM_SATURDAY_NEED,Get 1 perfect 📸 photo today to compete for the cover!
+ALBUM_EMPTY,No photos yet — get a perfect 📸 in the Playground!
+ALBUM_GRID_TITLE,YARD MEMORIES
+ALBUM_SHARE,SHARE
+ALBUM_SHARE_CAPTION,My Playground cover on %s with %s! #PetShopTycoon
+ALBUM_FOOTER,Tip: perfect 📸 photos give +2 affection and become memories. On Saturday 1 perfect wins a trophy!

@@ -526,3 +526,19 @@ PARK_FAIL_HINT,Os pets se distraíram — tente outra brincadeira!
 PARK_FAIL_EXTRA,Sem penalidade na fila. Volta quando o cooldown acabar!
 PARK_LOCKED,Desbloqueia após o 1º atendimento
 PARK_LOCKED_TOAST,Termine seu primeiro atendimento para liberar o Parquinho!
+NAV_ALBUM,Álbum
+ALBUM_TITLE,ÁLBUM DO PARQUINHO
+ALBUM_TROPHIES,Troféus: %d
+ALBUM_CONTEST_DESC,Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!
+ALBUM_WEEK,SEMANA ATUAL
+ALBUM_WEEK_PROGRESS,Fotos esta semana: %d (perfeitas %d)
+ALBUM_CLAIM,COLETAR CAPA
+ALBUM_CLAIMED,COLETADO
+ALBUM_CLAIM_TOAST,Capa! +%d R$ e +%d brasas!
+ALBUM_SATURDAY_HINT,O concurso abre no sábado — continue fotografando!
+ALBUM_SATURDAY_NEED,Faça 1 foto 📸 perfeita hoje para concorrer à capa!
+ALBUM_EMPTY,Nenhuma foto ainda — faça um 📸 perfeito no Parquinho!
+ALBUM_GRID_TITLE,MEMÓRIAS DO QUINTAL
+ALBUM_SHARE,COMPARTILHAR
+ALBUM_SHARE_CAPTION,Minha capa do Parquinho em %s com %s! #PetShopTycoon
+ALBUM_FOOTER,Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!
