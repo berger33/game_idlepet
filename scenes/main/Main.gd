@@ -1042,10 +1042,8 @@ func _setup_park() -> void:
 	add_child(park_canvas)
 	move_child(park_canvas, 1) # atrás do HUD mas à frente do mundo
 	# Botão Parquinho — ao lado do botão Upgrades, com cooldown visual
-	var safe_top: float = 0.0
-	if SalonTuning != null and SalonTuning.has_method("safe_area_top"):
-		safe_top = SalonTuning.safe_area_top()
-	# safe_top atualmente não usado no posicionamento, mas guard para compat
+	var safe_top: float = SalonTuning.safe_area_top()
+	# safe_top offset leve no botão para notch
 	park_button = _button("🌳", Color("8bc34a", 0.96), 86, 86)
 	park_button.position = Vector2(952, 250 + safe_top * 0.5)
 	park_button.tooltip_text = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
@@ -1517,15 +1515,12 @@ func _close_park() -> void:
 		instruction_label.text = Loc.t("CHOOSE_CLIENT") if Loc.has_method("t") else "Escolha um cliente"
 		if _instr_styles != null and _instr_styles.has(&"hint"):
 			instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
-	_update_park_button()
-	instruction_label.text = Loc.t("CHOOSE_CLIENT")
-	if _instr_styles.has(&"hint"):
-		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
-	else:
-		instruction_label.add_theme_stylebox_override("normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2))
+		else:
+			instruction_label.add_theme_stylebox_override("normal", _style(Color("263238", 0.82), 34, 14, Color("ffffff", 0.42), 2))
 	_last_instr_key = &""
 	_update_park_button()
-	AudioManager.play(&"tap")
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"tap")
 
 func _toggle_goal_expand() -> void:
 	goal_collapsed = not goal_collapsed

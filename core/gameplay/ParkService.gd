@@ -1,3 +1,4 @@
+class_name ParkService
 extends RefCounted
 ## Lógica das 3 atividades do Parquinho: ball (arrastar bolinha), treat (esconder petisco), photo (foto do grupo).
 ## Design: fora da banheira, a cada X tempo (RemoteConfig 2h), recompensa afeto+coins, sem punir fila.

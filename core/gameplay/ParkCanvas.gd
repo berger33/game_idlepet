@@ -151,12 +151,8 @@ func _draw() -> void:
 			if tmp is Dictionary:
 				profile = tmp
 		var breed_for_scale: String = String(profile.get("breed", ""))
-		var is_small_p: bool = false
-		var is_large_p: bool = false
-		if PetAnimationTuning != null:
-			# is_small/large são static — chamada segura
-			is_small_p = PetAnimationTuning.is_small_breed(breed_for_scale) if PetAnimationTuning.has_method("is_small_breed") else false
-			is_large_p = PetAnimationTuning.is_large_breed(breed_for_scale) if PetAnimationTuning.has_method("is_large_breed") else false
+		var is_small_p: bool = PetAnimationTuning.is_small_breed(breed_for_scale)
+		var is_large_p: bool = PetAnimationTuning.is_large_breed(breed_for_scale)
 		var scale: float = 0.66 if is_small_p else (0.80 if is_large_p else 0.72)
 		# respiração sutil no parquinho (fora da banheira) — 1/3 da amplitude normal
 		var breath: float = sin(_time * (1.6 if is_small_p else 2.2) + float(i)) * (1.6 if celebration <= 0.0 else 3.0)
