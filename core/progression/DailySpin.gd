@@ -16,7 +16,17 @@ const REWARDS: Array[Dictionary] = [
 static func can_spin() -> bool:
 	var last: String = String(GameState.settings.get("last_spin_date", ""))
 	var today: String = Time.get_date_string_from_system()
-	return last != today
+	if last.is_empty():
+		return true
+	if last == today:
+		return false
+	# Guard contra relógio voltado (Today < Last) — evita farm de roleta
+	var last_unix: int = int(Time.get_unix_time_from_datetime_string(last + "T00:00:00"))
+	var today_unix: int = int(Time.get_unix_time_from_datetime_string(today + "T00:00:00"))
+	if last_unix > 0 and today_unix > 0 and today_unix < last_unix:
+		Analytics.track(&"churn_risk_signal", {"reason": "spin_clock_rollback"})
+		return false
+	return true
 
 static func spin() -> Dictionary:
 	if not can_spin():

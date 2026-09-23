@@ -6,7 +6,7 @@ via Button.icon — nunca glifos Unicode, que dependem da cobertura da fonte
 instalada no dispositivo (causa do "□" em vários Androids).
 
 Uso: python3 tools/gen_ui_icons.py
-Saída: art/ui/icons/{missions,collection,map,settings}.png
+Saída: art/ui/icons/{missions,collection,map,settings,park,album,staff,shop,upgrades}.png
 """
 import math
 from pathlib import Path
@@ -112,6 +112,29 @@ def rocket_up(draw: ImageDraw.ImageDraw, s: int) -> None:
     draw.rectangle([s * 0.30, s * 0.80, s * 0.70, s * 0.90], fill=WHITE)
 
 
+def park(draw: ImageDraw.ImageDraw, s: int) -> None:
+    # Parquinho: copa 3 círculos + tronco + base (icon dedicado, antes reutilizava background)
+    cx, cy = s / 2, s * 0.42
+    r = s * 0.28
+    draw.ellipse([cx - r, cy - r * 0.9, cx + r, cy + r * 0.5], fill=WHITE)
+    draw.ellipse([cx - r * 0.9 - s * 0.08, cy - r * 0.5, cx - s * 0.02, cy + r * 0.3], fill=WHITE)
+    draw.ellipse([cx + s * 0.02, cy - r * 0.5, cx + r * 0.9 + s * 0.08, cy + r * 0.3], fill=WHITE)
+    trunk_w = s * 0.16
+    trunk_h = s * 0.38
+    draw.rectangle([cx - trunk_w / 2, cy + r * 0.15, cx + trunk_w / 2, cy + r * 0.15 + trunk_h], fill=WHITE)
+    draw.rectangle([s * 0.18, s * 0.88, s * 0.82, s * 0.92], fill=WHITE)
+
+
+def album(draw: ImageDraw.ImageDraw, s: int) -> None:
+    # Álbum: livro com foto (mantém estilo do gen anterior, garante regeneração idempotente)
+    r = s * 0.08
+    draw.rounded_rectangle([s * 0.16, s * 0.18, s * 0.84, s * 0.90], radius=r, fill=WHITE)
+    draw.rectangle([s * 0.28, s * 0.18, s * 0.32, s * 0.90], fill=(0, 0, 0, 0))
+    draw.rounded_rectangle([s * 0.36, s * 0.28, s * 0.78, s * 0.64], radius=s * 0.04, fill=(0, 0, 0, 0))
+    draw.polygon([(s * 0.36, s * 0.64), (s * 0.52, s * 0.44), (s * 0.64, s * 0.58), (s * 0.78, s * 0.42), (s * 0.78, s * 0.64)], fill=WHITE)
+    draw.ellipse([s * 0.62, s * 0.32, s * 0.74, s * 0.44], fill=WHITE)
+
+
 def main() -> None:
     render("missions", star)
     render("collection", heart)
@@ -120,6 +143,8 @@ def main() -> None:
     render("staff", person)
     render("shop", bag)
     render("upgrades", rocket_up)
+    render("park", park)
+    render("album", album)
 
 
 if __name__ == "__main__":

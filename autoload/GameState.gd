@@ -555,10 +555,38 @@ func _valid_pet_array(value: Variant) -> Array[String]:
 
 
 func _valid_research_array(value: Variant) -> Array[String]:
+	# Validação topológica: descarta nós cujo `requires` não está satisfeito (save editado / cheat)
+	# Mantém ordem original quando possível, mas garante árvore íntegra sem wipe de progresso válido
+	# Harden: ContentDB pode não estar pronto no primeiro frame (evita wipe total)
+	if ContentDB == null or ContentDB.research_by_id.is_empty():
+		var fallback: Array[String] = []
+		for id: String in _safe_string_array(value):
+			if not id.is_empty() and not fallback.has(id):
+				fallback.append(id)
+		return fallback
+	var pending: Array[String] = _safe_string_array(value)
+	var known: Array[String] = []
+	for id: String in pending:
+		if ContentDB.research_by_id.has(id) and not known.has(id):
+			known.append(id)
 	var result: Array[String] = []
-	for id: String in _safe_string_array(value):
-		if ContentDB.research_by_id.has(id):
-			result.append(id)
+	var changed: bool = true
+	while changed and not known.is_empty():
+		changed = false
+		var next_known: Array[String] = []
+		for id: String in known:
+			var reqs: Array = ContentDB.research_by_id[id].get("requires", [])
+			var ok: bool = true
+			for req: Variant in reqs:
+				if not result.has(String(req)):
+					ok = false
+					break
+			if ok:
+				result.append(id)
+				changed = true
+			else:
+				next_known.append(id)
+		known = next_known
 	return result
 
 

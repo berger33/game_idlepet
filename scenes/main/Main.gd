@@ -39,7 +39,7 @@ const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay
 const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 const ParkServiceScript: Script = preload("res://core/gameplay/ParkService.gd")
 const ParkCanvasScript: Script = preload("res://core/gameplay/ParkCanvas.gd")
-const PARK_ICON: Texture2D = preload("res://art/backgrounds/petshop_quintal.png")
+const PARK_ICON: Texture2D = preload("res://art/ui/icons/park.png")
 var bath: BathService
 var world: PetShopCanvas
 var coin_label: Label
@@ -141,6 +141,7 @@ func _ready() -> void:
 	_build_interface()
 	_setup_park()
 	world.clear_room()
+	# Warmup ResourceLoader cache: garante que caramelo.png já está em RAM antes da primeira escolha da fila
 	if ResourceLoader.exists("res://art/pets/caramelo.png"): var _pc: Texture2D = load("res://art/pets/caramelo.png") as Texture2D
 	queue[0] = SalonTuning.make_client_for_pet("caramelo", _available_services())
 	for slot: int in [1, 2]: queue[slot] = SalonTuning.make_client(_available_services())
@@ -242,10 +243,14 @@ func _process(delta: float) -> void:
 			if is_instance_valid(abadge):
 				abadge.visible = false
 	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
+	# left_handed intencional: só espelha prateleira de utensílios (170↔910) e botões flutuantes;
+	# fila/top bar permanecem centrados para preservar hierarquia de leitura
 	upgrades_button.position = Vector2(120, 150) if left_handed else Vector2(952, 150)
 	if is_instance_valid(park_button):
 		park_button.position = Vector2(952, 250) if not left_handed else Vector2(120, 250)
 		_update_park_button()
+	if is_instance_valid(tutorial_skip_button):
+		tutorial_skip_button.position = Vector2(30, 145 + SalonTuning.safe_area_top()) if left_handed else Vector2(750, 145 + SalonTuning.safe_area_top())
 	# ── Parquinho tick ──
 	if park_active and park_service != null and park_service.state == ParkService.State.ACTIVE:
 		if park_service.tick(delta):
@@ -1041,10 +1046,13 @@ func _setup_park() -> void:
 	park_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(park_canvas)
 	move_child(park_canvas, 1) # atrás do HUD mas à frente do mundo
-	# Botão Parquinho — ao lado do botão Upgrades, com cooldown visual
+	# Botão Parquinho — ao lado do botão Upgrades, com cooldown visual + ícone dedicado park.png
 	var safe_top: float = SalonTuning.safe_area_top()
 	# safe_top offset leve no botão para notch
-	park_button = _button("🌳", Color("8bc34a", 0.96), 86, 86)
+	park_button = _button("", Color("8bc34a", 0.96), 86, 86)
+	park_button.icon = PARK_ICON
+	park_button.expand_icon = true
+	park_button.text = "🌳" # fallback se ícone falhar (Godot mostra texto sobre ícone)
 	park_button.position = Vector2(952, 250 + safe_top * 0.5)
 	park_button.tooltip_text = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
 	park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
@@ -1129,6 +1137,7 @@ func _update_park_button() -> void:
 	# Progressive disclosure: parquinho libera após 1 atendimento (tutorial feito) — não sobrecarrega D0
 	var locked: bool = GameState.services_completed == 0 and GameState.player_level < 2
 	if locked and not park_active:
+		park_button.icon = null
 		park_button.text = "🔒"
 		park_button.tooltip_text = Loc.t("PARK_LOCKED") if Loc.has_method("t") and Loc.t("PARK_LOCKED") != "PARK_LOCKED" else "Desbloqueia após o 1º atendimento"
 		park_button.disabled = false
@@ -1141,12 +1150,14 @@ func _update_park_button() -> void:
 			park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
 	var remain: int = GameState.park_remaining_seconds()
 	if park_active:
+		park_button.icon = null
 		park_button.text = "✕"
 		park_button.tooltip_text = Loc.t("PARK_CLOSE") if Loc.t("PARK_CLOSE") != "PARK_CLOSE" else "Sair do parquinho"
 		park_button.disabled = false
 		park_button.modulate = Color.WHITE
 		return
 	if remain > 0:
+		park_button.icon = null
 		park_button.text = "⏳ %s" % _park_format_cooldown(remain)
 		park_button.add_theme_font_size_override("font_size", 18)
 		park_button.tooltip_text = (Loc.t("PARK_COOLDOWN") % _park_format_cooldown(remain)) if Loc.has_method("t") and Loc.t("PARK_COOLDOWN") != "PARK_COOLDOWN" else "Volta em %s" % _park_format_cooldown(remain)
@@ -1157,7 +1168,8 @@ func _update_park_button() -> void:
 		if badge != null:
 			badge.visible = false
 	else:
-		park_button.text = "🌳"
+		park_button.icon = PARK_ICON
+		park_button.text = ""
 		park_button.add_theme_font_size_override("font_size", 34)
 		var streak: int = GameState.park_streak if GameState != null else 0
 		var tip: String = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
@@ -1564,12 +1576,20 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		goal_full_text = Goals.hud_line()
 		if GameState.player_level >= 3:
 			goal_full_text += " • " + SalonTuning.tip_odds_text()
-		# progressive disclosure: preview colapsado + botão ⓘ
+		# progressive disclosure: preview colapsado + botão ⓘ — corte em word boundary (não no meio da palavra)
 		if goal_full_text.length() > 54 or goal_full_text.contains("•"):
 			var parts: PackedStringArray = goal_full_text.split(" • ")
 			goal_preview_text = parts[0]
 			if parts.size() > 1:
-				goal_preview_text += " • " + parts[1].left(18).strip_edges() + ("…" if parts[1].length() > 18 else "")
+				var second: String = parts[1].strip_edges()
+				if second.length() > 18:
+					var cut: String = second.left(18)
+					var last_space: int = cut.rfind(" ")
+					if last_space > 8:
+						cut = cut.left(last_space)
+					goal_preview_text += " • " + cut.strip_edges() + "…"
+				else:
+					goal_preview_text += " • " + second
 				if parts.size() > 2:
 					goal_preview_text += " …"
 			goal_label.text = goal_preview_text if goal_collapsed else goal_full_text
