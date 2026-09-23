@@ -164,7 +164,7 @@ func _draw() -> void:
 			# sombra reativa ao salto: encolhe e clareia no ar
 			var sh_alpha: float = 0.18 - clampf(hop / 72.0, 0.0, 1.0) * 0.10
 			var sh_scale: Vector2 = Vector2(80, 22) * (1.0 - clampf(hop / 72.0, 0.0, 1.0) * 0.35)
-			draw_ellipse(center + Vector2(0, 90 - breath * 0.2), sh_scale, Color("263238", sh_alpha))
+			_draw_ellipse(center + Vector2(0, 90 - breath * 0.2), sh_scale, Color("263238", sh_alpha))
 			var rect: Rect2 = Rect2(center - sz * 0.5, sz)
 			draw_texture_rect(tex, rect, false)
 		# nome do pet (legível) — pill branca arredondada atrás do texto
@@ -312,6 +312,16 @@ func _draw_dashed_line(from: Vector2, to: Vector2, color: Color, width: float, d
 			draw_line(a, b, color, width)
 		pos = next_pos
 		draw_dash = not draw_dash
+
+func _draw_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
+	if radii.x <= 0.0 or radii.y <= 0.0 or color.a <= 0.0:
+		return
+	var points: PackedVector2Array = PackedVector2Array()
+	# 24 pontos suficientes para sombra pequena (PetShopCanvas usa 32 para pet)
+	for i: int in 24:
+		var a: float = TAU * float(i) / 24.0
+		points.append(center + Vector2(cos(a) * radii.x, sin(a) * radii.y))
+	draw_colored_polygon(points, color)
 
 func _hidden_slot() -> int:
 	return treat_hidden_slot
