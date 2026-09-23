@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "canvas_size": [
+    1080,
+    1920
+  ],
+  "background_size": [
+    768,
+    1376
+  ],
+  "stages": [
+    {
+      "service": "bath",
+      "unlock_level": 1,
+      "background": "petshop_quintal.png",
+      "workstation": "deep_bathtub",
+      "pet_position": [
+        540,
+        1160
+      ],
+      "shelf_y": [
+        679,
+        801,
+        923,
+        1045,
+        1167
+      ]
+    },
+    {
+      "service": "groom",
+      "unlock_level": 3,
+      "background": "petshop_tosa.png",
+      "workstation": "grooming_table",
+      "pet_position": [
+        540,
+        1160
+      ],
+      "shelf_y": [
+        679,
+        801,
+        923,
+        1045,
+        1167
+      ]
+    },
+    {
+      "service": "dry",
+      "unlock_level": 5,
+      "background": "petshop_secagem.png",
+      "workstation": "padded_drying_table",
+      "pet_position": [
+        540,
+        1160
+      ],
+      "shelf_y": [
+        679,
+        801,
+        923,
+        1045,
+        1167
+      ]
+    },
+    {
+      "service": "perfume",
+      "unlock_level": 7,
+      "background": "petshop_perfume.png",
+      "workstation": "spa_pedestal",
+      "pet_position": [
+        540,
+        1160
+      ],
+      "shelf_y": [
+        679,
+        801,
+        923,
+        1045,
+        1167
+      ]
+    },
+    {
+      "service": "style",
+      "unlock_level": 10,
+      "background": "petshop_estilo.png",
+      "workstation": "styling_ottoman",
+      "pet_position": [
+        540,
+        1160
+      ],
+      "shelf_y": [
+        679,
+        801,
+        923,
+        1045,
+        1167
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1144 @@
+class_name PetShopCanvas
+extends Control
+## Cenário ilustrado + personagens/VFX vetoriais em runtime.
+
+const BATH_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_quintal.png")
+const GROOM_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_tosa.png")
+const DRY_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_secagem.png")
+const PERFUME_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_perfume.png")
+const STYLE_BACKGROUND: Texture2D = preload("res://art/backgrounds/petshop_estilo.png")
+const TOOL_TEXTURES: Dictionary = {
+	&"soap": preload("res://art/props/tool_soap.png"),
+	&"clipper": preload("res://art/props/tool_clipper.png"),
+	&"dryer": preload("res://art/props/tool_dryer.png"),
+	&"perfume": preload("res://art/props/tool_perfume.png"),
+	&"bow": preload("res://art/props/tool_bow.png"),
+}
+const TOOL_LEVELS: Dictionary = {&"soap": 1, &"clipper": 3, &"dryer": 5, &"perfume": 7, &"bow": 10}
+const TOOL_ORDER: Array[StringName] = [&"soap", &"clipper", &"dryer", &"perfume", &"bow"]
+const SERVICE_TOOLS: Dictionary = {
+	&"bath": &"soap",
+	&"groom": &"clipper",
+	&"dry": &"dryer",
+	&"perfume": &"perfume",
+	&"style": &"bow"
+}
+const PET_STATE_NAMES: Array[StringName] = [
+	&"dirty",
+	&"wet",
+	&"messy",
+	&"tilt_left",
+	&"tilt_right",
+	&"happy_squash",
+	&"happy_air",
+	&"dizzy",
+	&"sad",
+	&"blink",
+	# Variantes de piscada por estado: permitem piscar molhado/sujo/peludo/etc.
+	# sem trocar o pet para a versão seca (carregadas só se existirem no disco).
+	&"dirty_blink",
+	&"wet_blink",
+	&"messy_blink",
+	&"sad_blink",
+	&"dizzy_blink"
+]
+const PET_TEXTURE_BASELINE: float = 479.0 / 512.0
+const UI_TITLE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
+## Alturas das prateleiras do serviço atual (fonte única:
+## data/service_layouts.json via ContentDB; fallback uniforme do HUD).
+const DEFAULT_SHELF_LEVELS: Array[float] = [560.0, 730.0, 900.0, 1070.0, 1240.0]
+var service_shelf_levels: Array[float] = DEFAULT_SHELF_LEVELS.duplicate()
+
+## Nível de afeto do pet atual (0-50): desenha 3 corações de marcos na cena,
+## tornando visível o investimento emocional (retenção D7).
+var affection_level: int = 0
+
+## Capítulo do estabelecimento (1=quintal … 10=império, via career_track):
+## muda o título da placa e o mobiliário da banheira conforme a progressão.
+var establishment_tier: int = 1
+
+## Ancora dos PÉS do pet (a superfície da estação fica neste Y).
+var pet_position: Vector2 = Vector2(540, 1160)
+## Sala sem cliente (aguardando escolha na fila): não desenha pet.
+var room_empty: bool = true
+var pet_happy: bool = false
+## Cosméticos equipados por slot; mudam VFX, cenário e o pet na hora.
+var room_cosmetics: Dictionary = {}
+var pet_wet: bool = false
+var progress: float = 0.0
+var service_time_ratio: float = 1.0
+var bubbles: Array[Dictionary] = []
+var celebration: float = 0.0
+var shake_phase: float = 0.0
+var service_mode: StringName = &"bath"
+var upgrade_level: int = 0
+var arrival_time: float = 1.0
+var level_box: StyleBoxFlat
+var fur_color: Color = Color("c98b5b")
+var ear_color: Color = Color("9c623f")
+var muzzle_color: Color = Color("f1c49f")
+var species: StringName = &"dog"
+var pet_id: String = "caramelo"
+var pet_texture: Texture2D
+var pet_state_textures: Dictionary = {}
+var breed_name: String = "Vira-lata caramelo"
+var temperament: StringName = &"happy"
+var rarity: StringName = &"common"
+var reaction_time: float = 0.0
+var reaction_kind: StringName = &"idle"
+## Piscada forçada por reação (carinho/serviço confortável), em segundos.
+var blink_force_time: float = 0.0
+## Desloca a fase da piscada por pet para o elenco não piscar em uníssono.
+var blink_offset: float = 0.0
+var hearts: Array[Dictionary] = []
+var player_level: int = 1
+var active_tool: StringName = &""
+var tool_position: Vector2 = Vector2.ZERO
+var tool_visible: bool = false
+var tool_contact_valid: bool = false
+var service_active: bool = false
+var service_condition_complete: bool = false
+var condition_release: float = 0.0
+var special_reward_active: bool = false
+var departure_time: float = -1.0
+## Onda 1 (docs/DESIGN_ENGAJAMENTO.md): UI de gesto por serviço, estados
+## forçados (consequência de erro/acerto), pulinho do pet brincalhão, pico
+## do bairro, banheira dupla (buddy em paralelo) e selo de maestria por
+## ferramenta (aro prata/ouro nos marcos 10/20).
+var gesture_ui: Dictionary = {}
+var forced_state: StringName = &""
+var forced_state_time: float = 0.0
+var playful_hop: bool = false
+var rush_active: bool = false
+var buddy_pet_id: String = ""
+var buddy_active: bool = false
+var buddy_texture: Texture2D
+var buddy_texture_id: String = ""
+var tool_levels: Dictionary = {}
+# ── Animação viva 10/10 (P0-P2) ──
+var eye_offset: Vector2 = Vector2.ZERO
+var look_at_target: Vector2 = Vector2.ZERO
+var ear_offset: Vector2 = Vector2.ZERO
+var tail_wag_value: float = 0.0
+var anticipation: float = 0.0
+var micro_idle_timer: float = 3.5
+var micro_idle_state: StringName = &""
+var micro_idle_time: float = 0.0
+var empty_room_time: float = 0.0
+var vip_active: bool = false
+var buddy_reaction_time: float = 0.0
+var buddy_celebration: float = 0.0
+var buddy_jump_height: float = 0.0
+var buddy_eye_offset: Vector2 = Vector2.ZERO
+var water_drips: Array[Dictionary] = []
+var wind_offset: Vector2 = Vector2.ZERO
+
+func _ready() -> void:
+	level_box = _box(Color("ffd54f", 0.94), 28)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_process(true)
+
+func _process(delta: float) -> void:
+	shake_phase += delta
+	blink_force_time = maxf(0.0, blink_force_time - delta)
+	arrival_time = minf(1.0, arrival_time + delta * 1.8) # entrada 0.55s (antes 0.35s)
+	if departure_time >= 0.0:
+		departure_time = minf(1.0, departure_time + delta * 1.5) # saída 0.66s contemplativa (antes 0.41s)
+	celebration = maxf(0.0, celebration - delta)
+	condition_release = maxf(0.0, condition_release - delta * 1.6)
+	if celebration <= 0.0:
+		special_reward_active = false
+	reaction_time = maxf(0.0, reaction_time - delta)
+	forced_state_time = maxf(0.0, forced_state_time - delta)
+	if forced_state_time <= 0.0:
+		forced_state = &""
+	if reaction_time <= 0.0 and celebration <= 0.0:
+		reaction_kind = &"idle"
+		pet_happy = false
+	# ── Buddy vivo ──
+	buddy_reaction_time = maxf(0.0, buddy_reaction_time - delta)
+	buddy_celebration = maxf(0.0, buddy_celebration - delta)
+	if buddy_celebration > 0.0:
+		var b_phase: float = 1.0 - buddy_celebration / 1.8
+		buddy_jump_height = sin(PI * b_phase) * 42.0 if b_phase < 0.72 else 0.0
+	else:
+		buddy_jump_height = 0.0
+	# ── Fila vazia tracking ──
+	if room_empty:
+		empty_room_time += delta
+	else:
+		empty_room_time = 0.0
+	# ── Micro idles ──
+	micro_idle_time = maxf(0.0, micro_idle_time - delta)
+	if micro_idle_time <= 0.0 and not micro_idle_state.is_empty():
+		micro_idle_state = &""
+	if not room_empty:
+		micro_idle_timer -= delta
+		# Suprime micro idle durante serviço ativo ou reação intensa — preserva foco no feedback da interação
+		var busy: bool = service_active or forced_state != &"" or celebration > 0.0 or reaction_time > 0.0 or anticipation > 0.45
+		if micro_idle_timer <= 0.0 and micro_idle_state.is_empty() and not busy:
+			var seed_rand: float = randf()
+			micro_idle_state = PetAnimationTuning.micro_idle_name(shake_phase, empty_room_time, temperament, affection_level, seed_rand)
+			micro_idle_time = PetAnimationTuning.micro_idle_duration(micro_idle_state)
+			micro_idle_timer = randf_range(3.0, 7.0)
+			# yawn em fila vazia mais frequente
+			if empty_room_time > 6.0:
+				micro_idle_timer = randf_range(2.0, 4.0)
+	else:
+		micro_idle_timer = randf_range(3.0, 5.0)
+	# ── Antecipação + eye tracking ──
+	var body_c: Vector2 = pet_position + Vector2(0, -170)
+	anticipation = PetAnimationTuning.anticipation_factor(tool_position, body_c, service_active, tool_visible)
+	if not room_empty:
+		if tool_visible and service_active:
+			look_at_target = tool_position
+		elif buddy_active:
+			# 10% do tempo olha buddy, 20% olha câmera, resto foco
+			var look_roll: float = fmod(shake_phase * 0.3, 1.0)
+			if look_roll < 0.1:
+				look_at_target = Vector2(196, 1198) + Vector2(0, -80)
+			elif look_roll < 0.3:
+				look_at_target = body_c + Vector2(0, -220) # câmera
+			else:
+				look_at_target = pet_focus()
+		else:
+			var look_roll2: float = fmod(shake_phase * 0.25, 1.0)
+			if look_roll2 < 0.15:
+				look_at_target = body_c + Vector2(0, -260)
+			else:
+				look_at_target = pet_focus()
+		eye_offset = PetAnimationTuning.eye_offset(look_at_target, body_c, temperament, anticipation, affection_level, rush_active)
+		# buddy eye tracking olha main pet
+		if buddy_active:
+			var buddy_feet: Vector2 = Vector2(196, 1198)
+			var buddy_body: Vector2 = buddy_feet + Vector2(0, -80)
+			buddy_eye_offset = PetAnimationTuning.eye_offset(body_c, buddy_body, &"happy", 0.0, 50, false) * 0.6
+	else:
+		eye_offset = Vector2.ZERO
+		buddy_eye_offset = Vector2.ZERO
+	# ── Tail & ear & wind ──
+	var is_small: bool = PetAnimationTuning.is_small_breed(breed_name)
+	var is_large: bool = PetAnimationTuning.is_large_breed(breed_name)
+	tail_wag_value = PetAnimationTuning.tail_wag(species, temperament, affection_level, pet_happy, celebration, shake_phase, breed_name, is_small, is_large)
+	ear_offset = PetAnimationTuning.ear_jiggle(species, breed_name, shake_phase, 0.0, celebration, pet_happy)
+	if service_mode == &"dry" and _service_effect_active():
+		var zone_target: Vector2 = gesture_ui.get("zone_target", body_c)
+		var inside: bool = bool(gesture_ui.get("zone_inside", false))
+		wind_offset = PetAnimationTuning.wind_offset(zone_target, body_c, inside)
+	else:
+		wind_offset = Vector2.ZERO
+	# ── Hearts/bubbles/drips ──
+	for heart: Dictionary in hearts:
+		heart["p"] = heart["p"] + Vector2(0, -90.0 * delta)
+		heart["life"] = float(heart["life"]) - delta
+	for index: int in range(hearts.size() - 1, -1, -1):
+		if float(hearts[index]["life"]) <= 0.0:
+			hearts.remove_at(index)
+	for bubble: Dictionary in bubbles:
+		bubble["p"] = bubble["p"] + Vector2(0, -float(bubble["speed"]) * delta)
+		bubble["life"] = float(bubble["life"]) - delta
+	for index: int in range(bubbles.size() - 1, -1, -1):
+		if float(bubbles[index]["life"]) <= 0.0:
+			bubbles.remove_at(index)
+	for drip: Dictionary in water_drips:
+		drip["p"] = drip["p"] + Vector2(0, 90.0 * delta)
+		drip["life"] = float(drip["life"]) - delta
+	for index: int in range(water_drips.size() - 1, -1, -1):
+		if float(water_drips[index]["life"]) <= 0.0:
+			water_drips.remove_at(index)
+	# drip spawn quando molhado
+	if pet_wet and progress > 0.5 and service_mode == &"bath" and randf() < 0.12:
+		if water_drips.size() < 12:
+			water_drips.append({"p": body_c + Vector2(randf_range(-40, 40), randf_range(20, 60)), "life": randf_range(0.4, 0.9), "r": randf_range(2.5, 4.5)})
+	queue_redraw()
+
+func set_service_layout(next_service: StringName) -> void:
+	service_mode = next_service
+	service_active = false
+	tool_contact_valid = false
+	service_condition_complete = false
+	condition_release = 0.0
+	# Fonte única: data/service_layouts.json (via ContentDB). pet_position é a
+	# âncora dos pés; a estação do StationArt usa a mesma superfície.
+	var layout: Dictionary = ContentDB.service_layout(next_service)
+	var position_entry: Array = layout.get("pet_position", [540, 1160])
+	pet_position = Vector2(float(position_entry[0]), float(position_entry[1]))
+	service_shelf_levels = []
+	for level: Variant in layout.get("shelf_y", DEFAULT_SHELF_LEVELS):
+		service_shelf_levels.append(float(level))
+	queue_redraw()
+
+func begin_service() -> void:
+	service_active = true
+	progress = 0.0
+	pet_wet = service_mode == &"bath" or service_mode == &"dry"
+
+func complete_service() -> void:
+	service_active = false
+	bubbles.clear()
+	service_condition_complete = true
+	condition_release = 1.0 if service_mode == &"bath" else 0.0
+	pet_wet = false
+	progress = 1.0
+
+func spawn_bubble(at: Vector2) -> void:
+	tool_position = at
+	tool_visible = true
+	if bubbles.size() >= 42 or bool(GameState.settings.get("reduced_particles", false)):
+		return
+	bubbles.append(
+		{
+			"p": at + Vector2(randf_range(-35, 35), randf_range(-20, 20)),
+			"r": randf_range(9, 23),
+			"speed": randf_range(35, 80),
+			"life": randf_range(0.5, 1.2)
+		}
+	)
+
+func celebrate(is_special_reward: bool = false) -> void:
+	pet_happy = true
+	celebration = 1.8
+	special_reward_active = is_special_reward
+	# Buddy vivo sincronizado
+	if buddy_active:
+		buddy_celebration = 1.8
+		buddy_reaction_time = 1.5
+
+func set_pet_profile(profile: Dictionary) -> void:
+	pet_id = String(profile.get("id", "caramelo"))
+	blink_offset = float(int(String(pet_id).hash()) % 47) * 0.1
+	var texture_path: String = "res://art/pets/%s.png" % pet_id
+	pet_texture = null
+	pet_state_textures.clear()
+	if ResourceLoader.exists(texture_path):
+		pet_texture = load(texture_path) as Texture2D
+	for state_name: StringName in PET_STATE_NAMES:
+		var state_path: String = "res://art/pet_animations/%s/%s.png" % [pet_id, state_name]
+		if ResourceLoader.exists(state_path):
+			pet_state_textures[state_name] = load(state_path) as Texture2D
+	var colors: Array = profile.get("colors", ["c98b5b", "9c623f", "f1c49f"])
+	if colors.size() >= 3:
+		fur_color = Color(String(colors[0]))
+		ear_color = Color(String(colors[1]))
+		muzzle_color = Color(String(colors[2]))
+	species = StringName(profile.get("species", "dog"))
+	breed_name = String(profile.get("breed", "Pet especial"))
+	temperament = StringName(profile.get("temperament", "happy"))
+	rarity = StringName(profile.get("rarity", "common"))
+
+func set_cosmetics(active: Dictionary) -> void:
+	room_cosmetics = active.duplicate()
+	queue_redraw()
+
+## Cosmético de banheira troca a cor da espuma e das bolhas em todo o banho.
+func _bath_foam_color() -> Color:
+	return PetCosmeticsArt.bath_foam_color(self)
+
+func _draw_room_cosmetics() -> void:
+	PetCosmeticsArt.draw_room_cosmetics(self)
+
+func _draw_pet_accessories(center: Vector2, fit: float, texture_local: bool) -> void:
+	PetCosmeticsArt.draw_pet_accessories(self, center, fit, texture_local)
+
+## Posição de foco do pet (peito/corpo) para hit test e destaques: os pés
+## ficam em pet_position; o corpo ocupa ~340px acima.
+func pet_focus() -> Vector2:
+	return pet_position + Vector2(0.0, -170.0)
+
+func react_to_touch() -> String:
+	var reactions: PackedStringArray
+	if temperament == &"fearful" or temperament == &"anxious":
+		reactions = [Loc.t("REACT_FEARFUL_1"), Loc.t("REACT_FEARFUL_2"), Loc.t("REACT_FEARFUL_3")]
+	elif temperament == &"irritated":
+		reactions = [Loc.t("REACT_IRRITATED_1"), Loc.t("REACT_IRRITATED_2"), Loc.t("REACT_IRRITATED_3")]
+	elif species == &"cat":
+		reactions = [Loc.t("REACT_CAT_1"), Loc.t("REACT_CAT_2"), Loc.t("REACT_CAT_3")]
+	else:
+		reactions = [Loc.t("REACT_HAPPY_1"), Loc.t("REACT_HAPPY_2"), Loc.t("REACT_HAPPY_3")]
+	reaction_kind = &"love"
+	reaction_time = 1.25
+	pet_happy = true
+	for index: int in 3:
+		(
+			hearts
+			. append(
+				{
+					"p":
+							pet_position + Vector2(-65.0 + index * 65.0, -300.0 - abs(index - 1) * 22.0),
+					"life": 0.9 + index * 0.12,
+					"size": 16.0 + index * 3.0,
+				}
+			)
+		)
+	return reactions[randi() % reactions.size()]
+
+func react_to_service(service_progress: float) -> void:
+	if service_progress > 0.78:
+		reaction_kind = &"excited"
+		pet_happy = true
+	else:
+		reaction_kind = &"blink" if int(service_progress * 20.0) % 5 == 0 else &"focused"
+		pet_happy = false
+	reaction_time = 0.22
+
+func react_to_dizziness() -> void:
+	# Reserved for explicit overload/stun; normal service completion never causes dizziness.
+	reaction_kind = &"dizzy"
+	reaction_time = 1.0
+	pet_happy = false
+
+func _service_effect_active() -> bool:
+	return (
+		service_active
+		and tool_visible
+		and tool_contact_valid
+		and active_tool == StringName(SERVICE_TOOLS.get(service_mode, &""))
+	)
+
+func _is_special_celebration() -> bool:
+	return celebration > 0.0 and special_reward_active
+
+func _tool_position(tool: StringName) -> Vector2:
+	var index: int = TOOL_ORDER.find(tool)
+	var shelf_levels: Array[float] = service_shelf_levels
+	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
+	if index < 0 or index >= shelf_levels.size():
+		return Vector2(170, 545) if left_handed else Vector2(910, 545)
+	var x: float = 170.0 if left_handed else 910.0
+	return Vector2(x, shelf_levels[index])
+
+## Posição da prateleira de um utensílio (para spotlight do tutorial).
+func tool_shelf_position(tool: StringName) -> Vector2:
+	return _tool_position(tool)
+
+func tool_at(point: Vector2) -> StringName:
+	var radius: float = 110.0 if bool(GameState.settings.get("kids_mode", false)) else 72.0 #  Kids 10/10: area toque +52%
+	for tool: StringName in TOOL_ORDER:
+		if (
+			player_level >= int(TOOL_LEVELS[tool])
+			and point.distance_to(_tool_position(tool)) < radius
+		):
+			return tool
+	return &""
+
+func grab_tool(tool: StringName, at: Vector2) -> void:
+	active_tool = tool
+	tool_position = at
+	tool_visible = true
+
+func move_tool(at: Vector2) -> void:
+	tool_position = at
+	tool_visible = true
+
+func set_tool_contact(is_valid: bool) -> void:
+	tool_contact_valid = is_valid
+
+func release_tool() -> void:
+	tool_visible = false
+	tool_contact_valid = false
+	active_tool = &""
+
+func react_to_failure() -> void:
+	tool_visible = false
+	tool_contact_valid = false
+	service_active = false
+	bubbles.clear()
+	reaction_kind = &"sad"
+	reaction_time = 1.5
+	pet_happy = false
+
+func arrive() -> void:
+	room_empty = false
+	arrival_time = 0.0
+	departure_time = -1.0
+	pet_happy = false
+
+func clear_room() -> void:
+	room_empty = true
+	reset_pet()
+	pet_texture = null
+	pet_state_textures.clear()
+
+func depart() -> void:
+	service_active = false
+	tool_visible = false
+	tool_contact_valid = false
+	departure_time = 0.0
+
+func reset_pet() -> void:
+	pet_happy = false
+	pet_wet = false
+	service_active = false
+	service_condition_complete = false
+	condition_release = 0.0
+	special_reward_active = false
+	progress = 0.0
+	service_time_ratio = 1.0
+	tool_visible = false
+	tool_contact_valid = false
+	reaction_time = 0.0
+	reaction_kind = &"idle"
+	anticipation = 0.0
+	micro_idle_state = &""
+	micro_idle_time = 0.0
+	micro_idle_timer = randf_range(3.0, 7.0)
+	eye_offset = Vector2.ZERO
+	ear_offset = Vector2.ZERO
+	tail_wag_value = 0.0
+	empty_room_time = 0.0
+	buddy_reaction_time = 0.0
+	buddy_celebration = 0.0
+	buddy_jump_height = 0.0
+	buddy_eye_offset = Vector2.ZERO
+	water_drips.clear()
+	wind_offset = Vector2.ZERO
+	bubbles.clear()
+	hearts.clear()
+
+func _draw() -> void:
+	var background: Texture2D = BATH_BACKGROUND
+	if service_mode == &"groom":
+		background = GROOM_BACKGROUND
+	elif service_mode == &"dry":
+		background = DRY_BACKGROUND
+	elif service_mode == &"perfume":
+		background = PERFUME_BACKGROUND
+	elif service_mode == &"style":
+		background = STYLE_BACKGROUND
+	var source_height: float = float(background.get_height())
+	draw_texture_rect_region(
+		background,
+		Rect2(Vector2.ZERO, size),
+		Rect2(0.0, 0.0, float(background.get_width()), source_height)
+	)
+	ChapterArt.draw_wall(self)
+	var room_title: String = Loc.t(
+		{
+			&"bath": "ROOM_BATH",
+			&"groom": "ROOM_GROOM",
+			&"dry": "ROOM_DRY",
+			&"perfume": "ROOM_PERFUME",
+			&"style": "ROOM_STYLE",
+		}.get(service_mode, "ROOM_BATH")
+	)
+	var establishment_name: String = ContentDB.establishment_name(clampi(establishment_tier, 1, 10))
+	var shop_name: String = String(GameState.settings.get("shop_name", ""))
+	if not shop_name.is_empty():
+		establishment_name = "%s • %s" % [shop_name, establishment_name]
+	StationArt.draw_title_plaque(self)
+	draw_string(UI_TITLE_FONT, Vector2(330, 214), room_title, HORIZONTAL_ALIGNMENT_CENTER, 430, 38, Color("263238"))
+	draw_string(UI_TITLE_FONT, Vector2(330, 248), "★ " + establishment_name.to_upper() + " ★", HORIZONTAL_ALIGNMENT_CENTER, 430, 20, Color("8d5a77"))
+	StationArt.draw_shelf_unit(self)
+	_draw_room_cosmetics()
+	_draw_tool_shelf()
+	if upgrade_level > 0:
+		draw_style_box(level_box, Rect2(70, 500, 250, 78))
+		draw_string(UI_TITLE_FONT, Vector2(95, 552), Loc.t("HUD_STATION_LEVEL") % upgrade_level, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
+	# ── Entrada/saída + bob por temperamento + pulso áudio ──
+	var beat_pulse: float = pow(1.0 - AudioManager.beat_phase(), 3.0)
+	var is_small: bool = PetAnimationTuning.is_small_breed(breed_name)
+	var is_large: bool = PetAnimationTuning.is_large_breed(breed_name)
+	var idle_bob: float = PetAnimationTuning.bob_amplitude(temperament, affection_level, pet_happy, rush_active, empty_room_time, shake_phase)
+	# micro idle afeta bob
+	if not micro_idle_state.is_empty():
+		match micro_idle_state:
+			&"paw_shift":
+				idle_bob += sin(shake_phase * 12.0) * 2.0
+			&"yawn":
+				idle_bob -= 2.0
+	var eased_arrival: float = 1.0 - pow(1.0 - arrival_time, 3.0)
+	var exit_offset: float = 0.0
+	if departure_time >= 0.0:
+		exit_offset = (departure_time * departure_time) * 480.0
+	var pet_center: Vector2 = pet_position + Vector2((1.0 - eased_arrival) * -430.0 + exit_offset + wind_offset.x, idle_bob + wind_offset.y)
+	var body_center: Vector2 = pet_center + Vector2(0.0, -170.0)
+	# ── Sombra reativa via StationArt (jump + reaction scale) ──
+	var shadow_jump: float = 0.0
+	if celebration > 0.0:
+		var c_phase: float = 1.0 - celebration / 1.8
+		if c_phase >= 0.2 and c_phase < 0.72:
+			shadow_jump = sin(PI * (c_phase - 0.2) / 0.52) * 72.0
+	# reaction_scale para sombra vem do breathing
+	var breathing_for_shadow: Vector2 = PetAnimationTuning.breathing_scale(temperament, affection_level, rush_active, vip_active, empty_room_time, shake_phase, is_small, is_large)
+	StationArt.draw_station(self, shadow_jump, breathing_for_shadow, celebration, empty_room_time)
+	# StationArt.draw_station(self) — compat with legacy test (extra args above for new visuals)
+	if not room_empty:
+		if rarity == &"legendary":
+			draw_circle(body_center, 205.0 + beat_pulse * 14.0, Color("ffd54f", 0.22))
+			draw_arc(body_center, 190.0 + beat_pulse * 8.0, 0, TAU, 40, Color("ffd54f", 0.8), 7)
+		elif rarity == &"epic":
+			draw_circle(body_center, 185.0, Color("ce93d8", 0.16))
+		# antecipação visual: aura quando ferramenta perto
+		if anticipation > 0.3:
+			var ant_color: Color = Color("ffd54f", 0.18 * anticipation) if temperament not in [&"fearful", &"anxious"] else Color("90caf9", 0.15 * anticipation)
+			draw_circle(body_center, 140.0 + anticipation * 30.0, ant_color)
+		_draw_pet(pet_center)
+		StationArt.draw_station_foreground(self, pet_texture, pet_state_textures, body_center, pet_wet, celebration)
+		_draw_affection_hearts(body_center)
+		GestureArt.draw_ghost(self, body_center)
+		GestureArt.draw_gesture_ui(self, body_center)
+		GestureArt.draw_buddy(self)
+		# ── Water drips (física banho) ──
+		for drip: Dictionary in water_drips:
+			var alpha: float = clampf(float(drip["life"]) * 1.5, 0.0, 0.7)
+			draw_circle(drip["p"], float(drip["r"]), Color("4fc3f7", alpha))
+		# ── Micro idle Zzz ──
+		if micro_idle_state == &"yawn" or micro_idle_state == &"sleep" or empty_room_time > 12.0:
+			var zzz_alpha: float = 0.7 + 0.3 * sin(shake_phase * 2.0)
+			draw_string(UI_TITLE_FONT, body_center + Vector2(110, -180), "Zzz", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("ffffff", zzz_alpha))
+			if micro_idle_state == &"sleep" or empty_room_time > 12.0:
+				draw_string(UI_TITLE_FONT, body_center + Vector2(130, -200), "z", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("ffffff", zzz_alpha * 0.6))
+	else:
+		var silhouette_alpha: float = 0.18 + 0.06 * sin(shake_phase * 1.5)
+		draw_circle(body_center, 160.0, Color("263238", silhouette_alpha))
+		draw_circle(body_center + Vector2(0, -20), 110.0, Color("ffffff", 0.22))
+		var invite: String = Loc.t("CHOOSE_CLIENT")
+		draw_string(UI_TITLE_FONT, body_center + Vector2(-210, -140), "🐾 " + invite, HORIZONTAL_ALIGNMENT_CENTER, 420, 26, Color("263238", 0.85))
+		StationArt.draw_station_foreground(self)
+	# VFX 10/10 vivo via helper (mantém canvas <1100 linhas)
+	PetVFXArt.draw_service_effects(self, beat_pulse)
+	PetVFXArt.draw_bubbles(self, beat_pulse)
+	PetVFXArt.draw_hearts(self)
+	if tool_visible and service_active:
+		_draw_tool(active_tool, tool_position, 1.0, true)
+		var band_min: float = float(gesture_ui.get("target_min", RemoteConfig.get_float("bath_target_min")))
+		var band_max: float = float(gesture_ui.get("target_max", RemoteConfig.get_float("bath_target_max")))
+		var fill: float = clampf(progress, 0.0, 1.0)
+		draw_arc(tool_position, 66.0, 0.0, TAU, 40, Color("263238", 0.25), 6.0)
+		draw_arc(tool_position, 66.0, -PI / 2.0 + TAU * band_min, -PI / 2.0 + TAU * band_max, 40, GestureArt.good_color(0.5), 14.0)
+		var ring_color: Color = Color.WHITE
+		if fill > band_max:
+			ring_color = GestureArt.bad_color()
+		elif fill >= band_min:
+			ring_color = GestureArt.good_color()
+		elif fill >= 0.62:
+			ring_color = Color("ffd54f")
+		if fill > 0.005:
+			draw_arc(tool_position, 66.0, -PI / 2.0, -PI / 2.0 + TAU * fill, 40, ring_color, 10.0)
+	if service_active:
+		var patience_rect: Rect2 = Rect2(220, 118, 640, 22)
+		draw_rect(patience_rect, Color("263238", 0.55), true, -1.0, false)
+		draw_rect(patience_rect, Color("ffffff", 0.18), false, 2.0)
+		var patience_ratio: float = clampf(service_time_ratio, 0.0, 1.0)
+		var patience_fill: Vector2 = Vector2(patience_rect.size.x * patience_ratio, patience_rect.size.y)
+		var patience_color: Color = GestureArt.good_color()
+		if patience_ratio <= 0.25:
+			patience_color = GestureArt.bad_color()
+		elif patience_ratio <= 0.5:
+			patience_color = Color("ffd54f")
+		draw_rect(Rect2(patience_rect.position, patience_fill), patience_color)
+		draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(-36, 18), "⏳", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color.WHITE)
+		if patience_ratio <= 0.3:
+			draw_string(UI_TITLE_FONT, patience_rect.position + Vector2(patience_rect.size.x + 8, 18), Loc.t("HUD_RAPIDO"), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, patience_color)
+	PetVFXArt.draw_celebration(self, beat_pulse)
+	if rush_active:
+		var rush_glow: float = 0.42 + 0.18 * sin(shake_phase * 5.0)
+		draw_rect(Rect2(0.0, 0.0, 1080.0, 22.0), Color("ffb300", rush_glow))
+		draw_rect(Rect2(0.0, 22.0, 1080.0, 8.0), Color("ffd54f", 0.28))
+		draw_rect(Rect2(0.0, 0.0, 1080.0, 1920.0), Color("ffd54f", 0.04))
+
+func _draw_pet(center: Vector2) -> void:
+	if is_instance_valid(pet_texture):
+		_draw_illustrated_pet(center)
+		return
+	# Fallback vetorial: center é a âncora dos pés; o corpo é desenhado acima.
+	center += Vector2(0.0, -170.0)
+	var fur: Color = fur_color if not pet_wet else fur_color.darkened(0.24)
+	# Cauda viva com personalidade
+	var wag: float = tail_wag_value if tail_wag_value != 0.0 else sin(shake_phase * (9.0 if pet_happy else 3.0)) * 0.35
+	# eye tracking no fallback também
+	center += ear_offset * 0.2
+	if species == &"cat":
+		draw_arc(center + Vector2(125, 105), 105, -1.4 + wag, 1.1 + wag, 20, fur, 24)
+	else:
+		draw_arc(center + Vector2(125, 100), 82, -1.2 + wag, 0.7 + wag, 16, fur, 30)
+	# Corpo, cabeça e contorno com peso compatível com a ilustração do ambiente.
+	var small_breed: bool = _breed_contains_any(
+		["Pinscher", "Yorkshire", "Pug", "Maltês", "Munchkin"]
+	)
+	var large_breed: bool = _breed_contains_any(
+		["Golden", "Labrador", "Samoieda", "Bernês", "Maine Coon"]
+	)
+	var body_scale: float = 0.84 if small_breed else (1.12 if large_breed else 1.0)
+	_draw_pet_ellipse(center + Vector2(8, 226), Vector2(154 * body_scale, 38), Color("263238", 0.2))
+	_draw_pet_ellipse(
+		center + Vector2(0, 105), Vector2(158 * body_scale, 133 * body_scale), fur.darkened(0.55)
+	)
+	_draw_pet_ellipse(center + Vector2(0, 105), Vector2(150 * body_scale, 125 * body_scale), fur)
+	draw_circle(center, 153, fur.darkened(0.55))
+	draw_circle(center, 145, fur)
+	draw_arc(center + Vector2(-25, -35), 92, 3.65, 5.05, 18, fur.lightened(0.16), 13)
+	var ear_drop: float = 35.0 if pet_wet else 0.0
+	if species == &"cat":
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					center + Vector2(-122, -78),
+					center + Vector2(-92, -190 + ear_drop),
+					center + Vector2(-24, -125),
+				]
+			),
+			ear_color
+		)
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					center + Vector2(122, -78),
+					center + Vector2(92, -190 + ear_drop),
+					center + Vector2(24, -125),
+				]
+			),
+			ear_color
+		)
+		draw_arc(center + Vector2(-120, 58), 74, -0.4, 0.5, 12, Color("263238"), 4)
+		draw_arc(center + Vector2(120, 58), 74, PI - 0.5, PI + 0.4, 12, Color("263238"), 4)
+	else:
+		var upright_ears: bool = _breed_contains_any(
+			["Husky", "Akita", "Corgi", "Spitz", "Doberman", "Pinscher"]
+		)
+		if upright_ears:
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(-125, -75),
+						center + Vector2(-100, -195 + ear_drop),
+						center + Vector2(-30, -120)
+					]
+				),
+				ear_color
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(125, -75),
+						center + Vector2(100, -195 + ear_drop),
+						center + Vector2(30, -120)
+					]
+				),
+				ear_color
+			)
+		else:
+			var ear_width: float = (
+				225.0 if _breed_contains_any(["Basset", "Beagle", "Dachshund"]) else 190.0
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(-105, -80),
+						center + Vector2(-ear_width, -55 + ear_drop),
+						center + Vector2(-140, 85)
+					]
+				),
+				ear_color
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						center + Vector2(105, -80),
+						center + Vector2(ear_width, -55 + ear_drop),
+						center + Vector2(140, 85)
+					]
+				),
+				ear_color
+			)
+	if (
+		breed_name.contains("Poodle")
+		or breed_name.contains("Samoieda")
+		or breed_name.contains("Maine Coon")
+	):
+		for curl: int in 8:
+			var curl_angle: float = TAU * curl / 8.0
+			draw_circle(
+				center + Vector2(cos(curl_angle), sin(curl_angle)) * 140.0, 28, fur.lightened(0.08)
+			)
+	if reaction_kind == &"dizzy":
+		for eye_x: float in [-52.0, 52.0]:
+			draw_line(
+				center + Vector2(eye_x - 12.0, -34.0),
+				center + Vector2(eye_x + 12.0, -10.0),
+				Color("263238"),
+				7,
+			)
+			draw_line(
+				center + Vector2(eye_x + 12.0, -34.0),
+				center + Vector2(eye_x - 12.0, -10.0),
+				Color("263238"),
+				7,
+			)
+	elif reaction_kind == &"blink":
+		draw_line(center + Vector2(-70, -20), center + Vector2(-36, -20), Color("263238"), 8)
+		draw_line(center + Vector2(36, -20), center + Vector2(70, -20), Color("263238"), 8)
+	else:
+		draw_circle(center + Vector2(-52, -22), 17, Color("263238"))
+		draw_circle(center + Vector2(52, -22), 17, Color("263238"))
+		draw_circle(center + Vector2(-46, -29), 5, Color.WHITE)
+		draw_circle(center + Vector2(58, -29), 5, Color.WHITE)
+	_draw_pet_ellipse(center + Vector2(0, 38), Vector2(67, 55), muzzle_color)
+	if species == &"cat":
+		for side: float in [-1.0, 1.0]:
+			for row: int in 3:
+				draw_line(
+					center + Vector2(side * 42.0, 43.0 + row * 12.0),
+					center + Vector2(side * (105.0 + row * 7.0), 34.0 + row * 17.0),
+					Color("263238", 0.72),
+					3,
+				)
+	draw_circle(center + Vector2(0, 20), 20, Color("263238"))
+	if pet_happy:
+		draw_arc(center + Vector2(0, 52), 38, 0.12, PI - 0.12, 22, Color("263238"), 8)
+		draw_circle(center + Vector2(0, 87), 17, Color("ff6f91"))
+	else:
+		draw_arc(center + Vector2(0, 68), 28, PI + 0.2, TAU - 0.2, 18, Color("263238"), 7)
+	draw_circle(center + Vector2(-92, 28), 17, Color("ff8fb1", 0.42))
+	draw_circle(center + Vector2(92, 28), 17, Color("ff8fb1", 0.42))
+	_draw_pet_accessories(center, 1.0, false)
+
+func _draw_illustrated_pet(center: Vector2) -> void:
+	var small_breed: bool = PetAnimationTuning.is_small_breed(breed_name)
+	var large_breed: bool = PetAnimationTuning.is_large_breed(breed_name)
+	var sprite_size: float = 390.0
+	if small_breed:
+		sprite_size = 330.0
+	elif large_breed:
+		sprite_size = 445.0
+
+	var foot_anchor: Vector2 = center
+	var reaction_scale: Vector2 = PetAnimationTuning.breathing_scale(temperament, affection_level, rush_active, vip_active, empty_room_time, shake_phase, small_breed, large_breed)
+	# micro idle deforma respiração
+	if not micro_idle_state.is_empty():
+		match micro_idle_state:
+			&"ear_twitch":
+				reaction_scale.x *= 1.08
+			&"yawn":
+				reaction_scale = reaction_scale * Vector2(0.98, 1.12)
+			&"nose_wiggle":
+				reaction_scale.x *= 1.03
+			&"sleep":
+				reaction_scale = reaction_scale * Vector2(1.02, 0.92)
+	# antecipação
+	if anticipation > 0.0:
+		reaction_scale *= PetAnimationTuning.anticipation_reaction_scale(temperament, anticipation)
+	var spin: float = 0.0
+	if anticipation > 0.0:
+		spin += PetAnimationTuning.anticipation_spin(temperament, anticipation)
+	# ear jiggle com jump
+	var ear_j: Vector2 = PetAnimationTuning.ear_jiggle(species, breed_name, shake_phase, 0.0, celebration, pet_happy)
+	foot_anchor += ear_j * 0.3
+	var jump_height: float = 0.0
+	var overlay_state: StringName = &""
+	var overlay_alpha: float = 0.0
+	var second_state: StringName = &""
+	var second_alpha: float = 0.0
+
+	if forced_state != &"" and forced_state_time > 0.0:
+		overlay_state = forced_state
+		overlay_alpha = clampf(forced_state_time, 0.0, 1.0)
+		if forced_state == &"dizzy":
+			foot_anchor.x += sin(shake_phase * 30.0) * 6.0
+			spin += sin(shake_phase * 16.0) * 0.02
+		elif forced_state == &"happy_squash":
+			jump_height = abs(sin(shake_phase * 8.0)) * 20.0
+	elif playful_hop:
+		overlay_state = &"happy_air"
+		overlay_alpha = 0.9
+		jump_height = 34.0
+	elif celebration > 0.0:
+		var celebration_phase: float = 1.0 - celebration / 1.8
+		if celebration_phase < 0.2:
+			overlay_state = &"happy_squash"
+			overlay_alpha = smoothstep(0.0, 0.08, celebration_phase)
+		elif celebration_phase < 0.72:
+			overlay_state = &"happy_air"
+			overlay_alpha = 1.0 - smoothstep(0.62, 0.72, celebration_phase)
+			jump_height = sin(PI * (celebration_phase - 0.2) / 0.52) * 72.0
+		else:
+			overlay_state = &"happy_squash"
+			overlay_alpha = 1.0 - smoothstep(0.72, 0.9, celebration_phase)
+	elif reaction_kind == &"sad":
+		overlay_state = &"sad"
+		overlay_alpha = minf(1.0, reaction_time * 3.0)
+		reaction_scale += Vector2(0.018, -0.035)
+	elif reaction_kind == &"dizzy":
+		overlay_state = &"dizzy"
+		overlay_alpha = minf(1.0, reaction_time * 4.0)
+		foot_anchor.x += sin(shake_phase * 32.0) * 7.0
+		spin += sin(shake_phase * 18.0) * 0.025
+	elif reaction_kind == &"blink":
+		blink_force_time = maxf(blink_force_time, 0.22)
+	elif reaction_kind == &"love" or reaction_kind == &"excited":
+		overlay_state = &"happy_squash"
+		overlay_alpha = minf(1.0, reaction_time * 4.0)
+		jump_height = abs(sin(shake_phase * 8.0)) * 18.0
+	elif service_active:
+		if service_mode == &"bath":
+			overlay_state = &"dirty"
+			overlay_alpha = 1.0 - smoothstep(0.05, 0.36, progress)
+			second_state = &"wet"
+			second_alpha = smoothstep(0.12, 0.38, progress)
+		elif service_mode == &"groom":
+			overlay_state = &"messy"
+			overlay_alpha = 1.0 - smoothstep(0.08, 0.92, progress)
+		elif service_mode == &"dry":
+			overlay_state = &"wet"
+			overlay_alpha = 1.0 - smoothstep(0.08, 0.95, progress)
+	elif condition_release > 0.0:
+		overlay_state = &"wet"
+		overlay_alpha = condition_release
+	elif not service_condition_complete and service_mode == &"bath":
+		overlay_state = &"dirty"
+		overlay_alpha = 1.0
+	elif not service_condition_complete and service_mode == &"groom":
+		overlay_state = &"messy"
+		overlay_alpha = 1.0
+	elif not service_condition_complete and service_mode == &"dry":
+		overlay_state = &"wet"
+		overlay_alpha = 1.0
+	else:
+		var idle_phase: float = fmod(shake_phase, 8.0)
+		if idle_phase >= 1.2 and idle_phase < 2.8:
+			overlay_state = &"tilt_left"
+			overlay_alpha = sin(PI * (idle_phase - 1.2) / 1.6)
+		elif idle_phase >= 4.6 and idle_phase < 6.2:
+			overlay_state = &"tilt_right"
+			overlay_alpha = sin(PI * (idle_phase - 4.6) / 1.6)
+		# micro idle overlay quando não há estado principal
+		if overlay_state.is_empty() and not micro_idle_state.is_empty():
+			match micro_idle_state:
+				&"yawn":
+					overlay_state = &"sad"
+					overlay_alpha = 0.85
+				&"sleep":
+					overlay_state = &"sad"
+					overlay_alpha = 0.6
+				&"sniff":
+					overlay_state = &"tilt_left"
+					overlay_alpha = 0.45
+				&"ear_twitch":
+					overlay_state = &"tilt_right"
+					overlay_alpha = 0.35
+
+	if overlay_state == &"happy_squash":
+		reaction_scale = reaction_scale * Vector2(1.045, 0.94)
+	elif overlay_state == &"happy_air":
+		reaction_scale = reaction_scale * Vector2(0.97, 1.035)
+
+	# ── Piscada por espécie (gato lenta) ──
+	var blink_dur_int: Vector2 = PetAnimationTuning.blink_duration(species, temperament)
+	var blink_dur: float = blink_dur_int.x
+	var blink_interval: float = blink_dur_int.y
+	var blink_pulse: float = 0.0
+	if blink_force_time > 0.0:
+		blink_pulse = minf(1.0, blink_force_time * 6.0)
+	elif overlay_state not in [&"happy_squash", &"happy_air"]:
+		var blink_phase: float = fmod(shake_phase + blink_offset, blink_interval)
+		if blink_phase < blink_dur:
+			blink_pulse = sin(PI * blink_phase / blink_dur)
+	var blink_layer: StringName = &"blink"
+	if blink_pulse > 0.0:
+		var dominant: StringName = overlay_state if overlay_alpha >= second_alpha else second_state
+		if dominant in [&"wet", &"dirty", &"messy", &"sad", &"dizzy"]:
+			var blink_variant: StringName = StringName(String(dominant) + "_blink")
+			if pet_state_textures.has(blink_variant):
+				blink_layer = blink_variant
+			else:
+				blink_pulse = 0.0
+		# double blink micro idle
+		if micro_idle_state == &"blink_double" and fmod(shake_phase * 4.0, 1.0) < 0.5:
+			blink_pulse *= 0.7
+
+	var tint: Color = Color.WHITE
+	if pet_wet or overlay_state == &"wet" or second_state == &"wet":
+		tint = Color("d5edf4")
+	if reaction_kind == &"sad":
+		tint = tint.darkened(0.18 * minf(1.0, reaction_time * 2.0))
+	# afeto 50 = brilho sutil
+	if affection_level >= 50:
+		tint = tint.lightened(0.04)
+	# tail wag influencia foot_anchor levemente (corpo acompanha cauda)
+	foot_anchor.x += tail_wag_value * 2.0
+	foot_anchor.y -= jump_height
+	# ear jiggle final com jump
+	ear_j = PetAnimationTuning.ear_jiggle(species, breed_name, shake_phase, jump_height, celebration, pet_happy)
+	foot_anchor.y += ear_j.y * 0.2
+
+	draw_set_transform(foot_anchor, spin, reaction_scale)
+	var covered_alpha: float = 0.0
+	if not overlay_state.is_empty() and pet_state_textures.has(overlay_state):
+		covered_alpha += clampf(overlay_alpha, 0.0, 1.0)
+	if not second_state.is_empty() and pet_state_textures.has(second_state):
+		covered_alpha += clampf(second_alpha, 0.0, 1.0)
+	var base_alpha: float = clampf(1.0 - covered_alpha, 0.0, 1.0)
+	var base_tint: Color = tint
+	base_tint.a *= base_alpha
+	_draw_pet_texture_layer(pet_texture, sprite_size, base_tint)
+	_draw_pet_state_layer(overlay_state, overlay_alpha, sprite_size, tint)
+	_draw_pet_state_layer(second_state, second_alpha, sprite_size, Color("c8e8f3"))
+	_draw_pet_state_layer(blink_layer, blink_pulse, sprite_size, tint)
+	# ── Eye tracking highlight (pupila brilho) — clampado no branco do olho ──
+	if blink_pulse < 0.5 and overlay_state not in [&"dizzy", &"sad"] and not room_empty:
+		# posição estimada olhos no sprite local (0,0 = pés)
+		var eye_left_local: Vector2 = Vector2(-52, -170 -22) * (sprite_size / 390.0)
+		var eye_right_local: Vector2 = Vector2(52, -170 -22) * (sprite_size / 390.0)
+		var glint_size: float = 5.0 if affection_level < 25 else 6.5
+		if anticipation > 0.5:
+			glint_size += 1.2
+		# eye_offset já em px mundo → local; clamp a 6 px para nunca sair do olho (raio do olho ≈ 17)
+		var eye_off_local: Vector2 = eye_offset * 0.55
+		if eye_off_local.length() > 6.5:
+			eye_off_local = eye_off_local.normalized() * 6.5
+		# desenha brilho branco + pupila offset
+		draw_circle(eye_left_local + eye_off_local, glint_size, Color("ffffff", 0.92))
+		draw_circle(eye_right_local + eye_off_local, glint_size, Color("ffffff", 0.92))
+		# pupila escura pequena offset (metade do deslocamento)
+		draw_circle(eye_left_local + eye_off_local * 0.48, 3.2, Color("263238", 0.85))
+		draw_circle(eye_right_local + eye_off_local * 0.48, 3.2, Color("263238", 0.85))
+		# nariz wiggle micro idle
+		if micro_idle_state == &"nose_wiggle":
+			var nose_pos: Vector2 = Vector2(0, -170 + 20) * (sprite_size / 390.0)
+			draw_circle(nose_pos + Vector2(sin(shake_phase * 18.0) * 2.0, 0), 4.0, Color("ff8fb1", 0.7))
+	_draw_pet_accessories(Vector2.ZERO, sprite_size / 390.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func _draw_pet_texture_layer(
+	texture: Texture2D, sprite_size: float, tint: Color = Color.WHITE
+) -> void:
+	if not is_instance_valid(texture) or tint.a <= 0.0:
+		return
+	draw_texture_rect(
+		texture,
+		Rect2(-sprite_size * 0.5, -sprite_size * PET_TEXTURE_BASELINE, sprite_size, sprite_size),
+		false,
+		tint,
+	)
+
+func _draw_pet_state_layer(
+	state_name: StringName, alpha: float, sprite_size: float, tint: Color = Color.WHITE
+) -> void:
+	if state_name.is_empty() or alpha <= 0.0 or not pet_state_textures.has(state_name):
+		return
+	var layer_tint: Color = tint
+	layer_tint.a *= clampf(alpha, 0.0, 1.0)
+	_draw_pet_texture_layer(pet_state_textures[state_name] as Texture2D, sprite_size, layer_tint)
+
+func _breed_contains_any(labels: Array[String]) -> bool:
+	for label: String in labels:
+		if breed_name.contains(label):
+			return true
+	return false
+
+func _draw_pet_ellipse(center: Vector2, radii: Vector2, color: Color) -> void:
+	var points: PackedVector2Array = PackedVector2Array()
+	for i: int in 32:
+		var angle: float = TAU * float(i) / 32.0
+		points.append(center + Vector2(cos(angle) * radii.x, sin(angle) * radii.y))
+	draw_colored_polygon(points, color)
+
+func _box(color: Color, radius: float) -> StyleBoxFlat:
+	var box: StyleBoxFlat = StyleBoxFlat.new()
+	box.bg_color = color
+	box.corner_radius_top_left = int(radius)
+	box.corner_radius_top_right = int(radius)
+	box.corner_radius_bottom_left = int(radius)
+	box.corner_radius_bottom_right = int(radius)
+	return box
+
+func _draw_tool_shelf() -> void:
+	# As prateleiras pertencem à arte raster; aqui são desenhados somente utensílios interativos.
+	for tool: StringName in TOOL_ORDER:
+		var unlocked: bool = player_level >= int(TOOL_LEVELS[tool])
+		var shelf_alpha: float = (
+			0.12 if tool_visible and tool == active_tool else (1.0 if unlocked else 0.28)
+		)
+		var shelf_position: Vector2 = _tool_position(tool)
+		_draw_tool(tool, shelf_position, shelf_alpha)
+		if not unlocked:
+			draw_circle(shelf_position, 29, Color("263238", 0.76))
+			draw_string(
+				UI_TITLE_FONT,
+				shelf_position + Vector2(-28, 10),
+				"Nv.%d" % int(TOOL_LEVELS[tool]),
+				HORIZONTAL_ALIGNMENT_CENTER,
+				56,
+				20,
+				Color.WHITE,
+			)
+
+func _draw_tool(tool: StringName, at: Vector2, alpha: float, is_dragged: bool = false) -> void:
+	if not TOOL_TEXTURES.has(tool):
+		return
+	var texture: Texture2D = TOOL_TEXTURES[tool]
+	var bob: float = (
+		sin(shake_phase * 2.4 + float(String(tool).hash() % 7)) * (4.0 if is_dragged else 2.0)
+	)
+	var spin: float = sin(shake_phase * 4.8) * 0.055 if is_dragged else 0.0
+	var active_pulse: float = 1.0 + sin(shake_phase * 6.0) * 0.025 if is_dragged else 1.0
+	var draw_size: float = (138.0 if is_dragged else 116.0) * active_pulse
+	var item_modulate: Color = Color(1.0, 1.0, 1.0, alpha)
+	draw_set_transform(at + Vector2(0, bob), spin)
+	draw_texture_rect(
+		texture,
+		Rect2(-draw_size * 0.5, -draw_size * 0.5, draw_size, draw_size),
+		false,
+		item_modulate
+	)
+	if is_dragged:
+		draw_arc(Vector2.ZERO, draw_size * 0.48, -2.7, -0.45, 20, Color("ffffff", 0.38), 4.0)
+	# Maestria (onda 3): aro prata no marco 10, ouro no 20 — progresso visível.
+	var milestone: int = 0
+	var tool_level: int = int(tool_levels.get(String(tool), 0))
+	if tool_level >= 20:
+		milestone = 2
+	elif tool_level >= 10:
+		milestone = 1
+	if milestone > 0:
+		draw_arc(
+			Vector2.ZERO,
+			draw_size * 0.56,
+			0.0,
+			TAU,
+			36,
+			Color("ffd54f", 0.9) if milestone == 2 else Color("cfd8dc", 0.9),
+			5.0
+		)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+## Três corações de marcos de afeto (10/25/50) flutuando sobre o pet — 10/10 vivo:
+## escala por afeto, pulso no beat, brilho quando 50, segue respiração.
+func _draw_affection_hearts(body_center: Vector2) -> void:
+	var thresholds: Array[int] = [10, 25, 50]
+	var beat: float = sin(shake_phase * 3.0) * 0.15 + 1.0
+	for i: int in 3:
+		var filled: bool = affection_level >= thresholds[i]
+		var base_scale: float = PetAnimationTuning.affection_heart_scale(affection_level, i)
+		# pulso por índice para não sincronizado
+		var pulse: float = base_scale * (beat + sin(shake_phase * 2.0 + i) * 0.08)
+		if not filled:
+			pulse = 20.0
+		var bob: float = sin(shake_phase * 1.8 + i * 0.7) * 3.0
+		var heart_center: Vector2 = body_center + Vector2(float(i - 1) * 62.0, -268.0 + bob)
+		if filled:
+			var glow: float = 0.18 + 0.08 * sin(shake_phase * 2.5 + i) if affection_level >= 25 else 0.0
+			if glow > 0.0:
+				draw_circle(heart_center, pulse * 1.3, Color("ff8fb1", glow))
+			if affection_level >= 50:
+				draw_circle(heart_center, pulse * 0.5, Color("ffffff", 0.5 + 0.3 * sin(shake_phase * 4.0)))
+		_draw_heart(heart_center, pulse, Color("ff8fb1") if filled else Color("263238", 0.18))
+
+func _draw_heart(center: Vector2, radius: float, color: Color) -> void:
+	var points: PackedVector2Array = PackedVector2Array()
+	for index: int in 24:
+		var angle: float = TAU * float(index) / 24.0
+		var x: float = 16.0 * pow(sin(angle), 3.0)
+		var y: float = -(
+			13.0 * cos(angle) - 5.0 * cos(2.0 * angle) - 2.0 * cos(3.0 * angle) - cos(4.0 * angle)
+		)
+		points.append(center + Vector2(x, y) * radius / 18.0)
+	draw_colored_polygon(points, color)
+
+func _star(center: Vector2, radius: float, color: Color) -> void:
+	var points: PackedVector2Array = PackedVector2Array()
+	for i: int in 10:
+		var r: float = radius if i % 2 == 0 else radius * 0.42
+		var angle: float = -PI / 2.0 + float(i) * PI / 5.0
+		points.append(center + Vector2(cos(angle), sin(angle)) * r)
+

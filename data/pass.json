@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "pass": [
+    {
+      "day": 1,
+      "coins": 100
+    },
+    {
+      "day": 2,
+      "coins": 150
+    },
+    {
+      "day": 3,
+      "coins": 200
+    },
+    {
+      "day": 4,
+      "coins": 250
+    },
+    {
+      "day": 5,
+      "coins": 300
+    },
+    {
+      "day": 6,
+      "coins": 400
+    },
+    {
+      "day": 7,
+      "coins": 300,
+      "embers": 1
+    },
+    {
+      "day": 8,
+      "coins": 450
+    },
+    {
+      "day": 9,
+      "coins": 500
+    },
+    {
+      "day": 10,
+      "coins": 550
+    },
+    {
+      "day": 11,
+      "coins": 600
+    },
+    {
+      "day": 12,
+      "coins": 650
+    },
+    {
+      "day": 13,
+      "coins": 700
+    },
+    {
+      "day": 14,
+      "coins": 600,
+      "embers": 2
+    },
+    {
+      "day": 15,
+      "coins": 750
+    },
+    {
+      "day": 16,
+      "coins": 800
+    },
+    {
+      "day": 17,
+      "coins": 850
+    },
+    {
+      "day": 18,
+      "coins": 900
+    },
+    {
+      "day": 19,
+      "coins": 950
+    },
+    {
+      "day": 20,
+      "coins": 1000
+    },
+    {
+      "day": 21,
+      "coins": 800,
+      "embers": 3
+    },
+    {
+      "day": 22,
+      "coins": 1100
+    },
+    {
+      "day": 23,
+      "coins": 1200
+    },
+    {
+      "day": 24,
+      "coins": 1300
+    },
+    {
+      "day": 25,
+      "coins": 1400
+    },
+    {
+      "day": 26,
+      "coins": 1500
+    },
+    {
+      "day": 27,
+      "coins": 1600
+    },
+    {
+      "day": 28,
+      "coins": 1500,
+      "freeze": 1
+    }
+  ]
+}

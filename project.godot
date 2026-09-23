@@ -1,0 +1,57 @@
+; PetShop Tycoon — Godot 4.x
+config_version=5
+
+[application]
+config/name="PetShop Tycoon: Do Banho à Rede"
+run/main_scene="res://scenes/main/Main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://art/ui/icon.png"
+boot_splash/bg_color=Color(1, 0.952941, 0.878431, 1)
+boot_splash/image="res://art/ui/splash.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
+
+[autoload]
+EventBus="*res://autoload/EventBus.gd"
+RemoteConfig="*res://autoload/RemoteConfig.gd"
+ContentDB="*res://autoload/ContentDB.gd"
+Analytics="*res://autoload/Analytics.gd"
+TimeManager="*res://autoload/TimeManager.gd"
+Economy="*res://autoload/Economy.gd"
+GameState="*res://autoload/GameState.gd"
+Loc="*res://autoload/Loc.gd"
+SaveManager="*res://autoload/SaveManager.gd"
+AudioManager="*res://autoload/AudioManager.gd"
+HapticsManager="*res://autoload/HapticsManager.gd"
+InteractionFX="*res://autoload/InteractionFX.gd"
+AdsManager="*res://autoload/AdsManager.gd"
+IAPManager="*res://autoload/IAPManager.gd"
+LiveOps="*res://autoload/LiveOps.gd"
+ShareManager="*res://autoload/ShareManager.gd"
+NotificationManager="*res://autoload/NotificationManager.gd"
+
+[display]
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/size/window_width_override=405
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+
+audio/driver/enable_input=false
+audio/buses/default_bus_layout="res://audio/default_bus_layout.tres"
+
+[gui]
+theme/custom_font="res://art/fonts/DejaVuSans.ttf"
+theme/default_font_multichannel_signed_distance_field=true
+
+[physics]
+common/physics_ticks_per_second=60
+
+[application_run]
+disable_stdout=false

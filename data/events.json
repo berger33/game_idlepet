@@ -1,0 +1,17 @@
+{
+  "schema_version":2,
+  "weekly":[
+    {"id":"sunday_family","weekday":0,"name":"Domingo da Família","service":"","service_multiplier":1.0,"modifier":"all_income","multiplier":1.25},
+    {"id":"monday_bath","weekday":1,"name":"Segunda do Banho","service":"bath","service_multiplier":2.0,"modifier":"","multiplier":1.0},
+    {"id":"tuesday_groom","weekday":2,"name":"Terça da Tosa","service":"groom","service_multiplier":2.0,"modifier":"","multiplier":1.0},
+    {"id":"wednesday_dry","weekday":3,"name":"Quarta da Secagem","service":"dry","service_multiplier":2.0,"modifier":"","multiplier":1.0},
+    {"id":"thursday_rare","weekday":4,"name":"Quinta do Laço","service":"style","service_multiplier":2.0,"modifier":"rare_chance","multiplier":1.5},
+    {"id":"friday_vip","weekday":5,"name":"Sexta do VIP","service":"perfume","service_multiplier":2.0,"modifier":"vip_frequency","multiplier":2.0},
+    {"id":"saturday_combo","weekday":6,"name":"Sábado do Combo","service":"","service_multiplier":1.0,"modifier":"perfect_bonus","multiplier":1.5}
+  ],
+  "seasonal":[
+    {"id":"carnaval","months":[2,3],"cosmetic_set":"confete","cosmetic":"wall_carnaval","exclusive_pet":"vira_lata_folioes"},
+    {"id":"festa_junina","months":[6],"cosmetic_set":"arraia","cosmetic":"wall_junina","exclusive_pet":"salsicha_caipira"},
+    {"id":"natal","months":[12],"cosmetic_set":"natal_tropical","cosmetic":"wall_natal","exclusive_pet":"spitz_neve"}
+  ]
+}

@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "arena/*"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Lint + testes de dados/economia
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}-gdtoolkit-pillow-numpy
+          restore-keys: |
+            pip-${{ runner.os }}-
+      - name: Dependências Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install gdtoolkit pillow numpy
+      - name: Lint GDScript (projeto inteiro)
+        run: gdlint $(git ls-files '*.gd')
+      - name: Testes de dados, economia e contratos de UI
+        run: python -m unittest discover -s tests -v
+      - name: Validação estrutural do projeto
+        run: python tools/validate_project.py
+      - name: Verificação funcional das animações dos 50 pets (500 PNGs)
+        run: python tools/verify_pet_animations.py
+      - name: SFX — assets em sync com o gerador (regeneração determinística)
+        run: python tools/gen_sfx.py --check
+      - name: BGM — trilhas por capítulo (16 compassos a 96 BPM, loop fechado)
+        run: python tools/gen_bgm.py --check
+      - name: Estantes temáticas — pranchas ancoradas onde os itens apoiam
+        run: python tools/gen_shelf_art.py --qa
+      - name: Cenas compostas — alinhamento pet/estação/estante (QA visual+numérico)
+        run: python tools/compose_scene_preview.py
+      - name: Acessórios do pet — peça vestida por espécie (QA de âncoras)
+        run: python tools/qa_accessory_preview.py
+
+  runtime:
+    name: Godot headless (import + smoke test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Godot binary
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-binary-4.7.2-stable-linux
+      - name: Instalar Godot 4.7.2 headless
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x godot
+      - name: Garantir permissão Godot
+        if: steps.godot-cache.outputs.cache-hit == 'true'
+        run: chmod +x godot
+      - name: Cache export templates
+        id: templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/4.7.2.stable
+          key: godot-templates-4.7.2
+      - name: Baixar export templates (se necessário para import)
+        if: steps.templates.outputs.cache-hit != 'true'
+        run: |
+          curl -fL -o templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.7.2.stable/ || true
+      - name: Import de assets (valida preload/paths)
+        run: |
+          run_import() { ./godot --headless --import 2>&1 | tee /tmp/import.log; return ${PIPESTATUS[0]}; }
+          if ! run_import; then
+            echo "::warning::primeira tentativa de import falhou; nova tentativa em 10s"
+            sleep 10
+            if ! run_import; then
+              echo "::error::import falhou nas duas tentativas"
+              grep -inE "error|abort|assert|exception|signal|script" /tmp/import.log | head -20 | while IFS= read -r line; do
+                echo "::error::${line:0:220}"
+              done
+              exit 1
+            fi
+          fi
+      - name: Smoke test — 120 frames da cena principal
+        run: |
+          ./godot --headless --quit-after 120 2>&1 | tee /tmp/smoke.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "::error::smoke test falhou (cena principal não executou 120 frames)"
+            exit 1
+          fi
+          if grep -q "SCRIPT ERROR" /tmp/smoke.log; then
+            echo "::error::erro(s) de script durante a execução da cena principal"
+            grep -E "SCRIPT ERROR|at:" /tmp/smoke.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            exit 1
+          fi
+      - name: Testes de domínio (Godot) — economia, prestígio, pesquisa, descoberta, migração
+        run: |
+          ./godot --headless --path . res://tests/domain_tests.tscn 2>&1 | tee /tmp/domain.log
+          status=${PIPESTATUS[0]}
+          if grep -q "SCRIPT ERROR" /tmp/domain.log; then
+            echo "::error::erro(s) de script nos testes de domínio"
+            grep -E "SCRIPT ERROR|at:" /tmp/domain.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          if ! grep -q "Godot domain tests: PASS" /tmp/domain.log; then
+            echo "::error::testes de domínio não passaram"
+            grep -iE "falha|failure|deve|must" /tmp/domain.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          exit $status
+      - name: Interação — seleção de cliente e painéis (headless)
+        run: |
+          ./godot --headless --script tools/smoke_interact.gd 2>&1 | tee /tmp/interact.log
+          status=${PIPESTATUS[0]}
+          if grep -q "SCRIPT ERROR" /tmp/interact.log; then
+            echo "::error::erro(s) de script durante a interação"
+            grep -E "SCRIPT ERROR|at:" /tmp/interact.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          if grep -q "SMOKE_INTERACT FAIL" /tmp/interact.log; then
+            grep "SMOKE_INTERACT FAIL" /tmp/interact.log | head -12 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          exit $status
+      - name: Análise estática de todos os scripts (contexto de projeto, 4.7.2)
+        run: |
+          status=0
+          printf 'extends Node\nvar probe: int = 1\nfunc probe() -> int:\n\treturn 1\n' > probe_collision_selftest.gd
+          if ./godot --headless --script tools/check_scripts.gd -- res://probe_collision_selftest.gd > /dev/null 2>&1; then
+            echo "::error::detector de análise não registrou a colisão de teste"
+            status=1
+          else
+            echo "detector validado: script de teste com colisão falhou como esperado"
+          fi
+          rm -f probe_collision_selftest.gd
+          mapfile -t scripts < <(git ls-files '*.gd' | sed 's|^|res://|')
+          ./godot --headless --script tools/check_scripts.gd -- "${scripts[@]}" 2>&1 | tee /tmp/check.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "::error::análise de scripts falhou (Godot 4.7.2)"
+            grep -E "SCRIPT ERROR|Compile Error|Parse Error|FALHARAM" /tmp/check.log | head -20 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            status=1
+          fi
+          exit $status
