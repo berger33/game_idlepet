@@ -31,17 +31,21 @@ func apply() -> void:
 			),
 			"●○○ 1/3 · " + Loc.t("TUT_STEP_1"),
 		)
+		if Engine.has_singleton("AudioManager") or true:
+			AudioManager.play_voice(&"choose_client")
 	elif step == 1:
 		var tool: StringName = StringName(main.SERVICE_TOOLS[main.current_service])
 		main.tutorial_overlay.show_step(
 			spot_rect(),
 			"○●○ 2/3 · " + Loc.t("TUT_STEP_2") % [SalonTuning.tool_display_name(tool), main.current_pet_name],
 		)
+		AudioManager.play_voice(main._voice_for_service(main.current_service) if main.has_method("_voice_for_service") else &"drag_soap")
 	elif step == 2:
 		main.tutorial_overlay.show_step(
 			Rect2(main.world.pet_focus() - Vector2(250, 250), Vector2(500, 560)),
 			"○○● 3/3 · " + SalonTuning.hint(main.current_service),
 		)
+		AudioManager.play_voice(main._voice_for_service(main.current_service) if main.has_method("_voice_for_service") else &"drag_soap")
 
 
 func advance() -> void:
@@ -82,6 +86,12 @@ func teach_service(service: StringName) -> void:
 		Rect2(main.world.pet_focus() - Vector2(250, 250), Vector2(500, 560)),
 		"%s\n%s" % [Loc.t("TEACH_NEW_GESTURE"), SalonTuning.hint(service)]
 	)
+	# voz kids: explica gesto novo com narração curta
+	var vid: StringName = &"drag_soap"
+	match service:
+		&"perfume": vid = &"perfume_spray"
+		&"style": vid = &"bow_here"
+	AudioManager.play_voice(vid)
 	Analytics.track(&"gesture_taught", {"service": String(service)})
 	SaveManager.request_save()
 

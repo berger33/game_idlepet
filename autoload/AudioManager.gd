@@ -62,6 +62,10 @@ var tick_counter: Dictionary = {}
 ## Chime da janela perfeita: toca UMA vez por entrada na faixa; rearma
 ## sozinho quando o progresso cai abaixo dela (progresso 0 em novo serviço).
 var window_chime_armed: bool = true
+# ── Voz / Narração kids (pt-BR) — mutável já na 1ª tela, respeita settings["voice"]
+const VO_DIR: String = "res://audio/vo/"
+var voice_player: AudioStreamPlayer
+var voice_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -71,6 +75,11 @@ func _ready() -> void:
 		add_child(voice)
 		voices.append(voice)
 	_build_sfx_cache()
+	# Voz kids dedicada (não compete com pool de SFX)
+	voice_player = AudioStreamPlayer.new()
+	voice_player.bus = &"Master"
+	add_child(voice_player)
+	_build_voice_cache()
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Master"
 	add_child(music_player)
@@ -237,7 +246,91 @@ func apply_volumes() -> void:
 	var sfx_volume: float = clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0)
 	for voice: AudioStreamPlayer in voices:
 		voice.volume_db = linear_to_db(sfx_volume)
+	if is_instance_valid(voice_player):
+		voice_player.volume_db = linear_to_db(sfx_volume) if is_voice_enabled() else -80.0
 	music_player.volume_db = _music_db()
+
+# ── Voz kids ── exposta já na 1ª tela para mutar sem abrir Ajustes
+func is_voice_enabled() -> bool:
+	return bool(GameState.settings.get("voice", true))
+
+func set_voice_enabled(enabled: bool) -> void:
+	GameState.settings["voice"] = enabled
+	SaveManager.request_save()
+	apply_volumes()
+	if not enabled and is_instance_valid(voice_player):
+		voice_player.stop()
+	EventBus.settings_changed.emit()
+
+func play_voice(id: StringName) -> void:
+	if not is_voice_enabled():
+		return
+	if voice_cache.is_empty() and not _build_voice_cache():
+		pass
+	var stream: AudioStream = voice_cache.get(id, null) as AudioStream
+	if stream == null:
+		stream = _load_voice(id)
+		if stream == null:
+			return
+		voice_cache[id] = stream
+	if not is_instance_valid(voice_player):
+		return
+	# baixa levemente música enquanto narra (ducking)
+	if is_instance_valid(music_player):
+		music_player.volume_db = _music_db() - 4.0
+	voice_player.stream = stream
+	voice_player.volume_db = linear_to_db(clampf(float(GameState.settings.get("sfx", 0.9)), 0.0001, 1.0))
+	voice_player.play()
+	# restaura música quando voz termina
+	if voice_player.has_signal("finished"):
+		# reconecta a cada play para não acumular
+		if voice_player.is_connected("finished", _on_voice_finished):
+			voice_player.finished.disconnect(_on_voice_finished)
+		voice_player.finished.connect(_on_voice_finished, CONNECT_ONE_SHOT)
+
+func _on_voice_finished() -> void:
+	if is_instance_valid(music_player):
+		music_player.volume_db = _music_db()
+
+func stop_voice() -> void:
+	if is_instance_valid(voice_player):
+		voice_player.stop()
+		_on_voice_finished()
+
+func _build_voice_cache() -> bool:
+	# pré-carrega vozes conhecidas se já existem no disco (não trava se faltar)
+	for vid: StringName in [&"drag_soap", &"perfume_spray", &"bow_here", &"perfect", &"choose_client", &"welcome"]:
+		var s: AudioStream = _load_voice(vid)
+		if s != null:
+			voice_cache[vid] = s
+	return not voice_cache.is_empty()
+
+func _load_voice(id: StringName) -> AudioStream:
+	var base: String = VO_DIR + String(id)
+	for ext: String in [".mp3", ".ogg", ".wav"]:
+		var path: String = base + ext
+		if ResourceLoader.exists(path):
+			var loaded: Resource = load(path)
+			if loaded is AudioStream:
+				return loaded as AudioStream
+		# fallback sem import: carrega bytes direto (mp3 gerado em runtime)
+		if FileAccess.file_exists(path):
+			var bytes: PackedByteArray = FileAccess.get_file_as_bytes(path)
+			if bytes.is_empty():
+				continue
+			if ext == ".mp3":
+				var mp3: AudioStreamMP3 = AudioStreamMP3.new()
+				mp3.data = bytes
+				return mp3
+			elif ext == ".ogg":
+				var ogg: AudioStreamOggVorbis = AudioStreamOggVorbis.new()
+				# Godot 4 usa _load_ogg? fallback: tenta WAV
+				continue
+			elif ext == ".wav":
+				var wav: AudioStreamWAV = AudioStreamWAV.new()
+				wav.data = bytes
+				return wav
+	return null
 
 
 ## Trilha relaxante original restaurada (pedido do usuário):

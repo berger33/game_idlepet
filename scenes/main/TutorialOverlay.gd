@@ -9,6 +9,26 @@ var spotlight_rect: Rect2 = Rect2(0, 0, 0, 0)
 var message: String = ""
 var pulse: float = 0.0
 var active: bool = false
+var voice_button: Button = null
+
+
+func _ready() -> void:
+	# botão de voz no tutorial — mute já no 1º acesso sem abrir Ajustes
+	voice_button = Button.new()
+	voice_button.custom_minimum_size = Vector2(72, 72)
+	voice_button.size = Vector2(72, 72)
+	voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
+	voice_button.z_index = 10
+	voice_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	voice_button.focus_mode = Control.FOCUS_NONE
+	voice_button.pressed.connect(_on_voice_toggle)
+	add_child(voice_button)
+	_update_voice_button()
+	# reposiciona se tela redimensionar / safe area mudar
+	resized.connect(func() -> void:
+		if is_instance_valid(voice_button):
+			voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
+	)
 
 
 func show_step(rect: Rect2, text: String) -> void:
@@ -17,12 +37,56 @@ func show_step(rect: Rect2, text: String) -> void:
 	spotlight_rect = rect
 	message = text
 	pulse = 0.0
+	if is_instance_valid(voice_button):
+		voice_button.visible = true
+		_update_voice_button()
+		voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
 	queue_redraw()
 
 
 func finish() -> void:
 	active = false
 	visible = false
+	if is_instance_valid(voice_button):
+		voice_button.visible = false
+
+func _on_voice_toggle() -> void:
+	var enabled: bool = not bool(GameState.settings.get("voice", true))
+	GameState.settings["voice"] = enabled
+	SaveManager.request_save()
+	AudioManager.apply_volumes()
+	if not enabled:
+		AudioManager.stop_voice()
+	else:
+		AudioManager.play_voice(&"welcome")
+	_update_voice_button()
+	EventBus.settings_changed.emit()
+
+func _update_voice_button() -> void:
+	if not is_instance_valid(voice_button):
+		return
+	var enabled: bool = bool(GameState.settings.get("voice", true))
+	voice_button.text = "🔊" if enabled else "🔇"
+	voice_button.tooltip_text = "Voz ligada — toque para mutar" if enabled else "Voz mutada — toque para ativar"
+	# estilo rápido sem depender de Main._style (Control puro)
+	var bg: Color = Color("4fc3f7") if enabled else Color("90a4ae")
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.corner_radius_top_left = 36; sb.corner_radius_top_right = 36; sb.corner_radius_bottom_left = 36; sb.corner_radius_bottom_right = 36
+	sb.content_margin_left = 8; sb.content_margin_right = 8; sb.content_margin_top = 8; sb.content_margin_bottom = 8
+	sb.border_color = Color.WHITE; sb.border_width_left = 3; sb.border_width_right = 3; sb.border_width_top = 3; sb.border_width_bottom = 3
+	voice_button.add_theme_stylebox_override("normal", sb)
+	var sb2: StyleBoxFlat = sb.duplicate() as StyleBoxFlat
+	sb2.bg_color = bg.lightened(0.08)
+	voice_button.add_theme_stylebox_override("hover", sb2)
+	voice_button.add_theme_color_override("font_color", Color.WHITE)
+
+func _safe_top() -> float:
+	if OS.has_feature("mobile") or OS.has_feature("web"):
+		var safe: Rect2i = DisplayServer.get_display_safe_area()
+		if safe.position.y > 0:
+			return clampf(float(safe.position.y) * 0.5, 0.0, 80.0)
+	return 0.0
 
 
 func _process(delta: float) -> void:

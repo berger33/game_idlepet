@@ -35,6 +35,12 @@ const SERVICE_LABELS: Dictionary = {
 }
 func _service_verb(service: StringName) -> String:
 	return Loc.t(String(SERVICE_LABELS.get(service, "SERVICE_VERB_BATH")))
+
+func _voice_for_service(service: StringName) -> StringName:
+	match service:
+		&"perfume": return &"perfume_spray"
+		&"style": return &"bow_here"
+		_: return &"drag_soap"
 const TutorialOverlayScript: Script = preload("res://scenes/main/TutorialOverlay.gd")
 const UPGRADES_ICON: Texture2D = preload("res://art/ui/icons/upgrades.png")
 const ParkServiceScript: Script = preload("res://core/gameplay/ParkService.gd")
@@ -98,6 +104,7 @@ var proof_label: Label
 var proof_timer: float = 0.0
 var top_bar_scroll: ScrollContainer
 var top_bar_hbox: HBoxContainer
+var voice_toggle_button: Button
 var goal_collapsed: bool = true
 var goal_expand_btn: Button
 var goal_full_text: String = ""
@@ -179,6 +186,12 @@ func _ready() -> void:
 		if GameState.streak_freezes == 0:
 			GameState.streak_freezes = 1
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
+	# voz kids: boas-vindas no 1º acesso (com delay para não competir com splash/SFX)
+	if GameState.services_completed == 0:
+		get_tree().create_timer(0.8).timeout.connect(func() -> void:
+			if bool(GameState.settings.get("voice", true)):
+				AudioManager.play_voice(&"choose_client")
+		, CONNECT_ONE_SHOT)
 func _process(delta: float) -> void:
 	# Splash barra progresso se carregamento >1s (P1)
 	if not splash_done:
@@ -578,6 +591,8 @@ func _finish_bath() -> void:
 func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	world.celebrate(quality == &"perfect" or GameState.combo >= 5)
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
+	if quality == &"perfect":
+		AudioManager.play_voice(&"perfect")
 	HapticsManager.success()
 	result_title.text = Loc.t("PERFECT_RESULT") if quality == &"perfect" else Loc.t("GOOD_RESULT")
 	if current_vip:
@@ -762,6 +777,8 @@ func _dismiss_result() -> void:
 	_last_instr_key = &""
 	primary_button.hide()
 	_update_queue_ui()
+	# voz kids: lembra próximo passo após atender
+	AudioManager.play_voice(&"choose_client")
 	if GameState.services_completed == 1: D1Retention.show_daily_login(self)
 	if GameState.services_completed == 2: D1Retention.show_tomorrow_card(self)
 	if GameState.services_completed == 3: D1Retention.show_notif_prompt(self)
@@ -884,6 +901,9 @@ func _on_queue_pressed(slot: int) -> void:
 	)
 	tutorial.teach_service(current_service)
 	_update_queue_ui()
+	# Voz kids: indica gesto correto logo após escolher cliente (só se tutorial não estiver em passo 0/1)
+	if tutorial.step < 0 and not tutorial.teaching:
+		AudioManager.play_voice(_voice_for_service(current_service))
 	Analytics.track(
 		&"client_selected",
 		{
@@ -1568,6 +1588,30 @@ func _toggle_result_detail() -> void:
 	AudioManager.play(&"tap")
 	HapticsManager.light()
 
+func _toggle_voice() -> void:
+	var enabled: bool = not bool(GameState.settings.get("voice", true))
+	GameState.settings["voice"] = enabled
+	SaveManager.request_save()
+	AudioManager.apply_volumes()
+	if not enabled:
+		AudioManager.stop_voice()
+	else:
+		AudioManager.play(&"tap")
+		# feedback falado quando reativa
+		AudioManager.play_voice(&"welcome")
+	_update_voice_button()
+	EventBus.settings_changed.emit()
+	HapticsManager.light()
+
+func _update_voice_button() -> void:
+	if not is_instance_valid(voice_toggle_button):
+		return
+	var enabled: bool = bool(GameState.settings.get("voice", true))
+	voice_toggle_button.text = "🔊" if enabled else "🔇"
+	voice_toggle_button.tooltip_text = "Voz: ligada — toque para mutar" if enabled else "Voz: mutada — toque para ativar"
+	voice_toggle_button.modulate = Color.WHITE if enabled else Color("ffffff", 0.88)
+	voice_toggle_button.add_theme_stylebox_override("normal", _style(Color("4fc3f7" if enabled else "90a4ae", 0.96), 32, 8, Color.WHITE, 3))
+
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%s %d" % [Loc.t("COINS"), int(GameState.coins)]
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
@@ -1638,6 +1682,7 @@ func _show_toast(message: String, color: Color) -> void:
 func _connect_events() -> void:
 	EventBus.currency_changed.connect(_refresh_economy)
 	EventBus.combo_changed.connect(func(_value: int) -> void: _refresh_economy())
+	EventBus.settings_changed.connect(func() -> void: _update_voice_button())
 	EventBus.toast_requested.connect(_show_toast)
 	EventBus.reveal_requested.connect(
 		func(kind: StringName, payload: Dictionary) -> void:
@@ -1682,6 +1727,12 @@ func _build_interface() -> void:
 	proof_label = _pill(top_bar_hbox, "", Color("4fc3f7"), 210)
 	proof_label.tooltip_text = "Prova social do bairro"
 	proof_label.add_theme_font_size_override("font_size", 18)
+	# Voz kids — mute já na 1ª tela (exigência de acessibilidade, sem abrir ajustes)
+	voice_toggle_button = _button("", Color("4fc3f7"), 72, 72)
+	voice_toggle_button.tooltip_text = "Voz"
+	voice_toggle_button.pressed.connect(_toggle_voice)
+	top_bar_hbox.add_child(voice_toggle_button)
+	_update_voice_button()
 	var goal_row: HBoxContainer = HBoxContainer.new()
 	goal_row.position = Vector2(30, 505 + safe_top)
 	goal_row.add_theme_constant_override("separation", 8)

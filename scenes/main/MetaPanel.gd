@@ -996,6 +996,26 @@ func _build_research() -> void:
 func _build_settings() -> void:
 	_add_slider(Loc.t("SFX_VOLUME"), "sfx", 0.9)
 	_add_slider(Loc.t("MUSIC_VOLUME"), "music", 0.7)
+	# Voz / Narração kids — mutável já na 1ª tela (top bar + tutorial), reforçado aqui
+	var voice_on: bool = bool(GameState.settings.get("voice", true))
+	_info_row(
+		"🔊 %s" % (Loc.t("VOICE_LABEL") if Loc.t("VOICE_LABEL") != "VOICE_LABEL" else "Voz / Narração"),
+		Loc.t("VOICE_DESC") if Loc.t("VOICE_DESC") != "VOICE_DESC" else "Fala que guia a criança (7 anos) nos gestos — toque no 🔊 do topo para mutar",
+		Loc.t("ON") if voice_on else Loc.t("OFF"),
+		GREEN if voice_on else Color("b0bec5"),
+		true,
+		func() -> void:
+			var now: bool = not bool(GameState.settings.get("voice", true))
+			GameState.settings["voice"] = now
+			SaveManager.request_save()
+			AudioManager.apply_volumes()
+			if not now:
+				AudioManager.stop_voice()
+			else:
+				AudioManager.play_voice(&"welcome")
+			EventBus.settings_changed.emit()
+			_rebuild(&"settings")
+	)
 	_add_toggle(Loc.t("HAPTICS"), "haptics", true)
 	_add_toggle(Loc.t("REDUCED_FX") + " / " + Loc.t("ECO_MODE"), "eco_mode", false)
 	_add_toggle(Loc.t("NOTIFICATIONS"), "notifications", false)
