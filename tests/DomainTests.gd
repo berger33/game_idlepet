@@ -18,6 +18,7 @@ func _ready() -> void:
 	_test_prestige_and_research()
 	_test_discovery()
 	_test_contest()
+	_test_tutorial_ux()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -231,6 +232,47 @@ func _test_contest() -> void:
 	_expect(not Contest.has_pending(), "pendência limpa após coletar")
 	_expect(GameState.park_contest_history.size() == 1 and Contest.best_rank() == 1, "histórico registra a capa")
 	_expect(Contest.claim().is_empty(), "sem pendência não paga de novo")
+
+
+func _test_tutorial_ux() -> void:
+	# T-01: artigo variável por gênero da ferramenta nos 3 idiomas.
+	var lang_before: String = Loc.lang
+	Loc.lang = "pt_BR"
+	_expect(SalonTuning.tool_with_article(&"clipper").begins_with("a "), "pt: 'a máquina de tosa'")
+	_expect(SalonTuning.tool_with_article(&"soap").begins_with("o "), "pt: 'o sabonete'")
+	Loc.lang = "es_ES"
+	_expect(SalonTuning.tool_with_article(&"clipper").begins_with("la "), "es: 'la máquina'")
+	_expect(SalonTuning.tool_with_article(&"bow").begins_with("el "), "es: 'el lazo'")
+	Loc.lang = "en_US"
+	_expect(SalonTuning.tool_with_article(&"clipper").begins_with("the "), "en: 'the clippers'")
+	# T-01: textos do guia neutros de gênero do pet (Luna/Mel/Amora…).
+	for code: String in ["pt_BR", "en_US", "es_ES"]:
+		Loc.lang = code
+		var queue_txt: String = Loc.t("GUIDE_QUEUE")
+		_expect(not queue_txt.contains("chamá-lo"), code + ": sem 'chamá-lo'")
+		_expect(not queue_txt.contains("call him"), code + ": sem 'call him'")
+		_expect(not queue_txt.contains("llamarlo"), code + ": sem 'llamarlo'")
+		var wrong_txt: String = Loc.t("GUIDE_WRONG_TOOL")
+		_expect(not wrong_txt.contains("ele precisa"), code + ": sem 'ele precisa'")
+		_expect(not wrong_txt.contains("he needs"), code + ": sem 'he needs'")
+		# %s do GUIDE_TOOL: artigo-ferramenta + pet (2 placeholders).
+		var tool_txt: String = Loc.t("GUIDE_TOOL")
+		_expect(tool_txt.count("%s") == 2, code + ": GUIDE_TOOL com 2 placeholders")
+		_expect(Loc.t("DRAG_TOOL_TO").count("%s") == 2, code + ": DRAG_TOOL_TO com 2 placeholders")
+	# T-02: chaves de confirmação de skip e replay presentes.
+	for key: String in ["SKIP_CONFIRM_TAP", "REPLAY_TUTORIAL", "REPLAY_TUTORIAL_GO", "TUTORIAL_REPLAYED"]:
+		_expect(Loc.t(key) != key, "chave localizada ausente: " + key)
+	# T-02/T-03: contratos no código do fluxo.
+	_expect(TutorialFlow.STEP_NAMES.size() == TutorialFlow.STEP_COUNT, "STEP_NAMES cobre os 4 passos")
+	_expect(TutorialFlow.STEP_NAMES == ["welcome", "queue", "tool", "gesture"], "nomes estáveis do funil")
+	# P2: "serviço ensinado" só é gravado depois de show_guide em teach_service.
+	var tutorial_src: String = FileAccess.get_file_as_string("res://scenes/main/TutorialFlow.gd")
+	var show_at: int = tutorial_src.find("func teach_service")
+	var save_at: int = tutorial_src.find("taught.append", show_at)
+	var guide_at: int = tutorial_src.find("show_guide", show_at)
+	_expect(guide_at > 0 and save_at > guide_at, "services_taught gravado após exibir a fala")
+	_expect(TutorialFlow.STEP_COUNT == 4, "tutorial segue 4 passos")
+	Loc.lang = lang_before
 
 
 func _expect(condition: bool, message: String) -> void:

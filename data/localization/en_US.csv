@@ -87,7 +87,7 @@ DAILY_CLAIMED_TOAST,Login claimed! +$%d
 DAILY_LOGIN,DAILY LOGIN Day %d/7
 DAILY_SPIN_DESC,Spin 1×/day: scaled $
 DAILY_SPIN_TITLE,Daily Spin
-DRAG_TOOL_TO,Drag %s from the shelf to %s
+DRAG_TOOL_TO,Drag %s from the shelf to the pet %s
 ECO_MODE,Eco mode
 EMBERS,Embers
 EQUIP,USE
@@ -415,8 +415,6 @@ TRANSFER_INVALID,Invalid or corrupted code.
 TRANSFER_PASTE,PASTE CODE
 TRANSFER_TITLE,Transfer progress
 TRY_AGAIN,TRY AGAIN
-TUT_STEP_1,Tap a client in the queue to serve
-TUT_STEP_2,Drag %s to %s
 UPGRADES_LOCKED,Unlocks at level %d
 UPGRADES_MAXED,MAXED
 UPGRADES_MISSING,Missing $%d
@@ -583,10 +581,10 @@ GUIDE_GO,Let's go!
 GUIDE_OK,Got it
 GUIDE_THANKS,Thanks!
 GUIDE_WELCOME,"Hi! I'm Bia, your neighbor 👋 I helped you open the pet shop and now I'll show you how everything works. Caramelo is already in line — shall we?"
-GUIDE_QUEUE,"First, tap %s in the queue to call him over. Clients with a ⭐ are the recommended ones."
-GUIDE_TOOL,"Now drag the %s from the shelf onto %s. Press, hold and slide!"
+GUIDE_QUEUE,"First, tap %s in the queue to invite them over. Clients with a ⭐ are the recommended ones."
+GUIDE_TOOL,"Now drag %s from the shelf to the pet %s. Press, hold and slide!"
 GUIDE_GESTURE,Yes! Now it's your turn: %s
-GUIDE_WRONG_TOOL,"Oops, he needs the %s — it's right here!"
+GUIDE_WRONG_TOOL,"Oops, the answer is %s — it's right here!"
 GUIDE_DONE,"You nailed your first service! 🎉 The queue never stops: every happy client gives coins, XP and stars. And when you need a breather, the pets love a walk in the yard — I'll show you soon."
 GUIDE_TIP_PARK,"Time to see the yard 🌳 Tap the green button to take three pets for a walk: it earns coins, affection and votes in the Cover Contest!"
 GUIDE_TIP_PARK_CHOOSE,"Pick a game: ball 🎾, treat 🦴 or photo 📸. A perfect walk earns more votes — and a perfect photo goes into the Album!"
@@ -594,3 +592,15 @@ GUIDE_TIP_PARK_DONE,"Walk done! The next one opens in 8 minutes — I'll let you
 GUIDE_TIP_CONTEST,Your votes already count in the Cover Contest 📰 Tap the Album to see the standings against the other pet shops. Voting closes on Sunday!
 GUIDE_TIP_UPGRADE,You've got spare coins! ⬆️ Tap here to upgrade your tools: faster baths and bigger tips.
 GUIDE_TIP_MISSIONS,Daily missions 📋 give extra rewards for things you already do. Check them whenever you like!
+GUIDE_WELCOME_KIDS,Hi! I'm Bia 👋 Let's serve Caramelo!
+GUIDE_QUEUE_KIDS,Tap this client: %s!
+GUIDE_TOOL_KIDS,Get %s and bring it to the pet %s!
+GUIDE_GESTURE_KIDS,Your turn: %s
+GUIDE_WRONG_TOOL_KIDS,It's %s! Right here!
+SKIP_CONFIRM_TAP,TAP AGAIN TO SKIP
+SKIP_CONFIRM_TEXT,Skip the tutorial? You can replay it anytime in Settings.
+REPLAY_TUTORIAL,🎓 Replay tutorial
+REPLAY_TUTORIAL_DESC,Watch Bia's step-by-step guide again whenever you want
+REPLAY_TUTORIAL_GO,REPLAY
+TUTORIAL_REPLAYED,Tutorial restarted! Bia will show you everything again.
+WRONG_TOOL_TOAST,Use %s for this order

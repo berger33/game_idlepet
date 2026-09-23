@@ -8,7 +8,7 @@ Eventos `snake_case`, nomes/params estáveis, timestamp no collector, `event_id`
 |---|---|---|
 | first_open | primeira execução | app_version, platform |
 | tutorial_start | início | variant |
-| tutorial_step | transição | step_name, elapsed_ms |
+| tutorial_step | show/next/skip/skip_attempt/complete de cada passo | step: welcome\|queue\|tool\|gesture, action |
 | tutorial_complete | fim | duration, retries |
 | session_start/end | lifecycle | duration no end, entry |
 | service_start | confirmou | type, pet_id, station_id |

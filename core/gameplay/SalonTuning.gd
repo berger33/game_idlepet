@@ -242,6 +242,18 @@ static func tool_display_name(tool: StringName) -> String:
 	return Loc.t("TOOL_SOAP").to_lower()
 
 
+## T-01: artigo variável por gênero do OBJETO (não do pet): "o sabonete" /
+## "a máquina de tosa" (pt), "el jabón" / "la máquina de corte" (es),
+## "the soap" (en). Só a tosa é feminina nos três idiomas.
+static func tool_with_article(tool: StringName) -> String:
+	var base: String = tool_display_name(tool)
+	if Loc.lang == "pt_BR":
+		return ("a " if tool == &"clipper" else "o ") + base
+	if Loc.lang == "es_ES":
+		return ("la " if tool == &"clipper" else "el ") + base
+	return "the " + base
+
+
 ## Recompensa total de um atendimento (bônus de bairro + evento + carinho +
 ## gorjeta + VIP + buddy + maestria + pedido especial). `rand` é o roll da
 ## gorjeta (passado pelo Main para manter o random global do jogo).
