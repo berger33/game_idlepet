@@ -96,3 +96,39 @@ func _draw() -> void:
 		32,
 		Color("ffd54f"),
 	)
+	# Mãozinha animada para 7 anos: loop 1.8s de arraste dentro da pílula (sem leitura)
+	# Só nos passos que pedem arrastar (2/3) ou que mencionam ferramenta, para não poluir passo 1/3
+	var show_hand: bool = message.contains("Arraste") or message.contains("2/3") or message.contains("DRAG") or message.begins_with("○●○")
+	if show_hand:
+		var t: float = fmod(pulse * 0.65, 1.0) # 1.54s loop
+		# ease in-out para não parecer robótico
+		var eased: float = t * t * (3.0 - 2.0 * t)
+		var start_x: float = label_rect.position.x + 70.0
+		var end_x: float = label_rect.position.x + label_rect.size.x - 70.0
+		var hand_x: float = lerpf(start_x, end_x, eased)
+		var hand_y: float = label_y + 48.0 + sin(pulse * 4.2) * 4.0
+		var hand_pos: Vector2 = Vector2(hand_x, hand_y)
+		var target_pos: Vector2 = Vector2(label_rect.position.x + label_rect.size.x - 36.0, label_y + 48.0)
+		# trilha pontilhada atrás da mão
+		var trail_steps: int = 7
+		for s: int in trail_steps:
+			var tt: float = float(s) / float(trail_steps)
+			var tx: float = lerpf(start_x + 18.0, end_x - 18.0, tt)
+			var alpha: float = 0.18 + 0.12 * sin(pulse * 5.0 + s * 0.9)
+			var behind: bool = tx < hand_x
+			if behind:
+				draw_circle(Vector2(tx, hand_y), 4.0, Color("ffd54f", alpha))
+		# destino patinha
+		draw_circle(target_pos, 18.0, Color.WHITE)
+		draw_string(GUIDE_FONT, target_pos + Vector2(-11, 7), "🐾", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color("263238"))
+		draw_circle(target_pos, 22.0, Color("ffd54f", 0.22 + 0.10 * sin(pulse * 3.0)))
+		# mão — círculo branco + emoji + sombra
+		draw_circle(hand_pos + Vector2(2, 3), 26.0, Color("263238", 0.18))
+		draw_circle(hand_pos, 24.0, Color.WHITE)
+		draw_circle(hand_pos, 26.0, Color("ffd54f", 0.35), false, 2.5)
+		# emoji centralizado (DejaVu não tem emoji, mas Godot faz fallback; se falhar, a seta abaixo garante leitura)
+		draw_string(GUIDE_FONT, hand_pos + Vector2(-14, 11), "👆", HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
+		# seta física garantida mesmo sem emoji
+		var arrow_tip: Vector2 = hand_pos + Vector2(14, 0)
+		var tri_hand: PackedVector2Array = PackedVector2Array([arrow_tip, arrow_tip + Vector2(-10, -6), arrow_tip + Vector2(-10, 6)])
+		draw_colored_polygon(tri_hand, Color("ffd54f", 0.95))

@@ -1,6 +1,7 @@
 class_name GestureArt
 extends RefCounted
 ## UI de gesto da Onda 1 (docs/DESIGN_ENGAJAMENTO.md), desenhada sobre o pet:
+const GESTURE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
 ## setas da tosa (traçado direcionado), zona da secagem (círculo que deriva),
 ## anel rítmico do perfume (janelas de borrifada) e marca de encaixe do laço.
 ## Também desenha o buddy da banheira dupla (Onda 3) e o tremor dos pets
@@ -83,9 +84,18 @@ static func draw_ghost(shop, body_center: Vector2) -> void:
 		&"drop":
 			var radius: float = float(shop.gesture_ui.get("drop_radius", 80.0))
 			var ideal: Vector2 = body_center + Vector2(0, -20)
-			for seg: int in 12:
-				shop.draw_arc(ideal, radius, TAU * seg / 12.0 + 0.09, TAU * (seg + 1) / 12.0 - 0.09, 6, Color(ghost_line.r, ghost_line.g, ghost_line.b, 0.25), 4.0)
+			var kids_ghost: bool = bool(GameState.settings.get("kids_mode", false))
+			var segs: int = 16 if kids_ghost else 12
+			var ghost_a: float = 0.42 if kids_ghost else 0.25
+			for seg: int in segs:
+				shop.draw_arc(ideal, radius, TAU * seg / float(segs) + 0.09, TAU * (seg + 1) / float(segs) - 0.09, 6, Color(ghost_line.r, ghost_line.g, ghost_line.b, ghost_a), 5.0 if kids_ghost else 4.0)
 			shop.draw_circle(ideal, 8.0, Color("ffffff", 0.15))
+			if kids_ghost:
+				shop.draw_circle(ideal, radius * 0.5, Color("ff8fb1", 0.12))
+				var bow_ghost: String = "🎀"
+				var sg: int = 44
+				var tsz2: Vector2 = GESTURE_FONT.get_string_size(bow_ghost, HORIZONTAL_ALIGNMENT_LEFT, -1, sg)
+				shop.draw_string(GESTURE_FONT, ideal - Vector2(tsz2.x*0.5, -tsz2.y*0.28), bow_ghost, HORIZONTAL_ALIGNMENT_LEFT, -1, sg, Color("ff8fb1", 0.55))
 
 
 static func draw_gesture_ui(shop, body_center: Vector2) -> void:
@@ -165,6 +175,25 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 				shop.draw_arc(pip, pip_r, 0.0, TAU, 16, Color("263238", 0.35), 3.0)
 				if is_hit:
 					shop.draw_circle(pip, 6.0, Color("ffffff", 0.9))
+			# Contador gigante 1/3 2/3 3/3 — criança conta, não adivinha pip
+			var counter_text: String = "%d/%d" % [hit, needed]
+			var kids: bool = bool(GameState.settings.get("kids_mode", false))
+			var counter_size: int = 64 if kids else 48
+			var counter_y: float = 180.0 if kids else 200.0
+			var counter_pos: Vector2 = body_center + Vector2(0, counter_y)
+			var counter_bg: Rect2 = Rect2(counter_pos - Vector2(62, 32), Vector2(124, 52))
+			shop.draw_rect(counter_bg, Color("263238", 0.78), true, 16.0)
+			shop.draw_rect(counter_bg, Color("ffd54f", 0.9) if bright else Color.WHITE, false, 2.5)
+			var tsize: Vector2 = GESTURE_FONT.get_string_size(counter_text, HORIZONTAL_ALIGNMENT_CENTER, -1, counter_size)
+			shop.draw_string(GESTURE_FONT, counter_pos - Vector2(tsize.x * 0.5, -tsize.y * 0.32), counter_text, HORIZONTAL_ALIGNMENT_LEFT, -1, counter_size, Color.WHITE if not bright else Color("ffd54f"))
+			if bright:
+				shop.draw_circle(counter_pos + Vector2(0, -6), 52 + beat_pulse * 6.0, Color("ffd54f", 0.14))
+			# Seta pulsa quando janela acende — "borrife agora!"
+			if bright:
+				var arrow_bounce: float = sin(shop.shake_phase * 7.0) * 8.0
+				var arrow_tip: Vector2 = body_center + Vector2(0, -base_radius - 18.0 + arrow_bounce)
+				shop.draw_circle(arrow_tip, 14 + beat_pulse * 4.0, Color("ffd54f", 0.28))
+				_triangle(shop, arrow_tip, Vector2(0, -1), Color("ffd54f", 0.95))
 		&"drop":
 			# Laço: marca no pescoço; anel verde quando o laço está na zona.
 			# Pulso + snap visual quando está dentro.
@@ -183,6 +212,34 @@ static func draw_gesture_ui(shop, body_center: Vector2) -> void:
 			if inside:
 				shop.draw_circle(target, 12.0 + beat_pulse * 8.0, Color(mark_color, 0.28))
 				shop.draw_circle(target, 6.0, Color("ffffff", 0.85))
+			# Marca física extra para criança: lacinho fantasma + seta ▼ 2 Hz
+			var kids_drop: bool = bool(GameState.settings.get("kids_mode", false))
+			if kids_drop or not inside:
+				# fantasma do laço — anel duplo + preenchimento suave quando kids
+				var ghost_alpha: float = 0.22 if kids_drop else 0.10
+				shop.draw_circle(target, radius * 0.55, Color("ff8fb1", ghost_alpha))
+				shop.draw_arc(target, radius * 0.75, 0.0, TAU, 24, Color("ff8fb1", 0.35), 3.0)
+				# emoji laço grande (kids) ou pequeno
+				var bow_text: String = "🎀"
+				var bow_size: int = 56 if kids_drop else 38
+				var tsz: Vector2 = GESTURE_FONT.get_string_size(bow_text, HORIZONTAL_ALIGNMENT_LEFT, -1, bow_size)
+				var bow_pos: Vector2 = target - Vector2(tsz.x * 0.5, -tsz.y * 0.28)
+				# pílula branca atrás do emoji para contraste em qualquer pet
+				var pill: Rect2 = Rect2(bow_pos - Vector2(8, tsz.y + 4), Vector2(tsz.x + 16, tsz.y + 12))
+				shop.draw_rect(pill, Color.WHITE, true, 14.0)
+				shop.draw_rect(pill, Color("ff8fb1", 0.55), false, 2.0)
+				shop.draw_string(GESTURE_FONT, bow_pos, bow_text, HORIZONTAL_ALIGNMENT_LEFT, -1, bow_size, Color("ff8fb1"))
+			if kids_drop:
+				var bounce: float = sin(shop.shake_phase * 6.28) * 10.0 # 2 Hz approx (6.28 rad/s ~1Hz, *2 ~2Hz)
+				var arrow_tip: Vector2 = target + Vector2(0, -radius - 26.0 + bounce)
+				var arrow_base: Vector2 = arrow_tip + Vector2(0, -18.0)
+				shop.draw_circle(arrow_tip, 16, Color("ff8fb1", 0.22 + 0.10 * sin(shop.shake_phase * 6.28)))
+				_triangle(shop, arrow_tip, Vector2(0, -1), Color("ff8fb1", 0.96))
+				shop.draw_line(arrow_base, arrow_tip + Vector2(0, 8), Color("ff8fb1", 0.9), 5.0)
+				# texto "aqui!" para criança
+				var here: String = "aqui!"
+				var hs: Vector2 = GESTURE_FONT.get_string_size(here, HORIZONTAL_ALIGNMENT_LEFT, -1, 20)
+				shop.draw_string(GESTURE_FONT, arrow_tip + Vector2(-hs.x*0.5, -22), here, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color("ff8fb1"))
 
 
 ## Banheira dupla (Onda 3) — 10/10 vivo: buddy respira, olha main pet, salta sincronizado no perfect.

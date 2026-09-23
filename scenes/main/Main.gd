@@ -970,13 +970,18 @@ func _update_queue_ui() -> void:
 			if String(client["pet"]) == GameState.favorite_pet:
 				client_name += " • " + Loc.t("BUDDY_TAG")
 			# D0: primeiro slot com Caramelo mostra RECOMENDADO
+			var is_kids_recommended: bool = bool(GameState.settings.get("kids_mode", false)) and GameState.player_level < 5 and slot == 0
 			if slot == 0 and GameState.services_completed == 0:
+				client_name = "⭐ " + client_name
+			elif is_kids_recommended:
 				client_name = "⭐ " + client_name
 			queue_name_labels[slot].text = client_name
 			var service_text: String = _service_verb(StringName(client["service"])).capitalize()
 			if StringName(client.get("special", &"")) != &"":
 				service_text += " + ★"
 			if slot == 0 and GameState.services_completed == 0:
+				service_text += " • %s" % Loc.t("RECOMMENDED_TAG")
+			elif is_kids_recommended:
 				service_text += " • %s" % Loc.t("RECOMMENDED_TAG")
 			queue_service_labels[slot].text = service_text
 			var base_info: String = (
@@ -996,14 +1001,22 @@ func _update_queue_ui() -> void:
 				queue_info_labels[slot].tooltip_text = ""
 				queue_cards[slot].tooltip_text = base_info
 			var border: Dictionary = SalonTuning.queue_border(profile)
-			# D0: borda verde no recomendado
-			var border_color: Color = GREEN if slot == 0 and GameState.services_completed == 0 else border["color"]
-			var border_w: int = 4 if slot == 0 and GameState.services_completed == 0 else int(border["width"])
+			# D0: borda verde no recomendado + kids destaca fila 0 até nível 5 (7 anos sem sobrecarga)
+			var is_kids_highlight: bool = bool(GameState.settings.get("kids_mode", false)) and GameState.player_level < 5 and not client.is_empty()
+			var is_recommended: bool = (slot == 0 and GameState.services_completed == 0) or (is_kids_highlight and slot == 0)
+			var border_color: Color = GREEN if is_recommended else border["color"]
+			var border_w: int = (6 if is_kids_highlight and slot == 0 else 4) if is_recommended else int(border["width"])
 			queue_cards[slot].add_theme_stylebox_override(
 				"panel",
 				_style(Color("ffffff", 0.96), 26, 16, border_color, border_w)
 			)
-			queue_cards[slot].modulate.a = 1.0
+			if is_kids_highlight:
+				if slot == 0:
+					queue_cards[slot].modulate = Color.WHITE
+				else:
+					queue_cards[slot].modulate = Color("ffffff", 0.62)
+			else:
+				queue_cards[slot].modulate.a = 1.0
 			queue_cards[slot].disabled = not _can_select(slot)
 func _configure_current_service() -> void:
 	# Ritmo confortável: serviços 40% mais longos para o pet respirar em cena
