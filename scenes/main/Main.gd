@@ -1631,10 +1631,17 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		proof_label.visible = not proof_label.text.is_empty()
 	if is_instance_valid(goal_label):
 		goal_full_text = Goals.hud_line()
-		if GameState.player_level >= 3:
+		var is_kids_hud: bool = bool(GameState.settings.get("kids_mode", false))
+		if not is_kids_hud and GameState.player_level >= 3:
 			goal_full_text += " • " + SalonTuning.tip_odds_text()
-		# progressive disclosure: preview colapsado + botão ⓘ — corte em word boundary (não no meio da palavra)
-		if goal_full_text.length() > 54 or goal_full_text.contains("•"):
+		# Kids 7 anos: HUD ultra-simples — só estrela + nome, sem bullet, sem colapso
+		if is_kids_hud:
+			goal_label.text = goal_full_text
+			goal_label.tooltip_text = ""
+			if is_instance_valid(goal_expand_btn):
+				goal_expand_btn.visible = false
+			# Kids: goal_label.text = Goals.hud_line() direto (evita dispersão)
+		elif goal_full_text.length() > 54 or goal_full_text.contains("•"):
 			var parts: PackedStringArray = goal_full_text.split(" • ")
 			goal_preview_text = parts[0]
 			if parts.size() > 1:
@@ -1728,7 +1735,8 @@ func _build_interface() -> void:
 	proof_label.tooltip_text = "Prova social do bairro"
 	proof_label.add_theme_font_size_override("font_size", 18)
 	# Voz kids — mute já na 1ª tela (exigência de acessibilidade, sem abrir ajustes)
-	voice_toggle_button = _button("", Color("4fc3f7"), 72, 72)
+	var is_kids_voice: bool = bool(GameState.settings.get("kids_mode", false))
+	voice_toggle_button = _button("", Color("4fc3f7"), 84 if is_kids_voice else 72, 84 if is_kids_voice else 72) # Kids: botão voz 16% maior
 	voice_toggle_button.tooltip_text = "Voz"
 	voice_toggle_button.pressed.connect(_toggle_voice)
 	top_bar_hbox.add_child(voice_toggle_button)
@@ -1754,8 +1762,10 @@ func _build_interface() -> void:
 	goal_expand_btn.visible = false
 	queue_row = HBoxContainer.new()
 	queue_row.position = Vector2(45, 310 + safe_top)
-	queue_row.size = Vector2(990, 175)
-	queue_row.add_theme_constant_override("separation", 15)
+	# Kids 7 anos: 3 cartões 340x230 precisam caber; usa mesma largura mas aumenta altura e espaçamento leve
+	var is_kids_queue: bool = bool(GameState.settings.get("kids_mode", false))
+	queue_row.size = Vector2(990, 195 if is_kids_queue else 175)
+	queue_row.add_theme_constant_override("separation", 10 if is_kids_queue else 15)
 	add_child(queue_row)
 	for slot: int in 3:
 		var card_ui: Dictionary = SalonPanels.build_queue_card(_style, _button)

@@ -412,7 +412,7 @@ func tool_shelf_position(tool: StringName) -> Vector2:
 	return _tool_position(tool)
 
 func tool_at(point: Vector2) -> StringName:
-	var radius: float = 96.0 if bool(GameState.settings.get("kids_mode", false)) else 72.0
+	var radius: float = 110.0 if bool(GameState.settings.get("kids_mode", false)) else 72.0 #  Kids 10/10: area toque +52%
 	for tool: StringName in TOOL_ORDER:
 		if (
 			player_level >= int(TOOL_LEVELS[tool])

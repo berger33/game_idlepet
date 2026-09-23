@@ -136,7 +136,10 @@ static func build_upsell_panel(
 
 ## Cartão da fila: nome, pedido, trade-offs com $ + barra 14px — dinâmico 1 linha + ⓘ
 static func build_queue_card(style: Callable, button: Callable) -> Dictionary:
-	var card: Button = button.call("", Color("ffffff", 0.96), 320, 210)
+	var is_kids: bool = bool(GameState.settings.get("kids_mode", false))
+	var card_w: float = 340.0 if is_kids else 320.0
+	var card_h: float = 230.0 if is_kids else 210.0
+	var card: Button = button.call("", Color("ffffff", 0.96), card_w, card_h)
 	card.add_theme_stylebox_override(
 		"panel", style.call(Color("ffffff", 0.97), 26, 14, PINK, 4)
 	)
@@ -152,20 +155,20 @@ static func build_queue_card(style: Callable, button: Callable) -> Dictionary:
 	column.offset_bottom = -10.0
 	card.add_child(column)
 	var name_label: Label = Label.new()
-	name_label.add_theme_font_size_override("font_size", 24)
+	name_label.add_theme_font_size_override("font_size", 28 if is_kids else 24)
 	name_label.add_theme_color_override("font_color", CHARCOAL)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.custom_minimum_size = Vector2(296, 0)
 	column.add_child(name_label)
 	var service_label: Label = Label.new()
-	service_label.add_theme_font_size_override("font_size", 20)
+	service_label.add_theme_font_size_override("font_size", 22 if is_kids else 20)
 	service_label.add_theme_color_override("font_color", Color("37474f"))
 	service_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	service_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	service_label.custom_minimum_size = Vector2(296, 0)
 	column.add_child(service_label)
 	var info_label: Label = Label.new()
-	info_label.add_theme_font_size_override("font_size", 18)
+	info_label.add_theme_font_size_override("font_size", 20 if is_kids else 18)
 	info_label.add_theme_color_override("font_color", Color("4e342e"))
 	# dinâmico: 1 linha compacta, história vira ⓘ + tooltip (evita 2 linhas lotadas)
 	info_label.autowrap_mode = TextServer.AUTOWRAP_OFF
