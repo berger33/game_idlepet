@@ -651,12 +651,15 @@ class EngagementWaveTests(unittest.TestCase):
 
     def test_tutorial_flow_extracted_and_wired(self):
         flow = self._read('scenes/main/TutorialFlow.gd')
-        for token in ('func setup', 'func advance', 'func skip', 'func apply'):
+        for token in ('func setup', 'func advance', 'func skip', 'func apply',
+                      'func on_skip_pressed'):
             self.assertIn(token, flow)
         main = self._read('scenes/main/Main.gd')
         self.assertIn('var tutorial := TutorialFlow.new()', main)
         self.assertIn('tutorial.attach(self)', main)
-        self.assertIn('tutorial_skip_button.pressed.connect(tutorial.skip)', main)
+        # T-02: skip passou a exigir 2 toques (confirmação) — não pula direto.
+        self.assertIn('tutorial_skip_button.pressed.connect(tutorial.on_skip_pressed)', main)
+        self.assertNotIn('pressed.connect(tutorial.skip)', main)
         self.assertNotIn('var tutorial_step', main)
 
 
@@ -1337,6 +1340,129 @@ class AccessibilityAndPlatformTests(unittest.TestCase):
         for token in ('_test_prestige_and_research', '_test_save_migration', '_test_discovery',
                       '_test_rewards_and_missions', '_test_liveops_schedule'):
             self.assertIn(token, domain)
+
+
+class TutorialUXTests(unittest.TestCase):
+    """Auditoria UX tutorial 2026-09-23: T-01 gênero, T-02 skip/replay,
+    T-03 funil tutorial_step, T-04 font_scale, P2/P3 de polish."""
+
+    GUIDE_KEYS = ('GUIDE_QUEUE', 'GUIDE_TOOL', 'GUIDE_WRONG_TOOL', 'DRAG_TOOL_TO')
+
+    def test_guide_texts_are_gender_neutral_in_all_languages(self):
+        # T-01: "chamá-lo"/"ele precisa"/"call him"/"llamarlo" quebram p/ Luna, Mel…
+        banned = {
+            'pt_BR': ('chamá-lo', 'ele precisa', 'arraste o %s', 'até o %s'),
+            'en_US': ('call him', 'he needs', 'drag the %s'),
+            'es_ES': ('llamarlo', 'necesita el', 'arrastra el %s'),
+        }
+        for code, phrases in banned.items():
+            table = _loc_table(code)
+            for key in self.GUIDE_KEYS:
+                self.assertIn(key, table, f'{code}:{key}')
+                for phrase in phrases:
+                    self.assertNotIn(phrase, table[key], f'{code}:{key} contém {phrase!r}')
+            # Placeholders estáveis: artigo-da-ferramenta + pet/objeto.
+            self.assertEqual(table['GUIDE_TOOL'].count('%s'), 2, code)
+            self.assertEqual(table['DRAG_TOOL_TO'].count('%s'), 2, code)
+
+    def test_tool_article_helper_is_gender_aware(self):
+        salon = Path('core/gameplay/SalonTuning.gd').read_text(encoding='utf8')
+        for token in ('static func tool_with_article', '"a " if tool == &"clipper"',
+                      '"la " if tool == &"clipper"', '"the " + base'):
+            self.assertIn(token, salon)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        flow = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        self.assertIn('tool_with_article', main)
+        self.assertIn('tool_with_article', flow)
+        # Call sites antigos sem artigo não devem formatar GUIDE/DRAG.
+        self.assertNotIn('Loc.t("GUIDE_WRONG_TOOL") % SalonTuning.tool_display_name', main)
+        self.assertNotIn('Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name', main)
+
+    def test_skip_requires_confirmation_and_can_be_replayed(self):
+        # T-02: 1 toque não pula; Ajustes oferecem "Rever tutorial".
+        flow = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        for token in ('func on_skip_pressed', 'func _arm_skip', 'skip_armed',
+                      'SKIP_CONFIRM_TAP', 'func replay', 'tutorial_replay'):
+            self.assertIn(token, flow)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('tutorial.on_skip_pressed', main)
+        self.assertNotIn('pressed.connect(tutorial.skip)', main)
+        self.assertIn('replay_tutorial_callback', main)
+        panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('replay_tutorial_callback', panel)
+        self.assertIn('REPLAY_TUTORIAL', panel)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('SKIP_CONFIRM_TAP', 'REPLAY_TUTORIAL', 'REPLAY_TUTORIAL_DESC',
+                        'REPLAY_TUTORIAL_GO', 'TUTORIAL_REPLAYED'):
+                self.assertIn(key, table, f'{code}:{key}')
+
+    def test_tutorial_funnel_tracks_every_step(self):
+        # T-03: UX_FLOW prometia entrada/conclusão/abandono por passo.
+        flow = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        for token in ('tutorial_step', 'STEP_NAMES', '_track_step',
+                      '_track_step("show")', '_track_step("next")', '_track_step("skip")',
+                      '"action": "complete"', '"action": "skip_attempt"'):
+            self.assertIn(token, flow)
+        plan = Path('docs/ANALYTICS_PLAN.md').read_text(encoding='utf8')
+        self.assertIn('tutorial_step', plan)
+        self.assertIn('action', plan)
+
+    def test_card_respects_font_scale_and_skip_is_64px(self):
+        # T-04: kids_mode força font_scale ≥1.1 — o cartão não pode ficar para trás.
+        overlay = Path('scenes/main/TutorialOverlay.gd').read_text(encoding='utf8')
+        for token in ('_apply_font_scale', 'SalonTuning.font_scale()',
+                      'int(22 * fs)', 'int(30 * fs)', 'int(26 * fs)'):
+            self.assertIn(token, overlay)
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('_button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 220, 64)', main)
+        self.assertNotIn('SKIP_TUTORIAL"), Color("263238", 0.88), 220, 56', main)
+
+    def test_kids_short_texts_exist_for_main_steps(self):
+        # P2: textos longos em kids_mode → variantes _KIDS com fallback.
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            base_table = _loc_table(code)
+            for key in ('GUIDE_WELCOME_KIDS', 'GUIDE_QUEUE_KIDS', 'GUIDE_TOOL_KIDS',
+                        'GUIDE_GESTURE_KIDS', 'GUIDE_WRONG_TOOL_KIDS'):
+                self.assertIn(key, table, f'{code}:{key}')
+                base = key.replace('_KIDS', '')
+                self.assertIn(base, base_table, f'{code}:{base}')
+                self.assertLessEqual(
+                    len(table[key]), len(base_table[base]),
+                    f'{code}:{key} deve ser ≤ {base}')
+
+    def test_hand_emoji_replaced_by_vector_and_reduced_motion_respected(self):
+        # P2: emoji de ponteiro vira □ no web (DejaVu sem emoji); P3: movimento reduzido.
+        overlay = Path('scenes/main/TutorialOverlay.gd').read_text(encoding='utf8')
+        self.assertNotRegex(overlay, r'draw_string\([^)]*👆',
+                            'emoji não deve ser desenhado com GUIDE_FONT')
+        self.assertIn('_draw_pointing_hand', overlay)
+        self.assertIn('_reduced_motion', overlay)
+        self.assertIn('reduced_particles', overlay)
+
+    def test_gesture_taught_saved_after_display_and_orphans_removed(self):
+        # P2: services_taught só depois de show_guide; P3: chaves órfãs fora.
+        flow = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        teach = flow[flow.index('func teach_service'):]
+        teach = teach[:teach.index('func stop_teaching')]
+        self.assertLess(teach.index('show_guide'), teach.index('taught.append'),
+                        'marcado como ensinado só após exibir')
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            self.assertNotIn('TUT_STEP_1', table)
+            self.assertNotIn('TUT_STEP_2', table)
+        for gd in Path('.').rglob('*.gd'):
+            if '.git' in gd.parts:
+                continue
+            self.assertNotIn('TUT_STEP_', gd.read_text(encoding='utf8'), str(gd))
+
+    def test_upsell_panel_guard_blocks_queue_selection(self):
+        # P3: guard faltando no painel de upsell.
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        select = main[main.index('func _can_select'):]
+        select = select[:select.index('func _process_queue')]
+        self.assertIn('upsell_panel.visible', select)
 
 
 if __name__=='__main__': unittest.main()

@@ -19,6 +19,8 @@ const PET_CARD: PackedScene = preload("res://scenes/ui/pet_card.tscn")
 var screen: MetaScreen
 ## Main injeta aqui o refresh de economia (evita acoplamento direto).
 var refresh_callback: Callable
+## T-02: Main injeta o restart do tutorial (Ajustes → Rever tutorial).
+var replay_tutorial_callback: Callable
 var _section: StringName = &""
 
 
@@ -950,6 +952,20 @@ func _build_settings() -> void:
 			EventBus.toast_requested.emit(Loc.t("KIDS_MODE_ON") if Loc.has_method("t") and Loc.t("KIDS_MODE_ON") != "KIDS_MODE_ON" else "Modo Criança ativado! ✨ Mais fácil e divertido", GREEN)
 		else:
 			EventBus.toast_requested.emit(Loc.t("KIDS_MODE_OFF") if Loc.has_method("t") and Loc.t("KIDS_MODE_OFF") != "KIDS_MODE_OFF" else "Modo Criança desativado", Color("90a4ae"))
+	)
+	# T-02: saída de emergência do skip — rever o tutorial sem resetar o save.
+	_info_row(
+		Loc.t("REPLAY_TUTORIAL"),
+		Loc.t("REPLAY_TUTORIAL_DESC"),
+		Loc.t("REPLAY_TUTORIAL_GO"),
+		BLUE,
+		true,
+		func() -> void:
+			if replay_tutorial_callback.is_valid():
+				replay_tutorial_callback.call()
+			else:
+				EventBus.toast_requested.emit(Loc.t("TUTORIAL_REPLAYED"), BLUE)
+			AudioManager.play(&"tap")
 	)
 	# Consentimento de dados de uso (nada é gravado sem isto).
 	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)

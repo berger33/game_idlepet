@@ -380,10 +380,10 @@ func _move_pointer(point: Vector2) -> void:
 		world.set_tool_contact(false)
 		if wrong_tool_gate <= 0.0:
 			wrong_tool_gate = 1.2
-			_show_toast("Use %s neste pedido" % SalonTuning.tool_display_name(required_tool), Color("ffd54f"))
+			_show_toast(Loc.t("WRONG_TOOL_TOAST") % SalonTuning.tool_with_article(required_tool), Color("ffd54f"))
 			AudioManager.play(&"error_soft")
 			var correct_pos: Vector2 = world.tool_shelf_position(required_tool)
-			tutorial_overlay.show_hint(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), Loc.t("GUIDE_WRONG_TOOL") % SalonTuning.tool_display_name(required_tool))
+			tutorial_overlay.show_hint(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), TutorialFlow.guide_text("GUIDE_WRONG_TOOL") % SalonTuning.tool_with_article(required_tool))
 		return
 	var contact_resumed: bool = not world.tool_contact_valid
 	world.set_tool_contact(true)
@@ -832,7 +832,7 @@ func _on_queue_pressed(slot: int) -> void:
 	world.arrive()
 	_refresh_economy()
 	var required_tool: StringName = StringName(SERVICE_TOOLS[current_service])
-	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(required_tool), current_pet_name]
+	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_with_article(required_tool), current_pet_name]
 	)
 	tutorial.teach_service(current_service)
 	_update_queue_ui()
@@ -844,11 +844,16 @@ func _on_queue_pressed(slot: int) -> void:
 	if tutorial.step == TutorialFlow.STEP_QUEUE:
 		tutorial.advance()
 func _can_select(slot: int) -> bool:
-	if park_active: return false
-	if selected_slot != -1: return false
-	if is_instance_valid(result_panel) and result_panel.visible: return false
-	if meta.is_open(): return false
-	if queue[slot].is_empty(): return refill_timers[slot] > 0.15
+	if park_active or selected_slot != -1 or meta.is_open():
+		return false
+	if is_instance_valid(result_panel) and result_panel.visible:
+		return false
+	# P3: guard do painel de upsell faltava — sem ele o jogador escolhia outro
+	# cliente com a oferta extra em cima da tela.
+	if is_instance_valid(upsell_panel) and upsell_panel.visible:
+		return false
+	if queue[slot].is_empty():
+		return refill_timers[slot] > 0.15
 	return true
 func _process_queue(delta: float) -> void:
 	for slot: int in 3:
@@ -1224,7 +1229,7 @@ func _build_interface() -> void:
 	action_hud.add_theme_constant_override("separation", 16)
 	add_child(action_hud)
 	instruction_label = Label.new()
-	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_display_name(&"soap"), "Caramelo"]
+	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_with_article(&"soap"), "Caramelo"]
 	)
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1250,6 +1255,8 @@ func _build_interface() -> void:
 	)
 	meta = MetaPanel.new()
 	meta.refresh_callback = _refresh_economy
+	# T-02: "🎓 Rever tutorial" nos Ajustes reinicia o roteiro da Bia.
+	meta.replay_tutorial_callback = tutorial.replay
 	meta.build(self)
 	var result_ui: Dictionary = SalonPanels.build_result_panel( self, _style, _button, _on_primary_pressed, SessionFeedback.on_share_pressed.bind(self)
 	)
@@ -1279,10 +1286,12 @@ func _build_interface() -> void:
 	tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tutorial_overlay.visible = false
 	add_child(tutorial_overlay)
-	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 220, 56)
+	# T-04: altura 64 px (padrão do projeto; _button também garante o piso).
+	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 220, 64)
 	tutorial_skip_button.position = Vector2(750, 145 + safe_top) # Nota10: reposicionado direita para não sobrepor nav (30,145)
 	tutorial_skip_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88), 34, 12, Color("ffffff", 0.6), 2))
-	tutorial_skip_button.pressed.connect(tutorial.skip)
+	# T-02: 1º toque arma a confirmação, 2º toque pula.
+	tutorial_skip_button.pressed.connect(tutorial.on_skip_pressed)
 	tutorial_skip_button.visible = false
 	add_child(tutorial_skip_button)
 func _pop_panel(panel: Control) -> void:

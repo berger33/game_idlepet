@@ -87,7 +87,7 @@ DAILY_CLAIMED_TOAST,¡Login reclamado! +$%d
 DAILY_LOGIN,LOGIN DIARIO Día %d/7
 DAILY_SPIN_DESC,Gira 1×/día: $ escalados
 DAILY_SPIN_TITLE,Ruleta Diaria
-DRAG_TOOL_TO,Arrastra %s del estante hasta %s
+DRAG_TOOL_TO,Arrastra %s del estante hasta la mascota %s
 ECO_MODE,Modo eco
 EMBERS,Ascuas
 EQUIP,USAR
@@ -415,8 +415,6 @@ TRANSFER_INVALID,Código inválido o dañado.
 TRANSFER_PASTE,PEGAR CÓDIGO
 TRANSFER_TITLE,Transferir progreso
 TRY_AGAIN,REINTENTAR
-TUT_STEP_1,Toca un cliente de la fila para atender
-TUT_STEP_2,Arrastra %s hasta %s
 UPGRADES_LOCKED,Se desbloquea en el nivel %d
 UPGRADES_MAXED,MÁXIMO
 UPGRADES_MISSING,Faltan $%d
@@ -583,10 +581,10 @@ GUIDE_GO,¡Vamos!
 GUIDE_OK,Entendido
 GUIDE_THANKS,¡Gracias!
 GUIDE_WELCOME,"¡Hola! Soy Bia, tu vecina 👋 Te ayudé a abrir la tienda y ahora te muestro cómo funciona todo. Caramelo ya está en la fila — ¿lo atendemos?"
-GUIDE_QUEUE,"Primero, toca a %s en la fila para llamarlo. Los clientes con ⭐ son los recomendados."
-GUIDE_TOOL,Ahora arrastra el %s del estante hasta %s. ¡Mantén y desliza con el dedo!
+GUIDE_QUEUE,"Primero, toca a %s en la fila para llamar. Los clientes con ⭐ son los recomendados."
+GUIDE_TOOL,Ahora arrastra %s del estante hasta la mascota %s. ¡Mantén y desliza con el dedo!
 GUIDE_GESTURE,¡Eso! Ahora te toca: %s
-GUIDE_WRONG_TOOL,"Ups, necesita el %s — ¡está aquí!"
+GUIDE_WRONG_TOOL,"¡Ups, la solución es %s — está aquí!"
 GUIDE_DONE,"¡Bordaste tu primer servicio! 🎉 La fila no para: cada cliente feliz da monedas, XP y estrellas. Y cuando quieras respirar, a los peludos les encanta un paseo en el patio — te lo enseño enseguida."
 GUIDE_TIP_PARK,"Hora de conocer el patio 🌳 Toca el botón verde para llevar a tres peludos de paseo: ¡da monedas, cariño y votos en el Concurso de Portada!"
 GUIDE_TIP_PARK_CHOOSE,"Elige el juego: pelota 🎾, premio 🦴 o foto 📸. Un paseo perfecto da más votos — ¡y una foto perfecta entra al Álbum!"
@@ -594,3 +592,15 @@ GUIDE_TIP_PARK_DONE,"¡Paseo hecho! El próximo abre en 8 minutos — yo te avis
 GUIDE_TIP_CONTEST,¡Tus votos ya cuentan en el Concurso de Portada 📰 Toca el Álbum para ver el marcador contra las otras tiendas del barrio. La votación cierra el domingo!
 GUIDE_TIP_UPGRADE,¡Te sobran monedas! ⬆️ Toca aquí para mejorar tus herramientas: baños más rápidos y mejores propinas.
 GUIDE_TIP_MISSIONS,Las misiones diarias 📋 dan premios extra por cosas que ya haces. ¡Échales un vistazo cuando quieras!
+GUIDE_WELCOME_KIDS,¡Hola! Soy Bia 👋 ¡Atendamos a Caramelo!
+GUIDE_QUEUE_KIDS,¡Toca a este cliente: %s!
+GUIDE_TOOL_KIDS,¡Toma %s y llévalo a la mascota %s!
+GUIDE_GESTURE_KIDS,Ahora tú: %s
+GUIDE_WRONG_TOOL_KIDS,¡Es %s! Está aquí
+SKIP_CONFIRM_TAP,TOCA OTRA VEZ PARA SALTAR
+SKIP_CONFIRM_TEXT,¿Saltar el tutorial de todas formas? Puedes repetirlo en Ajustes.
+REPLAY_TUTORIAL,🎓 Repetir tutorial
+REPLAY_TUTORIAL_DESC,Vuelve a ver la guía paso a paso de Bia cuando quieras
+REPLAY_TUTORIAL_GO,REVER
+TUTORIAL_REPLAYED,¡Tutorial reiniciado! Bia te mostrará todo de nuevo.
+WRONG_TOOL_TOAST,Usa %s en este pedido

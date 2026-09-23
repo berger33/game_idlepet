@@ -87,7 +87,7 @@ DAILY_CLAIMED_TOAST,Login coletado! +R$ %d
 DAILY_LOGIN,LOGIN DIÁRIO Dia %d/7
 DAILY_SPIN_DESC,Gire 1×/dia: R$ escalados
 DAILY_SPIN_TITLE,Roleta Diária
-DRAG_TOOL_TO,Arraste %s da prateleira até %s
+DRAG_TOOL_TO,Arraste %s da prateleira até o pet %s
 ECO_MODE,Modo econômico
 EMBERS,Brasas
 EQUIP,USAR
@@ -415,8 +415,6 @@ TRANSFER_INVALID,Código inválido ou corrompido.
 TRANSFER_PASTE,COLAR CÓDIGO
 TRANSFER_TITLE,Transferir progresso
 TRY_AGAIN,TENTAR NOVAMENTE
-TUT_STEP_1,Toque em um cliente da fila para atender
-TUT_STEP_2,Arraste %s até %s
 UPGRADES_LOCKED,Desbloqueia no nível %d
 UPGRADES_MAXED,MÁXIMO
 UPGRADES_MISSING,Faltam R$ %d
@@ -583,10 +581,10 @@ GUIDE_GO,Vamos!
 GUIDE_OK,Entendi
 GUIDE_THANKS,Valeu!
 GUIDE_WELCOME,"Oi! Eu sou a Bia, sua vizinha 👋 Te ajudei a abrir o petshop e agora vou te mostrar como tudo funciona. O Caramelo já está na fila — vamos atender?"
-GUIDE_QUEUE,"Primeiro, toque no %s ali na fila para chamá-lo. Clientes com ⭐ são os recomendados."
-GUIDE_TOOL,Agora arraste o %s da prateleira até o %s. Segura e leva com o dedo!
+GUIDE_QUEUE,"Primeiro, toque em %s ali na fila para chamar. Clientes com ⭐ são os recomendados."
+GUIDE_TOOL,Agora arraste %s da prateleira até o pet %s. Segura e leva com o dedo!
 GUIDE_GESTURE,Isso! Agora é com você: %s
-GUIDE_WRONG_TOOL,"Ops, é o %s que ele precisa — está aqui!"
+GUIDE_WRONG_TOOL,"Ops, é %s que resolve — está aqui!"
 GUIDE_DONE,"Arrasou no primeiro atendimento! 🎉 A fila não para: cada cliente feliz dá moedas, XP e estrelas. E quando quiser respirar, os pets adoram um passeio no quintal — eu te mostro já já."
 GUIDE_TIP_PARK,"Hora de conhecer o quintal 🌳 Toque no botão verde para levar três pets para passear: vale moedas, carinho e votos no Concurso da Capa!"
 GUIDE_TIP_PARK_CHOOSE,"Escolha a brincadeira: bolinha 🎾, petisco 🦴 ou foto 📸. Passeio perfeito vale mais votos — e foto perfeita entra no Álbum!"
@@ -594,3 +592,15 @@ GUIDE_TIP_PARK_DONE,"Passeio feito! O próximo abre em 8 minutos — eu te aviso
 GUIDE_TIP_CONTEST,Seus votos já contam no Concurso da Capa 📰 Toque no Álbum para ver o placar contra os outros petshops do bairro. A votação fecha no domingo!
 GUIDE_TIP_UPGRADE,Tem moeda sobrando! ⬆️ Toque aqui para melhorar suas ferramentas: banhos mais rápidos e gorjetas maiores.
 GUIDE_TIP_MISSIONS,Missões diárias 📋 dão prêmios extras por coisas que você já faz. Dá uma olhada quando quiser!
+GUIDE_WELCOME_KIDS,Oi! Sou a Bia 👋 Vamos atender o Caramelo?
+GUIDE_QUEUE_KIDS,Toque no cliente da fila: %s!
+GUIDE_TOOL_KIDS,Pegue %s e leve até o pet %s!
+GUIDE_GESTURE_KIDS,Agora é com você: %s
+GUIDE_WRONG_TOOL_KIDS,É %s! Está aqui!
+SKIP_CONFIRM_TAP,TOQUE DE NOVO PARA PULAR
+SKIP_CONFIRM_TEXT,Pular o tutorial mesmo? Dá para rever nas Ajustes.
+REPLAY_TUTORIAL,🎓 Rever tutorial
+REPLAY_TUTORIAL_DESC,Assista de novo ao passo a passo da Bia quando quiser
+REPLAY_TUTORIAL_GO,REVER
+TUTORIAL_REPLAYED,Tutorial reiniciado! Bia vai te mostrar tudo de novo.
+WRONG_TOOL_TOAST,Use %s neste pedido
