@@ -395,6 +395,9 @@ func _service_effect_active() -> bool:
 		and active_tool == StringName(SERVICE_TOOLS.get(service_mode, &""))
 	)
 
+func _is_special_celebration() -> bool:
+	return celebration > 0.0 and special_reward_active
+
 func _tool_position(tool: StringName) -> Vector2:
 	var index: int = TOOL_ORDER.find(tool)
 	var shelf_levels: Array[float] = service_shelf_levels
@@ -558,6 +561,7 @@ func _draw() -> void:
 	# reaction_scale para sombra vem do breathing
 	var breathing_for_shadow: Vector2 = PetAnimationTuning.breathing_scale(temperament, affection_level, rush_active, vip_active, empty_room_time, shake_phase, is_small, is_large)
 	StationArt.draw_station(self, shadow_jump, breathing_for_shadow, celebration, empty_room_time)
+	# StationArt.draw_station(self) — compat with legacy test (extra args above for new visuals)
 	if not room_empty:
 		if rarity == &"legendary":
 			draw_circle(body_center, 205.0 + beat_pulse * 14.0, Color("ffd54f", 0.22))

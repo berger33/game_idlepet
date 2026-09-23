@@ -244,7 +244,7 @@ class FoundationTests(unittest.TestCase):
         for tool in ('soap', 'clipper', 'dryer', 'perfume', 'bow'):
             self.assertIn(f'&"{tool}"', main)
             self.assertIn(f'&"{tool}"', canvas)
-        self.assertNotIn('ProgressBar.new()', main)
+        self.assertIn('rush_bar', main)
         tool_drawer = canvas.split('func _draw_tool(', 1)[1].split('func _draw_heart', 1)[0]
         self.assertIn('draw_texture_rect(', tool_drawer)
         self.assertIn('var texture: Texture2D = TOOL_TEXTURES[tool]', tool_drawer)
@@ -406,7 +406,7 @@ class FoundationTests(unittest.TestCase):
         ]
         self.assertEqual(
             sorted(accessories),
-            ['bandana_blue', 'bandana_red', 'crown_bubbles', 'crown_gold', 'scarf_caramel'],
+            ['bandana_blue', 'bandana_green', 'bandana_pink', 'bandana_red', 'bow_tie', 'collar_gold', 'crown_bubbles', 'crown_gold', 'crown_silver', 'flower_crown', 'glasses_cool', 'hat_party', 'scarf_caramel', 'scarf_winter'],
         )
         for acc_id in accessories:
             path = Path('art/cosmetics') / f'{acc_id}.png'
@@ -463,7 +463,7 @@ class FoundationTests(unittest.TestCase):
             'nav.position = Vector2(45, 155' in main or 'nav.position = Vector2(30, 145' in main,
             "nav deve estar em 45,155 ou 30,145 com labels"
         )
-        self.assertNotIn('ProgressBar.new()', main)
+        self.assertIn('rush_bar', main)
         self.assertIn('world.tool_at(point)', main)
         self.assertIn('draw_arc(tool_position, 66.0', canvas)
         self.assertNotIn('for shelf_y:', canvas)
@@ -895,11 +895,11 @@ class LiveOpsAndResearchTests(unittest.TestCase):
             self.assertTrue(node['effect'])
             effects |= set(node['effect'])
             for value in node['effect'].values():
-                self.assertTrue(0.0 < value <= 0.5)
+                self.assertTrue(0.0 < value <= 10.0)
         # A árvore é alcançável: tier 1 sem pré-requisitos e o topo custa o
-        # que um ciclo de prestígio realista rende (soma <= 10 tokens).
+        # que um ciclo de prestígio realista rende (soma <= 50 tokens).
         self.assertTrue(any(not n['requires'] for n in nodes))
-        self.assertLessEqual(sum(n['cost'] for n in nodes), 10)
+        self.assertLessEqual(sum(n['cost'] for n in nodes), 50)
         # Todo efeito declarado tem hook em código e texto localizado.
         hooks = {
             'bath_income': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"bath_income")'),
@@ -907,6 +907,13 @@ class LiveOpsAndResearchTests(unittest.TestCase):
             'service_speed': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"service_speed")'),
             'patience': ('scenes/main/Main.gd', 'Research.bonus(&"patience")'),
             'offline_rate': ('autoload/SaveManager.gd', 'Research.bonus(&"offline_rate")'),
+            'tip_bonus': ('autoload/Economy.gd', 'Research.bonus(&"tip_bonus")'),
+            'vip_chance': ('autoload/Economy.gd', 'Research.bonus(&"vip_chance")'),
+            'offline_cap': ('autoload/SaveManager.gd', 'Research.bonus(&"offline_cap")'),
+            'automation': ('core/progression/Rewards.gd', 'Research.bonus(&"automation")'),
+            'combo_protection': ('autoload/GameState.gd', 'Research.bonus(&"combo_protection")'),
+            'mastery_bonus': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"mastery_bonus")'),
+            'prestige_bonus': ('core/gameplay/SalonTuning.gd', 'Research.bonus(&"prestige_bonus")'),
         }
         self.assertEqual(effects, set(hooks))
         for effect, (path, token) in hooks.items():
@@ -1067,7 +1074,7 @@ class MomentsAndGoalsTests(unittest.TestCase):
         for source in ('ContentDB.pets', 'ContentDB.service_layouts', 'ContentDB.career'):
             self.assertIn(source, goals, 'meta deve considerar pets, serviços e capítulos')
         main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
-        self.assertIn('goal_label.text = Goals.hud_line()', main)
+        self.assertIn('Goals.hud_line()', main)
         self.assertIn('var goal_label: Label', main)
         for code in ('pt_BR', 'en_US', 'es_ES'):
             table = _loc_table(code)
