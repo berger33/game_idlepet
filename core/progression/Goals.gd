@@ -43,10 +43,18 @@ static func next_unlock(level: int) -> Dictionary:
 
 ## Linha do HUD: "PRÓXIMO: Nina • Nv.20 (62%)". No topo da carreira, prestígio.
 ## Nota10 P1-9: urgência semanal domingo
+## Kids: esconde % e números quando kids_mode, deixa só nome com estrela (cognitivo 7 anos).
 static func hud_line() -> String:
 	var level: int = GameState.player_level
 	var goal: Dictionary = next_unlock(level)
 	var base: String = ""
+	if bool(GameState.settings.get("kids_mode", false)):
+		if goal.is_empty():
+			base = "⭐ " + Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()
+		else:
+			# kids: só nome + emoji, sem % nem Nv.XX — menos número abstrato
+			base = "⭐ PRÓXIMO: " + String(goal["text"])
+		return base
 	if goal.is_empty():
 		base = Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()
 	else:

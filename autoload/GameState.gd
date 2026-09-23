@@ -117,6 +117,7 @@ var settings: Dictionary = {
 	"assist_window": false,
 	"analytics_consent": false,
 	"shop_name": "",
+	"kids_mode": false, # 7 anos: gestos mais largos, HUD simplificado, textos curtos
 }
 
 
@@ -659,6 +660,11 @@ func _sanitize_settings() -> void:
 	settings["font_scale"] = clampf(float(settings.get("font_scale", 1.0)), 0.8, 1.4)
 	settings["left_handed"] = bool(settings.get("left_handed", false))
 	settings["training_ghost"] = bool(settings.get("training_ghost", true))
+	settings["kids_mode"] = bool(settings.get("kids_mode", false))
+	if bool(settings["kids_mode"]):
+		settings["assist_window"] = true
+		settings["training_ghost"] = true
+		settings["font_scale"] = maxf(float(settings["font_scale"]), 1.1)
 	settings["shop_name"] = String(settings.get("shop_name", "")).strip_edges().left(18)
 
 

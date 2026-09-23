@@ -1046,6 +1046,21 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("ASSIST_WINDOW"), "assist_window", false)
 	_add_toggle(Loc.t("LEFT_HANDED_MODE"), "left_handed", false)
 	_add_toggle(Loc.t("TRAINING_GHOST"), "training_ghost", false)
+	# Modo criança: uma chave só deixa tudo largo, lento e com HUD simplificado (7 anos).
+	var kids_on: bool = bool(GameState.settings.get("kids_mode", false))
+	var kids_title: String = "🧒 MODO CRIANÇA" if not kids_on else "🧒 MODO CRIANÇA — ATIVO ✨"
+	var kids_desc: String = "Toques maiores, gestos mais fáceis e textos curtos (7 anos)" if not kids_on else Loc.t("KIDS_MODE_ACTIVE") if Loc.has_method("t") and Loc.t("KIDS_MODE_ACTIVE") != "KIDS_MODE_ACTIVE" else "Ativo: gestos 30% mais fáceis, tempo +35% e alvo maior"
+	_info_row(kids_title, kids_desc, Loc.t("ON") if kids_on else Loc.t("OFF"), GREEN if kids_on else Color("b0bec5"), true, func() -> void:
+		GameState.settings["kids_mode"] = not bool(GameState.settings.get("kids_mode", false))
+		SaveManager.request_save()
+		EventBus.settings_changed.emit()
+		_rebuild(&"settings")
+		AudioManager.play(&"tap")
+		if bool(GameState.settings.get("kids_mode", false)):
+			EventBus.toast_requested.emit(Loc.t("KIDS_MODE_ON") if Loc.has_method("t") and Loc.t("KIDS_MODE_ON") != "KIDS_MODE_ON" else "Modo Criança ativado! ✨ Mais fácil e divertido", GREEN)
+		else:
+			EventBus.toast_requested.emit(Loc.t("KIDS_MODE_OFF") if Loc.has_method("t") and Loc.t("KIDS_MODE_OFF") != "KIDS_MODE_OFF" else "Modo Criança desativado", Color("90a4ae"))
+	)
 	# Consentimento de dados de uso (nada é gravado sem isto).
 	_add_toggle(Loc.t("ANALYTICS_CONSENT"), "analytics_consent", false)
 	# Transferência de progresso sem cloud save: código assinado no clipboard.

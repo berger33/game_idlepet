@@ -148,6 +148,17 @@ static func apply(
 		bath.zone_speed = clampf(bath.zone_speed * 0.75, 0.2, 3.0)
 		bath.drop_radius *= 1.3
 		bath.pulse_window = clampf(bath.pulse_window * 1.3, 0.12, 0.8)
+	# --- Modo Criança (kids_mode): gestos extra-generosos para 7 anos
+	# (empilha com assist_window, sem penalidade de recompensa)
+	if bool(GameState.settings.get("kids_mode", false)):
+		bath.target_minimum = clampf(bath.target_minimum - 0.05, BathService.GOOD_FLOOR, 0.95)
+		bath.target_maximum = minf(bath.target_maximum + 0.02, 1.0)
+		bath.duration_seconds *= 1.35
+		bath.zone_speed = clampf(bath.zone_speed * 0.60, 0.15, 3.0)
+		bath.drop_radius *= 1.50
+		bath.pulse_window = clampf(bath.pulse_window * 1.40, 0.18, 0.90)
+		bath.distance_required *= 0.70
+		bath.stroke_quota = maxi(1, int(float(bath.stroke_quota) * 0.60))
 
 
 ## Nível do marco que destrava o bônus da ferramenta (C1).

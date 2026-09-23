@@ -107,12 +107,14 @@ func pet_focus(idx: int = 0) -> Vector2:
 		_: return Vector2(540, 800)
 
 func ball_hit(pos: Vector2) -> bool:
-	return pos.distance_to(ball_pos) < 96.0
+	var r: float = 132.0 if bool(GameState.settings.get("kids_mode", false)) else 96.0
+	return pos.distance_to(ball_pos) < r
 
 func treat_slot_at(pos: Vector2) -> int:
+	var r: float = 140.0 if bool(GameState.settings.get("kids_mode", false)) else 110.0
 	for i: int in 3:
 		var c: Vector2 = Vector2(260 + i * 280, 1050)
-		if pos.distance_to(c) < 110.0:
+		if pos.distance_to(c) < r:
 			return i
 	return -1
 
