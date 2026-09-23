@@ -502,46 +502,79 @@ REACT_HAPPY_2,Au au! De novo!
 REACT_HAPPY_3,Você é meu humano favorito!
 HUD_RAPIDO,RÁPIDO!
 HUD_STATION_LEVEL,ESTAÇÃO  Nv.%d
-PARK_BUTTON,Parquinho
-PARK_TITLE,Parquinho — escolha a brincadeira
+PARK_BUTTON,Passeio
+PARK_TITLE,🌳 Passeio no quintal — escolha a brincadeira
 PARK_BALL,Jogar bolinha
 PARK_TREAT,Esconder petisco
 PARK_PHOTO,Foto do grupo
 PARK_CLOSE,Fechar
 PARK_READY,Pronto!
-PARK_COOLDOWN,Volta em %s
-PARK_COOLDOWN_TOAST,Parquinho volta em %s — os pets estão tirando uma soneca!
-PARK_CHOOSE,Escolha como cuidar dos 3 no quintal
-PARK_STREAK,🔥 %d dias seguidos no parquinho
+PARK_COOLDOWN,Próximo passeio em %s
+PARK_COOLDOWN_TOAST,Os pets estão descansando — próximo passeio em %s!
+PARK_CHOOSE,Escolha a brincadeira do passeio com os 3
+PARK_STREAK,🔥 %d dias seguidos de passeio
 PARK_STREAK_BONUS,🔥 %d dias seguidos!
 PARK_HINT_BALL,🎾 Arraste a bolinha até o pet do meio!
 PARK_HINT_TREAT,🦴 Toque no pote com o petisco escondido!
 PARK_HINT_PHOTO,📸 Espere o alinhamento e toque em FOTO!
 PARK_SHUTTER,FOTO!
-PARK_PERFECT,⭐ Perfeito no parquinho!
+PARK_PERFECT,⭐ Passeio perfeito!
 PARK_SUCCESS_EXTRA,%s adoraram o quintal com você!
 PARK_PERFECT_EXTRA,Foto perfeita! As memórias vão para a coleção.
 PARK_FAIL,Quase! Tente de novo
 PARK_FAIL_HINT,Os pets se distraíram — tente outra brincadeira!
-PARK_FAIL_EXTRA,Sem penalidade na fila. Volta quando o cooldown acabar!
-PARK_LOCKED,Desbloqueia após o 1º atendimento
-PARK_LOCKED_TOAST,Termine seu primeiro atendimento para liberar o Parquinho!
+PARK_FAIL_EXTRA,Sem penalidade na fila. Volte no próximo passeio!
+PARK_LOCKED,Libera após o 1º atendimento
+PARK_LOCKED_TOAST,Termine seu primeiro atendimento para liberar o passeio!
 NAV_ALBUM,Álbum
-ALBUM_TITLE,ÁLBUM DO PARQUINHO
+ALBUM_TITLE,ÁLBUM & CONCURSO
 ALBUM_TROPHIES,Troféus: %d
-ALBUM_CONTEST_DESC,Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!
-ALBUM_WEEK,SEMANA ATUAL
-ALBUM_WEEK_PROGRESS,Fotos esta semana: %d (perfeitas %d)
-ALBUM_CLAIM,COLETAR CAPA
-ALBUM_CLAIMED,COLETADO
-ALBUM_CLAIM_TOAST,Capa! +%d R$ e +%d brasas!
-ALBUM_SATURDAY_HINT,O concurso abre no sábado — continue fotografando!
-ALBUM_SATURDAY_NEED,Faça 1 foto 📸 perfeita hoje para concorrer à capa!
-ALBUM_EMPTY,Nenhuma foto ainda — faça um 📸 perfeito no Parquinho!
+ALBUM_CONTEST_DESC,Cada passeio 🌳 rende votos para a Capa da Revista. Fotos 📸 perfeitas viram memórias aqui embaixo.
+ALBUM_EMPTY,Nenhuma foto ainda — faça um 📸 perfeito no passeio!
 ALBUM_GRID_TITLE,MEMÓRIAS DO QUINTAL
 ALBUM_SHARE,COMPARTILHAR
-ALBUM_SHARE_CAPTION,Minha capa do Parquinho em %s com %s! #PetShopTycoon
-ALBUM_FOOTER,Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!
+ALBUM_SHARE_CAPTION,Minha foto do passeio em %s com %s! #PetShopTycoon
+ALBUM_FOOTER,"Dica: passeio perfeito vale +2 votos, foto perfeita +3 e sábado dobra tudo. A cada 8 minutos, um passeio!"
 KIDS_MODE_ACTIVE,Ativo: gestos 30% mais fáceis, tempo +35% e alvo maior. Toque para desativar.
 KIDS_MODE_ON,Modo Criança ativado! ✨ Mais fácil e divertido
 KIDS_MODE_OFF,Modo Criança desativado
+PARK_READY_TOAST,🌳 Hora do passeio! Os pets estão te esperando no quintal.
+PARK_NEXT_IN,⏳ Próximo passeio em %s
+PARK_VOTES_LINE,📰 +%d votos no concurso • %s
+PARK_CONTEST_LINE,📰 Concurso da Capa: %s • %d votos • fecha em %s
+PARK_CONTEST_LINE_EMPTY,📰 Concurso da Capa: faça um passeio para entrar! Fecha em %s
+CONTEST_TITLE,📰 CONCURSO DA CAPA
+CONTEST_DESC,"Cada passeio rende votos: bom +1, perfeito +2, foto perfeita +3. Sábado vale dobro! Domingo à noite a votação fecha e a capa sai na segunda."
+CONTEST_CLOSES_IN,⏱ Fecha em %s
+CONTEST_TIME_DAYS,%dd %dh
+CONTEST_TIME_HOURS,%dh %02dmin
+CONTEST_TIME_MIN,%d min
+CONTEST_RANK_1,1º lugar
+CONTEST_RANK_2,2º lugar
+CONTEST_RANK_3,3º lugar
+CONTEST_RANK_4,4º lugar
+CONTEST_YOUR_SHOP,Seu petshop
+CONTEST_VOTES,%d votos
+CONTEST_LEADING,Você está na frente! Segure a liderança até domingo 💪
+CONTEST_TO_FIRST,Faltam %d votos para a 1ª posição — um passeio perfeito vale até 3!
+CONTEST_NOT_ENTERED,Faça um passeio 🌳 para entrar na disputa desta semana!
+CONTEST_SATURDAY_TAG,⭐ SÁBADO DA CAPA: votos em dobro hoje!
+CONTEST_SATURDAY_TOAST,📸 Sábado da Capa! Passeios valem votos em dobro hoje.
+CONTEST_OVERTAKEN_TOAST,📰 Te passaram no concurso: agora você está em %s. Um passeio resolve!
+CONTEST_PENDING_ROW,Resultado da semana passada: %s com %d votos
+CONTEST_CLAIM,🏆 COLETAR PRÊMIO
+CONTEST_CLAIM_TOAST,Prêmio do concurso: +%d R$ e +%d brasas!
+CONTEST_RESULT_TITLE_1,📰 VOCÊ É A CAPA DA REVISTA!
+CONTEST_RESULT_TITLE_2,🥈 2º lugar no Concurso da Capa
+CONTEST_RESULT_TITLE_3,🥉 3º lugar no Concurso da Capa
+CONTEST_RESULT_TITLE_4,📰 Concurso da Capa encerrado
+CONTEST_RESULT_BODY,Semana passada: %d votos — %s.\nSeu prêmio: R$ %d%s
+CONTEST_RESULT_EMBERS, + %d brasas 🔥
+CONTEST_RESULT_HINT_WIN,O bairro inteiro viu sua foto! A nova semana já começou — defenda o título.
+CONTEST_RESULT_HINT_LOSE,A nova semana já começou — cada passeio conta. Bora pra capa?
+CONTEST_AUTO_CLAIM,Prêmio anterior entregue: %s (+%d R$)
+CONTEST_TROPHIES,🏆 Capas conquistadas: %d
+CONTEST_BEST,Melhor colocação: %s
+CONTEST_HISTORY_TITLE,ÚLTIMAS SEMANAS
+CONTEST_HISTORY_ROW,Semana de %s: %s • %d votos
+CONTEST_RULE_SHORT,Bom +1 • Perfeito +2 • Foto perfeita +3 • Sábado ×2

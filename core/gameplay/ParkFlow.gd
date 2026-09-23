@@ -9,6 +9,10 @@ extends RefCounted
 const PARK_CANVAS_SCRIPT: Script = preload("res://core/gameplay/ParkCanvas.gd")
 const PARK_ICON: Texture2D = preload("res://art/ui/icons/park.png")
 
+## Estado do aviso "Hora do passeio!": -1 = ainda não avaliado (boot), 0 = em
+## cooldown (vai avisar quando liberar), 1 = já avisou neste ciclo.
+static var ready_state: int = -1
+
 static func setup(main: Control) -> void:
 	# Canvas do parquinho (quintal) — oculto até abrir — harden contra dupla chamada / godot headless
 	if is_instance_valid(main.park_canvas) and main.park_canvas.is_inside_tree():
@@ -127,6 +131,7 @@ static func update_button(main: Control) -> void:
 		main.park_button.modulate = Color.WHITE
 		return
 	if remain > 0:
+		ready_state = 0
 		main.park_button.icon = null
 		main.park_button.text = "⏳ %s" % format_cooldown(main, remain)
 		main.park_button.add_theme_font_size_override("font_size", 18)
@@ -141,6 +146,7 @@ static func update_button(main: Control) -> void:
 		main.park_button.icon = PARK_ICON
 		main.park_button.text = ""
 		main.park_button.add_theme_font_size_override("font_size", 34)
+		_announce_ready(main)
 		var streak: int = GameState.park_streak if GameState != null else 0
 		var tip: String = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
 		if streak > 1:
@@ -173,6 +179,32 @@ static func update_button(main: Control) -> void:
 			var badge: Label = main.park_button.get_node_or_null("Badge") as Label
 			if is_instance_valid(badge):
 				badge.visible = false
+
+## Aviso in-session quando o cooldown de 8 min termina (uma vez por ciclo).
+static func _announce_ready(main: Control) -> void:
+	if ready_state == 1:
+		return
+	var first_pass: bool = ready_state == -1
+	ready_state = 1
+	if first_pass or GameState.park_plays_total == 0 or not bool(GameState.tutorial_complete):
+		return
+	main._show_toast(Loc.t("PARK_READY_TOAST"), Color("7ed957"))
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"window")
+	if HapticsManager != null and HapticsManager.has_method("light"):
+		HapticsManager.light()
+	if Analytics != null and Analytics.has_method("track"):
+		Analytics.track(&"park_ready_toast", {"plays": GameState.park_plays_total})
+
+
+## Linha do concurso mostrada no painel de escolha do passeio.
+static func contest_line() -> String:
+	var st: Dictionary = Contest.status()
+	var left: String = Contest.format_time_left(int(st.get("seconds_left", 0)))
+	if int(st.get("points", 0)) <= 0:
+		return Loc.t("PARK_CONTEST_LINE_EMPTY") % left
+	return Loc.t("PARK_CONTEST_LINE") % [Contest.placement_label(int(st.get("rank", 4))), int(st.get("points", 0)), left]
+
 
 static func on_button(main: Control) -> void:
 	if not main.is_inside_tree() or GameState == null:
@@ -237,10 +269,11 @@ static func open_choose(main: Control) -> void:
 		main.instruction_label.text = Loc.t("PARK_CHOOSE") if Loc.has_method("t") and Loc.t("PARK_CHOOSE") != "PARK_CHOOSE" else "Escolha como cuidar dos 3 no quintal"
 		main.instruction_label.add_theme_stylebox_override("normal", main._style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
 	if is_instance_valid(main.park_timer_label) and GameState != null:
-		var streak_txt: String = ""
-		if GameState.park_streak > 0:
-			streak_txt = (Loc.t("PARK_STREAK") % GameState.park_streak) if Loc.has_method("t") and Loc.t("PARK_STREAK") != "PARK_STREAK" else "🔥 %d dias seguidos no parquinho" % GameState.park_streak
-		main.park_timer_label.text = streak_txt
+		var lines: Array[String] = [contest_line()]
+		if GameState.park_streak > 1:
+			lines.append(Loc.t("PARK_STREAK") % GameState.park_streak)
+		main.park_timer_label.text = "\n".join(lines)
+		Contest.mark_seen()
 	if AudioManager != null and AudioManager.has_method("play"):
 		AudioManager.play(&"window")
 	if Analytics != null and Analytics.has_method("track"):
@@ -430,11 +463,16 @@ static func show_success(main: Control, quality: StringName, reward: Dictionary)
 	var streak_line: String = ""
 	if streak >= 2:
 		streak_line = (Loc.t("PARK_STREAK_BONUS") % streak) if Loc.has_method("t") and Loc.t("PARK_STREAK_BONUS") != "PARK_STREAK_BONUS" else "🔥 %d dias seguidos!" % streak
+	var votes: int = int(reward.get("votes", 0))
+	var votes_line: String = ""
+	if votes > 0:
+		votes_line = Loc.t("PARK_VOTES_LINE") % [votes, Contest.placement_label(int(reward.get("rank", 4)))]
 	if is_instance_valid(main.result_detail):
-		main.result_detail.text = "%s\n%s +%d  •  💗 +%d afeto%s%s" % ["★★★★★" if quality == &"perfect" else "★★★★☆", coins_word, coins, aff, "  •  🔥 +%d" % embers if embers > 0 else "", "\n" + streak_line if not streak_line.is_empty() else ""]
+		main.result_detail.text = "%s\n%s +%d  •  💗 +%d afeto%s%s%s" % ["★★★★★" if quality == &"perfect" else "★★★★☆", coins_word, coins, aff, "  •  🔥 +%d" % embers if embers > 0 else "", "\n" + votes_line if not votes_line.is_empty() else "", "\n" + streak_line if not streak_line.is_empty() else ""]
 	var extra: String = (Loc.t("PARK_SUCCESS_EXTRA") % names) if Loc.has_method("t") and Loc.t("PARK_SUCCESS_EXTRA") != "PARK_SUCCESS_EXTRA" else "%s adoraram o quintal com você!" % names
 	if quality == &"perfect":
 		extra += "\n" + (Loc.t("PARK_PERFECT_EXTRA") if Loc.has_method("t") and Loc.t("PARK_PERFECT_EXTRA") != "PARK_PERFECT_EXTRA" else "Foto perfeita! As memórias vão para a coleção.")
+	extra += "\n" + Loc.t("PARK_NEXT_IN") % format_cooldown(main, GameState.park_remaining_seconds())
 	if is_instance_valid(main.result_detail_extra):
 		main.result_detail_extra.text = extra
 		main.result_detail_extra.visible = false

@@ -193,6 +193,6 @@ func _draw() -> void:
 		# emoji centralizado (DejaVu não tem emoji, mas Godot faz fallback; se falhar, a seta abaixo garante leitura)
 		draw_string(GUIDE_FONT, hand_pos + Vector2(-14, 11), "👆", HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
 		# seta física garantida mesmo sem emoji
-		var arrow_tip: Vector2 = hand_pos + Vector2(14, 0)
-		var tri_hand: PackedVector2Array = PackedVector2Array([arrow_tip, arrow_tip + Vector2(-10, -6), arrow_tip + Vector2(-10, 6)])
+		var hand_tip: Vector2 = hand_pos + Vector2(14, 0)
+		var tri_hand: PackedVector2Array = PackedVector2Array([hand_tip, hand_tip + Vector2(-10, -6), hand_tip + Vector2(-10, 6)])
 		draw_colored_polygon(tri_hand, Color("ffd54f", 0.95))

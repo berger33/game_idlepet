@@ -30,7 +30,7 @@ class FoundationTests(unittest.TestCase):
     def test_save_schema_and_migration_are_current(self):
         state = Path('autoload/GameState.gd').read_text(encoding='utf8')
         migration = Path('autoload/SaveManager.gd').read_text(encoding='utf8')
-        self.assertIn('const SAVE_VERSION: int = 13', state)
+        self.assertIn('const SAVE_VERSION: int = 14', state)
         self.assertIn('return 50 + (player_level - 1) * 25', state)
         self.assertIn('if version == 5:', migration)
         self.assertIn('if version == 6:', migration)

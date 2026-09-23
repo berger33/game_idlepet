@@ -502,46 +502,79 @@ REACT_HAPPY_2,¡Guau guau! ¡Otra vez!
 REACT_HAPPY_3,¡Eres mi humano favorito!
 HUD_RAPIDO,¡RÁPIDO!
 HUD_STATION_LEVEL,ESTACIÓN  Nv.%d
-PARK_BUTTON,Parque
-PARK_TITLE,Parque — elige un juego
+PARK_BUTTON,Paseo
+PARK_TITLE,🌳 Paseo en el patio — elige un juego
 PARK_BALL,Jugar a la pelota
 PARK_TREAT,Esconder premio
 PARK_PHOTO,Foto grupal
 PARK_CLOSE,Cerrar
 PARK_READY,¡Listo!
-PARK_COOLDOWN,Vuelve en %s
-PARK_COOLDOWN_TOAST,¡El parque vuelve en %s — los peludos duermen siesta!
-PARK_CHOOSE,Elige cómo cuidar a los 3 en el patio
-PARK_STREAK,🔥 %d días seguidos en el parque
+PARK_COOLDOWN,Próximo paseo en %s
+PARK_COOLDOWN_TOAST,Los peludos descansan — ¡próximo paseo en %s!
+PARK_CHOOSE,Elige el juego del paseo con los 3
+PARK_STREAK,🔥 %d días seguidos de paseo
 PARK_STREAK_BONUS,🔥 ¡%d días seguidos!
 PARK_HINT_BALL,🎾 ¡Arrastra la pelota al peludo del medio!
 PARK_HINT_TREAT,🦴 ¡Toca el cuenco con el premio escondido!
 PARK_HINT_PHOTO,📸 ¡Espera el encuadre y toca FOTO!
 PARK_SHUTTER,¡FOTO!
-PARK_PERFECT,⭐ ¡Perfecto en el parque!
+PARK_PERFECT,⭐ ¡Paseo perfecto!
 PARK_SUCCESS_EXTRA,¡%s adoraron el patio contigo!
 PARK_PERFECT_EXTRA,¡Foto perfecta! Los recuerdos van a la colección.
 PARK_FAIL,Casi! Intenta de nuevo
 PARK_FAIL_HINT,¡Se distrajeron — prueba otro juego!
-PARK_FAIL_EXTRA,Sin penalización. ¡Vuelve tras el enfriamiento!
+PARK_FAIL_EXTRA,Sin penalización. ¡Vuelve en el próximo paseo!
 PARK_LOCKED,Se desbloquea tras el 1er servicio
-PARK_LOCKED_TOAST,¡Termina tu primer servicio para desbloquear el Parque!
+PARK_LOCKED_TOAST,¡Termina tu primer servicio para desbloquear el paseo!
 NAV_ALBUM,Álbum
-ALBUM_TITLE,ÁLBUM DEL PARQUE
+ALBUM_TITLE,ÁLBUM Y CONCURSO
 ALBUM_TROPHIES,Trofeos: %d
-ALBUM_CONTEST_DESC,¡Toda foto 📸 perfecta en el Parque va aquí! El sábado el barrio elige la portada.
-ALBUM_WEEK,ESTA SEMANA
-ALBUM_WEEK_PROGRESS,Fotos esta semana: %d (perfectas %d)
-ALBUM_CLAIM,RECOGER PORTADA
-ALBUM_CLAIMED,RECOGIDO
-ALBUM_CLAIM_TOAST,¡Portada! +%d monedas y +%d brasas!
-ALBUM_SATURDAY_HINT,¡El concurso abre el sábado — sigue fotografiando!
-ALBUM_SATURDAY_NEED,¡Haz 1 foto 📸 perfecta hoy para competir!
-ALBUM_EMPTY,¡Sin fotos aún — consigue un 📸 perfecto en el Parque!
+ALBUM_CONTEST_DESC,Cada paseo 🌳 da votos para la Portada de la Revista. Las fotos 📸 perfectas se vuelven recuerdos aquí abajo.
+ALBUM_EMPTY,¡Sin fotos aún — consigue un 📸 perfecto en el paseo!
 ALBUM_GRID_TITLE,RECUERDOS DEL PATIO
 ALBUM_SHARE,COMPARTIR
-ALBUM_SHARE_CAPTION,¡Mi portada del Parque el %s con %s! #PetShopTycoon
-ALBUM_FOOTER,Consejo: las fotos 📸 perfectas dan +2 afecto y son recuerdos. ¡El sábado 1 perfecta vale trofeo!
+ALBUM_SHARE_CAPTION,¡Mi foto del paseo el %s con %s! #PetShopTycoon
+ALBUM_FOOTER,"Consejo: paseo perfecto +2 votos, foto perfecta +3 y el sábado duplica todo. ¡Un paseo cada 8 minutos!"
 KIDS_MODE_ACTIVE,Activado: gestos 30% mas faciles +35% tiempo objetivo mas grande Toca para desactivar
 KIDS_MODE_ON,Modo Ninos activado! Mas facil y divertido
 KIDS_MODE_OFF,Modo Ninos desactivado
+PARK_READY_TOAST,🌳 ¡Hora del paseo! Los peludos te esperan en el patio.
+PARK_NEXT_IN,⏳ Próximo paseo en %s
+PARK_VOTES_LINE,📰 +%d votos en el concurso • %s
+PARK_CONTEST_LINE,📰 Concurso de Portada: %s • %d votos • cierra en %s
+PARK_CONTEST_LINE_EMPTY,📰 Concurso de Portada: ¡da un paseo para entrar! Cierra en %s
+CONTEST_TITLE,📰 CONCURSO DE PORTADA
+CONTEST_DESC,"Cada paseo da votos: bueno +1, perfecto +2, foto perfecta +3. ¡El sábado vale doble! La votación cierra el domingo y la portada sale el lunes."
+CONTEST_CLOSES_IN,⏱ Cierra en %s
+CONTEST_TIME_DAYS,%dd %dh
+CONTEST_TIME_HOURS,%dh %02dmin
+CONTEST_TIME_MIN,%d min
+CONTEST_RANK_1,1er lugar
+CONTEST_RANK_2,2º lugar
+CONTEST_RANK_3,3er lugar
+CONTEST_RANK_4,4º lugar
+CONTEST_YOUR_SHOP,Tu tienda
+CONTEST_VOTES,%d votos
+CONTEST_LEADING,¡Vas en cabeza! Aguanta hasta el domingo 💪
+CONTEST_TO_FIRST,Faltan %d votos para el 1er puesto — ¡un paseo perfecto vale hasta 3!
+CONTEST_NOT_ENTERED,¡Da un paseo 🌳 para entrar en la carrera de esta semana!
+CONTEST_SATURDAY_TAG,⭐ SÁBADO DE PORTADA: ¡votos dobles hoy!
+CONTEST_SATURDAY_TOAST,📸 ¡Sábado de Portada! Los paseos valen votos dobles hoy.
+CONTEST_OVERTAKEN_TOAST,📰 Te adelantaron en el concurso: ahora estás en %s. ¡Un paseo lo arregla!
+CONTEST_PENDING_ROW,Resultado de la semana pasada: %s con %d votos
+CONTEST_CLAIM,🏆 RECOGER PREMIO
+CONTEST_CLAIM_TOAST,Premio del concurso: ¡+%d monedas y +%d brasas!
+CONTEST_RESULT_TITLE_1,📰 ¡ERES LA PORTADA DE LA REVISTA!
+CONTEST_RESULT_TITLE_2,🥈 2º lugar en el Concurso de Portada
+CONTEST_RESULT_TITLE_3,🥉 3er lugar en el Concurso de Portada
+CONTEST_RESULT_TITLE_4,📰 Concurso de Portada cerrado
+CONTEST_RESULT_BODY,Semana pasada: %d votos — %s.\nTu premio: %d monedas%s
+CONTEST_RESULT_EMBERS, + %d brasas 🔥
+CONTEST_RESULT_HINT_WIN,¡Todo el barrio vio tu foto! Ya empezó la nueva semana — defiende el título.
+CONTEST_RESULT_HINT_LOSE,Ya empezó la nueva semana — cada paseo cuenta. ¿Vamos por la portada?
+CONTEST_AUTO_CLAIM,Premio anterior entregado: %s (+%d monedas)
+CONTEST_TROPHIES,🏆 Portadas ganadas: %d
+CONTEST_BEST,Mejor puesto: %s
+CONTEST_HISTORY_TITLE,ÚLTIMAS SEMANAS
+CONTEST_HISTORY_ROW,Semana del %s: %s • %d votos
+CONTEST_RULE_SHORT,Bueno +1 • Perfecto +2 • Foto perfecta +3 • Sábado ×2

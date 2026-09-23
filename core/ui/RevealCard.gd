@@ -11,7 +11,8 @@ extends RefCounted
 ##   "title": String, "body": String, "color": Color,
 ##   "image": String (caminho de recurso, opcional), "primary": String (texto do botão),
 ##   "secondary": String (opcional), "on_secondary": Callable (opcional),
-##   "sound": StringName (opcional), "on_close": Callable (opcional)
+##   "sound": StringName (opcional), "on_primary": Callable (opcional, roda antes
+##   de fechar quando o botão principal é tocado), "on_close": Callable (opcional)
 ## }
 
 static var _queue: Array[Dictionary] = []
@@ -165,7 +166,12 @@ static func _show_next(main: Control) -> void:
 		)
 		buttons.add_child(secondary)
 	var primary: Button = main._button(String(spec.get("primary", "OK")), accent, 360, 96)
-	primary.pressed.connect(close)
+	primary.pressed.connect(
+		func() -> void:
+			if spec.has("on_primary") and (spec["on_primary"] as Callable).is_valid():
+				(spec["on_primary"] as Callable).call()
+			close.call()
+	)
 	buttons.add_child(primary)
 	# Anima depois do layout calcular o tamanho real (pivô no centro certo).
 	main._pop_panel.call_deferred(card)

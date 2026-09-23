@@ -114,7 +114,7 @@ def validate_project_contract() -> None:
     require(main.count("Button.new()") == 1, "Button criado fora da factory universal")
     require("InteractionFX.bind_button(" in main, "feedback universal não ligado")
     state = (ROOT / "autoload/GameState.gd").read_text(encoding="utf-8")
-    require("const SAVE_VERSION: int = 13" in state, "versão de save inesperada")
+    require("const SAVE_VERSION: int = 14" in state, "versão de save inesperada")
 
 
 def validate_repository_hygiene() -> None:

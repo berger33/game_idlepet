@@ -140,6 +140,7 @@ func _ready() -> void:
 	if GameState.services_completed > 0:
 		SessionFeedback.show_offline_card(self)
 		SessionFeedback.show_comeback(self)
+		ContestFeedback.on_boot(self)
 	if GameState.tutorial_complete:
 		LiveOps.claim_seasonal_gift()
 	NotificationManager.permission_granted = bool(GameState.settings.get("notifications", false))
@@ -206,9 +207,10 @@ func _process(delta: float) -> void:
 			if is_instance_valid(badge):
 				badge.visible = false
 		D1Retention.update_missions_badge(self, upgrades_pulse_time)
-	# Álbum badge quando concurso liberado (sábado + 1 perfect)
+	# Álbum badge: 🏆 prêmio do concurso a coletar / 📰 rival ultrapassou
 	if is_instance_valid(album_button) and not album_button.disabled:
-		if GameState.park_can_claim_contest():
+		var contest_badge: String = Contest.badge_text()
+		if not contest_badge.is_empty():
 			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.0)
 			album_button.modulate = Color.WHITE.lerp(Color("ffd54f"), pulse * 0.45)
 			var abadge: Label = album_button.get_node_or_null("Badge") as Label
@@ -223,7 +225,7 @@ func _process(delta: float) -> void:
 				abadge.custom_minimum_size = Vector2(38, 38)
 				abadge.position = Vector2(44, -10)
 				album_button.add_child(abadge)
-			abadge.text = "★"
+			abadge.text = contest_badge
 			abadge.visible = true
 		else:
 			album_button.modulate = Color.WHITE

@@ -24,7 +24,7 @@ const DEFAULTS: Dictionary = {
 	"upsell_tip_mult": 1.4,
 	"petting_max_per_client": 5.0,
 	# Parquinho / Creche — loop fora da banheira (fantasia cuidador no parquinho)
-	"park_cooldown_seconds": 7200.0, # 2h entre sessões — LiveOps ajusta sem build
+	"park_cooldown_seconds": 480.0, # 8 min entre passeios — LiveOps ajusta sem build
 	"park_reward_coins": 52.0, # base = mesmo piso do banho (escala com streak 5% / dia)
 	"park_reward_affection": 1.0,
 	# Economia escalável via remote: multiplicadores que afetam Rewards.gd

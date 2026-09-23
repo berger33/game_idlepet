@@ -502,46 +502,79 @@ REACT_HAPPY_2,Woof woof! Again!
 REACT_HAPPY_3,You're my favorite human!
 HUD_RAPIDO,HURRY!
 HUD_STATION_LEVEL,STATION  Lv.%d
-PARK_BUTTON,Playground
-PARK_TITLE,Playground — pick a game
+PARK_BUTTON,Walk
+PARK_TITLE,🌳 Yard walk — pick a game
 PARK_BALL,Fetch ball
 PARK_TREAT,Hide treat
 PARK_PHOTO,Group photo
 PARK_CLOSE,Close
 PARK_READY,Ready!
-PARK_COOLDOWN,Back in %s
-PARK_COOLDOWN_TOAST,Playground back in %s — pets are napping!
-PARK_CHOOSE,Choose how to care for the 3 in the yard
-PARK_STREAK,🔥 %d-day park streak
+PARK_COOLDOWN,Next walk in %s
+PARK_COOLDOWN_TOAST,The pets are resting — next walk in %s!
+PARK_CHOOSE,Choose the game for the walk with the 3
+PARK_STREAK,🔥 %d-day walk streak
 PARK_STREAK_BONUS,🔥 %d days in a row!
 PARK_HINT_BALL,🎾 Drag the ball to the middle pet!
 PARK_HINT_TREAT,🦴 Tap the bowl with the hidden treat!
 PARK_HINT_PHOTO,📸 Wait for alignment and tap PHOTO!
 PARK_SHUTTER,SNAP!
-PARK_PERFECT,⭐ Playground perfect!
+PARK_PERFECT,⭐ Perfect walk!
 PARK_SUCCESS_EXTRA,%s loved the yard with you!
 PARK_PERFECT_EXTRA,Perfect shot! Memories go to the collection.
 PARK_FAIL,Almost! Try again
 PARK_FAIL_HINT,Pets got distracted — try another game!
-PARK_FAIL_EXTRA,No queue penalty. Come back after cooldown!
-PARK_LOCKED,Unlocks after 1st service
-PARK_LOCKED_TOAST,Finish your first service to unlock the Playground!
+PARK_FAIL_EXTRA,No queue penalty. Come back on the next walk!
+PARK_LOCKED,Unlocks after the 1st service
+PARK_LOCKED_TOAST,Finish your first service to unlock the walk!
 NAV_ALBUM,Album
-ALBUM_TITLE,PLAYGROUND ALBUM
+ALBUM_TITLE,ALBUM & CONTEST
 ALBUM_TROPHIES,Trophies: %d
-ALBUM_CONTEST_DESC,Every perfect 📸 photo in the Playground goes here. On Saturday the neighborhood picks the cover!
-ALBUM_WEEK,THIS WEEK
-ALBUM_WEEK_PROGRESS,Photos this week: %d (perfect %d)
-ALBUM_CLAIM,COLLECT COVER
-ALBUM_CLAIMED,COLLECTED
-ALBUM_CLAIM_TOAST,Cover! +%d coins and +%d embers!
-ALBUM_SATURDAY_HINT,Contest opens on Saturday — keep shooting!
-ALBUM_SATURDAY_NEED,Get 1 perfect 📸 photo today to compete for the cover!
-ALBUM_EMPTY,No photos yet — get a perfect 📸 in the Playground!
+ALBUM_CONTEST_DESC,Every walk 🌳 earns votes for the Magazine Cover. Perfect 📸 photos become memories below.
+ALBUM_EMPTY,No photos yet — get a perfect 📸 on a walk!
 ALBUM_GRID_TITLE,YARD MEMORIES
 ALBUM_SHARE,SHARE
-ALBUM_SHARE_CAPTION,My Playground cover on %s with %s! #PetShopTycoon
-ALBUM_FOOTER,Tip: perfect 📸 photos give +2 affection and become memories. On Saturday 1 perfect wins a trophy!
+ALBUM_SHARE_CAPTION,My walk photo on %s with %s! #PetShopTycoon
+ALBUM_FOOTER,"Tip: a perfect walk is +2 votes, a perfect photo +3, and Saturday doubles everything. A walk every 8 minutes!"
 KIDS_MODE_ACTIVE,On: 30% easier gestures +35% time bigger targets Tap to turn off
 KIDS_MODE_ON,Kids Mode on! Easier and more fun
 KIDS_MODE_OFF,Kids Mode off
+PARK_READY_TOAST,🌳 Walk time! The pets are waiting for you in the yard.
+PARK_NEXT_IN,⏳ Next walk in %s
+PARK_VOTES_LINE,📰 +%d contest votes • %s
+PARK_CONTEST_LINE,📰 Cover Contest: %s • %d votes • closes in %s
+PARK_CONTEST_LINE_EMPTY,📰 Cover Contest: take a walk to enter! Closes in %s
+CONTEST_TITLE,📰 COVER CONTEST
+CONTEST_DESC,"Every walk earns votes: good +1, perfect +2, perfect photo +3. Saturday counts double! Voting closes Sunday night and the cover comes out Monday."
+CONTEST_CLOSES_IN,⏱ Closes in %s
+CONTEST_TIME_DAYS,%dd %dh
+CONTEST_TIME_HOURS,%dh %02dmin
+CONTEST_TIME_MIN,%d min
+CONTEST_RANK_1,1st place
+CONTEST_RANK_2,2nd place
+CONTEST_RANK_3,3rd place
+CONTEST_RANK_4,4th place
+CONTEST_YOUR_SHOP,Your pet shop
+CONTEST_VOTES,%d votes
+CONTEST_LEADING,You're in the lead! Hold it until Sunday 💪
+CONTEST_TO_FIRST,%d votes to 1st place — a perfect walk is worth up to 3!
+CONTEST_NOT_ENTERED,Take a walk 🌳 to enter this week's race!
+CONTEST_SATURDAY_TAG,⭐ COVER SATURDAY: double votes today!
+CONTEST_SATURDAY_TOAST,📸 Cover Saturday! Walks earn double votes today.
+CONTEST_OVERTAKEN_TOAST,📰 You've been overtaken: you're now in %s. A walk fixes that!
+CONTEST_PENDING_ROW,Last week's result: %s with %d votes
+CONTEST_CLAIM,🏆 COLLECT PRIZE
+CONTEST_CLAIM_TOAST,Contest prize: +%d coins and +%d embers!
+CONTEST_RESULT_TITLE_1,📰 YOU'RE THE MAGAZINE COVER!
+CONTEST_RESULT_TITLE_2,🥈 2nd place in the Cover Contest
+CONTEST_RESULT_TITLE_3,🥉 3rd place in the Cover Contest
+CONTEST_RESULT_TITLE_4,📰 Cover Contest closed
+CONTEST_RESULT_BODY,Last week: %d votes — %s.\nYour prize: %d coins%s
+CONTEST_RESULT_EMBERS, + %d embers 🔥
+CONTEST_RESULT_HINT_WIN,The whole neighborhood saw your photo! A new week has begun — defend the title.
+CONTEST_RESULT_HINT_LOSE,A new week has begun — every walk counts. Going for the cover?
+CONTEST_AUTO_CLAIM,Previous prize delivered: %s (+%d coins)
+CONTEST_TROPHIES,🏆 Covers won: %d
+CONTEST_BEST,Best placement: %s
+CONTEST_HISTORY_TITLE,RECENT WEEKS
+CONTEST_HISTORY_ROW,Week of %s: %s • %d votes
+CONTEST_RULE_SHORT,Good +1 • Perfect +2 • Perfect photo +3 • Saturday ×2

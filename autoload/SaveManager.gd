@@ -220,6 +220,19 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["purchase_ledger"] = data.get("purchase_ledger", {})
 		data["ads_policy"] = data.get("ads_policy", {})
 		version = 13
+	if version == 13:
+		# v14: concurso semanal "Capa da Revista" (Contest.gd) + passos do guia Bia
+		data["version"] = 14
+		data["park_contest_week"] = data.get("park_contest_week", "")
+		data["park_contest_points"] = data.get("park_contest_points", 0)
+		data["park_contest_photos"] = data.get("park_contest_photos", 0)
+		data["park_contest_rivals"] = data.get("park_contest_rivals", [])
+		data["park_contest_pending"] = data.get("park_contest_pending", {})
+		data["park_contest_history"] = data.get("park_contest_history", [])
+		data["park_contest_last_rank"] = data.get("park_contest_last_rank", 0)
+		data["guide_steps_done"] = data.get("guide_steps_done", [])
+		data.erase("park_contest_claimed_week")
+		version = 14
 
 	return data
 

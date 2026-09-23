@@ -390,101 +390,45 @@ func _build_album() -> void:
 	if GameState == null or not is_instance_valid(screen) or screen.content_box == null:
 		_note("Carregando álbum...", 22, Color("90a4ae"))
 		return
-	# Topo: troféus + progresso semanal
-	var trophies: int = GameState.park_trophies if GameState.has_method("park_trophies") or "park_trophies" in GameState else 0
-	_info_row(
-		"🏆 %s" % (Loc.t("ALBUM_TROPHIES") % trophies if Loc.has_method("t") and Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % trophies),
-		Loc.t("ALBUM_CONTEST_DESC") if Loc.has_method("t") and Loc.t("ALBUM_CONTEST_DESC") != "ALBUM_CONTEST_DESC" else "Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!",
-		"",
-		Color("ffd54f"),
-		false,
-		Callable()
-	)
-	var prog: Dictionary = {}
-	if GameState.has_method("park_contest_progress"):
-		prog = GameState.park_contest_progress()
-	else:
-		prog = {"total": 0, "perfects": 0, "claimed": false, "is_saturday": false}
-	var can_claim: bool = false
-	if GameState.has_method("park_can_claim_contest"):
-		can_claim = GameState.park_can_claim_contest()
-	_info_row( Loc.t("ALBUM_WEEK") if Loc.has_method("t") and Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
-		(Loc.t("ALBUM_WEEK_PROGRESS") % [int(prog.get("total", 0)), int(prog.get("perfects", 0))] if Loc.has_method("t") and Loc.t("ALBUM_WEEK_PROGRESS") != "ALBUM_WEEK_PROGRESS" else "Fotos esta semana: %d (perfeitas %d)" % [int(prog.get("total", 0)), int(prog.get("perfects", 0))]),
-		Loc.t("ALBUM_CLAIMED") if bool(prog.get("claimed", false)) else (Loc.t("ALBUM_CLAIM") if Loc.has_method("t") and Loc.t("ALBUM_CLAIM") != "ALBUM_CLAIM" else "COLETAR CAPA"),
-		GREEN if can_claim else Color("b0bec5"),
-		can_claim,
-		func() -> void:
-			if GameState == null or not GameState.has_method("park_claim_contest"):
-				return
-			var rew: Dictionary = GameState.park_claim_contest()
-			if not rew.is_empty():
-				if AudioManager != null and AudioManager.has_method("play"):
-					AudioManager.play(&"perfect")
-				if HapticsManager != null and HapticsManager.has_method("success"):
-					HapticsManager.success()
-				if EventBus != null and EventBus.has_signal("toast_requested"):
-					EventBus.toast_requested.emit(Loc.t("ALBUM_CLAIM_TOAST") % [int(rew.get("coins", 0)), int(rew.get("embers", 0))] if Loc.has_method("t") and Loc.t("ALBUM_CLAIM_TOAST") != "ALBUM_CLAIM_TOAST" else "Capa! +%d R$ e +%d brasas" % [int(rew.get("coins", 0)), int(rew.get("embers", 0))], Color("ffd54f"))
-				# rebuild para atualizar contador
-				if is_instance_valid(screen):
-					_rebuild()
-	)
-	if not bool(prog.get("is_saturday", false)):
-		_note(Loc.t("ALBUM_SATURDAY_HINT") if Loc.has_method("t") and Loc.t("ALBUM_SATURDAY_HINT") != "ALBUM_SATURDAY_HINT" else "O concurso abre no sábado — continue fotografando!", 22, Color("90a4ae"))
-	else:
-		if int(prog.get("perfects", 0)) == 0:
-			_note(Loc.t("ALBUM_SATURDAY_NEED") if Loc.has_method("t") and Loc.t("ALBUM_SATURDAY_NEED") != "ALBUM_SATURDAY_NEED" else "Faça 1 foto 📸 perfeita hoje para concorrer à capa!", 22, PINK)
+	_build_contest()
 	# Grid de fotos
 	if GameState.park_photos.is_empty():
-		_note(Loc.t("ALBUM_EMPTY") if Loc.has_method("t") and Loc.t("ALBUM_EMPTY") != "ALBUM_EMPTY" else "Nenhuma foto ainda — faça um 📸 perfeito no Parquinho! (arraste treat/photo e acerte o timing)", 24, Color("90a4ae"), true)
+		_note(Loc.t("ALBUM_EMPTY"), 24, Color("90a4ae"), true)
 		return
-	_note(Loc.t("ALBUM_GRID_TITLE") if Loc.has_method("t") and Loc.t("ALBUM_GRID_TITLE") != "ALBUM_GRID_TITLE" else "MEMÓRIAS DO QUINTAL", 26, CHARCOAL)
+	_note(Loc.t("ALBUM_GRID_TITLE"), 26, CHARCOAL)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
-	if screen.content_box != null:
-		screen.content_box.add_child(grid)
-	else:
-		return
+	screen.content_box.add_child(grid)
 	# mostra mais recentes primeiro, max 18
-	var photos: Array[Dictionary] = []
-	if GameState.park_photos is Array:
-		photos = GameState.park_photos.duplicate()
-		photos.reverse()
+	var photos: Array[Dictionary] = GameState.park_photos.duplicate()
+	photos.reverse()
 	var shown: int = 0
 	for photo: Dictionary in photos:
 		if shown >= 18:
 			break
-		if not photo is Dictionary:
-			continue
 		shown += 1
 		var pets_raw: Variant = photo.get("pets", [])
 		var pets: Array = pets_raw if pets_raw is Array else []
-		var names: String = ""
+		var names: PackedStringArray = PackedStringArray()
 		for pid: Variant in pets:
 			var spid: String = String(pid)
-			var nm: String = spid.capitalize()
-			if ContentDB != null and ContentDB.has_method("pet_name"):
-				var tmp: String = ContentDB.pet_name(spid)
-				if not tmp.is_empty():
-					nm = tmp
-			names += nm + " "
-		names = names.strip_edges().replace(" ", ", ")
+			names.append(ContentDB.pet_name(spid) if ContentDB.has_pet(spid) else spid.capitalize())
+		var names_text: String = ", ".join(names)
 		var date: String = String(photo.get("date", ""))
 		var perfect: bool = bool(photo.get("perfect", false))
 		var card: PanelContainer = PanelContainer.new()
 		card.custom_minimum_size = Vector2(260, 250)
-		if StyleFactory != null and StyleFactory.has_method("box"):
-			card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
+		card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
 		var vbox: VBoxContainer = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 6)
 		card.add_child(vbox)
-		# Thumb 4:3 (240×150) COVER + clip 12px — evita letterbox e preserva rosto do pet (240×90 cortava 62%)
+		# Thumb 4:3 (240×150) COVER + clip 12px — evita letterbox e preserva rosto do pet
 		var thumb_wrap: PanelContainer = PanelContainer.new()
 		thumb_wrap.custom_minimum_size = Vector2(240, 150)
 		thumb_wrap.clip_contents = true
-		if StyleFactory != null and StyleFactory.has_method("box"):
-			thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
+		thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
 		vbox.add_child(thumb_wrap)
 		var thumb: TextureRect = TextureRect.new()
 		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -492,21 +436,17 @@ func _build_album() -> void:
 		thumb.custom_minimum_size = Vector2(240, 150)
 		thumb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		thumb.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		# tenta carregar primeiro pet da foto — sanitiza nome para evitar path traversal
+		# primeiro pet da foto — id validado pelo ContentDB (sem path traversal)
 		var first_pet: String = "caramelo"
-		if pets.size() > 0:
-			var cand: String = String(pets[0])
-			if not cand.is_empty() and cand.length() < 40 and "/" not in cand and "\\" not in cand and "." not in cand:
-				first_pet = cand
+		if pets.size() > 0 and ContentDB.has_pet(String(pets[0])):
+			first_pet = String(pets[0])
 		var tpath: String = "res://art/pets/%s.png" % first_pet
 		if ResourceLoader.exists(tpath):
-			var res: Resource = load(tpath)
-			if res is Texture2D:
-				thumb.texture = res as Texture2D
+			thumb.texture = load(tpath) as Texture2D
 		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.96)
 		thumb_wrap.add_child(thumb)
 		var nlabel: Label = Label.new()
-		nlabel.text = names if not names.is_empty() else "Foto"
+		nlabel.text = names_text if not names_text.is_empty() else "Foto"
 		nlabel.add_theme_font_size_override("font_size", 18)
 		nlabel.add_theme_color_override("font_color", CHARCOAL)
 		nlabel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -517,21 +457,101 @@ func _build_album() -> void:
 		dlabel.add_theme_color_override("font_color", PINK if perfect else Color("90a4ae"))
 		vbox.add_child(dlabel)
 		var share_btn: Button = Button.new()
-		share_btn.text = Loc.t("ALBUM_SHARE") if Loc.has_method("t") and Loc.t("ALBUM_SHARE") != "ALBUM_SHARE" else "COMPARTILHAR"
+		share_btn.text = Loc.t("ALBUM_SHARE")
 		share_btn.custom_minimum_size = Vector2(240, 44)
 		_style_button(share_btn, BLUE if perfect else Color("b0bec5"))
-		# captura names por valor (default arg) para não compartilhar última iteração do loop
-		var captured_names: String = names
-		var captured_date: String = date
-		share_btn.pressed.connect(func(p: Dictionary = photo, n: String = captured_names, d: String = captured_date) -> void:
-			var caption: String = Loc.t("ALBUM_SHARE_CAPTION") % [d if not d.is_empty() else String(p.get("date", "")), n] if Loc.has_method("t") and Loc.t("ALBUM_SHARE_CAPTION") != "ALBUM_SHARE_CAPTION" else "Minha capa do Parquinho em %s com %s! #PetShopTycoon" % [d if not d.is_empty() else String(p.get("date", "")), n]
-			DisplayServer.clipboard_set(caption)
-			if EventBus != null and EventBus.has_signal("toast_requested"):
-				EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY") if Loc.has_method("t") and Loc.t("SHARE_SAVED_GALLERY") != "SHARE_SAVED_GALLERY" else "Legenda copiada!", BLUE)
+		# captura por valor (default args) para não compartilhar a última iteração do loop
+		share_btn.pressed.connect(func(n: String = names_text, d: String = date) -> void:
+			DisplayServer.clipboard_set(Loc.t("ALBUM_SHARE_CAPTION") % [d, n])
+			EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY"), BLUE)
 		)
 		vbox.add_child(share_btn)
 		grid.add_child(card)
-	_note(Loc.t("ALBUM_FOOTER") if Loc.has_method("t") and Loc.t("ALBUM_FOOTER") != "ALBUM_FOOTER" else "Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!", 22, Color("90a4ae"), true)
+	_note(Loc.t("ALBUM_FOOTER"), 22, Color("90a4ae"), true)
+
+
+## Concurso da Capa: prêmio pendente, placar você × 3 rivais, dica e histórico.
+func _build_contest() -> void:
+	var st: Dictionary = Contest.status()
+	var points: int = int(st.get("points", 0))
+	var placement: int = int(st.get("rank", 4))
+	if bool(st.get("pending", false)):
+		var pending: Dictionary = GameState.park_contest_pending
+		var pending_rank: int = clampi(int(pending.get("rank", 4)), 1, 4)
+		_info_row(
+			Loc.t("CONTEST_RESULT_TITLE_%d" % pending_rank),
+			Loc.t("CONTEST_PENDING_ROW") % [Contest.placement_label(pending_rank), int(pending.get("points", 0))],
+			Loc.t("CONTEST_CLAIM"), GREEN, true,
+			func() -> void:
+				var result: Dictionary = Contest.claim()
+				if result.is_empty():
+					return
+				AudioManager.play(&"perfect")
+				HapticsManager.success()
+				EventBus.toast_requested.emit(Loc.t("CONTEST_CLAIM_TOAST") % [int(result.get("coins", 0)), int(result.get("embers", 0))], Color("ffd54f"))
+		)
+	_info_row(Loc.t("CONTEST_TITLE"), Loc.t("CONTEST_DESC"), "⏱ " + Contest.format_time_left(int(st.get("seconds_left", 0))), Color("ffd54f"), false, Callable())
+	if bool(st.get("saturday", false)):
+		_note(Loc.t("CONTEST_SATURDAY_TAG"), 24, Color("f9a825"))
+	# Placar: você + 3 rivais, ordenado por votos (empate favorece o jogador)
+	var shop_name: String = String(GameState.settings.get("shop_name", "")).strip_edges()
+	var rows: Array[Dictionary] = [{"name": shop_name if not shop_name.is_empty() else Loc.t("CONTEST_YOUR_SHOP"), "emoji": "🏠", "score": points, "you": true}]
+	for rival: Dictionary in st.get("rivals", []):
+		rows.append({"name": String(rival["name"]), "emoji": String(rival["emoji"]), "score": int(rival["score"]), "you": false})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["score"]) != int(b["score"]):
+			return int(a["score"]) > int(b["score"])
+		return bool(a["you"])
+	)
+	var board: VBoxContainer = VBoxContainer.new()
+	board.add_theme_constant_override("separation", 8)
+	screen.content_box.add_child(board)
+	var medals: Array[String] = ["🥇", "🥈", "🥉", "4º"]
+	var best_score: int = int(rows[0]["score"])
+	for i: int in rows.size():
+		var entry: Dictionary = rows[i]
+		var you: bool = bool(entry["you"])
+		var line: PanelContainer = PanelContainer.new()
+		line.add_theme_stylebox_override("panel", StyleFactory.box(Color("fff8e1") if you else Color("ffffff", 0.9), 18, 12, Color("ffd54f") if you else Color("eceff1"), 3 if you else 2))
+		var column: VBoxContainer = VBoxContainer.new()
+		column.add_theme_constant_override("separation", 6)
+		line.add_child(column)
+		var hbox: HBoxContainer = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 12)
+		column.add_child(hbox)
+		var name_label: Label = _label_node("%s  %s %s" % [medals[mini(i, 3)], String(entry["emoji"]), String(entry["name"])], 24, CHARCOAL)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hbox.add_child(name_label)
+		hbox.add_child(_label_node(Loc.t("CONTEST_VOTES") % int(entry["score"]), 24, GREEN if you else Color("546e7a")))
+		var bar_bg: ColorRect = ColorRect.new()
+		bar_bg.color = Color("eceff1")
+		bar_bg.custom_minimum_size = Vector2(0, 8)
+		column.add_child(bar_bg)
+		var bar: ColorRect = ColorRect.new()
+		bar.color = Color("ffd54f") if you else Color("b0bec5")
+		bar.anchor_right = clampf(float(entry["score"]) / float(maxi(1, best_score)), 0.0, 1.0)
+		bar.anchor_bottom = 1.0
+		bar_bg.add_child(bar)
+		board.add_child(line)
+	var hint: String = Loc.t("CONTEST_NOT_ENTERED")
+	if points > 0:
+		hint = Loc.t("CONTEST_LEADING") if placement == 1 else Loc.t("CONTEST_TO_FIRST") % int(st.get("to_first", 0))
+	_note(hint, 22, PINK if points > 0 and placement > 1 else Color("558b2f"), true)
+	_note(Loc.t("CONTEST_RULE_SHORT"), 20, Color("90a4ae"), true)
+	var summary: String = Loc.t("CONTEST_TROPHIES") % GameState.park_trophies
+	var best: int = Contest.best_rank()
+	if best > 0:
+		summary += "  •  " + Loc.t("CONTEST_BEST") % Contest.placement_label(best)
+	_note(summary, 22, CHARCOAL)
+	if not GameState.park_contest_history.is_empty():
+		_note(Loc.t("CONTEST_HISTORY_TITLE"), 22, Color("90a4ae"))
+		var history: Array[Dictionary] = GameState.park_contest_history.duplicate()
+		history.reverse()
+		for entry: Dictionary in history.slice(0, 4):
+			var monday: String = Time.get_date_string_from_unix_time(int(String(entry.get("week", "0"))) * 86400)
+			_note(Loc.t("CONTEST_HISTORY_ROW") % [monday, Contest.placement_label(int(entry.get("rank", 4))), int(entry.get("points", 0))], 20, Color("546e7a"), true)
+	Contest.mark_seen()
 
 ## Painel de melhorias: estação + os cinco utensílios. Tudo que era botão
 ## grande no HUD de ação agora vive aqui, comprável com moedas.
