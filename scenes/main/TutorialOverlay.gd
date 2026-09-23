@@ -1,198 +1,287 @@
 extends Control
-## Tutorial spotlight não-bloqueante: escurece a tela ao redor do alvo
-## (sem shader, com 4 retângulos de dim) e pulsa a borda + instrução.
-## Avança apenas com eventos reais do jogo; sempre pulável.
+## Guia Bia — overlay do tutorial e dos "primeiros passos". Escurece a tela ao
+## redor do alvo (4 retângulos, sem shader), pulsa a borda, desenha a seta e a
+## mãozinha (toque ou arraste real: da prateleira até o pet) e mostra a Bia
+## num cartão com retrato + balão em máquina de escrever, sempre no lado
+## oposto ao alvo. Sem voz: toda a orientação é visual. Não bloqueia o jogo
+## (mouse_filter IGNORE no overlay; só o cartão captura toques).
 
 const GUIDE_FONT: Font = preload("res://art/fonts/DejaVuSans-Bold.ttf")
+const PORTRAITS: Dictionary = {
+	&"hello": preload("res://art/characters/bia_hello.png"),
+	&"point": preload("res://art/characters/bia_point.png"),
+	&"cheer": preload("res://art/characters/bia_cheer.png"),
+	&"think": preload("res://art/characters/bia_think.png"),
+}
+const GOLD: Color = Color("ffd54f")
+const CHARCOAL: Color = Color("263238")
+const PINK: Color = Color("ff8fb1")
+const CARD_X: float = 60.0
+const CARD_W: float = 960.0
+const TYPE_SPEED: float = 42.0 # caracteres por segundo
 
-var spotlight_rect: Rect2 = Rect2(0, 0, 0, 0)
+var spotlight_rect: Rect2 = Rect2()
+var has_target: bool = false
 var message: String = ""
 var pulse: float = 0.0
 var active: bool = false
-var voice_button: Button = null
+## Tutorial principal em andamento: dicas temporárias (show_hint) são ignoradas.
+var locked: bool = false
+var typed: float = 0.0
+var hint_left: float = 0.0
+var hand_from: Vector2 = Vector2.ZERO
+var hand_to: Vector2 = Vector2.ZERO
+var hand_mode: StringName = &"" # "" | tap | drag
+var on_action: Callable = Callable()
+
+var card: PanelContainer
+var portrait: TextureRect
+var portrait_bg: Panel
+var name_label: Label
+var bubble_label: Label
+var action_button: Button
+var hand_layer: Control
 
 
 func _ready() -> void:
-	# botão de voz no tutorial — mute já no 1º acesso sem abrir Ajustes
-	voice_button = Button.new()
-	voice_button.custom_minimum_size = Vector2(72, 72)
-	voice_button.size = Vector2(72, 72)
-	voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
-	voice_button.z_index = 10
-	voice_button.mouse_filter = Control.MOUSE_FILTER_STOP
-	voice_button.focus_mode = Control.FOCUS_NONE
-	voice_button.pressed.connect(_on_voice_toggle)
-	add_child(voice_button)
-	_update_voice_button()
-	# reposiciona se tela redimensionar / safe area mudar
-	resized.connect(func() -> void:
-		if is_instance_valid(voice_button):
-			voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
-	)
+	card = PanelContainer.new()
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.add_theme_stylebox_override("panel", StyleFactory.box(Color("ffffff", 0.97), 30, 18, GOLD, 4))
+	card.gui_input.connect(_on_card_input)
+	add_child(card)
+	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 18)
+	card.add_child(row)
+	var avatar: Control = Control.new()
+	avatar.custom_minimum_size = Vector2(240, 240)
+	avatar.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(avatar)
+	portrait_bg = Panel.new()
+	portrait_bg.add_theme_stylebox_override("panel", StyleFactory.box(Color("ffe1ec"), 110, 0, PINK, 4))
+	portrait_bg.position = Vector2(10, 20)
+	portrait_bg.size = Vector2(220, 220)
+	portrait_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	avatar.add_child(portrait_bg)
+	portrait = TextureRect.new()
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.position = Vector2(-5, -10)
+	portrait.size = Vector2(250, 250)
+	portrait.pivot_offset = Vector2(125, 230)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	avatar.add_child(portrait)
+	var column: VBoxContainer = VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", 10)
+	row.add_child(column)
+	name_label = Label.new()
+	name_label.text = Loc.t("GUIDE_NAME")
+	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.add_theme_color_override("font_color", PINK)
+	column.add_child(name_label)
+	bubble_label = Label.new()
+	bubble_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bubble_label.add_theme_font_size_override("font_size", 30)
+	bubble_label.add_theme_color_override("font_color", CHARCOAL)
+	bubble_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bubble_label.custom_minimum_size = Vector2(620, 0)
+	column.add_child(bubble_label)
+	action_button = Button.new()
+	action_button.custom_minimum_size = Vector2(260, 68)
+	action_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	action_button.focus_mode = Control.FOCUS_NONE
+	action_button.add_theme_font_size_override("font_size", 26)
+	action_button.add_theme_color_override("font_color", Color.WHITE)
+	action_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	action_button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	action_button.add_theme_stylebox_override("normal", StyleFactory.box(Color("2e7d32"), 30, 10))
+	action_button.add_theme_stylebox_override("hover", StyleFactory.box(Color("388e3c"), 30, 10, Color.WHITE, 2))
+	action_button.add_theme_stylebox_override("pressed", StyleFactory.box(Color("1b5e20"), 30, 10))
+	action_button.pressed.connect(_on_action_pressed)
+	InteractionFX.bind_button(action_button)
+	column.add_child(action_button)
+	hand_layer = Control.new()
+	hand_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hand_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hand_layer.draw.connect(_draw_hand)
+	add_child(hand_layer)
+	card.visible = false
 
 
-func show_step(rect: Rect2, text: String) -> void:
+## Fala da Bia. `rect` vazio = sem alvo (cartão centralizado, tela toda esmaecida).
+## `hand`: &"tap" pulsa no centro do alvo; &"drag" anima de `from` até `to`.
+func show_guide(text: String, mood: StringName = &"point", rect: Rect2 = Rect2(), button_text: String = "", callback: Callable = Callable(), hand: StringName = &"", from: Vector2 = Vector2.ZERO, to: Vector2 = Vector2.ZERO) -> void:
 	active = true
 	visible = true
+	hint_left = 0.0
 	spotlight_rect = rect
+	has_target = rect.size.x > 0.0 and rect.size.y > 0.0
 	message = text
+	typed = 0.0
 	pulse = 0.0
-	if is_instance_valid(voice_button):
-		voice_button.visible = true
-		_update_voice_button()
-		voice_button.position = Vector2(size.x - 88.0, 18.0 + _safe_top())
+	hand_mode = hand
+	hand_from = from
+	hand_to = to
+	on_action = callback
+	portrait.texture = PORTRAITS.get(mood, PORTRAITS[&"point"]) as Texture2D
+	bubble_label.text = text
+	bubble_label.visible_characters = 0
+	action_button.text = button_text
+	action_button.visible = not button_text.is_empty()
+	card.visible = true
+	card.modulate.a = 0.0
+	card.scale = Vector2(0.94, 0.94)
+	_place_card()
+	card.pivot_offset = card.size * 0.5
+	var tween: Tween = card.create_tween().set_parallel(true)
+	tween.tween_property(card, "modulate:a", 1.0, 0.18)
+	tween.tween_property(card, "scale", Vector2.ONE, 0.26).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	portrait.scale = Vector2(0.86, 0.86)
+	portrait.create_tween().tween_property(portrait, "scale", Vector2.ONE, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	queue_redraw()
+	hand_layer.queue_redraw()
+
+
+## Dica temporária (ex.: ferramenta errada). Ignorada durante o tutorial principal.
+func show_hint(rect: Rect2, text: String, seconds: float = 1.2) -> void:
+	if locked or (active and hint_left <= 0.0):
+		return
+	show_guide(text, &"point", rect, "", Callable(), &"tap", rect.get_center(), rect.get_center())
+	hint_left = seconds
+
+
+## Compatibilidade com o overlay antigo (spotlight + texto).
+func show_step(rect: Rect2, text: String) -> void:
+	show_guide(text, &"point", rect)
+
+
+## Toques sobre o cartão da Bia não chegam ao salão (Main._input roda antes da GUI).
+func blocks_event(event: InputEvent) -> bool:
+	if not active or not is_instance_valid(card) or not card.visible:
+		return false
+	if event is InputEventScreenTouch or event is InputEventScreenDrag or event is InputEventMouse:
+		return card.get_global_rect().has_point(event.position)
+	return false
 
 
 func finish() -> void:
 	active = false
 	visible = false
-	if is_instance_valid(voice_button):
-		voice_button.visible = false
-
-func _on_voice_toggle() -> void:
-	var enabled: bool = not bool(GameState.settings.get("voice", true))
-	GameState.settings["voice"] = enabled
-	SaveManager.request_save()
-	AudioManager.apply_volumes()
-	if not enabled:
-		AudioManager.stop_voice()
-	else:
-		AudioManager.play_voice(&"welcome")
-	_update_voice_button()
-	EventBus.settings_changed.emit()
-
-func _update_voice_button() -> void:
-	if not is_instance_valid(voice_button):
-		return
-	var enabled: bool = bool(GameState.settings.get("voice", true))
-	voice_button.text = "🔊" if enabled else "🔇"
-	voice_button.tooltip_text = "Voz ligada — toque para mutar" if enabled else "Voz mutada — toque para ativar"
-	# estilo rápido sem depender de Main._style (Control puro)
-	var bg: Color = Color("4fc3f7") if enabled else Color("90a4ae")
-	var sb: StyleBoxFlat = StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.corner_radius_top_left = 36; sb.corner_radius_top_right = 36; sb.corner_radius_bottom_left = 36; sb.corner_radius_bottom_right = 36
-	sb.content_margin_left = 8; sb.content_margin_right = 8; sb.content_margin_top = 8; sb.content_margin_bottom = 8
-	sb.border_color = Color.WHITE; sb.border_width_left = 3; sb.border_width_right = 3; sb.border_width_top = 3; sb.border_width_bottom = 3
-	voice_button.add_theme_stylebox_override("normal", sb)
-	var sb2: StyleBoxFlat = sb.duplicate() as StyleBoxFlat
-	sb2.bg_color = bg.lightened(0.08)
-	voice_button.add_theme_stylebox_override("hover", sb2)
-	voice_button.add_theme_color_override("font_color", Color.WHITE)
-
-func _safe_top() -> float:
-	if OS.has_feature("mobile") or OS.has_feature("web"):
-		var safe: Rect2i = DisplayServer.get_display_safe_area()
-		if safe.position.y > 0:
-			return clampf(float(safe.position.y) * 0.5, 0.0, 80.0)
-	return 0.0
+	locked = false
+	hint_left = 0.0
+	hand_mode = &""
+	on_action = Callable()
+	if is_instance_valid(card):
+		card.visible = false
 
 
 func _process(delta: float) -> void:
-	if active:
-		pulse += delta
-		queue_redraw()
+	if not active:
+		return
+	pulse += delta
+	if bubble_label.visible_characters >= 0 and bubble_label.visible_characters < message.length():
+		typed += delta * TYPE_SPEED
+		bubble_label.visible_characters = mini(int(typed), message.length())
+		if bubble_label.visible_characters >= message.length():
+			bubble_label.visible_characters = -1
+	if hint_left > 0.0:
+		hint_left -= delta
+		if hint_left <= 0.0:
+			finish()
+			return
+	_place_card()
+	queue_redraw()
+	hand_layer.queue_redraw()
+
+
+## Cartão no lado oposto ao alvo: logo abaixo se couber, senão logo acima;
+## sem alvo, centralizado verticalmente.
+func _place_card() -> void:
+	var card_h: float = maxf(card.size.y, card.get_combined_minimum_size().y)
+	card.size.x = CARD_W
+	var safe_top: float = SalonTuning.safe_area_top()
+	var y: float = (size.y - card_h) * 0.5
+	if has_target:
+		var below: float = spotlight_rect.end.y + 40.0
+		var above: float = spotlight_rect.position.y - 40.0 - card_h
+		if below + card_h <= size.y - 300.0:
+			y = below
+		elif above >= safe_top + 130.0:
+			y = above
+		else:
+			y = safe_top + 130.0 if spotlight_rect.get_center().y > size.y * 0.5 else size.y - card_h - 300.0
+	card.position = Vector2(CARD_X, y)
+
+
+func _on_card_input(event: InputEvent) -> void:
+	var tap: bool = (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed)
+	if tap and bubble_label.visible_characters >= 0:
+		bubble_label.visible_characters = -1
+		typed = float(message.length())
+
+
+func _on_action_pressed() -> void:
+	AudioManager.play(&"tap")
+	HapticsManager.light()
+	var callback: Callable = on_action
+	on_action = Callable()
+	if callback.is_valid():
+		callback.call()
+	elif active:
+		finish()
 
 
 func _draw() -> void:
 	if not active:
 		return
-	var dim: Color = Color("263238", 0.52)
+	if not has_target:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(CHARCOAL, 0.55))
+		return
+	var dim: Color = Color(CHARCOAL, 0.52)
 	var r: Rect2 = spotlight_rect
 	draw_rect(Rect2(0.0, 0.0, size.x, maxf(0.0, r.position.y)), dim)
 	draw_rect(Rect2(0.0, r.end.y, size.x, maxf(0.0, size.y - r.end.y)), dim)
 	draw_rect(Rect2(0.0, r.position.y, maxf(0.0, r.position.x), r.size.y), dim)
 	draw_rect(Rect2(r.end.x, r.position.y, maxf(0.0, size.x - r.end.x), r.size.y), dim)
 	var glow: float = 0.55 + 0.35 * sin(pulse * 5.0)
-	draw_rect(r, Color("ffd54f", glow), false, 9.0)
-	draw_rect(r.grow(6.0), Color("ffd54f", glow * 0.22), false, 4.0)
-	# Label reposiciona se sair da tela (pet embaixo) + safe area
-	var safe_top: float = 0.0
-	if OS.has_feature("mobile") or OS.has_feature("web"):
-		var safe: Rect2i = DisplayServer.get_display_safe_area()
-		if safe.position.y > 0:
-			safe_top = clampf(float(safe.position.y) * 0.5, 0.0, 80.0)
-	var label_y: float = r.end.y + 20.0
-	var arrow_up: bool = true
-	if label_y + 110.0 > size.y - 90.0 - safe_top:
-		label_y = r.position.y - 116.0
-		arrow_up = false
-		if label_y < safe_top + 20.0:
-			label_y = safe_top + 20.0
-	var label_rect: Rect2 = Rect2(60.0, label_y, 960.0, 96.0)
-	draw_rect(label_rect, Color("263238", 0.96), true)
-	draw_rect(label_rect, Color("ffd54f", 0.85), false, 3.0)
-	# Seta animada apontando para o spotlight — bounce + glow extra no passo 2 (prateleira)
-	var bounce: float = sin(pulse * 4.5) * 12.0
-	var arrow_center: Vector2 = Vector2(r.position.x + r.size.x * 0.5, label_y + (96.0 if arrow_up else 0.0) + bounce * 0.25)
-	var arrow_tip: Vector2 = Vector2(r.position.x + r.size.x * 0.5, (r.end.y + 6.0 + bounce) if arrow_up else (r.position.y - 6.0 - bounce))
-	var arrow_dir: float = 1.0 if arrow_up else -1.0
-	var tri: PackedVector2Array = PackedVector2Array([
-		arrow_tip,
-		arrow_center + Vector2(-18.0, 14.0 * arrow_dir),
-		arrow_center + Vector2(18.0, 14.0 * arrow_dir)
-	])
-	draw_colored_polygon(tri, Color("ffd54f", 0.95))
-	# Brilho extra no tip + segunda seta maior pulsante para tutorial 2/3 prateleira
-	draw_circle(arrow_tip, 10.0 + 4.0 * sin(pulse * 6.0), Color("ffd54f", 0.35 + 0.2 * sin(pulse * 6.0)))
-	var tri_big: PackedVector2Array = PackedVector2Array([
-		arrow_tip + Vector2(0, -8.0 * arrow_dir),
-		arrow_center + Vector2(-28.0, 22.0 * arrow_dir) + Vector2(0, bounce * 0.2),
-		arrow_center + Vector2(28.0, 22.0 * arrow_dir) + Vector2(0, bounce * 0.2)
-	])
-	draw_colored_polygon(tri_big, Color("ffd54f", 0.22 + 0.15 * sin(pulse * 4.5)))
-	# Linha tracejada animada conectando label ao alvo
-	var steps: int = 6
-	for s: int in steps:
+	draw_rect(r, Color(GOLD, glow), false, 9.0)
+	draw_rect(r.grow(6.0), Color(GOLD, glow * 0.22), false, 4.0)
+	# Seta do cartão até o alvo (bounce), com trilha pontilhada
+	var card_above: bool = card.position.y + card.size.y * 0.5 < r.get_center().y
+	var start: Vector2 = Vector2(clampf(r.get_center().x, card.position.x + 80.0, card.position.x + card.size.x - 80.0), card.position.y + card.size.y if card_above else card.position.y)
+	var bounce: float = sin(pulse * 4.5) * 10.0
+	var tip: Vector2 = Vector2(r.get_center().x, (r.position.y - 8.0 - bounce) if card_above else (r.end.y + 8.0 + bounce))
+	if start.distance_to(tip) < 24.0:
+		return
+	var dir: Vector2 = (tip - start).normalized()
+	var normal: Vector2 = Vector2(-dir.y, dir.x)
+	for s: int in 8:
 		if s % 2 == 0:
-			var t1: float = float(s) / float(steps)
-			var t2: float = float(s + 1) / float(steps) * 0.9
-			var p1: Vector2 = arrow_center.lerp(arrow_tip, t1)
-			var p2: Vector2 = arrow_center.lerp(arrow_tip, t2)
-			draw_line(p1, p2, Color("ffd54f", 0.55), 3.0)
-	draw_string(
-		GUIDE_FONT,
-		Vector2(80.0, label_y + 62.0),
-		message,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		920.0,
-		32,
-		Color("ffd54f"),
-	)
-	# Mãozinha animada para 7 anos: loop 1.8s de arraste dentro da pílula (sem leitura)
-	# Só nos passos que pedem arrastar (2/3) ou que mencionam ferramenta, para não poluir passo 1/3
-	var show_hand: bool = message.contains("Arraste") or message.contains("2/3") or message.contains("DRAG") or message.begins_with("○●○")
-	if show_hand:
-		var t: float = fmod(pulse * 0.65, 1.0) # 1.54s loop
-		# ease in-out para não parecer robótico
+			draw_line(start.lerp(tip, float(s) / 8.0), start.lerp(tip, float(s + 1) / 8.0 * 0.92), Color(GOLD, 0.6), 4.0)
+	var base: Vector2 = tip - dir * 30.0
+	draw_colored_polygon(PackedVector2Array([tip, base + normal * 18.0, base - normal * 18.0]), Color(GOLD, 0.95))
+	draw_circle(tip, 8.0 + 3.0 * sin(pulse * 6.0), Color(GOLD, 0.3 + 0.2 * sin(pulse * 6.0)))
+
+
+## Mãozinha (camada acima do cartão): toque pulsante ou arraste real.
+func _draw_hand() -> void:
+	if not active or hand_mode == &"":
+		return
+	var pos: Vector2 = hand_to
+	if hand_mode == &"drag" and hand_from.distance_to(hand_to) > 1.0:
+		var t: float = fmod(pulse * 0.55, 1.0)
 		var eased: float = t * t * (3.0 - 2.0 * t)
-		var start_x: float = label_rect.position.x + 70.0
-		var end_x: float = label_rect.position.x + label_rect.size.x - 70.0
-		var hand_x: float = lerpf(start_x, end_x, eased)
-		var hand_y: float = label_y + 48.0 + sin(pulse * 4.2) * 4.0
-		var hand_pos: Vector2 = Vector2(hand_x, hand_y)
-		var target_pos: Vector2 = Vector2(label_rect.position.x + label_rect.size.x - 36.0, label_y + 48.0)
-		# trilha pontilhada atrás da mão
-		var trail_steps: int = 7
-		for s: int in trail_steps:
-			var tt: float = float(s) / float(trail_steps)
-			var tx: float = lerpf(start_x + 18.0, end_x - 18.0, tt)
-			var alpha: float = 0.18 + 0.12 * sin(pulse * 5.0 + s * 0.9)
-			var behind: bool = tx < hand_x
-			if behind:
-				draw_circle(Vector2(tx, hand_y), 4.0, Color("ffd54f", alpha))
-		# destino patinha
-		draw_circle(target_pos, 18.0, Color.WHITE)
-		draw_string(GUIDE_FONT, target_pos + Vector2(-11, 7), "🐾", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color("263238"))
-		draw_circle(target_pos, 22.0, Color("ffd54f", 0.22 + 0.10 * sin(pulse * 3.0)))
-		# mão — círculo branco + emoji + sombra
-		draw_circle(hand_pos + Vector2(2, 3), 26.0, Color("263238", 0.18))
-		draw_circle(hand_pos, 24.0, Color.WHITE)
-		draw_circle(hand_pos, 26.0, Color("ffd54f", 0.35), false, 2.5)
-		# emoji centralizado (DejaVu não tem emoji, mas Godot faz fallback; se falhar, a seta abaixo garante leitura)
-		draw_string(GUIDE_FONT, hand_pos + Vector2(-14, 11), "👆", HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("263238"))
-		# seta física garantida mesmo sem emoji
-		var hand_tip: Vector2 = hand_pos + Vector2(14, 0)
-		var tri_hand: PackedVector2Array = PackedVector2Array([hand_tip, hand_tip + Vector2(-10, -6), hand_tip + Vector2(-10, 6)])
-		draw_colored_polygon(tri_hand, Color("ffd54f", 0.95))
+		pos = hand_from.lerp(hand_to, eased)
+		for s: int in 9:
+			var tt: float = float(s) / 9.0
+			if tt < eased:
+				hand_layer.draw_circle(hand_from.lerp(hand_to, tt), 5.0, Color(GOLD, 0.35))
+		hand_layer.draw_circle(hand_to, 26.0 + 6.0 * sin(pulse * 3.0), Color(GOLD, 0.22))
+	else:
+		var ring: float = fmod(pulse * 1.2, 1.0)
+		hand_layer.draw_arc(pos, 22.0 + ring * 40.0, 0.0, TAU, 40, Color(GOLD, 0.7 * (1.0 - ring)), 4.0)
+		pos += Vector2(0.0, sin(pulse * 6.0) * 5.0)
+	hand_layer.draw_circle(pos + Vector2(2, 3), 27.0, Color(CHARCOAL, 0.18))
+	hand_layer.draw_circle(pos, 25.0, Color.WHITE)
+	hand_layer.draw_arc(pos, 27.0, 0.0, TAU, 40, Color(GOLD, 0.5), 2.5)
+	hand_layer.draw_string(GUIDE_FONT, pos + Vector2(-14, 11), "👆", HORIZONTAL_ALIGNMENT_LEFT, -1, 28, CHARCOAL)

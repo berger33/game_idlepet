@@ -83,7 +83,6 @@ var proof_label: Label
 var proof_timer: float = 0.0
 var top_bar_scroll: ScrollContainer
 var top_bar_hbox: HBoxContainer
-var voice_toggle_button: Button
 var goal_collapsed: bool = true
 var goal_expand_btn: Button
 var goal_full_text: String = ""
@@ -154,21 +153,11 @@ func _ready() -> void:
 			meta.open(deep_section)
 	tutorial.attach(self)
 	tutorial.setup()
-	if GameState.services_completed == 0 and not GameState.tutorial_complete:
-		var intro: Dictionary = ChapterStories.intro(1)
-		RevealCard.enqueue(self, { "title": "%s — %s" % [String(intro.get("title", "Quintal")), String(intro.get("act", ""))],
-			"body": "%s\n\n%s" % [String(intro.get("text", "")), Loc.t("FIRST_PET_READY")], "color": GREEN, "primary": Loc.t("REVEAL_OK"), "sound": &"level_up"
-		})
-		if GameState.streak_freezes == 0:
-			GameState.streak_freezes = 1
+	if GameState.services_completed == 0 and GameState.streak_freezes == 0:
+		GameState.streak_freezes = 1 # presente da primeira sessão
 	Analytics.track(&"first_open" if GameState.services_completed == 0 else &"session_resume")
-	# voz kids: boas-vindas no 1º acesso (com delay para não competir com splash/SFX)
-	if GameState.services_completed == 0:
-		get_tree().create_timer(0.8).timeout.connect(func() -> void:
-			if bool(GameState.settings.get("voice", true)):
-				AudioManager.play_voice(&"choose_client")
-		, CONNECT_ONE_SHOT)
 func _process(delta: float) -> void:
+	tutorial.tick()
 	# Splash barra progresso se carregamento >1s (P1)
 	if not splash_done:
 		splash_progress = minf(1.0, splash_progress + delta * 0.85)
@@ -327,6 +316,7 @@ func _input(event: InputEvent) -> void:
 	if ( meta.is_open()
 		or (is_instance_valid(result_panel) and result_panel.visible)
 		or (is_instance_valid(upsell_panel) and upsell_panel.visible)
+		or tutorial_overlay.blocks_event(event)
 	):
 		return
 	if park_active:
@@ -393,12 +383,7 @@ func _move_pointer(point: Vector2) -> void:
 			_show_toast("Use %s neste pedido" % SalonTuning.tool_display_name(required_tool), Color("ffd54f"))
 			AudioManager.play(&"error_soft")
 			var correct_pos: Vector2 = world.tool_shelf_position(required_tool)
-			tutorial_overlay.show_step(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), "👉 Use %s aqui!" % SalonTuning.tool_display_name(required_tool))
-			var timer: SceneTreeTimer = get_tree().create_timer(1.2)
-			timer.timeout.connect(func() -> void:
-				if tutorial_overlay.active:
-					tutorial_overlay.finish()
-			)
+			tutorial_overlay.show_hint(Rect2(correct_pos - Vector2(80, 80), Vector2(160, 160)), Loc.t("GUIDE_WRONG_TOOL") % SalonTuning.tool_display_name(required_tool))
 		return
 	var contact_resumed: bool = not world.tool_contact_valid
 	world.set_tool_contact(true)
@@ -467,7 +452,7 @@ func _on_primary_pressed() -> void:
 	if bath.state == BathService.State.COMPLETE or bath.state == BathService.State.FAILED:
 		_dismiss_result()
 	elif is_instance_valid(result_panel) and result_panel.visible:
-		# Parquinho também usa o mesmo painel de resultado
+		# Passeio também usa o mesmo painel de resultado
 		result_panel.hide()
 		primary_button.hide()
 		world.visible = true
@@ -478,6 +463,7 @@ func _on_primary_pressed() -> void:
 			instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
 		_last_instr_key = &""
 		_update_queue_ui()
+		tutorial.notify(&"park_result_dismissed")
 func _start_bath() -> void:
 	bath.start_service()
 	tutorial.stop_teaching()
@@ -487,7 +473,7 @@ func _start_bath() -> void:
 	AudioManager.play(&"service_start")
 	Analytics.track(&"service_start", {"type": String(current_service)})
 	EventBus.service_started.emit(current_service)
-	if tutorial.step == 1:
+	if tutorial.step == TutorialFlow.STEP_TOOL:
 		tutorial.advance()
 func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
@@ -551,13 +537,11 @@ func _finish_bath() -> void:
 func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	world.celebrate(quality == &"perfect" or GameState.combo >= 5)
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
-	if quality == &"perfect":
-		AudioManager.play_voice(&"perfect")
 	HapticsManager.success()
 	result_title.text = Loc.t("PERFECT_RESULT") if quality == &"perfect" else Loc.t("GOOD_RESULT")
 	if current_vip:
 		result_title.text = "👑 " + Loc.t("VIP_TAG") + "! " + result_title.text
-	if tutorial.step == 2:
+	if tutorial.step == TutorialFlow.STEP_GESTURE:
 		tutorial.advance()
 	if GameState.combo >= 5:
 		result_title.text = Loc.t("RESULT_RHYTHM") % GameState.combo
@@ -710,7 +694,7 @@ func _fail(reason: StringName) -> void:
 	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
 	primary_button.disabled = false
 	primary_button.show()
-	if tutorial.step == 2:
+	if tutorial.step == TutorialFlow.STEP_GESTURE:
 		tutorial.advance()
 func _dismiss_result() -> void:
 	result_panel.hide()
@@ -737,8 +721,7 @@ func _dismiss_result() -> void:
 	_last_instr_key = &""
 	primary_button.hide()
 	_update_queue_ui()
-	# voz kids: lembra próximo passo após atender
-	AudioManager.play_voice(&"choose_client")
+	tutorial.notify(&"result_dismissed")
 	if GameState.services_completed == 1: D1Retention.show_daily_login(self)
 	if GameState.services_completed == 2: D1Retention.show_tomorrow_card(self)
 	if GameState.services_completed == 3: D1Retention.show_notif_prompt(self)
@@ -853,15 +836,12 @@ func _on_queue_pressed(slot: int) -> void:
 	)
 	tutorial.teach_service(current_service)
 	_update_queue_ui()
-	# Voz kids: indica gesto correto logo após escolher cliente (só se tutorial não estiver em passo 0/1)
-	if tutorial.step < 0 and not tutorial.teaching:
-		AudioManager.play_voice(AudioManager.voice_for_service(current_service))
 	Analytics.track( &"client_selected", { "pet_id": current_pet_id, "service": String(current_service), "vip": current_vip,
 			"rarity": profile.get("rarity", "common"),
 		}
 	)
 	EventBus.pet_arrived.emit(StringName(current_pet_id))
-	if tutorial.step == 0:
+	if tutorial.step == TutorialFlow.STEP_QUEUE:
 		tutorial.advance()
 func _can_select(slot: int) -> bool:
 	if park_active: return false
@@ -1036,30 +1016,6 @@ func _toggle_result_detail() -> void:
 	AudioManager.play(&"tap")
 	HapticsManager.light()
 
-func _toggle_voice() -> void:
-	var enabled: bool = not bool(GameState.settings.get("voice", true))
-	GameState.settings["voice"] = enabled
-	SaveManager.request_save()
-	AudioManager.apply_volumes()
-	if not enabled:
-		AudioManager.stop_voice()
-	else:
-		AudioManager.play(&"tap")
-		# feedback falado quando reativa
-		AudioManager.play_voice(&"welcome")
-	_update_voice_button()
-	EventBus.settings_changed.emit()
-	HapticsManager.light()
-
-func _update_voice_button() -> void:
-	if not is_instance_valid(voice_toggle_button):
-		return
-	var enabled: bool = bool(GameState.settings.get("voice", true))
-	voice_toggle_button.text = "🔊" if enabled else "🔇"
-	voice_toggle_button.tooltip_text = "Voz: ligada — toque para mutar" if enabled else "Voz: mutada — toque para ativar"
-	voice_toggle_button.modulate = Color.WHITE if enabled else Color("ffffff", 0.88)
-	voice_toggle_button.add_theme_stylebox_override("normal", _style(Color("4fc3f7" if enabled else "90a4ae", 0.96), 32, 8, Color.WHITE, 3))
-
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%s %d" % [Loc.t("COINS"), int(GameState.coins)]
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
@@ -1137,7 +1093,6 @@ func _show_toast(message: String, color: Color) -> void:
 func _connect_events() -> void:
 	EventBus.currency_changed.connect(_refresh_economy)
 	EventBus.combo_changed.connect(func(_value: int) -> void: _refresh_economy())
-	EventBus.settings_changed.connect(func() -> void: _update_voice_button())
 	EventBus.toast_requested.connect(_show_toast)
 	EventBus.reveal_requested.connect( func(kind: StringName, payload: Dictionary) -> void:
 			RevealCard.enqueue_kind(self, kind, payload)
@@ -1181,13 +1136,6 @@ func _build_interface() -> void:
 	proof_label = _pill(top_bar_hbox, "", Color("4fc3f7"), 210)
 	proof_label.tooltip_text = "Prova social do bairro"
 	proof_label.add_theme_font_size_override("font_size", 18)
-	# Voz kids — mute já na 1ª tela (exigência de acessibilidade, sem abrir ajustes)
-	var is_kids_voice: bool = bool(GameState.settings.get("kids_mode", false))
-	voice_toggle_button = _button("", Color("4fc3f7"), 84 if is_kids_voice else 72, 84 if is_kids_voice else 72) # Kids: botão voz 16% maior
-	voice_toggle_button.tooltip_text = "Voz"
-	voice_toggle_button.pressed.connect(_toggle_voice)
-	top_bar_hbox.add_child(voice_toggle_button)
-	_update_voice_button()
 	var goal_row: HBoxContainer = HBoxContainer.new()
 	goal_row.position = Vector2(30, 505 + safe_top)
 	goal_row.add_theme_constant_override("separation", 8)

@@ -578,3 +578,19 @@ CONTEST_BEST,Best placement: %s
 CONTEST_HISTORY_TITLE,RECENT WEEKS
 CONTEST_HISTORY_ROW,Week of %s: %s • %d votes
 CONTEST_RULE_SHORT,Good +1 • Perfect +2 • Perfect photo +3 • Saturday ×2
+GUIDE_NAME,Bia · your neighbor
+GUIDE_GO,Let's go!
+GUIDE_OK,Got it
+GUIDE_THANKS,Thanks!
+GUIDE_WELCOME,"Hi! I'm Bia, your neighbor 👋 I helped you open the pet shop and now I'll show you how everything works. Caramelo is already in line — shall we?"
+GUIDE_QUEUE,"First, tap %s in the queue to call him over. Clients with a ⭐ are the recommended ones."
+GUIDE_TOOL,"Now drag the %s from the shelf onto %s. Press, hold and slide!"
+GUIDE_GESTURE,Yes! Now it's your turn: %s
+GUIDE_WRONG_TOOL,"Oops, he needs the %s — it's right here!"
+GUIDE_DONE,"You nailed your first service! 🎉 The queue never stops: every happy client gives coins, XP and stars. And when you need a breather, the pets love a walk in the yard — I'll show you soon."
+GUIDE_TIP_PARK,"Time to see the yard 🌳 Tap the green button to take three pets for a walk: it earns coins, affection and votes in the Cover Contest!"
+GUIDE_TIP_PARK_CHOOSE,"Pick a game: ball 🎾, treat 🦴 or photo 📸. A perfect walk earns more votes — and a perfect photo goes into the Album!"
+GUIDE_TIP_PARK_DONE,"Walk done! The next one opens in 8 minutes — I'll let you know ⏳ Meanwhile, the queue is waiting."
+GUIDE_TIP_CONTEST,Your votes already count in the Cover Contest 📰 Tap the Album to see the standings against the other pet shops. Voting closes on Sunday!
+GUIDE_TIP_UPGRADE,You've got spare coins! ⬆️ Tap here to upgrade your tools: faster baths and bigger tips.
+GUIDE_TIP_MISSIONS,Daily missions 📋 give extra rewards for things you already do. Check them whenever you like!

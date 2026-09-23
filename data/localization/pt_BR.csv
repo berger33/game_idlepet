@@ -578,3 +578,19 @@ CONTEST_BEST,Melhor colocação: %s
 CONTEST_HISTORY_TITLE,ÚLTIMAS SEMANAS
 CONTEST_HISTORY_ROW,Semana de %s: %s • %d votos
 CONTEST_RULE_SHORT,Bom +1 • Perfeito +2 • Foto perfeita +3 • Sábado ×2
+GUIDE_NAME,Bia · sua vizinha
+GUIDE_GO,Vamos!
+GUIDE_OK,Entendi
+GUIDE_THANKS,Valeu!
+GUIDE_WELCOME,"Oi! Eu sou a Bia, sua vizinha 👋 Te ajudei a abrir o petshop e agora vou te mostrar como tudo funciona. O Caramelo já está na fila — vamos atender?"
+GUIDE_QUEUE,"Primeiro, toque no %s ali na fila para chamá-lo. Clientes com ⭐ são os recomendados."
+GUIDE_TOOL,Agora arraste o %s da prateleira até o %s. Segura e leva com o dedo!
+GUIDE_GESTURE,Isso! Agora é com você: %s
+GUIDE_WRONG_TOOL,"Ops, é o %s que ele precisa — está aqui!"
+GUIDE_DONE,"Arrasou no primeiro atendimento! 🎉 A fila não para: cada cliente feliz dá moedas, XP e estrelas. E quando quiser respirar, os pets adoram um passeio no quintal — eu te mostro já já."
+GUIDE_TIP_PARK,"Hora de conhecer o quintal 🌳 Toque no botão verde para levar três pets para passear: vale moedas, carinho e votos no Concurso da Capa!"
+GUIDE_TIP_PARK_CHOOSE,"Escolha a brincadeira: bolinha 🎾, petisco 🦴 ou foto 📸. Passeio perfeito vale mais votos — e foto perfeita entra no Álbum!"
+GUIDE_TIP_PARK_DONE,"Passeio feito! O próximo abre em 8 minutos — eu te aviso quando der ⏳ Enquanto isso, a fila te espera."
+GUIDE_TIP_CONTEST,Seus votos já contam no Concurso da Capa 📰 Toque no Álbum para ver o placar contra os outros petshops do bairro. A votação fecha no domingo!
+GUIDE_TIP_UPGRADE,Tem moeda sobrando! ⬆️ Toque aqui para melhorar suas ferramentas: banhos mais rápidos e gorjetas maiores.
+GUIDE_TIP_MISSIONS,Missões diárias 📋 dão prêmios extras por coisas que você já faz. Dá uma olhada quando quiser!

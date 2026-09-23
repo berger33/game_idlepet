@@ -12,7 +12,7 @@ const DIALOGUES: Dictionary = {
 		120: "Nível 120! De balde a império. O que vem agora é legado.",
 	},
 	"bia": {
-		1: "Bia: 'Aprendi a dar banho sozinha vendo você! Me contrata?'",
+		1: "Bia: 'Te ajudei a abrir o petshop — agora quero trabalhar aqui! Me contrata, sócio?'",
 		8: "Bia entrou! Ela trouxe tesoura emprestada e rende sozinha enquanto você atende.",
 		20: "Bia: 'Já atendi 20 clientes sozinha! Posso ensinar tosa?'",
 	},

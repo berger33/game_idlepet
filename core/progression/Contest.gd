@@ -54,14 +54,16 @@ static func is_saturday() -> bool:
 ## Garante que a semana corrente está aberta; fecha a anterior em `pending`.
 static func sync() -> void:
 	var key: String = week_key()
-	if GameState.park_contest_week == key and GameState.park_contest_rivals.size() == RIVALS.size():
+	var new_week: bool = GameState.park_contest_week != key
+	if not new_week and GameState.park_contest_rivals.size() == RIVALS.size():
 		return
-	if not GameState.park_contest_week.is_empty() and GameState.park_contest_points > 0:
-		_close_week()
-	GameState.park_contest_week = key
-	GameState.park_contest_points = 0
-	GameState.park_contest_photos = 0
-	GameState.park_contest_last_rank = 0
+	if new_week:
+		if not GameState.park_contest_week.is_empty() and GameState.park_contest_points > 0:
+			_close_week()
+		GameState.park_contest_week = key
+		GameState.park_contest_points = 0
+		GameState.park_contest_photos = 0
+		GameState.park_contest_last_rank = 0
 	GameState.park_contest_rivals = _roll_rivals(key)
 	SaveManager.request_save()
 

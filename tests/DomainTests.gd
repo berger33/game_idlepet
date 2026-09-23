@@ -17,6 +17,7 @@ func _ready() -> void:
 	_test_save_migration()
 	_test_prestige_and_research()
 	_test_discovery()
+	_test_contest()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -57,7 +58,9 @@ func _test_economy_invariants() -> void:
 		_expect(is_finite(cost) and cost >= previous_cost, "custo deve ser finito e monotônico")
 		previous_cost = cost
 	_expect(Economy.offline_earnings(1.0, -50.0, 0) == 0.0, "offline negativo deve ser zero")
-	_expect(Economy.prestige_tokens(999999.0) == 0, "prestígio precoce deve ser zero")
+	# Realismo R$ 2.2x: garantia de 1 token só a partir de 44k moedas acumuladas.
+	_expect(Economy.prestige_tokens(10000.0) == 0, "prestígio precoce deve ser zero")
+	_expect(Economy.prestige_tokens(44000.0) == 1, "44k garante o primeiro token")
 
 
 func _test_content_contract() -> void:
@@ -138,7 +141,8 @@ func _test_save_migration() -> void:
 		"migração deve chegar à versão atual"
 	)
 	var created: Array[String] = [
-		"research_ids", "prestige_tokens_collected", "daily_mission_ids", "visitor_progress"
+		"research_ids", "prestige_tokens_collected", "daily_mission_ids", "visitor_progress",
+		"park_contest_pending", "guide_steps_done"
 	]
 	for key: String in created:
 		_expect(migrated.has(key), "migração deve criar " + key)
@@ -153,13 +157,13 @@ func _test_prestige_and_research() -> void:
 		{
 			"version": GameState.SAVE_VERSION,
 			"coins": 5000,
-			"total_coins": 9000000.0,
+			"total_coins": 6000000.0,
 			"player_level": 20,
 			"bath_upgrade_level": 40,
 			"tool_upgrade_levels": {"soap": 8},
 		}
 	)
-	_expect(GameState.prestige_tokens_available() == 3, "9M de moedas = 3 tokens")
+	_expect(GameState.prestige_tokens_available() == 3, "6M de moedas = 3 tokens (sqrt(6M/550k))")
 	_expect(GameState.perform_prestige(), "prestígio deve ser possível")
 	_expect(
 		GameState.franchise_tokens == 3 and GameState.prestige_tokens_collected == 3,
@@ -199,6 +203,34 @@ func _test_discovery() -> void:
 	_expect(Discovery.register_service(candidate), "terceiro atendimento adota")
 	_expect(GameState.unlocked_pets.has(candidate), "pet adotado entra na coleção")
 	_expect(not GameState.visitor_progress.has(candidate), "progresso do visitante é limpo")
+
+
+func _test_contest() -> void:
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "player_level": 1})
+	Contest.sync()
+	_expect(GameState.park_contest_week == Contest.week_key(), "sync abre a semana corrente")
+	_expect(GameState.park_contest_rivals.size() == Contest.RIVALS.size(), "3 rivais sorteados")
+	_expect(Contest.rank() == 4, "sem votos = fora do pódio")
+	var votes: int = Contest.register_walk("photo", true, true)
+	_expect(votes >= Contest.VOTES_PERFECT_PHOTO, "foto perfeita vale ao menos 3 votos")
+	_expect(GameState.park_contest_points == votes, "votos somam na semana")
+	_expect(Contest.register_walk("ball", false, false) == 0, "passeio falho não pontua")
+	_expect(Contest.rank() >= 1 and Contest.rank() <= 4, "colocação válida")
+	_expect(Contest.seconds_to_close() > 0 and Contest.seconds_to_close() <= Contest.WEEK_SECONDS, "contagem até domingo")
+	# Virada de semana: pontuação antiga vira resultado pendente e a nova semana zera.
+	GameState.park_contest_week = Contest.week_key_for(int(Time.get_unix_time_from_system()) - Contest.WEEK_SECONDS)
+	GameState.park_contest_points = 999
+	Contest.sync()
+	_expect(Contest.has_pending(), "virada de semana gera resultado pendente")
+	_expect(int(GameState.park_contest_pending.get("rank", 4)) == 1, "999 votos vencem a capa")
+	_expect(GameState.park_contest_points == 0, "nova semana começa zerada")
+	var coins_before: float = GameState.coins
+	var result: Dictionary = Contest.claim()
+	_expect(not result.is_empty() and GameState.coins > coins_before, "prêmio da capa é pago")
+	_expect(GameState.park_trophies == 1, "capa vira troféu")
+	_expect(not Contest.has_pending(), "pendência limpa após coletar")
+	_expect(GameState.park_contest_history.size() == 1 and Contest.best_rank() == 1, "histórico registra a capa")
+	_expect(Contest.claim().is_empty(), "sem pendência não paga de novo")
 
 
 func _expect(condition: bool, message: String) -> void:

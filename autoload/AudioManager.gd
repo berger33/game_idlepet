@@ -80,7 +80,8 @@ func _ready() -> void:
 	voice_player = AudioStreamPlayer.new()
 	voice_player.bus = &"Master"
 	add_child(voice_player)
-	_build_voice_cache()
+	if VOICE_ENABLED_BUILD:
+		_build_voice_cache()
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Music"
 	add_child(music_player)
@@ -263,9 +264,14 @@ func apply_volumes() -> void:
 	if AudioServer.get_bus_index(&"Music") != -1:
 		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&"Music"), linear_to_db(music_volume))
 
-# ── Voz kids ── exposta já na 1ª tela para mutar sem abrir Ajustes
+# ── Voz / narração ── desligada nesta build: o tutorial e os primeiros passos
+# são guiados pela Bia (personagem em tela). Os arquivos em audio/vo/ ficam
+# disponíveis para uma futura locução; com o switch em false nada é carregado.
+const VOICE_ENABLED_BUILD: bool = false
+
+
 func is_voice_enabled() -> bool:
-	return bool(GameState.settings.get("voice", true))
+	return VOICE_ENABLED_BUILD and bool(GameState.settings.get("voice", false))
 
 func set_voice_enabled(enabled: bool) -> void:
 	GameState.settings["voice"] = enabled

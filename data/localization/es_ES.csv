@@ -578,3 +578,19 @@ CONTEST_BEST,Mejor puesto: %s
 CONTEST_HISTORY_TITLE,ÚLTIMAS SEMANAS
 CONTEST_HISTORY_ROW,Semana del %s: %s • %d votos
 CONTEST_RULE_SHORT,Bueno +1 • Perfecto +2 • Foto perfecta +3 • Sábado ×2
+GUIDE_NAME,Bia · tu vecina
+GUIDE_GO,¡Vamos!
+GUIDE_OK,Entendido
+GUIDE_THANKS,¡Gracias!
+GUIDE_WELCOME,"¡Hola! Soy Bia, tu vecina 👋 Te ayudé a abrir la tienda y ahora te muestro cómo funciona todo. Caramelo ya está en la fila — ¿lo atendemos?"
+GUIDE_QUEUE,"Primero, toca a %s en la fila para llamarlo. Los clientes con ⭐ son los recomendados."
+GUIDE_TOOL,Ahora arrastra el %s del estante hasta %s. ¡Mantén y desliza con el dedo!
+GUIDE_GESTURE,¡Eso! Ahora te toca: %s
+GUIDE_WRONG_TOOL,"Ups, necesita el %s — ¡está aquí!"
+GUIDE_DONE,"¡Bordaste tu primer servicio! 🎉 La fila no para: cada cliente feliz da monedas, XP y estrellas. Y cuando quieras respirar, a los peludos les encanta un paseo en el patio — te lo enseño enseguida."
+GUIDE_TIP_PARK,"Hora de conocer el patio 🌳 Toca el botón verde para llevar a tres peludos de paseo: ¡da monedas, cariño y votos en el Concurso de Portada!"
+GUIDE_TIP_PARK_CHOOSE,"Elige el juego: pelota 🎾, premio 🦴 o foto 📸. Un paseo perfecto da más votos — ¡y una foto perfecta entra al Álbum!"
+GUIDE_TIP_PARK_DONE,"¡Paseo hecho! El próximo abre en 8 minutos — yo te aviso ⏳ Mientras tanto, la fila te espera."
+GUIDE_TIP_CONTEST,¡Tus votos ya cuentan en el Concurso de Portada 📰 Toca el Álbum para ver el marcador contra las otras tiendas del barrio. La votación cierra el domingo!
+GUIDE_TIP_UPGRADE,¡Te sobran monedas! ⬆️ Toca aquí para mejorar tus herramientas: baños más rápidos y mejores propinas.
+GUIDE_TIP_MISSIONS,Las misiones diarias 📋 dan premios extra por cosas que ya haces. ¡Échales un vistazo cuando quieras!

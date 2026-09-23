@@ -278,11 +278,13 @@ static func open_choose(main: Control) -> void:
 		AudioManager.play(&"window")
 	if Analytics != null and Analytics.has_method("track"):
 		Analytics.track(&"park_opened", {"pets": ids})
+	main.tutorial.notify(&"park_opened")
 
 static func start_activity(main: Control, id: StringName) -> void:
 	if not is_instance_valid(main.park_choose_panel) or main.park_service == null or not is_instance_valid(main.park_canvas):
 		return
 	main.park_choose_panel.visible = false
+	main.tutorial.dismiss_tip()
 	var activity_str: String = String(id)
 	main.park_service.configure(id)
 	main.park_service.start()
@@ -530,6 +532,7 @@ static func close(main: Control) -> void:
 		return
 	main.park_active = false
 	main.park_dragging_ball = false
+	main.tutorial.dismiss_tip()
 	if is_instance_valid(main.park_canvas):
 		main.park_canvas.visible = false
 	if is_instance_valid(main.world):

@@ -131,7 +131,7 @@ var settings: Dictionary = {
 	"analytics_consent": false,
 	"shop_name": "",
 	"kids_mode": false, # 7 anos: gestos mais largos, HUD simplificado, textos curtos
-	"voice": true, # narração falada kids — mutável já na primeira tela
+	"voice": false, # locução desligada nesta build (AudioManager.VOICE_ENABLED_BUILD); guia visual = Bia
 }
 
 
@@ -716,7 +716,7 @@ func _sanitize_settings() -> void:
 	settings["left_handed"] = bool(settings.get("left_handed", false))
 	settings["training_ghost"] = bool(settings.get("training_ghost", true))
 	settings["kids_mode"] = bool(settings.get("kids_mode", false))
-	settings["voice"] = bool(settings.get("voice", true))
+	settings["voice"] = bool(settings.get("voice", false))
 	if bool(settings["kids_mode"]):
 		settings["assist_window"] = true
 		settings["training_ghost"] = true

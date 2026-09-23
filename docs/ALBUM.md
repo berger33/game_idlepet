@@ -1,49 +1,58 @@
-# Álbum & Concurso Semanal — Capa da Revista Pets (2026-09-22)
+# Álbum & Concurso da Capa — semanal com rivais (redesenho 2026-09-23)
 
-> **Ideia 2 entregue:** toda foto 📸 perfeita no Parquinho vira memória colecionável; no sábado o bairro elege a **Capa da Revista**. Sem servidor, sem gacha, só share local — fecha o loop D7/D30 do Parquinho.
+> **Objetivo: retenção.** Toda semana (segunda → domingo) os passeios rendem **votos** para a *Capa da Revista Pets*. Três petshops rivais simulados sobem o placar ao longo da semana; no domingo a votação fecha e o resultado vira um **cartão de prêmio no próximo login**, coletável em qualquer dia (também pelo Álbum). Sem servidor, 100% local e determinístico.
 
-## Loop
-1. **Foto perfeita → álbum:** `GameState.park_complete("photo", true, true)` chama `park_add_photo({pets, date, ts, coins})`. Máx 50 fotos ( LIFO, save enxuto). Qualquer perfect de `photo` entra; `ball/treat` perfect dá afeto mas não entra no álbum (mantém foto como skill).
-2. **Álbum (`MetaPanel > Álbum`):**
-   - Nav `📖 Álbum` (ícone reuse `collection.png`) libera no nível 2 (mesmo do Parquinho). Badge `★` pulsante quando `park_can_claim_contest()` = true.
-   - Cabeçalho: `🏆 Troféus: N` + descrição curta.
-   - Linha `SEMANA ATUAL`: `Fotos esta semana: total (perfeitas perfects)` + botão `COLETAR CAPA` (verde quando sábado + ≥1 perfect na semana e ainda não coletado) → `park_claim_contest()` → `+R$ 200 (Rewards.for_kind weekly_chest)` + `+3 brasas` + `+1 troféu` + achievement `park_contest_win`.
-   - Hint dinâmica: fora de sábado → “Concurso abre no sábado — continue fotografando!”; sábado sem perfect → “Faça 1 foto 📸 perfeita hoje!”.
-   - Grid 3 colunas, 18 mais recentes primeiro: card `240×90` thumb (primeiro pet), nomes, data, `⭐ PERFEITA` rosa, botão `COMPARTILHAR` copia legenda `Minha capa em 2026-09-22 com Caramelo, Bento, Mel! #PetShopTycoon` + toast `SHARE_SAVED_GALLERY`.
-   - Footer dica: “1 perfect já vale troféu”.
-3. **Acesso rápido:** no Parquinho, painel de escolha tem `📖 Ver Álbum (N)` → fecha parquinho e abre `meta.open(&"album")`.
-4. **Share:** Reusa `DisplayServer.clipboard_set` + toast existente (não exige `ShareManager` novas permissões).
+## Por que assim (decisão de design)
+- **Motivo para voltar hoje:** cada passeio (8 min) soma votos e mostra a colocação na hora (`📰 +3 votos • 2º lugar`).
+- **Motivo para voltar amanhã:** rivais crescem com o tempo (curvas diferentes) → o jogador é ultrapassado se sumir; toast `CONTEST_OVERTAKEN_TOAST` (1×/dia) e badge `📰` no Álbum.
+- **Motivo para voltar no sábado:** `Sábado da Capa` = votos em dobro (toast + tag no Álbum).
+- **Motivo para voltar na segunda:** o resultado da semana fica **pendente** até ser coletado (cartão `RevealCard` no boot + botão no Álbum + badge `🏆`). Nada se perde: se outra semana fechar antes de coletar, o prêmio antigo é entregue automaticamente (`CONTEST_AUTO_CLAIM`).
+- **1ª capa alcançável:** metas dos rivais escalam com o estágio do jogador (nível < 5 e < 5 passeios reduzem as metas até 50%).
 
-## Persistência (`autoload/GameState.gd`, SAVE_VERSION 12)
+## Regras (`core/progression/Contest.gd`, estático)
+| Evento | Votos |
+|---|---|
+| passeio bom | +1 |
+| passeio perfeito (🎾/🦴) | +2 |
+| foto 📸 perfeita | +3 (e entra no Álbum) |
+| sábado | ×2 |
+
+- **Semana:** `Contest.week_key()` = mesma fórmula de `GameState._week_key()` (segunda, UTC). `seconds_to_close()` → contagem regressiva.
+- **Rivais** (`RIVALS`): `Spa Pet da Dona Cida` (24–40, curva 1.15 — cresce no fim), `Focinho Limpo` (12–22, curva 0.7 — larga na frente), `Patas & Laços` (5–10, linear). Meta semanal = hash determinístico de `week_key:id` × escala do jogador, gravada em `park_contest_rivals` no `sync()`. Placar exibido = `meta × progresso_da_semana^curva`.
+- **Colocação:** `rank()` = 1 + rivais com placar > votos (empate favorece o jogador); sem votos = 4º (“fora da disputa”).
+- **Fechamento:** `sync()` detecta virada de semana → `_close_week()` grava `park_contest_pending {week, points, photos, rank, coins, embers}` e zera a semana nova. Chamado no boot (`ContestFeedback.on_boot`), em `register_walk`, em `status()` e no badge do HUD.
+- **Prêmios** (`reward_coins_for`): 1º = `Rewards.for_kind(weekly_chest, 200)` + 3 brasas + 1 troféu + achievement `park_contest_win`; 2º = 50% + 1 brasa; 3º = 30%; 4º = 15% (participação). `claim()` paga, registra em `park_contest_history` (8 últimas) e limpa a pendência.
+
+## Superfícies
+1. **Álbum (`MetaPanel._build_contest`)**: linha do prêmio pendente com `🏆 COLETAR PRÊMIO` → cabeçalho `📰 CONCURSO DA CAPA` (descrição colapsável + pílula `⏱ 3d 4h`) → tag de sábado → **placar** você × 3 rivais (medalhas, votos, barra proporcional; sua linha em destaque dourado) → dica (`CONTEST_LEADING` / `CONTEST_TO_FIRST` / `CONTEST_NOT_ENTERED`) → regra curta → `🏆 Capas conquistadas` + melhor colocação → `ÚLTIMAS SEMANAS` → grid de fotos (inalterado). `Contest.mark_seen()` ao abrir (zera o nudge de ultrapassagem).
+2. **Passeio (`ParkFlow`)**: linha do concurso no painel de escolha; `📰 +N votos • colocação` no resultado.
+3. **Boot (`core/ui/ContestFeedback.on_boot`)**: cartão de resultado (`CONTEST_RESULT_TITLE_1..4`, botão coleta via `RevealCard.on_primary`), toast `Sábado da Capa` ou toast de ultrapassagem (1×/dia, `settings.contest_nudge_date`).
+4. **HUD (`Main._process`)**: badge no nav Álbum via `Contest.badge_text()` — `🏆` pendente, `📰` ultrapassado.
+5. **Guia Bia**: dica `contest` aponta para o Álbum após o 1º passeio com votos.
+
+## Persistência (`autoload/GameState.gd`, SAVE_VERSION 14)
 ```gdscript
-park_photos: Array[Dictionary] = []  # {pets: Array[String], date: String, perfect: bool, activity: String, ts: int, coins: int}
-park_contest_claimed_week: String = ""  # _week_key da última entrega
+park_photos: Array[Dictionary] = []      # inalterado
 park_trophies: int = 0
+park_contest_week: String = ""           # semana aberta
+park_contest_points: int = 0             # votos
+park_contest_photos: int = 0             # fotos perfeitas na semana
+park_contest_rivals: Array[int] = []     # metas dos 3 rivais
+park_contest_pending: Dictionary = {}    # resultado fechado a coletar
+park_contest_history: Array[Dictionary]  # {week, rank, points} × 8
+park_contest_last_rank: int = 0          # última colocação vista (nudge)
 ```
-- `to_dictionary()` serializa os 3; `apply_dictionary()` chama `_safe_photos_array` (valida `pets` contra catálogo, ts>0, limita 50, ignora entradas corrompidas).
-- `_week_key()` = segunda-feira unix (mesma das missões semanais). `park_is_saturday()` = `weekday == 6` (Godot `Time.get_datetime_dict_from_system().weekday`).
-- `park_photos_this_week()` filtra por `p_week == _week_key()`.
-- `park_can_claim_contest()` = `claimed_week != week` && `is_saturday` && `perfects_this_week ≥1`.
-- `park_claim_contest()` grava `claimed_week`, `park_trophies +=1`, dá coins/embers, `Analytics.track("park_contest_claimed")`.
+- `SaveManager._migrate` v13→v14 cria os campos e apaga `park_contest_claimed_week` (legado do concurso só-sábado).
+- Métodos antigos removidos do GameState: `park_can_claim_contest`, `park_contest_progress`, `park_claim_contest` (substituídos por `Contest.*`); novo `GameState.unlock_achievement()` público para sistemas externos.
 
-## UI Detalhe (`scenes/main/MetaPanel.gd`)
-- `_rebuild` match adiciona `&"album"` → `_build_album()`.
-- `_build_album()` usa `_info_row` para cabeçalhos e `GridContainer` 3 colunas para fotos. `StyleFactory.box` rosa para perfect, cinza para boa. Botão disabled cinza quando não é sábado.
-- `Main.gd`:
-  - `NAV_ICONS["album"]` reuse `collection.png`; `nav_unlocks["album"]=2`; nav building guarda `album_button`.
-  - `_process` → `D1Retention`-style badge pulsante `★` no `album_button` quando `park_can_claim_contest()`.
-  - `_setup_park` → `album_btn` dentro do painel de escolha do Parquinho.
+## Localização (paridade pt/en/es)
+`CONTEST_*` (título, descrição, tempo, `RANK_1..4`, placar, dicas, sábado, ultrapassagem, prêmio pendente, cartão de resultado, histórico), `PARK_CONTEST_LINE*`, `PARK_VOTES_LINE`, `ALBUM_*` atualizados; removidos `ALBUM_WEEK*`, `ALBUM_CLAIM*`, `ALBUM_SATURDAY_*`.
 
-## Localização (528→544 chaves, paridade pt/en/es)
-`NAV_ALBUM`, `ALBUM_TITLE`, `ALBUM_TROPHIES`, `ALBUM_CONTEST_DESC`, `ALBUM_WEEK`, `ALBUM_WEEK_PROGRESS`, `ALBUM_CLAIM/CLAIMED/CLAIM_TOAST`, `ALBUM_SATURDAY_HINT/NEED`, `ALBUM_EMPTY`, `ALBUM_GRID_TITLE`, `ALBUM_SHARE/SHARE_CAPTION`, `ALBUM_FOOTER`.
-
-## Balance & LiveOps
-- **Sem inflação:** troféu é cosmético simbólico (`park_trophies` contador) + `R$ 200 + 3 brasas` 1×/semana max. Não compete com banho (`R$ 52` base) nem com `weekly_chest` (`R$ 200+3` também 1×/semana) — dobra o motivo para logar no sábado.
-- **Sem build:** ajustar `park_cooldown_seconds` (2h) para sábado curto via `RemoteConfig` aumenta fotos disponíveis para o concurso.
-- **Métrica:** sessões sábado, `park_photos_this_week.perfects`, `park_trophies`, share clipboard.
+## Testes
+- `tests/DomainTests.gd::_test_contest` (runtime Godot na CI): sync abre a semana, votos, falha não pontua, virada de semana gera pendência, 999 votos vencem, claim paga/troféu/histórico, claim duplo vazio.
+- `tests/test_data_and_economy.py`: migração v14 e presença de `park_contest_pending`.
 
 ## Teste manual
-1. No Parquinho escolha 📸, espere barra verde ≥72% e toque FOTO até `⭐ Perfeito!` → toast + `R$`. Repita até 2 fotos.
-2. Abra `Álbum` (nav 📖 ou botão no Parquinho) → grid mostra fotos, `Fotos esta semana: 2 (perfeitas 2)`, `COLETAR CAPA` cinza se não é sábado.
-3. Force sábado: `OS.set_time` não existe; para teste, edite `GameState.park_is_saturday()` retornar `true` ou mude data do sistema para sábado → badge `★` no nav + botão verde → `COLETAR CAPA` → `+200 R$ +3 brasas` + `Troféus: 1` + achievement.
-4. `python3 tools/validate_project.py` → `0E/0W`, `wc -l data/localization/*.csv` → `544` cada.
+1. Faça um passeio → resultado mostra `📰 +N votos • Xº lugar`; abra o Álbum → placar com rivais e contagem regressiva.
+2. Mude a data do sistema para a semana seguinte e reabra → cartão “📰 VOCÊ É A CAPA…”/“🥈…” → `COLETAR PRÊMIO` → moedas/brasas/troféu; Álbum mostra histórico.
+3. Sábado: toast “📸 Sábado da Capa!” no boot e votos dobrados no resultado.
