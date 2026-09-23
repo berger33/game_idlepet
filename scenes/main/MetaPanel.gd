@@ -434,70 +434,106 @@ func _build_collection() -> void:
 
 
 func _build_album() -> void:
+	# harden: GameState/Loc podem não estar prontos no editor headless ou primeiro frame
+	if GameState == null or not is_instance_valid(screen) or screen.content_box == null:
+		_note("Carregando álbum...", 22, Color("90a4ae"))
+		return
 	# Topo: troféus + progresso semanal
+	var trophies: int = GameState.park_trophies if GameState.has_method("park_trophies") or "park_trophies" in GameState else 0
 	_info_row(
-		"🏆 %s" % (Loc.t("ALBUM_TROPHIES") % GameState.park_trophies if Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % GameState.park_trophies),
-		Loc.t("ALBUM_CONTEST_DESC") if Loc.t("ALBUM_CONTEST_DESC") != "ALBUM_CONTEST_DESC" else "Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!",
+		"🏆 %s" % (Loc.t("ALBUM_TROPHIES") % trophies if Loc.has_method("t") and Loc.t("ALBUM_TROPHIES") != "ALBUM_TROPHIES" else "Troféus: %d" % trophies),
+		Loc.t("ALBUM_CONTEST_DESC") if Loc.has_method("t") and Loc.t("ALBUM_CONTEST_DESC") != "ALBUM_CONTEST_DESC" else "Toda foto 📸 perfeita no Parquinho entra aqui. No sábado o bairro elege a capa!",
 		"",
 		Color("ffd54f"),
 		false,
 		Callable()
 	)
-	var prog: Dictionary = GameState.park_contest_progress()
+	var prog: Dictionary = {}
+	if GameState.has_method("park_contest_progress"):
+		prog = GameState.park_contest_progress()
+	else:
+		prog = {"total": 0, "perfects": 0, "claimed": false, "is_saturday": false}
+	var can_claim: bool = false
+	if GameState.has_method("park_can_claim_contest"):
+		can_claim = GameState.park_can_claim_contest()
 	_info_row(
-		Loc.t("ALBUM_WEEK") if Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
-		(Loc.t("ALBUM_WEEK_PROGRESS") % [int(prog.get("total", 0)), int(prog.get("perfects", 0))] if Loc.t("ALBUM_WEEK_PROGRESS") != "ALBUM_WEEK_PROGRESS" else "Fotos esta semana: %d (perfeitas %d)" % [int(prog.get("total", 0)), int(prog.get("perfects", 0))]),
-		Loc.t("ALBUM_CLAIMED") if bool(prog.get("claimed", false)) else (Loc.t("ALBUM_CLAIM") if Loc.t("ALBUM_CLAIM") != "ALBUM_CLAIM" else "COLETAR CAPA"),
-		GREEN if GameState.park_can_claim_contest() else Color("b0bec5"),
-		GameState.park_can_claim_contest(),
+		Loc.t("ALBUM_WEEK") if Loc.has_method("t") and Loc.t("ALBUM_WEEK") != "ALBUM_WEEK" else "SEMANA ATUAL",
+		(Loc.t("ALBUM_WEEK_PROGRESS") % [int(prog.get("total", 0)), int(prog.get("perfects", 0))] if Loc.has_method("t") and Loc.t("ALBUM_WEEK_PROGRESS") != "ALBUM_WEEK_PROGRESS" else "Fotos esta semana: %d (perfeitas %d)" % [int(prog.get("total", 0)), int(prog.get("perfects", 0))]),
+		Loc.t("ALBUM_CLAIMED") if bool(prog.get("claimed", false)) else (Loc.t("ALBUM_CLAIM") if Loc.has_method("t") and Loc.t("ALBUM_CLAIM") != "ALBUM_CLAIM" else "COLETAR CAPA"),
+		GREEN if can_claim else Color("b0bec5"),
+		can_claim,
 		func() -> void:
+			if GameState == null or not GameState.has_method("park_claim_contest"):
+				return
 			var rew: Dictionary = GameState.park_claim_contest()
 			if not rew.is_empty():
-				AudioManager.play(&"perfect")
-				HapticsManager.success()
-				EventBus.toast_requested.emit(Loc.t("ALBUM_CLAIM_TOAST") % [int(rew.get("coins", 0)), int(rew.get("embers", 0))] if Loc.t("ALBUM_CLAIM_TOAST") != "ALBUM_CLAIM_TOAST" else "Capa! +%d R$ e +%d brasas" % [int(rew.get("coins", 0)), int(rew.get("embers", 0))], Color("ffd54f"))
+				if AudioManager != null and AudioManager.has_method("play"):
+					AudioManager.play(&"perfect")
+				if HapticsManager != null and HapticsManager.has_method("success"):
+					HapticsManager.success()
+				if EventBus != null and EventBus.has_signal("toast_requested"):
+					EventBus.toast_requested.emit(Loc.t("ALBUM_CLAIM_TOAST") % [int(rew.get("coins", 0)), int(rew.get("embers", 0))] if Loc.has_method("t") and Loc.t("ALBUM_CLAIM_TOAST") != "ALBUM_CLAIM_TOAST" else "Capa! +%d R$ e +%d brasas" % [int(rew.get("coins", 0)), int(rew.get("embers", 0))], Color("ffd54f"))
+				# rebuild para atualizar contador
+				if is_instance_valid(screen):
+					_rebuild()
 	)
 	if not bool(prog.get("is_saturday", false)):
-		_note(Loc.t("ALBUM_SATURDAY_HINT") if Loc.t("ALBUM_SATURDAY_HINT") != "ALBUM_SATURDAY_HINT" else "O concurso abre no sábado — continue fotografando!", 22, Color("90a4ae"))
+		_note(Loc.t("ALBUM_SATURDAY_HINT") if Loc.has_method("t") and Loc.t("ALBUM_SATURDAY_HINT") != "ALBUM_SATURDAY_HINT" else "O concurso abre no sábado — continue fotografando!", 22, Color("90a4ae"))
 	else:
 		if int(prog.get("perfects", 0)) == 0:
-			_note(Loc.t("ALBUM_SATURDAY_NEED") if Loc.t("ALBUM_SATURDAY_NEED") != "ALBUM_SATURDAY_NEED" else "Faça 1 foto 📸 perfeita hoje para concorrer à capa!", 22, PINK)
+			_note(Loc.t("ALBUM_SATURDAY_NEED") if Loc.has_method("t") and Loc.t("ALBUM_SATURDAY_NEED") != "ALBUM_SATURDAY_NEED" else "Faça 1 foto 📸 perfeita hoje para concorrer à capa!", 22, PINK)
 	# Grid de fotos
 	if GameState.park_photos.is_empty():
-		_note(Loc.t("ALBUM_EMPTY") if Loc.t("ALBUM_EMPTY") != "ALBUM_EMPTY" else "Nenhuma foto ainda — faça um 📸 perfeito no Parquinho! (arraste treat/photo e acerte o timing)", 24, Color("90a4ae"), true)
+		_note(Loc.t("ALBUM_EMPTY") if Loc.has_method("t") and Loc.t("ALBUM_EMPTY") != "ALBUM_EMPTY" else "Nenhuma foto ainda — faça um 📸 perfeito no Parquinho! (arraste treat/photo e acerte o timing)", 24, Color("90a4ae"), true)
 		return
-	_note(Loc.t("ALBUM_GRID_TITLE") if Loc.t("ALBUM_GRID_TITLE") != "ALBUM_GRID_TITLE" else "MEMÓRIAS DO QUINTAL", 26, CHARCOAL)
+	_note(Loc.t("ALBUM_GRID_TITLE") if Loc.has_method("t") and Loc.t("ALBUM_GRID_TITLE") != "ALBUM_GRID_TITLE" else "MEMÓRIAS DO QUINTAL", 26, CHARCOAL)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
-	screen.content_box.add_child(grid)
+	if screen.content_box != null:
+		screen.content_box.add_child(grid)
+	else:
+		return
 	# mostra mais recentes primeiro, max 18
-	var photos: Array[Dictionary] = GameState.park_photos.duplicate()
-	photos.reverse()
+	var photos: Array[Dictionary] = []
+	if GameState.park_photos is Array:
+		photos = GameState.park_photos.duplicate()
+		photos.reverse()
 	var shown: int = 0
 	for photo: Dictionary in photos:
 		if shown >= 18:
 			break
+		if not photo is Dictionary:
+			continue
 		shown += 1
-		var pets: Array = photo.get("pets", [])
+		var pets_raw: Variant = photo.get("pets", [])
+		var pets: Array = pets_raw if pets_raw is Array else []
 		var names: String = ""
 		for pid: Variant in pets:
-			names += ContentDB.pet_name(String(pid)) + " "
+			var spid: String = String(pid)
+			var nm: String = spid.capitalize()
+			if ContentDB != null and ContentDB.has_method("pet_name"):
+				var tmp: String = ContentDB.pet_name(spid)
+				if not tmp.is_empty():
+					nm = tmp
+			names += nm + " "
 		names = names.strip_edges().replace(" ", ", ")
 		var date: String = String(photo.get("date", ""))
 		var perfect: bool = bool(photo.get("perfect", false))
 		var card: PanelContainer = PanelContainer.new()
 		card.custom_minimum_size = Vector2(260, 250)
-		card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
+		if StyleFactory != null and StyleFactory.has_method("box"):
+			card.add_theme_stylebox_override("panel", StyleFactory.box(Color.WHITE, 18, 8, Color("ffd54f") if perfect else Color("b0bec5"), 3))
 		var vbox: VBoxContainer = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 6)
 		card.add_child(vbox)
-		# Thumb 4:3 (240×180) COVER + clip 12px — evita letterbox e preserva rosto do pet (240×90 cortava 62%)
+		# Thumb 4:3 (240×150) COVER + clip 12px — evita letterbox e preserva rosto do pet (240×90 cortava 62%)
 		var thumb_wrap: PanelContainer = PanelContainer.new()
 		thumb_wrap.custom_minimum_size = Vector2(240, 150)
 		thumb_wrap.clip_contents = true
-		thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
+		if StyleFactory != null and StyleFactory.has_method("box"):
+			thumb_wrap.add_theme_stylebox_override("panel", StyleFactory.box(Color("f5f5f5"), 12, 0))
 		vbox.add_child(thumb_wrap)
 		var thumb: TextureRect = TextureRect.new()
 		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -505,11 +541,17 @@ func _build_album() -> void:
 		thumb.custom_minimum_size = Vector2(240, 150)
 		thumb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		thumb.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		# tenta carregar primeiro pet da foto — offset vertical foca rosto (pet centralizado em 512)
-		var first_pet: String = String(pets[0]) if pets.size() > 0 else "caramelo"
+		# tenta carregar primeiro pet da foto — sanitiza nome para evitar path traversal
+		var first_pet: String = "caramelo"
+		if pets.size() > 0:
+			var cand: String = String(pets[0])
+			if not cand.is_empty() and cand.length() < 40 and "/" not in cand and "\\" not in cand and "." not in cand:
+				first_pet = cand
 		var tpath: String = "res://art/pets/%s.png" % first_pet
 		if ResourceLoader.exists(tpath):
-			thumb.texture = load(tpath)
+			var res: Resource = load(tpath)
+			if res is Texture2D:
+				thumb.texture = res as Texture2D
 		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.96)
 		thumb_wrap.add_child(thumb)
 		var nlabel: Label = Label.new()
@@ -524,17 +566,21 @@ func _build_album() -> void:
 		dlabel.add_theme_color_override("font_color", PINK if perfect else Color("90a4ae"))
 		vbox.add_child(dlabel)
 		var share_btn: Button = Button.new()
-		share_btn.text = Loc.t("ALBUM_SHARE") if Loc.t("ALBUM_SHARE") != "ALBUM_SHARE" else "COMPARTILHAR"
+		share_btn.text = Loc.t("ALBUM_SHARE") if Loc.has_method("t") and Loc.t("ALBUM_SHARE") != "ALBUM_SHARE" else "COMPARTILHAR"
 		share_btn.custom_minimum_size = Vector2(240, 44)
 		_style_button(share_btn, BLUE if perfect else Color("b0bec5"))
-		share_btn.pressed.connect(func(p: Dictionary = photo) -> void:
-			var caption: String = Loc.t("ALBUM_SHARE_CAPTION") % [String(p.get("date", "")), names] if Loc.t("ALBUM_SHARE_CAPTION") != "ALBUM_SHARE_CAPTION" else "Minha capa do Parquinho em %s com %s! #PetShopTycoon" % [String(p.get("date", "")), names]
+		# captura names por valor (default arg) para não compartilhar última iteração do loop
+		var captured_names: String = names
+		var captured_date: String = date
+		share_btn.pressed.connect(func(p: Dictionary = photo, n: String = captured_names, d: String = captured_date) -> void:
+			var caption: String = Loc.t("ALBUM_SHARE_CAPTION") % [d if not d.is_empty() else String(p.get("date", "")), n] if Loc.has_method("t") and Loc.t("ALBUM_SHARE_CAPTION") != "ALBUM_SHARE_CAPTION" else "Minha capa do Parquinho em %s com %s! #PetShopTycoon" % [d if not d.is_empty() else String(p.get("date", "")), n]
 			DisplayServer.clipboard_set(caption)
-			EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY") if Loc.t("SHARE_SAVED_GALLERY") != "SHARE_SAVED_GALLERY" else "Legenda copiada!", BLUE)
+			if EventBus != null and EventBus.has_signal("toast_requested"):
+				EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY") if Loc.has_method("t") and Loc.t("SHARE_SAVED_GALLERY") != "SHARE_SAVED_GALLERY" else "Legenda copiada!", BLUE)
 		)
 		vbox.add_child(share_btn)
 		grid.add_child(card)
-	_note(Loc.t("ALBUM_FOOTER") if Loc.t("ALBUM_FOOTER") != "ALBUM_FOOTER" else "Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!", 22, Color("90a4ae"), true)
+	_note(Loc.t("ALBUM_FOOTER") if Loc.has_method("t") and Loc.t("ALBUM_FOOTER") != "ALBUM_FOOTER" else "Dica: fotos 📸 perfect dão +2 afeto e viram memória. No sábado, 1 perfect já vale troféu!", 22, Color("90a4ae"), true)
 
 ## Painel de melhorias: estação + os cinco utensílios. Tudo que era botão
 ## grande no HUD de ação agora vive aqui, comprável com moedas.

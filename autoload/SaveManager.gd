@@ -188,6 +188,31 @@ func _migrate(data: Dictionary) -> Dictionary:
 		data["event_goal_count"] = int(data.get("event_goal_count", 0))
 		data["event_goal_claimed"] = bool(data.get("event_goal_claimed", false))
 		version = 12
+	# v12 patch: parquinho+álbum foram adicionados no mesmo SAVE_VERSION 12 sem bump.
+	# Saves v12 antigos não têm essas chaves — injeta defaults sem apagar progresso e sem bump.
+	if version == 12:
+		if not data.has("park_pets"):
+			data["park_pets"] = []
+		if not data.has("park_cooldown_until"):
+			data["park_cooldown_until"] = 0
+		if not data.has("park_plays_total"):
+			data["park_plays_total"] = 0
+		if not data.has("park_plays_today"):
+			data["park_plays_today"] = 0
+		if not data.has("park_today_key"):
+			data["park_today_key"] = ""
+		if not data.has("park_last_activity"):
+			data["park_last_activity"] = "ball"
+		if not data.has("park_streak"):
+			data["park_streak"] = 0
+		if not data.has("park_best_streak"):
+			data["park_best_streak"] = 0
+		if not data.has("park_photos"):
+			data["park_photos"] = []
+		if not data.has("park_contest_claimed_week"):
+			data["park_contest_claimed_week"] = ""
+		if not data.has("park_trophies"):
+			data["park_trophies"] = 0
 	return data
 
 

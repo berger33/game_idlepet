@@ -542,9 +542,15 @@ func _safe_string_array(value: Variant) -> Array[String]:
 
 func _valid_pet_array(value: Variant) -> Array[String]:
 	var result: Array[String] = []
+	var cdb_ready: bool = ContentDB != null and ContentDB.has_method("has_pet") and not ContentDB.pets.is_empty()
 	for id: String in _safe_string_array(value):
-		if ContentDB.has_pet(id):
-			result.append(id)
+		if cdb_ready:
+			if ContentDB.has_pet(id):
+				result.append(id)
+		else:
+			# ContentDB ainda não carregou (primeiro frame / save antigo) — preserva id para não apagar progresso
+			if not id.is_empty():
+				result.append(id)
 	return result
 
 
@@ -708,7 +714,11 @@ func claim_mission(mission_id: StringName) -> bool:
 
 ## Chave da segunda-feira desta semana (dia unix), estável entre dias.
 func _week_key() -> String:
-	var days: int = int(floor(Time.get_unix_time_from_system() / 86400.0))
+	var now: int = int(Time.get_unix_time_from_system())
+	# harden contra relógio zerado/negativo no editor
+	if now <= 0:
+		now = int(Time.get_unix_time_from_system())
+	var days: int = int(floor(float(now) / 86400.0))
 	return str(days - ((days + 3) % 7))
 
 
@@ -995,21 +1005,31 @@ func park_remaining_seconds() -> int:
 	return maxi(0, park_cooldown_until - int(Time.get_unix_time_from_system()))
 
 func park_ensure_pets() -> void:
-	if park_pets.size() == 3 and park_pets.all(func(id): return unlocked_pets.has(id)):
+	if park_pets.size() == 3 and not unlocked_pets.is_empty() and park_pets.all(func(id): return unlocked_pets.has(id)):
 		return
-	# escolhe 3 pets distintos: favorito + 2 aleatórios desbloqueados
+	# escolhe 3 pets distintos: favorito + 2 aleatórios desbloqueados — harden contra pool vazio / unlock vazio
 	var pool: Array[String] = unlocked_pets.duplicate()
 	if pool.is_empty():
 		pool = ["caramelo"]
+	# fallback se favorite_pet não está no pool por falha de filtro anterior
+	if not pool.has(favorite_pet) and unlocked_pets.has(favorite_pet):
+		pool.append(favorite_pet)
 	park_pets.clear()
 	if unlocked_pets.has(favorite_pet):
 		park_pets.append(favorite_pet)
 		pool.erase(favorite_pet)
 	pool.shuffle()
-	while park_pets.size() < 3 and not pool.is_empty():
+	var guard: int = 0
+	while park_pets.size() < 3 and not pool.is_empty() and guard < 20:
+		guard += 1
 		park_pets.append(pool.pop_front())
-	while park_pets.size() < 3:
-		park_pets.append(pool[randi() % pool.size()] if not pool.is_empty() else "caramelo")
+	guard = 0
+	while park_pets.size() < 3 and guard < 10:
+		guard += 1
+		if not pool.is_empty():
+			park_pets.append(pool[randi() % pool.size()])
+		else:
+			park_pets.append("caramelo")
 	SaveManager.request_save()
 
 func park_pick_activity() -> String:
@@ -1110,7 +1130,10 @@ func park_best_photo() -> Dictionary:
 	return {}
 
 func park_is_saturday() -> bool:
-	return int(Time.get_datetime_dict_from_system()["weekday"]) == 6 # 0 dom, 6 sáb
+	var d: Dictionary = Time.get_datetime_dict_from_system()
+	if not d.has("weekday"):
+		return false
+	return int(d["weekday"]) == 6 # 0 dom, 6 sáb (Godot Time)
 
 func park_can_claim_contest() -> bool:
 	var week: String = _week_key()

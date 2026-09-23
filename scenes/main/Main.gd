@@ -1033,17 +1033,22 @@ func _available_services() -> Array[StringName]:
 
 # ── Parquinho helpers ──
 func _setup_park() -> void:
-	# Canvas do parquinho (quintal) — oculto até abrir
+	# Canvas do parquinho (quintal) — oculto até abrir — harden contra dupla chamada / godot headless
+	if is_instance_valid(park_canvas) and park_canvas.is_inside_tree():
+		return
 	park_canvas = ParkCanvasScript.new()
 	park_canvas.visible = false
 	park_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(park_canvas)
 	move_child(park_canvas, 1) # atrás do HUD mas à frente do mundo
 	# Botão Parquinho — ao lado do botão Upgrades, com cooldown visual
-	var safe_top: float = SalonTuning.safe_area_top()
+	var safe_top: float = 0.0
+	if SalonTuning != null and SalonTuning.has_method("safe_area_top"):
+		safe_top = SalonTuning.safe_area_top()
+	# safe_top atualmente não usado no posicionamento, mas guard para compat
 	park_button = _button("🌳", Color("8bc34a", 0.96), 86, 86)
-	park_button.position = Vector2(952, 250)
-	park_button.tooltip_text = Loc.t("PARK_BUTTON") if Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
+	park_button.position = Vector2(952, 250 + safe_top * 0.5)
+	park_button.tooltip_text = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
 	park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
 	park_button.add_theme_stylebox_override("hover", _style(Color("9ccc65", 0.98), 43, 6, Color.WHITE, 5))
 	park_button.add_theme_stylebox_override("pressed", _style(Color("689f38", 1.0), 43, 8, Color.WHITE, 4))
@@ -1106,7 +1111,7 @@ func _setup_park() -> void:
 
 func _park_format_cooldown(sec: int) -> String:
 	if sec <= 0:
-		return Loc.t("PARK_READY") if Loc.t("PARK_READY") != "PARK_READY" else "Pronto!"
+		return Loc.t("PARK_READY") if Loc.has_method("t") and Loc.t("PARK_READY") != "PARK_READY" else "Pronto!"
 	if sec < 60:
 		return "%ds" % sec
 	var m: int = sec / 60
@@ -1120,17 +1125,22 @@ func _park_format_cooldown(sec: int) -> String:
 func _update_park_button() -> void:
 	if not is_instance_valid(park_button):
 		return
+	# harden: GameState pode ainda não ter sido preenchido no primeiro frame
+	if GameState == null:
+		return
 	# Progressive disclosure: parquinho libera após 1 atendimento (tutorial feito) — não sobrecarrega D0
 	var locked: bool = GameState.services_completed == 0 and GameState.player_level < 2
 	if locked and not park_active:
 		park_button.text = "🔒"
-		park_button.tooltip_text = Loc.t("PARK_LOCKED") if Loc.t("PARK_LOCKED") != "PARK_LOCKED" else "Desbloqueia após o 1º atendimento"
+		park_button.tooltip_text = Loc.t("PARK_LOCKED") if Loc.has_method("t") and Loc.t("PARK_LOCKED") != "PARK_LOCKED" else "Desbloqueia após o 1º atendimento"
 		park_button.disabled = false
 		park_button.modulate = Color("ffffff", 0.85)
 		park_button.add_theme_stylebox_override("normal", _style(Color("90a4ae", 0.96), 43, 6, Color.WHITE, 3))
 		return
 	else:
-		park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
+		# só reaplica style se já tem um válido (evita flood de StyleBoxFlat no GC)
+		if park_button.has_theme_stylebox_override("normal"):
+			park_button.add_theme_stylebox_override("normal", _style(Color("8bc34a", 0.96), 43, 6, Color.WHITE, 4))
 	var remain: int = GameState.park_remaining_seconds()
 	if park_active:
 		park_button.text = "✕"
@@ -1141,7 +1151,7 @@ func _update_park_button() -> void:
 	if remain > 0:
 		park_button.text = "⏳ %s" % _park_format_cooldown(remain)
 		park_button.add_theme_font_size_override("font_size", 18)
-		park_button.tooltip_text = (Loc.t("PARK_COOLDOWN") % _park_format_cooldown(remain)) if Loc.t("PARK_COOLDOWN") != "PARK_COOLDOWN" else "Volta em %s" % _park_format_cooldown(remain)
+		park_button.tooltip_text = (Loc.t("PARK_COOLDOWN") % _park_format_cooldown(remain)) if Loc.has_method("t") and Loc.t("PARK_COOLDOWN") != "PARK_COOLDOWN" else "Volta em %s" % _park_format_cooldown(remain)
 		park_button.disabled = false
 		park_button.modulate = Color("ffffff", 0.88)
 		# quando em cooldown, leve pulse cinza
@@ -1151,8 +1161,8 @@ func _update_park_button() -> void:
 	else:
 		park_button.text = "🌳"
 		park_button.add_theme_font_size_override("font_size", 34)
-		var streak: int = GameState.park_streak
-		var tip: String = Loc.t("PARK_BUTTON") if Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
+		var streak: int = GameState.park_streak if GameState != null else 0
+		var tip: String = Loc.t("PARK_BUTTON") if Loc.has_method("t") and Loc.t("PARK_BUTTON") != "PARK_BUTTON" else "Parquinho"
 		if streak > 1:
 			tip += " • 🔥%d" % streak
 		park_button.tooltip_text = tip
@@ -1185,29 +1195,40 @@ func _update_park_button() -> void:
 				badge.visible = false
 
 func _on_park_button() -> void:
+	if not is_inside_tree() or GameState == null:
+		return
 	if park_active:
 		_close_park()
 		return
 	var locked: bool = GameState.services_completed == 0 and GameState.player_level < 2
 	if locked:
-		_show_toast(Loc.t("PARK_LOCKED_TOAST") if Loc.t("PARK_LOCKED_TOAST") != "PARK_LOCKED_TOAST" else "Termine seu primeiro atendimento para liberar o Parquinho!", Color("90a4ae"))
-		AudioManager.play(&"error_soft")
+		_show_toast(Loc.t("PARK_LOCKED_TOAST") if Loc.has_method("t") and Loc.t("PARK_LOCKED_TOAST") != "PARK_LOCKED_TOAST" else "Termine seu primeiro atendimento para liberar o Parquinho!", Color("90a4ae"))
+		if AudioManager != null and AudioManager.has_method("play"):
+			AudioManager.play(&"error_soft")
 		return
 	if not GameState.park_can_play():
 		var remain: int = GameState.park_remaining_seconds()
-		_show_toast((Loc.t("PARK_COOLDOWN_TOAST") % _park_format_cooldown(remain)) if Loc.t("PARK_COOLDOWN_TOAST") != "PARK_COOLDOWN_TOAST" else "Parquinho volta em %s — os pets estão tirando uma soneca!" % _park_format_cooldown(remain), Color("90a4ae"))
-		AudioManager.play(&"error_soft")
+		_show_toast((Loc.t("PARK_COOLDOWN_TOAST") % _park_format_cooldown(remain)) if Loc.has_method("t") and Loc.t("PARK_COOLDOWN_TOAST") != "PARK_COOLDOWN_TOAST" else "Parquinho volta em %s — os pets estão tirando uma soneca!" % _park_format_cooldown(remain), Color("90a4ae"))
+		if AudioManager != null and AudioManager.has_method("play"):
+			AudioManager.play(&"error_soft")
 		return
 	_open_park_choose()
 
 func _open_park_choose() -> void:
+	if not is_inside_tree() or not is_instance_valid(park_choose_panel) or not is_instance_valid(park_canvas):
+		return
 	park_active = true
-	GameState.park_ensure_pets()
-	var ids: Array[String] = GameState.park_pets
+	if GameState != null:
+		GameState.park_ensure_pets()
+	var ids: Array[String] = GameState.park_pets if GameState != null else ["caramelo", "caramelo", "caramelo"]
+	if ids.size() != 3:
+		ids = ["caramelo", "caramelo", "caramelo"]
 	park_canvas.set_pets(ids)
 	park_canvas.visible = true
-	world.visible = false
-	queue_row.visible = false
+	if is_instance_valid(world):
+		world.visible = false
+	if is_instance_valid(queue_row):
+		queue_row.visible = false
 	# atualiza linha de pets no painel de escolha
 	var pets_line: Label = park_choose_panel.get_node_or_null("VBoxContainer/ParkPetsLine") as Label
 	if pets_line == null:
@@ -1216,42 +1237,65 @@ func _open_park_choose() -> void:
 	if is_instance_valid(pets_line):
 		var names: Array[String] = []
 		for pid: String in ids:
-			names.append(ContentDB.pet_name(pid))
+			var nm: String = "?"
+			if ContentDB != null and ContentDB.has_method("pet_name"):
+				nm = ContentDB.pet_name(pid)
+				if nm.is_empty():
+					nm = pid.capitalize()
+			else:
+				nm = pid.capitalize()
+			names.append(nm)
 		pets_line.text = "🐾  %s, %s & %s" % [names[0] if names.size() > 0 else "?", names[1] if names.size() > 1 else "?", names[2] if names.size() > 2 else "?"]
 	park_choose_panel.visible = true
 	park_choose_panel.modulate.a = 0.0
 	park_choose_panel.scale = Vector2(0.92, 0.92)
-	var tw: Tween = park_choose_panel.create_tween().set_parallel(true)
-	tw.tween_property(park_choose_panel, "modulate:a", 1.0, 0.18)
-	tw.tween_property(park_choose_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK)
-	instruction_label.text = Loc.t("PARK_CHOOSE") if Loc.t("PARK_CHOOSE") != "PARK_CHOOSE" else "Escolha como cuidar dos 3 no quintal"
-	instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
-	if is_instance_valid(park_timer_label):
+	if is_inside_tree():
+		var tw: Tween = park_choose_panel.create_tween().set_parallel(true)
+		tw.tween_property(park_choose_panel, "modulate:a", 1.0, 0.18)
+		tw.tween_property(park_choose_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK)
+	if is_instance_valid(instruction_label):
+		instruction_label.text = Loc.t("PARK_CHOOSE") if Loc.has_method("t") and Loc.t("PARK_CHOOSE") != "PARK_CHOOSE" else "Escolha como cuidar dos 3 no quintal"
+		instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
+	if is_instance_valid(park_timer_label) and GameState != null:
 		var streak_txt: String = ""
 		if GameState.park_streak > 0:
-			streak_txt = (Loc.t("PARK_STREAK") % GameState.park_streak) if Loc.t("PARK_STREAK") != "PARK_STREAK" else "🔥 %d dias seguidos no parquinho" % GameState.park_streak
+			streak_txt = (Loc.t("PARK_STREAK") % GameState.park_streak) if Loc.has_method("t") and Loc.t("PARK_STREAK") != "PARK_STREAK" else "🔥 %d dias seguidos no parquinho" % GameState.park_streak
 		park_timer_label.text = streak_txt
-	AudioManager.play(&"window")
-	Analytics.track(&"park_opened", {"pets": ids})
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"window")
+	if Analytics != null and Analytics.has_method("track"):
+		Analytics.track(&"park_opened", {"pets": ids})
 
 func _start_park_activity(id: StringName) -> void:
+	if not is_instance_valid(park_choose_panel) or park_service == null or not is_instance_valid(park_canvas):
+		return
 	park_choose_panel.visible = false
 	var activity_str: String = String(id)
 	park_service.configure(id)
 	park_service.start()
-	GameState.park_start_session(activity_str)
+	if GameState != null and GameState.has_method("park_start_session"):
+		GameState.park_start_session(activity_str)
 	park_canvas.set_activity(id)
 	park_canvas.visible = true
 	park_dragging_ball = false
 	# esconde nav fantasiado? mantém HUD
-	instruction_label.text = _park_instruction()
-	instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
-	AudioManager.play(&"service_start")
-	HapticsManager.light()
+	if is_instance_valid(instruction_label):
+		instruction_label.text = _park_instruction()
+		instruction_label.add_theme_stylebox_override("normal", _style(Color("33691e", 0.88), 34, 14, Color.WHITE, 3))
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"service_start")
+	if HapticsManager != null and HapticsManager.has_method("light"):
+		HapticsManager.light()
 
 func _park_instruction() -> String:
 	if park_service == null:
 		return ""
+	if Loc == null or not Loc.has_method("t"):
+		match park_service.activity:
+			ParkService.Activity.BALL: return "🎾 Arraste a bolinha até o pet do meio!"
+			ParkService.Activity.TREAT: return "🦴 Toque no pote com o petisco escondido!"
+			ParkService.Activity.PHOTO: return "📸 Espere o alinhamento e toque em FOTO!"
+			_: return ""
 	match park_service.activity:
 		ParkService.Activity.BALL:
 			return Loc.t("PARK_HINT_BALL") if Loc.t("PARK_HINT_BALL") != "PARK_HINT_BALL" else "🎾 Arraste a bolinha até o pet do meio!"
@@ -1263,107 +1307,145 @@ func _park_instruction() -> String:
 			return ""
 
 func _park_begin_pointer(pos: Vector2) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE:
+	if park_service == null or park_service.state != ParkService.State.ACTIVE or not is_instance_valid(park_canvas) or not is_inside_tree():
 		return
 	match park_service.activity:
 		ParkService.Activity.BALL:
-			if park_canvas.ball_hit(pos):
+			if park_canvas.has_method("ball_hit") and park_canvas.ball_hit(pos):
 				park_dragging_ball = true
-				AudioManager.play(&"tool_pickup")
-				HapticsManager.light()
+				if AudioManager != null and AudioManager.has_method("play"):
+					AudioManager.play(&"tool_pickup")
+				if HapticsManager != null and HapticsManager.has_method("light"):
+					HapticsManager.light()
 			else:
 				# arrasto direto também move
 				park_dragging_ball = true
-				park_service.drag_ball(pos, park_canvas.pet_focus(1))
-				park_canvas.ball_pos = pos
+				if park_canvas.has_method("pet_focus"):
+					park_service.drag_ball(pos, park_canvas.pet_focus(1))
+				if is_instance_valid(park_canvas):
+					park_canvas.ball_pos = pos
 		ParkService.Activity.TREAT:
+			if not park_canvas.has_method("treat_slot_at"):
+				return
 			var slot: int = park_canvas.treat_slot_at(pos)
 			if slot >= 0 and not park_service.treat_revealed:
 				park_service.pick_treat(slot)
 				park_canvas.treat_choice = slot
 				park_canvas.treat_revealed = true
 				park_canvas.treat_hidden_slot = park_service.treat_hidden_slot
-				AudioManager.play(&"tap")
-				HapticsManager.light()
+				if AudioManager != null and AudioManager.has_method("play"):
+					AudioManager.play(&"tap")
+				if HapticsManager != null and HapticsManager.has_method("light"):
+					HapticsManager.light()
 				park_canvas.spawn_bubble(pos)
-				# auto-finaliza após escolha
-				get_tree().create_timer(0.9).timeout.connect(func(): if park_active: _finish_park(false))
+				# auto-finaliza após escolha — guard get_tree + is_inside_tree para não travar se cena já saiu
+				if is_inside_tree() and get_tree() != null:
+					get_tree().create_timer(0.9).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
 		ParkService.Activity.PHOTO:
-			if park_canvas.photo_hit(pos):
-				var ok: bool = park_service.try_photo()
-				park_canvas.photo_align = park_service.photo_align
-				park_canvas.spawn_bubble(pos)
+			if not park_canvas.has_method("photo_hit") or not park_canvas.photo_hit(pos):
+				return
+			var ok: bool = park_service.try_photo()
+			park_canvas.photo_align = park_service.photo_align
+			park_canvas.spawn_bubble(pos)
+			if AudioManager != null and AudioManager.has_method("play"):
 				AudioManager.play(&"window" if ok else &"error_soft")
+			if HapticsManager != null and HapticsManager.has_method("light"):
 				HapticsManager.light()
-				if park_service.progress >= 0.92:
-					get_tree().create_timer(0.4).timeout.connect(func(): if park_active: _finish_park(false))
-				elif park_service.photo_shots >= 4:
-					get_tree().create_timer(0.6).timeout.connect(func(): if park_active: _finish_park(false))
+			if park_service.progress >= 0.92:
+				if is_inside_tree() and get_tree() != null:
+					get_tree().create_timer(0.4).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
+			elif park_service.photo_shots >= 4:
+				if is_inside_tree() and get_tree() != null:
+					get_tree().create_timer(0.6).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
 
 func _park_move_pointer(pos: Vector2) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE:
+	if park_service == null or park_service.state != ParkService.State.ACTIVE or not is_instance_valid(park_canvas) or not is_inside_tree():
 		return
 	if park_service.activity == ParkService.Activity.BALL and park_dragging_ball:
-		park_service.drag_ball(pos, park_canvas.pet_focus(1))
-		park_canvas.ball_pos = pos
-		if park_service.fetch_count > 0 and park_service.progress > 0.85:
+		if park_canvas.has_method("pet_focus"):
+			park_service.drag_ball(pos, park_canvas.pet_focus(1))
+		if is_instance_valid(park_canvas):
+			park_canvas.ball_pos = pos
+		if park_service.fetch_count > 0 and park_service.progress > 0.85 and is_instance_valid(park_canvas):
 			park_canvas.spawn_bubble(pos)
 
 func _park_end_pointer() -> void:
-	if park_service == null:
+	if park_service == null or not is_inside_tree():
 		return
 	if park_service.activity == ParkService.Activity.BALL and park_dragging_ball:
 		park_dragging_ball = false
 		# se já fez progresso bom, permite finalizar cedo com toque duplo? mantém tempo
 		if park_service.progress >= 0.88 and park_service.fetch_count >= 3:
 			# brilha e auto-finaliza
-			park_canvas.celebrate(true)
-			get_tree().create_timer(0.5).timeout.connect(func(): if park_active: _finish_park(false))
+			if is_instance_valid(park_canvas) and park_canvas.has_method("celebrate"):
+				park_canvas.celebrate(true)
+			if is_inside_tree() and get_tree() != null:
+				get_tree().create_timer(0.5).timeout.connect(func(): if is_inside_tree() and park_active and is_instance_valid(park_service) and park_service.state == ParkService.State.ACTIVE: _finish_park(false))
 
 func _finish_park(timeout: bool) -> void:
-	if park_service == null or park_service.state != ParkService.State.ACTIVE:
+	if park_service == null or park_service.state != ParkService.State.ACTIVE or GameState == null:
 		return
 	var quality: StringName = &"fail" if timeout else park_service.finish()
 	var success: bool = quality == &"perfect" or quality == &"good"
 	var perfect: bool = quality == &"perfect"
-	var activity_str: String = String(ParkService.ACTIVITY_NAMES.get(park_service.activity, &"ball"))
-	var reward: Dictionary = GameState.park_complete(activity_str, success, perfect)
+	var activity_str: String = String(ParkService.ACTIVITY_NAMES.get(park_service.activity, &"ball")) if ParkService.ACTIVITY_NAMES.has(park_service.activity) else "ball"
+	var reward: Dictionary = {}
+	if GameState.has_method("park_complete"):
+		reward = GameState.park_complete(activity_str, success, perfect)
 	park_active = false
 	park_dragging_ball = false
-	park_canvas.visible = false
-	world.visible = true
-	queue_row.visible = true
-	park_choose_panel.visible = false
+	if is_instance_valid(park_canvas):
+		park_canvas.visible = false
+	if is_instance_valid(world):
+		world.visible = true
+	if is_instance_valid(queue_row):
+		queue_row.visible = true
+	if is_instance_valid(park_choose_panel):
+		park_choose_panel.visible = false
 	_update_park_button()
 	_refresh_economy()
 	if success:
 		_show_park_success(quality, reward)
 	else:
 		_show_park_fail()
-	Analytics.track(&"park_finished", {"quality": String(quality), "activity": activity_str})
+	if Analytics != null and Analytics.has_method("track"):
+		Analytics.track(&"park_finished", {"quality": String(quality), "activity": activity_str})
 
 func _show_park_success(quality: StringName, reward: Dictionary) -> void:
+	if not is_inside_tree():
+		return
 	var coins: int = int(reward.get("coins", 0))
 	var aff: int = int(reward.get("affection", 0))
 	var embers: int = int(reward.get("embers", 0))
 	var streak: int = int(reward.get("streak", 0))
-	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
-	HapticsManager.success()
-	park_canvas.celebrate(true)
-	result_title.text = Loc.t("PARK_PERFECT") if quality == &"perfect" and Loc.t("PARK_PERFECT") != "PARK_PERFECT" else ("⭐ Perfeito no parquinho!" if quality == &"perfect" else "✓ Ótimo cuidado!")
-	result_title.modulate = Color("ffd54f") if quality == &"perfect" else Color("2e7d32")
-	var coins_word: String = Loc.t("COINS")
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
+	if HapticsManager != null and HapticsManager.has_method("success"):
+		HapticsManager.success()
+	if is_instance_valid(park_canvas) and park_canvas.has_method("celebrate"):
+		park_canvas.celebrate(true)
+	if is_instance_valid(result_title):
+		result_title.text = Loc.t("PARK_PERFECT") if Loc.has_method("t") and quality == &"perfect" and Loc.t("PARK_PERFECT") != "PARK_PERFECT" else ("⭐ Perfeito no parquinho!" if quality == &"perfect" else "✓ Ótimo cuidado!")
+		result_title.modulate = Color("ffd54f") if quality == &"perfect" else Color("2e7d32")
+	var coins_word: String = Loc.t("COINS") if Loc.has_method("t") else "R$"
 	var names: String = ""
-	for pid: String in GameState.park_pets:
-		names += ContentDB.pet_name(pid) + ", "
-	names = names.trim_suffix(", ")
+	if GameState != null:
+		for pid: String in GameState.park_pets:
+			var nm: String = pid.capitalize()
+			if ContentDB != null and ContentDB.has_method("pet_name"):
+				var tmp: String = ContentDB.pet_name(pid)
+				if not tmp.is_empty():
+					nm = tmp
+			names += nm + ", "
+		names = names.trim_suffix(", ")
 	var streak_line: String = ""
 	if streak >= 2:
-		streak_line = (Loc.t("PARK_STREAK_BONUS") % streak) if Loc.t("PARK_STREAK_BONUS") != "PARK_STREAK_BONUS" else "🔥 %d dias seguidos!" % streak
-	result_detail.text = "%s\n%s +%d  •  💗 +%d afeto%s%s" % ["★★★★★" if quality == &"perfect" else "★★★★☆", coins_word, coins, aff, "  •  🔥 +%d" % embers if embers > 0 else "", "\n" + streak_line if not streak_line.is_empty() else ""]
-	var extra: String = (Loc.t("PARK_SUCCESS_EXTRA") % names) if Loc.t("PARK_SUCCESS_EXTRA") != "PARK_SUCCESS_EXTRA" else "%s adoraram o quintal com você!" % names
+		streak_line = (Loc.t("PARK_STREAK_BONUS") % streak) if Loc.has_method("t") and Loc.t("PARK_STREAK_BONUS") != "PARK_STREAK_BONUS" else "🔥 %d dias seguidos!" % streak
+	if is_instance_valid(result_detail):
+		result_detail.text = "%s\n%s +%d  •  💗 +%d afeto%s%s" % ["★★★★★" if quality == &"perfect" else "★★★★☆", coins_word, coins, aff, "  •  🔥 +%d" % embers if embers > 0 else "", "\n" + streak_line if not streak_line.is_empty() else ""]
+	var extra: String = (Loc.t("PARK_SUCCESS_EXTRA") % names) if Loc.has_method("t") and Loc.t("PARK_SUCCESS_EXTRA") != "PARK_SUCCESS_EXTRA" else "%s adoraram o quintal com você!" % names
 	if quality == &"perfect":
-		extra += "\n" + (Loc.t("PARK_PERFECT_EXTRA") if Loc.t("PARK_PERFECT_EXTRA") != "PARK_PERFECT_EXTRA" else "Foto perfeita! As memórias vão para a coleção.")
+		extra += "\n" + (Loc.t("PARK_PERFECT_EXTRA") if Loc.has_method("t") and Loc.t("PARK_PERFECT_EXTRA") != "PARK_PERFECT_EXTRA" else "Foto perfeita! As memórias vão para a coleção.")
 	if is_instance_valid(result_detail_extra):
 		result_detail_extra.text = extra
 		result_detail_extra.visible = false
@@ -1371,44 +1453,71 @@ func _show_park_success(quality: StringName, reward: Dictionary) -> void:
 		if is_instance_valid(result_expand_btn):
 			result_expand_btn.text = "ⓘ  Ver"
 			result_expand_btn.visible = true
-	share_button.visible = false
-	_pop_panel(result_panel)
-	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
-	primary_button.disabled = false
-	primary_button.show()
+	if is_instance_valid(share_button):
+		share_button.visible = false
+	if is_instance_valid(result_panel):
+		_pop_panel(result_panel)
+	if is_instance_valid(primary_button):
+		primary_button.text = "✓  " + (Loc.t("REVEAL_OK") if Loc.has_method("t") else "OK")
+		primary_button.disabled = false
+		primary_button.show()
 	_animate_coin_fly(coins)
-	EventBus.reveal_requested.emit(&"park", {"quality": String(quality), "coins": coins})
+	if EventBus != null and EventBus.has_signal("reveal_requested"):
+		EventBus.reveal_requested.emit(&"park", {"quality": String(quality), "coins": coins})
 
 func _show_park_fail() -> void:
-	AudioManager.play(&"error_soft")
-	park_canvas.forced_state = &"sad"
-	result_title.text = Loc.t("PARK_FAIL") if Loc.t("PARK_FAIL") != "PARK_FAIL" else "Quase! Tente de novo"
-	result_title.modulate = Color("ef5350")
-	result_detail.text = "★★☆☆☆\n" + (Loc.t("PARK_FAIL_HINT") if Loc.t("PARK_FAIL_HINT") != "PARK_FAIL_HINT" else "Os pets se distraíram — tente outra brincadeira!")
+	if not is_inside_tree():
+		return
+	if AudioManager != null and AudioManager.has_method("play"):
+		AudioManager.play(&"error_soft")
+	if is_instance_valid(park_canvas):
+		park_canvas.forced_state = &"sad"
+	if is_instance_valid(result_title):
+		result_title.text = Loc.t("PARK_FAIL") if Loc.has_method("t") and Loc.t("PARK_FAIL") != "PARK_FAIL" else "Quase! Tente de novo"
+		result_title.modulate = Color("ef5350")
+	if is_instance_valid(result_detail):
+		result_detail.text = "★★☆☆☆\n" + (Loc.t("PARK_FAIL_HINT") if Loc.has_method("t") and Loc.t("PARK_FAIL_HINT") != "PARK_FAIL_HINT" else "Os pets se distraíram — tente outra brincadeira!")
 	if is_instance_valid(result_detail_extra):
-		result_detail_extra.text = Loc.t("PARK_FAIL_EXTRA") if Loc.t("PARK_FAIL_EXTRA") != "PARK_FAIL_EXTRA" else "Sem penalidade na fila. Volta quando o cooldown acabar!"
+		result_detail_extra.text = Loc.t("PARK_FAIL_EXTRA") if Loc.has_method("t") and Loc.t("PARK_FAIL_EXTRA") != "PARK_FAIL_EXTRA" else "Sem penalidade na fila. Volta quando o cooldown acabar!"
 		result_detail_extra.visible = false
 		result_expanded = false
 		if is_instance_valid(result_expand_btn):
 			result_expand_btn.visible = true
 			result_expand_btn.text = "ⓘ  Dica"
-	share_button.visible = false
-	_pop_panel(result_panel)
-	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
-	primary_button.disabled = false
-	primary_button.show()
+	if is_instance_valid(share_button):
+		share_button.visible = false
+	if is_instance_valid(result_panel):
+		_pop_panel(result_panel)
+	if is_instance_valid(primary_button):
+		primary_button.text = "↻  " + (Loc.t("TRY_AGAIN") if Loc.has_method("t") else "Tentar novamente")
+		primary_button.disabled = false
+		primary_button.show()
 
 func _close_park() -> void:
 	if not park_active:
+		# mesmo fechado, garante hidden se foi chamado por _input back
+		if is_instance_valid(park_canvas):
+			park_canvas.visible = false
+		if is_instance_valid(park_choose_panel):
+			park_choose_panel.visible = false
 		return
 	park_active = false
 	park_dragging_ball = false
-	park_canvas.visible = false
-	world.visible = true
-	queue_row.visible = true
-	park_choose_panel.visible = false
+	if is_instance_valid(park_canvas):
+		park_canvas.visible = false
+	if is_instance_valid(world):
+		world.visible = true
+	if is_instance_valid(queue_row):
+		queue_row.visible = true
+	if is_instance_valid(park_choose_panel):
+		park_choose_panel.visible = false
 	if park_service != null:
 		park_service.state = ParkService.State.IDLE
+	if is_instance_valid(instruction_label):
+		instruction_label.text = Loc.t("CHOOSE_CLIENT") if Loc.has_method("t") else "Escolha um cliente"
+		if _instr_styles != null and _instr_styles.has(&"hint"):
+			instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
+	_update_park_button()
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	if _instr_styles.has(&"hint"):
 		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
