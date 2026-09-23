@@ -1,0 +1,4001 @@
+{
+  "schema_version": 1,
+  "state_contract_version": 1,
+  "generated_image_limit_per_batch": 10,
+  "authored_states": [
+    "dirty",
+    "wet",
+    "messy",
+    "tilt_left",
+    "tilt_right",
+    "happy_squash",
+    "happy_air",
+    "dizzy",
+    "sad",
+    "blink"
+  ],
+  "runtime_only_effects": [
+    "breathing",
+    "bounce_trajectory",
+    "dizzy_vibration",
+    "failure_darkening",
+    "entrance",
+    "exit",
+    "crossfade",
+    "hearts",
+    "foam",
+    "loose_fur",
+    "perfume_particles",
+    "achievement_stars"
+  ],
+  "summary": {
+    "pets_total": 50,
+    "pets_generated": 50,
+    "images_expected": 500,
+    "images_generated": 500,
+    "images_qa_passed": 500,
+    "pets_integrated": 50,
+    "generation_attempts": 518,
+    "blink_variants_expected": 250,
+    "blink_variants_generated": 250,
+    "blink_fix_duke_husky": "fixed: per-state lid compose (blink aligns with state sprites; eyes detected per state, lids scaled and color-graded per eye)"
+  },
+  "pets": [
+    {
+      "sequence": 1,
+      "batch_id": "anim-01-caramelo",
+      "pet_id": "caramelo",
+      "name": "Caramelo",
+      "breed": "Vira-lata caramelo",
+      "species": "dog",
+      "reference": "art/pets/caramelo.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/caramelo/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "batch_id": "anim-02-luna_shih_tzu",
+      "pet_id": "luna_shih_tzu",
+      "name": "Luna",
+      "breed": "Shih-tzu",
+      "species": "dog",
+      "reference": "art/pets/luna_shih_tzu.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/luna_shih_tzu/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "qa_notes": "All states passed. Two generated tilt-right corrections were rejected for wrong ear/direction; final right key is a lossless mirror of the approved left key, guaranteeing opposite inclination and preserving breed anatomy.",
+      "generation_attempts": 12,
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 3,
+      "batch_id": "anim-03-mingau_srd",
+      "pet_id": "mingau_srd",
+      "name": "Mingau",
+      "breed": "Gato SRD branco",
+      "species": "cat",
+      "reference": "art/pets/mingau_srd.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mingau_srd/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "qa_notes": "All states passed. Replacement blink uses a solid-key background and replacement wet has reduced volume/downward waterlogged strands. Right tilt is a lossless mirror of the approved left key for guaranteed opposite motion. Four later alternatives were reviewed but not selected because the committed set retained stronger identity/style consistency.",
+      "generation_attempts": 15,
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 4,
+      "batch_id": "anim-04-thor_pinscher",
+      "pet_id": "thor_pinscher",
+      "name": "Thor",
+      "breed": "Pinscher",
+      "species": "dog",
+      "reference": "art/pets/thor_pinscher.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/thor_pinscher/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 14,
+      "qa_notes": "All states passed. Two generated tilt-left attempts remained centered; final left key is a lossless mirror of the approved right key, guaranteeing opposite inclination while preserving Pinscher anatomy.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 5,
+      "batch_id": "anim-05-mel_golden",
+      "pet_id": "mel_golden",
+      "name": "Mel",
+      "breed": "Golden Retriever",
+      "species": "dog",
+      "reference": "art/pets/mel_golden.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mel_golden/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of the approved tilt_left key, guaranteeing opposite inclination. Wet fur is darker, narrow and downward; happy airborne ear motion is contextual to the jump.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 6,
+      "batch_id": "anim-06-frajola",
+      "pet_id": "frajola",
+      "name": "Frajola",
+      "breed": "Gato frajola",
+      "species": "cat",
+      "reference": "art/pets/frajola.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/frajola/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left for guaranteed opposite inclination. Tuxedo mask, white blaze/chest/paws, green eyes and pink nose remain readable in every state.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 7,
+      "batch_id": "anim-07-fred_poodle",
+      "pet_id": "fred_poodle",
+      "name": "Fred",
+      "breed": "Poodle",
+      "species": "dog",
+      "reference": "art/pets/fred_poodle.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/fred_poodle/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Wet state dramatically collapses curl volume into dark heavy downward ringlets; messy state expands uneven tangled curls while preserving Poodle anatomy.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 8,
+      "batch_id": "anim-08-amora_siames",
+      "pet_id": "amora_siames",
+      "name": "Amora",
+      "breed": "Siamês",
+      "species": "cat",
+      "reference": "art/pets/amora_siames.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/amora_siames/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Seal mask, ears, paws and tail, cream body and blue eyes remain readable. Wet collapses coat and tail volume; messy intentionally expands pre-groom fur.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 9,
+      "batch_id": "anim-09-nina_yorkshire",
+      "pet_id": "nina_yorkshire",
+      "name": "Nina",
+      "breed": "Yorkshire",
+      "species": "dog",
+      "reference": "art/pets/nina_yorkshire.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nina_yorkshire/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 18,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Steel-gray and golden-tan silky coat remains readable; wet is narrow/dark/downward, messy is overgrown, and one ear droop in dizzy is contextual instability. Nine later alternatives were reviewed but not selected because the committed set retained stronger squash, wet-fur identity and overall consistency.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 10,
+      "batch_id": "anim-10-tigrinho_tabby",
+      "pet_id": "tigrinho_tabby",
+      "name": "Tigrinho",
+      "breed": "Gato tigrado",
+      "species": "cat",
+      "reference": "art/pets/tigrinho_tabby.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tigrinho_tabby/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Forehead M, face/body/leg/tail stripes, cream chest/paws and olive-gold eyes remain readable. Wet is dark/narrow/downward and emotions have distinct silhouettes.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 11,
+      "batch_id": "anim-11-bob_bulldog",
+      "pet_id": "bob_bulldog",
+      "name": "Bob",
+      "breed": "Bulldog francês",
+      "species": "dog",
+      "reference": "art/pets/bob_bulldog.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bob_bulldog/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Blue-gray coat, cream markings, broad muzzle and bat ears remain readable; wet is smooth/dark with droplets and messy uses short breed-correct tufts.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 12,
+      "batch_id": "anim-12-neve_angora",
+      "pet_id": "neve_angora",
+      "name": "Neve",
+      "breed": "Angorá",
+      "species": "cat",
+      "reference": "art/pets/neve_angora.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/neve_angora/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Blue eyes, white Angora coat and giant plume tail remain readable; wet collapses volume into narrow gray downward strands and messy adds irregular flyaways.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 13,
+      "batch_id": "anim-13-sol_border",
+      "pet_id": "sol_border",
+      "name": "Sol",
+      "breed": "Border Collie",
+      "species": "dog",
+      "reference": "art/pets/sol_border.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sol_border/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Black-white blaze and heterochromia remain readable. Generated wet-state puddle was removed during alpha QA; only the pet and body droplets remain.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 14,
+      "batch_id": "anim-14-cafe_bombay",
+      "pet_id": "cafe_bombay",
+      "name": "Café",
+      "breed": "Bombaim",
+      "species": "cat",
+      "reference": "art/pets/cafe_bombay.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cafe_bombay/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "Nine generated states passed after one empty image-model response was retried. tilt_right is a lossless mirror of approved tilt_left. Near-black coat and amber eyes remain readable; wet is sleek/deep-black with droplets and messy expands irregular tufts.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 15,
+      "batch_id": "anim-15-jade_spitz",
+      "pet_id": "jade_spitz",
+      "name": "Jade",
+      "breed": "Spitz Alemão",
+      "species": "dog",
+      "reference": "art/pets/jade_spitz.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/jade_spitz/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Cream-white double coat, foxlike face, pointed ears and giant plume tail remain readable; wet radically collapses volume and messy expands irregular tangles.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 16,
+      "batch_id": "anim-16-pitanga_abissinio",
+      "pet_id": "pitanga_abissinio",
+      "name": "Pitanga",
+      "breed": "Abissínio",
+      "species": "cat",
+      "reference": "art/pets/pitanga_abissinio.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pitanga_abissinio/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Ruddy-cinnamon ticked coat, green eyes, wedge face, giant ears and slender silhouette remain readable; wet is sleek/waterlogged and messy stays breed-correct.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 17,
+      "batch_id": "anim-17-bento_beagle",
+      "pet_id": "bento_beagle",
+      "name": "Bento",
+      "breed": "Beagle",
+      "species": "dog",
+      "reference": "art/pets/bento_beagle.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/bento_beagle/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Nine original generated states passed. tilt_right is a lossless mirror of approved tilt_left. Tricolor saddle/blaze/chest/paws/tail tip, hazel eyes and long floppy ears remain readable; wet is smooth/dark and messy uses breed-correct short tufts.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 18,
+      "batch_id": "anim-18-azul_russian",
+      "pet_id": "azul_russian",
+      "name": "Azul",
+      "breed": "Azul Russo",
+      "species": "cat",
+      "reference": "art/pets/azul_russian.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/azul_russian/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "All 10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review. First happy_air attempt shipped with a baked-in beige panel and was rejected; the regenerated frame needed chroma keying (warm beige/white vs cool blue fur) plus hole filling before the raw image entered the standard normalizer.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 19,
+      "batch_id": "anim-19-paçoca_dachshund",
+      "pet_id": "paçoca_dachshund",
+      "name": "Paçoca",
+      "breed": "Dachshund",
+      "species": "dog",
+      "reference": "art/pets/paçoca_dachshund.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/paçoca_dachshund/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "All 10 states passed programmatic QA and visual contact-sheet review on first batch (10 attempts). happy_air prompt explicitly forbade baked panels after the azul_russian lesson; frame arrived clean.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 20,
+      "batch_id": "anim-20-lua_maine_coon",
+      "pet_id": "lua_maine_coon",
+      "name": "Lua",
+      "breed": "Maine Coon",
+      "species": "cat",
+      "reference": "art/pets/lua_maine_coon.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lua_maine_coon/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "All 10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review. First tilt_right attempt was rejected for embedded caption text; the regenerated frame arrived clean and is a committed approved key. dizzy accepted with an intentional mint soap tint. Lote 20 closed: Lua fully integrated.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 21,
+      "batch_id": "anim-21-kiko_pug",
+      "pet_id": "kiko_pug",
+      "name": "Kiko",
+      "breed": "Pug",
+      "species": "dog",
+      "reference": "art/pets/kiko_pug.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiko_pug/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "All 10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review on the first batch. Prompts enforced NO ground shadow, NO text and NO background panel; happy_air arrived clean. Sad pose intentionally unrolls the curled tail as body language.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 22,
+      "batch_id": "anim-22-sushi_japanese",
+      "pet_id": "sushi_japanese",
+      "name": "Sushi",
+      "breed": "Bobtail Japonês",
+      "species": "cat",
+      "reference": "art/pets/sushi_japanese.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/sushi_japanese/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "9/10 passed on first batch; sad was rejected for losing the ginger patches (generic gray cat) and regenerated with explicit patch placement — retry approved with identity preserved. All 10 states now qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 23,
+      "batch_id": "anim-23-cacau_labrador",
+      "pet_id": "cacau_labrador",
+      "name": "Cacau",
+      "breed": "Labrador chocolate",
+      "species": "dog",
+      "reference": "art/pets/cacau_labrador.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cacau_labrador/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "All 10 states passed programmatic QA (512x512 RGBA, transparent corners, extent<=446, baseline<=479) and visual contact-sheet review. happy_air generated in the following turn after the per-turn image limit cut the first batch at 9; arrived clean on first attempt.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 24,
+      "batch_id": "anim-24-onca_bengal",
+      "pet_id": "onca_bengal",
+      "name": "Juma",
+      "breed": "Bengal",
+      "species": "cat",
+      "reference": "art/pets/onca_bengal.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/onca_bengal/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 passed on first batch; blink regenerated next turn with rosette pattern and ringed tail preserved — approved. All 10 states qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 25,
+      "batch_id": "anim-25-tupa_mane_wolf",
+      "pet_id": "tupa_mane_wolf",
+      "name": "Tupã",
+      "breed": "Lobo-guará guardião",
+      "species": "dog",
+      "reference": "art/pets/tupa_mane_wolf.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/tupa_mane_wolf/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 passed on first batch; happy_squash regenerated next turn — squashed body, flopped huge ears and dark mane preserved. All 10 states qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 26,
+      "batch_id": "anim-26-aurora_ragdoll",
+      "pet_id": "aurora_ragdoll",
+      "name": "Aurora",
+      "breed": "Ragdoll",
+      "species": "cat",
+      "reference": "art/pets/aurora_ragdoll.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/aurora_ragdoll/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 passed on first batch; sad regenerated next turn with drooped brown ears, single tear and tail wrapped around paws — identity preserved. All 10 states qa_passed on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 27,
+      "batch_id": "anim-27-gaia_samoyed",
+      "pet_id": "gaia_samoyed",
+      "name": "Gaia",
+      "breed": "Samoieda",
+      "species": "dog",
+      "reference": "art/pets/gaia_samoyed.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/gaia_samoyed/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9/10 states passed on the first batch; sad regenerated next turn and approved (ears drooped fully, single tear on white cheek, curled tail uncurled and drooped low, hunched shoulders) closing the lote 10/10. All states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479). wet keeps the uncurled dripping tail as wet body language.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 28,
+      "batch_id": "anim-28-nox_sphynx",
+      "pet_id": "nox_sphynx",
+      "name": "Nox",
+      "breed": "Sphynx",
+      "species": "cat",
+      "reference": "art/pets/nox_sphynx.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nox_sphynx/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 12,
+      "qa_notes": "7/10 on the first batch; tilt_left/tilt_right regenerated this turn with strong-lean prompts and approved (mask IoU tl-vs-tr 0.335, IoU tl-vs-flip(tr) 0.38 — genuinely opposite diagonal leans), sad approved (ears drooped sideways, single tear, tail wrapped low). Lote closed 10/10 on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479). Sphynx identity preserved in all states.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 29,
+      "batch_id": "anim-29-rio_savannah",
+      "pet_id": "rio_savannah",
+      "name": "Rio",
+      "breed": "Savannah",
+      "species": "cat",
+      "reference": "art/pets/rio_savannah.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/rio_savannah/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 on the first batch; dizzy (spiral eyes, orbiting stars, wobbly ears), sad (drooped ears, single tear, ringed tail wrapped low) and blink (closed curved eyes) approved next turn closing the lote 10/10. Savannah identity preserved (spotted golden coat, cream chest, huge tall ears, green eyes, ringed tail). All states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 30,
+      "batch_id": "anim-30-estrela_khao",
+      "pet_id": "estrela_khao",
+      "name": "Estrela",
+      "breed": "Khao Manee",
+      "species": "cat",
+      "reference": "art/pets/estrela_khao.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/estrela_khao/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 on the first batch (flood path); dizzy (spiral odd eyes, orbiting stars, wavy tail), sad (ears drooped sideways, single tear from the blue eye, tail wrapped low) and blink (both eyes closed, blush preserved) approved next turn closing the lote 10/10. Odd eyes (viewer-left blue, viewer-right amber) preserved in every state; all frames on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 31,
+      "batch_id": "anim-31-pipoca_corgi",
+      "pet_id": "pipoca_corgi",
+      "name": "Pipoca",
+      "breed": "Welsh Corgi",
+      "species": "dog",
+      "reference": "art/pets/pipoca_corgi.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/pipoca_corgi/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "7/10 states approved on the first batch with default GrabCut path; dizzy/sad/blink generated on the second batch closing the lote 10/10 (10 attempts, no retries needed). dizzy: spiral unfocused eyes (no stars, per contract), tilted head and asymmetric ears, still grounded; sad: ears folded down (head top drops from y=33 to y=87 vs base), lowered head, single tear, tail nub low — the hunched pose normalized 27px above baseline and received a lossless vertical re-translation to y=478 so the feet stay anchored like every grounded state; blink: closed curved eyelids (eye-band dark fraction 0.140 to 0.087) with the clean base pose preserved (mask IoU vs base 0.973). A pale-blue backdrop fringe survived GrabCut on all three frames; removed with a deterministic chroma key (B>170 and B-R>15, a range with zero pixels in the approved set) plus debris filtering — residue 0 and a single connected component per sprite after cleanup. Corgi identity preserved (hue histogram correlation 0.99-1.00 vs base: orange-red coat, white blaze/chest/paws, huge upright ears, brown eyes). All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 32,
+      "batch_id": "anim-32-zeca_schnauzer",
+      "pet_id": "zeca_schnauzer",
+      "name": "Zeca",
+      "breed": "Schnauzer miniatura",
+      "species": "dog",
+      "reference": "art/pets/zeca_schnauzer.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zeca_schnauzer/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus a lossless horizontal mirror for tilt_right (geometric opposition by construction; pair IoU 0.630, head-top sweep 176/335 matching the repo tilt_left=viewer-left convention). First messy attempt rejected in QA for a timid silhouette (+3% width, IoU vs base 0.926); the single retake of the batch (10th attempt) delivered the contract expansion: +23% width, IoU 0.600, identity hue corr 0.956. wet reads soaked (mean V 135 to 94) with kept droplets; happy_air keeps short motion lines (12 components, no baked panel); dizzy uses spiral eyes with no stars; sad is natively grounded at baseline 478 with bowed head and folded ears; blink preserves the base pose (IoU 0.985) with closed lids (eye-band dark fraction 0.310 to 0.249). Backdrop fringe removed with a surgical per-image chroma key (boundary-adjacent bluish pixels within dist<40-45 of the measured backdrop) that protects the silver fur (B~R) and interior cool-gray paw shading; 3 dark cool-gray edge pixels kept as fur. Identity hue corr 0.90-1.00 across states. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 33,
+      "batch_id": "anim-33-belinha_maltes",
+      "pet_id": "belinha_maltes",
+      "name": "Belinha",
+      "breed": "Maltês",
+      "species": "dog",
+      "reference": "art/pets/belinha_maltes.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/belinha_maltes/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "9/10 states approved in the first turn; messy rejected then (boundary roughness +35% vs base, below the approved family range) and regenerated next turn closing the lote 10/10 (11 attempts: 8 first wave + empty wet response + wet retry + messy retake). The approved messy retake used a spiky/jagged-starburst brief and lands at +91% roughness (family reference +63% Luna/Estrela to +146% Zeca), identity hue corr 0.963, with the black eyes peeking from under overgrown white fringe. Normalization used the flood path for the whole set: GrabCut eats the official cool-gray cfd8dc shading of the white coat (wet kept only 646 px vs 1119 flood; base 1329), while flood preserves it. wet reads soaked (mean V 213 to 188, coverage 0.555 to 0.481); dirty shows mud/dust on white fur; dizzy has spiral eyes with no stars and a wobbly lean; sad droops strongly (head top +99px, single tear, plumed tail fallen) and stays naturally grounded; blink preserves the base pose (IoU 0.969) with closed lids; tilt_left/tilt_right are a lossless mirrored pair in the repo convention (head-top sweep 176/335, IoU 0.548). Fringe cleanup used a thin 2px boundary-ring chroma key (per-image measured backdrop, dist<40, B-R>10) preserving interior cool shading; a few crevice blend pixels kept as anti-aliasing. Identity hue corr 0.86-1.00 across states. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 34,
+      "batch_id": "anim-34-duke_husky",
+      "pet_id": "duke_husky",
+      "name": "Duke",
+      "breed": "Husky Siberiano",
+      "species": "dog",
+      "reference": "art/pets/duke_husky.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/duke_husky/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus one retake: the first tilt_left was rejected for a centered pose (head-vs-feet lean +3.9 vs base -6.7; approved family range 13-47) and the retake with a geometric brief (nose to lower-left, C-curve) landed at -47.3, with tilt_right as its lossless mirror (pair lean -47.3/+47.3, repo tilt_left=viewer-left convention). messy passed the roughness gate at +185% (gate >= +63%) with the spiky-starburst brief. wet reads as a soaked husky double coat via palette evidence (charcoal 2724 to 6799 px, white 12670 to 3861, slate mask preserved 6241 of 6562) with kept droplets; hue-histogram correlation is a weak identity metric for this pet (base coat is near-neutral white/slate, 0.532 on wet) and palette fractions were used instead. dirty keeps the slate mask with mud/dust on white areas. sad: tail uncurled and fallen (right-half low/up mass ratio 1.62 vs base 1.19), ears flattened sideways (head-zone width 278 vs 200), strong face change (eye-band diff 80). dizzy has ice-blue spiral eyes with no stars; blink preserves the base pose (IoU 0.636) with closed lids; happy_air keeps short motion lines (10 components; grab path chosen because flood dropped them). Ice-blue eyes present in every open-eye state. Both normalization paths tested per frame (differences <1% on the official palette); grab adopted. Standard boundary-ring fringe cleanup; 10 crevice blend pixels kept on wet as anti-aliasing. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose_per_state_lids"
+        }
+      }
+    },
+    {
+      "sequence": 35,
+      "batch_id": "anim-35-lola_boxer",
+      "pet_id": "lola_boxer",
+      "name": "Lola",
+      "breed": "Boxer",
+      "species": "dog",
+      "reference": "art/pets/lola_boxer.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lola_boxer/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus one retake: the first tilt_left was rejected for a mild diagonal (head-vs-feet lean +/-11.7, below the approved family range 13.5-47; the metric also biases against folded-ear breeds) and the extreme-angle retake landed at -40.6, with tilt_right as its lossless mirror (pair lean -40.6/+40.6, repo tilt_left=viewer-left convention). messy passed the roughness gate at +75% with the short-coat spiky brief (bristly jagged contour, NOT long fur — boxer coat stays short). wet reads soaked via the warm-coat palette (mean V 156 to 117, dark-brown 10140 to 12731 px, coverage 0.423 to 0.410, heavy drooping folded ears, kept droplets). The dark facial mask stays in place in every state (dark-brown centroid y 196-240, upper body). Identity hue corr 0.975-0.999 (warm saturated coat makes hue a strong metric here). sad: drooped folded ears and strong face change (eye-band diff 58.2) while staying grounded at baseline 478; dizzy has spiral eyes with no stars (eye diff 42.7, head top +24px); blink preserves the base pose (IoU 0.970) with closed lids; happy_air keeps short motion lines (9 components, no baked panel). GrabCut adopted on all frames (less fringe than flood, equal/better official palette, keeps motion lines); standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 36,
+      "batch_id": "anim-36-nico_aussie",
+      "pet_id": "nico_aussie",
+      "name": "Nico",
+      "breed": "Pastor Australiano",
+      "species": "dog",
+      "reference": "art/pets/nico_aussie.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/nico_aussie/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave (no retakes) plus a lossless mirror for tilt_right; 9 attempts total. Identity for this blue merle pet is tracked by gray-band structure: the base holds dark/mid/light bands at 0.30/0.38/0.32 and every state keeps all three bands rich (min band 0.19-0.26; dirty and wet read darker by semantics, not identity loss). Hue corr 0.962-1.000. Blue eyes present in every open-eye state (87-510 px). Note on the tilt gate: this pet's base pose is itself diagonal (lean -30.7), so the tilt states are measured relative to base — tilt_left -62.9 equals a relative lean of -32.2, within the approved family range (13.5-47); tilt_right is the lossless mirror (+62.9). messy passed the roughness gate at +120% with the spiky-starburst brief. wet reads soaked (mean V 157 to 136, coverage 0.460 to 0.423) with 22 kept droplet components. sad droops (head top +30.5px, strong face change 66.1); dizzy has blue spiral eyes with no stars; blink preserves the pose (IoU 0.866) with closed lids; happy_air keeps short motion lines (7 components, no baked panel). GrabCut adopted on all frames; standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 37,
+      "batch_id": "anim-37-maya_akita",
+      "pet_id": "maya_akita",
+      "name": "Maya",
+      "breed": "Akita Inu",
+      "species": "dog",
+      "reference": "art/pets/maya_akita.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/maya_akita/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "9 original generations plus one retake (10 attempts). tilt_left v1 was rejected for an upright read (absolute lean -9.9, below the approved family minimum 13.5; head-top x 256 = no sweep) and retaken with a dual reference (Maya base + approved Lola tilt pose): v2 delivers an unambiguous left read (head-top x 310 to 192, ~118px sweep) with identity hue corr 1.000. Caveat documented: the body-wide lean metric is inflated for this breed because the curled tail shifts the feet centroid right (the base itself reads +67), so v2's raw lean of -111.6 overstates the pose; flagged for art-lead visual confirmation on the contact sheet. tilt_right is the lossless mirror (head-top 319). sad is approved with the weakest signal of the catalogue so far and explicitly flagged for art-lead review: face-only expression (eye-band diff 26.7, head top +10.9) with the tail still curled and a subdued read matching the calm temperament; it was re-grounded lossless from 465 to baseline 478. wet reads soaked (mean V 206 to 160, coverage 0.443 to 0.402, translucent urajiro) with 6 kept droplets (grab path override); happy_air keeps 7 motion lines (flood path chosen because grab dropped them); happy_squash had 7 one-sided detached wisps removed to match the single-component family pattern. messy passed the roughness gate at +151%. Urajiro preserved in every state (8289-15049 cream px). dizzy eye diff 34.4 is within the approved range (Belinha 33). Hue corr 0.847-1.000 (wet darkest by semantics). Standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, baseline<=479).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 38,
+      "batch_id": "anim-38-otto_basset",
+      "pet_id": "otto_basset",
+      "name": "Otto",
+      "breed": "Basset Hound",
+      "species": "dog",
+      "reference": "art/pets/otto_basset.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/otto_basset/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. REGISTER FINDING: Otto's base is the only one of 50 whose content bottom sits at y=411 (a short 312px sprite vertically centered by the base pipeline; every other pet grounds at ~471-479). All grounded states were re-registered to the base's bottom (411 +/- 3) so dirty->clean and messy->clean crossfades align perfectly with the shipped base; happy_air keeps the normalizer placement (aerial pose, runtime adds the jump offset). The base itself therefore renders ~68px above the 479 texture baseline at runtime — pre-existing quirk, flagged for the art lead: a future lossless re-ground of base + 10 states as one dedicated change would fix it. messy: crop rescaled 445x430 -> 423x409 (4.9%) to fit the 411 register window, plus a 3x3 morphological close that rejoined 1-2px interpolation slivers into a single component; roughness +63% (family floor, same as Estrela/Luna). wet reads soaked (mean V 156 to 142, heavy flattened ears, kept droplets). Tilt pair lean -21.6/+21.6 absolute (within family 13.5-47; the base itself reads +45.9 due to the wide low silhouette). sad has the basset melancholy amplified with flat ears and a tear (eye-band diff 35.2); dizzy eye diff 33.6; blink preserves the pose (IoU 0.958). Identity hue corr 0.978-1.000 (warm tricolor). GrabCut adopted on all frames; standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, register 411 for grounded states).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 39,
+      "batch_id": "anim-39-kiara_doberman",
+      "pet_id": "kiara_doberman",
+      "name": "Kiara",
+      "breed": "Doberman",
+      "species": "dog",
+      "reference": "art/pets/kiara_doberman.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/kiara_doberman/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. Identity for this black-and-rust pet is tracked by tan-point preservation and official palette (hue histogram is weak on dominant black coats: dirty 0.800 / wet 0.787): tan points 7320-10807 px vs base 10493 in every state (wet darker-rust by semantics), official palette strong throughout. REGISTRATION: happy_squash is a short pose (~298px) that the normalizer vertically centered (bottom 380); re-registered lossless to the standard 478 ground. TILT NOTE: the base pose is itself strongly diagonal (lean -46.0, head-top x 212), so the mirrored pair is lopsided relative to base — tilt_left -53.9 is only -7.9 relative (near-base) while tilt_right +53.9 is a +99.9 swing; same documented asymmetry as the other diagonal-pose pets (Nico, Maya). The pair labels were verified against the repo tilt_left=viewer-left convention (initial auto-label anchored on canvas center was wrong for this off-center base; fixed by a lossless content swap). messy passed the roughness gate at +70% with the short-coat bristly brief. wet reads soaked via coverage 0.331 to 0.324, flattened ears and kept droplets (V 96 to 93 — a black coat cannot darken much further). sad approved with a family-range head signal (top -9.5px, Duke precedent -25) and strong face change (eye-band diff 38.8); dizzy 37.5; blink preserves the pose (IoU 0.982) with closed lids. happy_air keeps 10 motion-line components (grab path; flood dropped them). GrabCut adopted on all frames except blink (flood, equal identity, less fringe); standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, grounded register 478).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 40,
+      "batch_id": "anim-40-apolo_bernese",
+      "pet_id": "apolo_bernese",
+      "name": "Apolo",
+      "breed": "Boiadeiro Bernês",
+      "species": "dog",
+      "reference": "art/pets/apolo_bernese.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/apolo_bernese/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "All 9 original generations approved on the first wave plus a lossless mirror for tilt_right; 9 attempts total. Legendary pet. Identity tracked by tricolor band structure and rust marks (hue weak on the dominant black coat: dirty 0.820 / wet 0.788): dark 0.53-0.67, light 0.13-0.19, rust 8251-19233 px vs base 0.60/0.21/13934 in every state (wet rust darker by semantics). REGISTRATION: base bottom is 465 (not the standard 478); all grounded states registered to 465 (wet shifted 478->465, tilt_left 428->465) so dirty->clean crossfades align with the shipped base; happy_air keeps normalizer placement. blink verified by eye-shine evidence instead of gray diff (black face patch makes gray diff tiny): shine pixels at the two eye windows 73/59 (open base) -> 0/13 (blink, lids closed); dizzy shows bright spiral eyes (153/268) and sad partially visible shines (28/43) — all three reads distinct. wet shows the strongest volume collapse of the catalogue so far (coverage 0.496 -> 0.356, flattened double coat) with 9 kept droplet components. sad droops strongly (head top +60.4px). messy +95% roughness with the spiky-starburst brief (219 debris specks cleaned). Tilt pair lean -43.1/+43.1 absolute over a diagonal base (-41.8): same documented asymmetry as Nico/Maya/Kiara (near-base left, strong right swing). happy_air keeps 13 near-body motion-line components (grab override over flood). Standard boundary-ring fringe cleanup, residue 0 on all ten. All 10 states on the contract (512x512 RGBA, transparent corners, extent<=446, register 465 for grounded states).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 41,
+      "batch_id": "anim-41-mimi_persa",
+      "pet_id": "mimi_persa",
+      "name": "Mimi",
+      "breed": "Persa",
+      "species": "cat",
+      "reference": "art/pets/mimi_persa.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/mimi_persa/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 10,
+      "qa_notes": "Primeiro gato do catalogo. Creme persa (oficiais d8c4aa/8d7763/f6ead9, tol 20). Base curta: bottom 400 — TODOS os aterrados registrados em 400 (wet 478->400 c/ rescale 446->398, messy 474->400 rescale 438->398, dizzy 460->400 rescale 411->398, sad 468->400 rescale 427->398, tilt 422->400 e squash 431->400 deslocados; dirty/blink ja ~398); happy_air aereo (bottom 418) com 10/10 comps near-pet = motion lines (override grab sobre flood, precedente Apolo). GrabCut em todos os 9 estados + happy_air. Identidade: hue-corr 0.985-1.000; oficiais 9150-15057 px (base 12704); olhos cobre ~64.5k px laranja, zero confusao com backdrop. Contrato 10/10 (512x512x4, ext<=446, alpha de borda <8, registro 398-400 aterrados + happy_air<=479). messy roughness 14.40 vs base 7.97 = +81% (gate >=+63%). wet: V 211->165 (maior queda absoluta de V do catalogo em pelo claro), cov 0.358->0.289, 13 comps (gotas preservadas via grab). blink: -28% pupila escura na banda facial (1207->867 px; palpebra fechada = linha fina vs pupila redonda; olhos cobre sobre creme = baixo contraste p/ gray-diff puro), pose identica IoU 0.955, hue 1.000; dizzy +53% (aneis/espirais), sad +108%. tilt: v1 rejeitado (lean rel -10.7; top_x=146 era assimetria de orelha, nao inclinacao) -> retake c/ dupla referencia (base + Lola tilt_left) aprovado: tl abs -6.9 / tr +6.9 (par espelhado real); rel tl -18.1 (piso familia 13.5). ASSIMETRIA DOCUMENTADA: base posa c/ lean +11.2 e absorve parte da diagonal direita (rel tr -4.3) — par mais fraco do catalogo junto c/ Bob +-13; convencao primaria (tl negativo / tr positivo absolutos) OK. sad head top -45.8px (orelhas caidas); dirty quase estatico (IoU 0.955) c/ manchas. Registro curto 400 = crossfades alinham c/ a base embarcada; se art lead re-groundar a base, re-registrar os 9 aterrados.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 42,
+      "batch_id": "anim-42-yuki_scottish",
+      "pet_id": "yuki_scottish",
+      "name": "Yuki",
+      "breed": "Scottish Fold",
+      "species": "cat",
+      "reference": "art/pets/yuki_scottish.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/yuki_scottish/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Segundo gato do catalogo. Scottish Fold prata sombreado azul-creme (oficiais BGR 229,227,223 / 203,197,196 / 179,168,163, tol 20; base 72131 px = 52,3% da silhueta). ASSINATURA DA RAÇA QUANTITATIVA: orelhas dobradas = 0 picos no perfil do topo da cabeca (base + dirty/squash/dizzy/sad/blink); wet (32), messy (20), tilt (90) e happy_air (19) tem spikes altos por semantica do estado (tufts/pelo caotico/diagonal) — validados por NEEDLE TEST (estrutura estreita >=25px acima dos vizinhos): 0 agulhas em todos = nenhuma orelha em pe. Registro padrao bottom 477: aterrados em 477-478; happy_squash re-registrado 397->477 (dy+80; altura 444->285, largura 446 = squash forte); happy_air aereo bottom 457 (20px acima da baseline), ext 442. happy_air: OVERRIDE INVERSO para flood — grab destruiu as motion lines (1 comp); flood preservou 19 comps near-pet alongados (elong 1.0-8.0); + passe estrito de wisps semi-transparentes (CC a >8 vs >0). Identidade: oficiais 33249-76132 (base 72131); hue-corr 0.923-0.989 (FRACA para pelo prata quase-neutro — paleta oficial e o gate, precedente merle); olhos cobre ~562 px na banda facial. Contrato 10/10 (512x512x4, ext<=446, alpha de borda <8, registro 477-478 + aereo 457). messy roughness 13.09 vs base 6.15 = +113% (gate >=+60%). wet: V 191->158, cov 0.527->0.445, 10 comps (9 gotas near-pet preservadas via grab). blink: pupila escura na banda facial -66% (4514->1523 px, MAIOR sinal de blink do catalogo; olhos cobre grandes sobre face prata), IoU 0.902; dizzy 3232 (espirais), sad 2713 (olhos marejados escuros + orelhas caidas, head top -66px na convencao de perfil). tilt: base diagonal lean +49.8 — tl -2.2 (rel -52.0 = RECORDE do catalogo; head_x -44px vs base), tr +2.2 (rel -47.6); convencao primaria tl negativo / tr positivo absolutos OK; corpo mantem a diagonal da base e a cabeca dobra a esquerda (curious tilt correto para crossfade). 9 tentativas, zero retakes (tilt com dupla referencia desde a 1a geracao — licao do Mimi aplicada).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 43,
+      "batch_id": "anim-43-olivia_calico",
+      "pet_id": "olivia_calico",
+      "name": "Olívia",
+      "breed": "Calico",
+      "species": "cat",
+      "reference": "art/pets/olivia_calico.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/olivia_calico/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 14,
+      "qa_notes": "Terceiro gato. Calico tricolor: branco 0.281 / laranja 0.414 / preto 0.184 (bandas V>150&S<60 / r>150&r-b>60 / V<90). Lote COMPLETO 10/10 (fechado no turno seguinte). TILT: 6 tentativas totais (4 alem do limite do 1o turno). SELECAO INVERTIDA vs Yuki: flood venceu em 8 estados (recupera mais pelo branco, fracoes tricolor melhores); happy_air override p/ flood tambem — grab FUNDIU as motion lines no corpo (1 comp tocando y=471, quebra a leitura aerea); flood: corpo aereo bottom 448 + 8 comps near-pet alongados (elong ate 6.9). Registro padrao 477: aterrados em 477-478; happy_air aereo bottom 475 (motion line tail). Identidade tricolor presence gate (branco>0.10, laranja>0.15, preto>0.10) PASS em todos; drift documentado: dirty/blink/dizzy c/ mais laranja (0.51 vs 0.41) e menos branco (0.14-0.17 vs 0.28); messy c/ laranja 0.24 / preto 0.32 (tufts escuros inflam preto) — rank order muda no messy, aceito c/ nota. Contrato 8/8 (512x512x4, ext<=446, alpha borda <8). messy roughness 17.52 vs base 5.58 = +214% (RECORDE ABSOLUTO do catalogo, superou Duke +185%). wet: V 184->174, cov 0.489->0.405, 6 comps (5 gotas). blink VALIDADO POR DIFF-CLUSTERING (nova tecnica p/ olhos cobre sobre mancha laranja — dark-pupil inutil: manchas pretas da cabeca dominam a banda facial, 10846px base vs 10484 blink = -3% so): diff base<->blink (>25) clusteriza em PAR SIMETRICO nos olhos (2176/2117 px, dx=105, dy=5) = cobre aberto -> palpebra fechada; dizzy = par + cluster extra 3062px (espirais); sad = face inteira (19430px). Pose blink IoU 0.891. sad: eye_diff 67.7 + face toda mudada (cabeca caida). TILT (historico completo, 6 tentativas): v1 sprawl 446x331 (IoU 0.439, rel -69.5, corpo errado); v2 base-copy ereta sem tilt (IoU 0.776, rel +8.0); v3 ereta c/ cabeca a DIREITA (IoU 0.801, rel +28.1); v4 sprawl de novo ao usar v1 como ref de pose (IoU 0.498); v5 torre inclinada = cabeca direita (rel +34.6); v6 loaf-sit = cabeca direita (rel +53.9). RESOLUCAO: padrao conclusivo — a cabeca da base ja esta no extremo esquerdo (head_x 216, lean -47.8); qualquer regeneracao ereta poe a cabeca a direita (head_x 241-271) e o unico caminho a esquerda e o sprawl. Par aceito = v3 + espelho sob a CONVENCAO PRIMARIA ABSOLUTA: tl -19.8 / tr +19.8 (piso 13.5 OK, IoU 0.799/0.665, tricolor 0.320/0.409/0.196 = mais fiel a base entre os 10 estados). ASSIMETRIA INVERTIDA DOCUMENTADA (caso extremo do precedente Mimi tr rel -4.3): rel a base diagonal ambos oscilam para o centro (+28.1/-28.1) no crossfade; as figuras leem corretamente como inclinacao esq/dir isoladas. Base extremamente diagonal e o caso-limite do catalogo p/ tilt. 8 aprovados integrados em art/pet_animations/olivia_calico/ (runtime carrega oportunisticamente, conjunto parcial seguro).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 44,
+      "batch_id": "anim-44-simba_noruegues",
+      "pet_id": "simba_noruegues",
+      "name": "Simba",
+      "breed": "Norueguês da Floresta",
+      "species": "cat",
+      "reference": "art/pets/simba_noruegues.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/simba_noruegues/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Quarto gato. Noruegues da Floresta tabby marrom (oficiais BGR 42,71,121 / 19,38,79 / 67,106,160 / 111,157,204, tol 20; base 57602 px). Hue-corr FORTE (0.913-0.999 — pelo marrom saturado, S 157). Lote COMPLETO 10/10 (fechado no turno seguinte, +3 geracoes). BASE CURTA E LARGA: 452x358, bottom 434 (registro proprio, como Otto 411/Mimi 400/Apolo 465) — aterrados registrados em 433-435; sad rescale 446x442->436x432 (-2.3%); wet ja veio BAIXO E LARGO (445x433) = pose encharcada cabe nativamente na base curta (zero rescale); happy_air aereo bottom 449 (flood). happy_air: OVERRIDE p/ flood (padrao Olivia/Yuki) — grab fundiu tudo em 1 comp (corpo ate y=453); flood = corpo + 4 tufos de pelo voando near-pet (elong 1.0-1.8, areas 179-468 — plausivel p/ NFC de pelo longo). messy: flood (10 comps vs 16 do grab, menos floaters); roughness 15.19 vs base 9.39 = +62% (acima do piso +60%; base ja e a mais rugosa do catalogo ate aqui). wet: V 135->131 (marrom escuro mal escurece, como o preto da Kiara), colapso de forma no IoU 0.414 + 22 gotas (23 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos dois olhos (133,181) 3462px / (353,185) 2821px, dy=4 — FACE LARGA: olhos a 220px de distancia (filtro de par por dx<160 nao pega; usar dx<240 p/ bases largas). Pose IoU 0.927, hue 0.999. sad: eye_diff 66.6 + dark_face 6349->11306 (+78%, olhos marejados) + par proprio nos olhos no diff. Contrato 6/6 (512x512x4, ext<=446, alpha borda <8, registro 433-435 + aereo 449). FECHAMENTO: tilt 1a tentativa — ereto e valido (446x405, pescoco estendido, IoU 0.835), par espelhado sob CONVENCAO ABSOLUTA (padrao Olivia): tl -27.2 (rel +10.7) / tr +27.2 (rel +65.1); base -37.9 c/ cabeca no extremo esquerdo. happy_squash: h 343 w 446, IoU 0.671 (base ja e baixa/larga 452x358 — squash le por largura maxima + pose). dizzy: flood (4 comps vs 17 do grab); diff-clusters concentrados nas 2 zonas dos olhos (10041px + 383-406,174-211) = espirais. 9 tentativas, zero retakes no fechamento.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 45,
+      "batch_id": "anim-45-lilo_munchkin",
+      "pet_id": "lilo_munchkin",
+      "name": "Lilo",
+      "breed": "Munchkin",
+      "species": "cat",
+      "reference": "art/pets/lilo_munchkin.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/lilo_munchkin/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "Quinto gato. Munchkin laranja-creme tabby (oficiais BGR 113,163,215 / 139,194,238 / 187,223,243 / 80,121,181, tol 20; base ~63k px). Laranja dominante 0.778, S 115 -> hue-corr FORTE (0.937-1.000). Lote COMPLETO 10/10 (fechado no turno seguinte, +4 geracoes c/ 1 retake do tr). REGISTRO PROPRIO bottom 465 (como Apolo): aterrados em 462-467; squash 435->465 (+30); happy_air aereo 438. TILT — CASO NOVO (base c/ cabeca a DIREITA, lean +50.5, oposto de Olivia/Simba): tl veio naturalmente em 1 tentativa: +23.9 (rel -26.6) = crossfade base->tl move a cabeca 27px a ESQUERDA (direcao correta; convencao REL, precedente Kiara/Maya/Nico p/ bases diagonais; figura ereta 421x446 c/ pescoco estendido, IoU 0.792). ESPELHAR NAO SERVE p/ tr desta vez: o mirror de +23.9 e -23.9 = tambem a ESQUERDA da base (swing de 73px na mesma direcao do tl — tr seria direcao errada). tilt_right deve ser GERADO (cabeca a direita da base, lean alvo > +60) no proximo turno, junto c/ dizzy e sad = exatamente 10 attempts no lote. happy_air: OVERRIDE p/ flood (4o seguido — grab comeu as motion lines de novo: 2 comps vs 19 do flood near-pet, areas ate 526px along 1.8). messy roughness 13.58 vs base 7.14 = +90%. wet: V 211->172 (grande queda em pelo claro) + cov 0.470->0.494 (unica do catalogo que SOBE: pelo molhado espalha/afunda na base curta) + 6 gotas (7 comps). blink VALIDADO POR DIFF-CLUSTERING: par simetrico nos olhos (316,185) 2101px / (406,180) 1246px, dx=90; IoU 0.970 (pose mais estatica do lote), hue 0.999. Contrato 7/7 (512x512x4, ext<=446, alpha borda <8, registro 462-467 + aereo 438). FECHAMENTO: TILT PAR 100% GERADO (primeiro do catalogo sem espelho): tr_v1 rejeitado (lean +42.1, rel -8.4 = cabeca a ESQUERDA da base, direcao errada) -> retake c/ ancora espacial forte (cabeca o mais a direita possivel, tipo coruja) = tr_v2 +97.4 (rel +46.9, ereto 446x400, IoU 0.767). PAR FINAL: tl +23.9 (rel -26.6) / tr +97.4 (rel +46.9) — CONVENCAO REL COMPLETA em torno da base +50.5: crossfades movem a cabeca 27px esq / 47px dir. Assimetria de magnitude documentada. sad (+86.8) serviu de prova de que a cabeca podia ir alem da base (referencia mental do brief). dizzy: 10 diff-clusters nas zonas dos olhos (300,86)+(320,184)+(406,180)+(412,89) = espirais; IoU 0.970 (pose quase estatica — le pelo rosto). sad: cluster 9945px na cabeca caida + 2269 no olho; lean +86.8 (cabeca muito a direita e baixa). 11 tentativas, 1 retake.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 46,
+      "batch_id": "anim-46-zara_oriental",
+      "pet_id": "zara_oriental",
+      "name": "Zara",
+      "breed": "Oriental Shorthair",
+      "species": "cat",
+      "reference": "art/pets/zara_oriental.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/zara_oriental/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 13,
+      "qa_notes": "Sexto gato. Oriental Shorthair lilac-point: corpo marfim + pontos lilas (oficiais BGR 136,141,175 / 104,102,139 / 166,174,203 / 48,37,72 / 221,225,238, tol 20; base 40061 px). HUE-CORR FRACA (0.636-0.882 — pontos lilas deslocam o hue): identidade por paleta oficial (precedente merle/Yuki). A MAIS ESGUIA do catalogo: base 309x449, cov 0.239 (minima), ar 1.45; registro proprio bottom 481 (o mais fundo). Lote COMPLETO 10/10 (fechado no turno seguinte, +7 geracoes c/ 3 rejeicoes do tr). TILT: base A MAIS DIAGONAL do catalogo (lean +63.8, cabeca no extremo direito) — tl veio naturalmente esguio (233x446, ar 1.91, cabeca 22px a esquerda da base, rel -64.3, convencao REL). TILT_RIGHT rejeitado 1x: brief coruja (funcionou no Lilo) falhou aqui — veio SPRAWL 446x385 largo (ar 0.86) c/ cabeca 11px a ESQUERDA da base (rel -10.8): a base extrema puxa tudo para a esquerda. FECHAMENTO TILT_RIGHT (caso-limite espelhado da Olivia, 4 tentativas): v2 (dupla ref c/ tr do Lilo) = sprawl 446x366 c/ cabeca a direita mas rel +6.2 (abaixo do piso); v3 (sad da propria como ref de pose) = base-copy esguia rel -0.2 (modelo ancorou na ref 1 e ignorou a 2); v4 = EDIT DIRETO DO SAD (nova tatica: manter pose exata, trocar so a expressao sad->curious, como edits de blink preservam pose) = APROVADO c/ EXCECAO DOCUMENTADA: 302x446 (ar 1.48, tilt mais esguio do catalogo), rel +12.7 (0.8 abaixo do piso 13.5; precedentes Bob +-13 e Mimi tr rel -4.3) — direcao correta (cabeca a direita da base), corpo alto/esguio, crossfade base->tr move a cabeca ~13px a direita. PAR FINAL: tl rel -64.3 (forte) / tr rel +12.7 (suave) — assimetria de magnitude documentada, caso extremo da base +63.8. happy_air: OVERRIDE p/ flood (5o seguido; grab 1 comp c/ corpo ate y=479; flood = corpo aereo 458 + 7 comps near-pet). blink: proporcoes IDENTICAS a base (307x446 vs 309x449, IoU 0.957, hue 0.996) + par de diff-clusters nos olhos (1330/936 px). dizzy: diff em cluster unico de 13798px centrado na face (296,115) — face wedge estreita funde espirais+oscilacao; 2 comps (lingua/espiral pequena). sad: alto 368x446, rel +12.4 (cabeca baixa a direita) — serviu de base para o tr_v4. 13 tentativas totais.happy_squash: h 407 w 445 (base h 449 — squash em gato alto le por largura; head_x 254 = cabeca centrada). messy: +87% (flood, 8 comps vs 11 do grab). WET ANOMALIA DOCUMENTADA: V 164->183 (CLAREIA — unico do catalogo): pelo marfim curto + brilho especular da agua; colapso de cov 0.239->0.233 leve (pelo curto nao colapsa muito) + 10 gotas (11 comps). Registro: aterrados 478-481 (481+-3). Contrato 5/5 (512x512x4, ext<=446, alpha borda <8). Identidade dos aprovados: oficiais 17913-42495 (base 40061); tilt_left 17913 e o mais baixo (pose esguia expoe menos corpo).",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 47,
+      "batch_id": "anim-47-cosmo_birman",
+      "pet_id": "cosmo_birman",
+      "name": "Cosmo",
+      "breed": "Sagrado da Birmânia",
+      "species": "cat",
+      "reference": "art/pets/cosmo_birman.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cosmo_birman/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Setimo gato. Sagrado da Birmacao seal-point: corpo marfim + pontos seal escuros + LUVAS BRANCAS nas 4 patas + OLHOS AZUIS (assinaturas da raca; 577 px azuis na banda facial da base). Oficiais BGR 219,233,242 / 33,42,77 / 75,90,134 / 177,193,218 / 126,143,183, tol 20 (base 78054 px). Hue-corr FORTE (0.982-0.997 — marfim+seal funciona bem). Lote COMPLETO 10/10 (fechado no turno seguinte, +6 geracoes). Base quase simetrica (lean -10.3) — tilt deve vir facil nas 2 direcoes (primeira base simetrica desde o inicio dos gatos). Registro padrao bottom 476: dirty/wet 478, messy 476. messy +170% (2o maior do catalogo, apos Olivia +214%). wet: V 173->160, cov 0.542->0.385 (colapso forte de pelo fofo, como Apolo 0.496->0.356) + 11 gotas (13 comps). Contrato 3/3 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/wet, flood no messy. FECHAMENTO LIMPO: TILT = PRIMEIRO PAR TOTALMENTE VALIDO NAS 2 DIRECOES desde o inicio dos gatos: base simetrica (lean -10.3) -> tl -24.3 (rel -14.1, acima do piso) c/ tr ESPELHADO +24.3 (rel +34.6) — ambos validos, espelho voltou a servir (primeiro desde Mimi). happy_air: OVERRIDE p/ flood (6o seguido) — flood: corpo aereo 32px acima do chao (y ate 444) + 7 comps de rastro abaixo (linhas de salto alto); grab teria corpo quase tocando (465) e 1 comp. happy_squash: 446x339 (h -24% vs base 441). blink: diff-cluster par nos olhos (217,137)/(138,138) dx=79 (1072/1055 px) + cluster maior na mascara (2856); IoU 0.932, hue 0.994. dizzy: cluster 15570px na face (206,139) = espirais+wobble; 5 comps (flood). sad: 15650px (cabeca caida) + 1937 secundario. sad lean -79.5 (cabeca a esquerda e baixa — base simetrica permite). 9 tentativas, zero retakes.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 48,
+      "batch_id": "anim-48-iris_cornish",
+      "pet_id": "iris_cornish",
+      "name": "Íris",
+      "breed": "Cornish Rex",
+      "species": "cat",
+      "reference": "art/pets/iris_cornish.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/iris_cornish/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 13,
+      "qa_notes": "Oitavo gato. Cornish Rex laranja-avermelhada c/ pelo ondulado (marcel) e ORELHAS GIGANTES (34 spikes no topo — assinatura da raca, validar preservacao). A BASE MAIS ESGUIA do catalogo: 247x446, cov 0.232 (supera Zara 0.239). Oficiais BGR 105,123,199 / 75,81,158 / 138,162,227 / 40,31,89, tol 20 (base 30594 px). Hue-corr 0.844-0.974. Lote COMPLETO 10/10 (fechado no turno seguinte, +9 geracoes c/ 3 rejeicoes). lean base +52.8 (padrao Lilo/Zara). TILT: tl forte em 1a (rel -59.7); tr = 3 tentativas: v1 coruja = ereto esguio mas cabeca a ESQUERDA da base (rel -19.2, rejeitado); v2 EDIT-DO-DIZZY (geometria perfeita do dizzy 310x446 rel +14.3) = pose preservada IoU 0.969 mas cabeca puxou 4px (rel +10.6, rejeitado); v3 EDIT-DO-SAD_V2 = APROVADO rel +13.5 (no piso exato; 273x446 ar 1.63 o mais esguio, IoU base 0.791). PAR: tl rel -59.7 / tr rel +13.5 — assimetria extrema documentada (base c/ cabeca a direita: muito espaco a esquerda, quase nenhum a direita). SAD: v1 REJEITADO POR ESCALA (cov 0.458 = DOBRO da base 0.232, 120k vs 60k px — salto visual grande p/ crossfade; NOVO GATE de escala cov<0.40 adicionado a bateria) -> v2 aprovado: esguio 311x446, cov 0.304, rel +15.5. happy_air: OVERRIDE p/ flood (7o seguido) — corpo 41px no ar + 7 rastros abaixo. blink: IoU 0.932, hue 0.996, diff concentrado na banda facial (2149+1234+850 px). dizzy 10764px (espirais), sad 12444px (cabeca caida). happy_squash 446x360. messy +191% (2o do catalogo). 13 tentativas totais.Registro padrao bottom 478. messy +191% (2o maior do catalogo, apos Olivia +214%). wet: V 183->186 (leve clareamento, pelo rex curto — como Zara) c/ cov 0.232->0.204 + 6 gotas (7 comps, flood). Contrato 4/4 (512x512x4, ext<=446, alpha borda <8). Grab em dirty/tilt, flood em wet/messy.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 49,
+      "batch_id": "anim-49-odin_nebelung",
+      "pet_id": "odin_nebelung",
+      "name": "Odin",
+      "breed": "Nebelung",
+      "species": "cat",
+      "reference": "art/pets/odin_nebelung.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/odin_nebelung/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 11,
+      "qa_notes": "Nono gato. Nebelung azul-cinza c/ pelo longo e pontas prateadas (oficiais BGR 98,77,68 / 127,108,97 / 67,46,37 / 161,145,133 / 207,206,202, tol 20; base ~57k px). Caso quase-neutro como Yuki: hue-corr fraca — identidade por paleta oficial (B>G>R consistente = azul-cinza). BASE CURTA E LARGA: 454x309, bottom 409 (registro proprio; 2a mais curta apos Mimi 400) — aterrados registrar em 409. lean +3.8 QUASE SIMETRICA (como Cosmo) — tilt deve vir facil nas 2 direcoes c/ espelho p/ tr. RISCO CHROMA: pelo azul-cinza vs backdrop azul — dual obrigatorio; dirty: flood venceu (57.9k vs 55.4k oficiais). Lote COMPLETO 10/10 (fechado no turno seguinte, +10 geracoes c/ sandbox reset no meio — recuperado c/ fetch+reset; staging perdido, dirty recuperado da copia integrada). FECHAMENTO: 8 geracoes limpas + 2 retakes do tr. TILT: tl rel -15.4 PASS (low-wide 444x325, IoU 0.854 — par c/ a base curta/larga). tr: retake 1 (coruja) = base-copy rel -6.3; retake 2 (dual-ref c/ tilt_right REAL do Cosmo) = rel +18.4 PASS no piso MAS pose EM PE (446x439 ar 0.98 vs base 0.68; mirror-IoU vs tl 0.618) — REJEITADO por inconsistencia do par look-left/right -> MIRROR aceito c/ EXCECAO DOCUMENTADA: tr abs +11.6 / rel +7.9 (padrao Bob +-13, Mimi -4.3, Zara +12.7; lado fraco de par valido). happy_air: OVERRIDE p/ flood (8o seguido; grab 1 comp; flood = corpo aereo y ate 434 + 8 nuvens de salto near-pet). wet: 74 comps near-pet (MAIOR contagem de gotas/spray do catalogo — pelo longo encharcado; 21 comps >=150px, zero far) + V 123->128 (azul-cinza quase-neutro mal escurece, como Kiara/Zara). messy +66%. blink: par diff-cluster nos olhos (2694/2438 px) + IoU 0.943. dizzy 18978px (espirais), sad 19559px (cabeca caida, c/ brief anti-inflar: cov 0.447 ok gate relativo 1.35x). GATE DE ESCALA agora relativo: cov < base*1.35 (Iris sad 1.98x falharia; Odin ok). Base curta/larga 454x309 bottom 409: aterrados 406-409; dizzy/sad rescale -8.7% (poses altas). 11 tentativas totais.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    },
+    {
+      "sequence": 50,
+      "batch_id": "anim-50-cleo_egyptian",
+      "pet_id": "cleo_egyptian",
+      "name": "Cléo",
+      "breed": "Mau Egípcio",
+      "species": "cat",
+      "reference": "art/pets/cleo_egyptian.png",
+      "states": {
+        "dirty": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/dirty.png"
+        },
+        "wet": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/wet.png"
+        },
+        "messy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/messy.png"
+        },
+        "tilt_left": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/tilt_left.png"
+        },
+        "tilt_right": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/tilt_right.png"
+        },
+        "happy_squash": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/happy_squash.png"
+        },
+        "happy_air": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/happy_air.png"
+        },
+        "dizzy": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/dizzy.png"
+        },
+        "sad": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/sad.png"
+        },
+        "blink": {
+          "status": "qa_passed",
+          "path": "art/pet_animations/cleo_egyptian/blink.png"
+        }
+      },
+      "generation_status": "complete",
+      "normalization_status": "complete",
+      "visual_qa_status": "passed",
+      "integration_status": "integrated",
+      "generation_attempts": 9,
+      "qa_notes": "Decimo e ULTIMO gato — FASE 8 COMPLETA (500/500). Mau Egipcio bronze fumê c/ a ASSINATURA DA RACA quantificada: 72 manchas escuras naturais (20-900px pos open 3x3) — GATE spots>=40 em todos os estados: PASS 64-150 (messy 150 inflamado por sombras de tufts; wet 85, air 86, squash 91, blink 100). Oficiais BGR 160,180,211 / 198,218,235 / 126,138,174 / 30,41,69 / 72,86,110, tol 20 (base 37930 px). Base esguia 289x446 ar 1.54, bottom 478 padrao, lean -17.6 quase simetrica. TILT PAR ESPELHADO (mais forte do catalogo): tl -111.0 (rel -93.4) / tr +111.0 (rel +128.6) — pose peek-left tipo Zara (cabeca y[45-233] vs patas y[339-466], zero overlap = sentado, nao sprawl; IoU 0.488 c/ precedente Zara 0.425 p/ base esguia->tilt largo). happy_air: OVERRIDE p/ flood (9o seguido; grab corpo tocava y=479; flood = corpo aereo y ate 458 + 7 comps alongados near-pet) — IoU 0.298 = salto mais dinamico do catalogo, manchas visiveis no ar (86). blink: PAR PERFEITO no diff-clustering (175,141) 1212px / (251,141) 1182px (dx=76, dy=0) + IoU 0.980 (maior do catalogo p/ blink) + spots 100. messy +93% (16.81 vs 8.71). wet: V 175->167, cov 0.297->0.339 (sobe, pelo curto molhado espalha — como Lilo), 9 gotas (10 comps). dizzy 9666px (espirais), sad 12836px (cabeca caida, cov 0.369 dentro do gate 1.35x). happy_squash 444x280 (esmagamento perfeito: largo+baixo). Registro padrao 478: aterrados 477-478; squash 395->478 (+83), tilt 466->478 (+12). 9 tentativas, zero retakes — fechamento limpo do catalogo.",
+      "blink_variants": {
+        "dirty_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "wet_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "messy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "sad_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        },
+        "dizzy_blink": {
+          "status": "qa_passed",
+          "method": "compose"
+        }
+      }
+    }
+  ],
+  "blink_variant_states": [
+    "dirty_blink",
+    "wet_blink",
+    "messy_blink",
+    "sad_blink",
+    "dizzy_blink"
+  ]
+}

@@ -1,0 +1,905 @@
+{
+  "schema_version": 3,
+  "pets": [
+    {
+      "id": "caramelo",
+      "name": "Caramelo",
+      "breed": "Vira-lata caramelo",
+      "species": "dog",
+      "rarity": "common",
+      "temperament": "happy",
+      "city": "vila_pacata",
+      "unlock_level": 1,
+      "patience": 42,
+      "base_tip": 1.0,
+      "preferred_service": "bath",
+      "colors": [
+        "c98b5b",
+        "9c623f",
+        "f1c49f"
+      ]
+    },
+    {
+      "id": "luna_shih_tzu",
+      "name": "Luna",
+      "breed": "Shih-tzu",
+      "species": "dog",
+      "rarity": "common",
+      "temperament": "anxious",
+      "city": "vila_pacata",
+      "unlock_level": 2,
+      "patience": 38,
+      "base_tip": 1.1,
+      "preferred_service": "groom",
+      "colors": [
+        "f2dfcf",
+        "c9a58d",
+        "fff3e0"
+      ]
+    },
+    {
+      "id": "mingau_srd",
+      "name": "Mingau",
+      "breed": "Gato SRD branco",
+      "species": "cat",
+      "rarity": "common",
+      "temperament": "calm",
+      "city": "vila_pacata",
+      "unlock_level": 4,
+      "patience": 46,
+      "base_tip": 1.1,
+      "preferred_service": "bath",
+      "colors": [
+        "f5f1e8",
+        "b0bec5",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "thor_pinscher",
+      "name": "Thor",
+      "breed": "Pinscher",
+      "species": "dog",
+      "rarity": "common",
+      "temperament": "irritated",
+      "city": "vila_pacata",
+      "unlock_level": 6,
+      "patience": 27,
+      "base_tip": 1.2,
+      "preferred_service": "bath",
+      "colors": [
+        "8d5a3b",
+        "5d4037",
+        "d8b08c"
+      ]
+    },
+    {
+      "id": "mel_golden",
+      "name": "Mel",
+      "breed": "Golden Retriever",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "happy",
+      "city": "suburbio",
+      "unlock_level": 8,
+      "patience": 50,
+      "base_tip": 1.25,
+      "preferred_service": "bath",
+      "colors": [
+        "e3ad58",
+        "bd7d32",
+        "f7d9a2"
+      ]
+    },
+    {
+      "id": "frajola",
+      "name": "Frajola",
+      "breed": "Gato frajola",
+      "species": "cat",
+      "rarity": "common",
+      "temperament": "playful",
+      "city": "suburbio",
+      "unlock_level": 11,
+      "patience": 40,
+      "base_tip": 1.27,
+      "preferred_service": "groom",
+      "colors": [
+        "37474f",
+        "263238",
+        "fff8e7"
+      ]
+    },
+    {
+      "id": "fred_poodle",
+      "name": "Fred",
+      "breed": "Poodle",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "anxious",
+      "city": "suburbio",
+      "unlock_level": 14,
+      "patience": 36,
+      "base_tip": 1.35,
+      "preferred_service": "groom",
+      "colors": [
+        "e8d5c4",
+        "a9826b",
+        "fff3e0"
+      ]
+    },
+    {
+      "id": "amora_siames",
+      "name": "Amora",
+      "breed": "Siamês",
+      "species": "cat",
+      "rarity": "uncommon",
+      "temperament": "elegant",
+      "city": "suburbio",
+      "unlock_level": 17,
+      "patience": 37,
+      "base_tip": 1.4,
+      "preferred_service": "groom",
+      "colors": [
+        "e8d8bd",
+        "6d5147",
+        "f5ead8"
+      ]
+    },
+    {
+      "id": "nina_yorkshire",
+      "name": "Nina",
+      "breed": "Yorkshire",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "fearful",
+      "city": "centro",
+      "unlock_level": 20,
+      "patience": 31,
+      "base_tip": 1.55,
+      "preferred_service": "groom",
+      "colors": [
+        "b89a70",
+        "725d45",
+        "e7c99b"
+      ]
+    },
+    {
+      "id": "tigrinho_tabby",
+      "name": "Tigrinho",
+      "breed": "Gato tigrado",
+      "species": "cat",
+      "rarity": "uncommon",
+      "temperament": "playful",
+      "city": "centro",
+      "unlock_level": 24,
+      "patience": 43,
+      "base_tip": 1.57,
+      "preferred_service": "bath",
+      "colors": [
+        "b28a62",
+        "6f533d",
+        "dfc19d"
+      ]
+    },
+    {
+      "id": "bob_bulldog",
+      "name": "Bob",
+      "breed": "Bulldog francês",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "happy",
+      "city": "centro",
+      "unlock_level": 28,
+      "patience": 45,
+      "base_tip": 1.59,
+      "preferred_service": "bath",
+      "colors": [
+        "a89b8d",
+        "5f554e",
+        "ead9c8"
+      ]
+    },
+    {
+      "id": "neve_angora",
+      "name": "Neve",
+      "breed": "Angorá",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "calm",
+      "city": "centro",
+      "unlock_level": 32,
+      "patience": 48,
+      "base_tip": 1.65,
+      "preferred_service": "groom",
+      "colors": [
+        "f7f4ef",
+        "c9d1d5",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "sol_border",
+      "name": "Sol",
+      "breed": "Border Collie",
+      "species": "dog",
+      "rarity": "epic",
+      "temperament": "happy",
+      "city": "metropole",
+      "unlock_level": 36,
+      "patience": 48,
+      "base_tip": 1.9,
+      "preferred_service": "groom",
+      "colors": [
+        "37474f",
+        "1f292e",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "cafe_bombay",
+      "name": "Café",
+      "breed": "Bombaim",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "curious",
+      "city": "metropole",
+      "unlock_level": 40,
+      "patience": 39,
+      "base_tip": 1.92,
+      "preferred_service": "bath",
+      "colors": [
+        "30343b",
+        "171a1f",
+        "755a4a"
+      ]
+    },
+    {
+      "id": "jade_spitz",
+      "name": "Jade",
+      "breed": "Spitz Alemão",
+      "species": "dog",
+      "rarity": "epic",
+      "temperament": "anxious",
+      "city": "metropole",
+      "unlock_level": 44,
+      "patience": 34,
+      "base_tip": 2.1,
+      "preferred_service": "groom",
+      "colors": [
+        "f4e8d5",
+        "c8a981",
+        "fff8ec"
+      ]
+    },
+    {
+      "id": "pitanga_abissinio",
+      "name": "Pitanga",
+      "breed": "Abissínio",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "active",
+      "city": "litoral",
+      "unlock_level": 48,
+      "patience": 34,
+      "base_tip": 2.12,
+      "preferred_service": "bath",
+      "colors": [
+        "c47b50",
+        "794832",
+        "e7aa7a"
+      ]
+    },
+    {
+      "id": "bento_beagle",
+      "name": "Bento",
+      "breed": "Beagle",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "playful",
+      "city": "litoral",
+      "unlock_level": 52,
+      "patience": 41,
+      "base_tip": 2.14,
+      "preferred_service": "bath",
+      "colors": [
+        "b86e3e",
+        "70412f",
+        "f5e0c8"
+      ]
+    },
+    {
+      "id": "azul_russian",
+      "name": "Azul",
+      "breed": "Azul Russo",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "calm",
+      "city": "litoral",
+      "unlock_level": 56,
+      "patience": 52,
+      "base_tip": 2.2,
+      "preferred_service": "groom",
+      "colors": [
+        "71818c",
+        "46555f",
+        "aebbc2"
+      ]
+    },
+    {
+      "id": "paçoca_dachshund",
+      "name": "Paçoca",
+      "breed": "Dachshund",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "curious",
+      "city": "serra",
+      "unlock_level": 60,
+      "patience": 39,
+      "base_tip": 2.3,
+      "preferred_service": "bath",
+      "colors": [
+        "a65f35",
+        "6a3827",
+        "dc9c70"
+      ]
+    },
+    {
+      "id": "lua_maine_coon",
+      "name": "Lua",
+      "breed": "Maine Coon",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "gentle",
+      "city": "serra",
+      "unlock_level": 64,
+      "patience": 55,
+      "base_tip": 2.4,
+      "preferred_service": "groom",
+      "colors": [
+        "8c776b",
+        "594a43",
+        "c9b6a8"
+      ]
+    },
+    {
+      "id": "kiko_pug",
+      "name": "Kiko",
+      "breed": "Pug",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "happy",
+      "city": "serra",
+      "unlock_level": 68,
+      "patience": 44,
+      "base_tip": 2.48,
+      "preferred_service": "bath",
+      "colors": [
+        "d5b68a",
+        "665248",
+        "eed5ad"
+      ]
+    },
+    {
+      "id": "sushi_japanese",
+      "name": "Sushi",
+      "breed": "Bobtail Japonês",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "playful",
+      "city": "serra",
+      "unlock_level": 72,
+      "patience": 45,
+      "base_tip": 2.5,
+      "preferred_service": "groom",
+      "colors": [
+        "fff5e8",
+        "c56b55",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "cacau_labrador",
+      "name": "Cacau",
+      "breed": "Labrador chocolate",
+      "species": "dog",
+      "rarity": "epic",
+      "temperament": "gentle",
+      "city": "amazonia",
+      "unlock_level": 76,
+      "patience": 57,
+      "base_tip": 2.65,
+      "preferred_service": "bath",
+      "colors": [
+        "76503d",
+        "493126",
+        "ae8065"
+      ]
+    },
+    {
+      "id": "onca_bengal",
+      "name": "Juma",
+      "breed": "Bengal",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "active",
+      "city": "amazonia",
+      "unlock_level": 80,
+      "patience": 36,
+      "base_tip": 2.8,
+      "preferred_service": "groom",
+      "colors": [
+        "c88b48",
+        "513b2d",
+        "e1b373"
+      ]
+    },
+    {
+      "id": "tupa_mane_wolf",
+      "name": "Tupã",
+      "breed": "Lobo-guará guardião",
+      "species": "dog",
+      "rarity": "legendary",
+      "temperament": "calm",
+      "city": "amazonia",
+      "unlock_level": 86,
+      "patience": 60,
+      "base_tip": 3.5,
+      "preferred_service": "bath",
+      "colors": [
+        "d76f32",
+        "50372f",
+        "efb07b"
+      ]
+    },
+    {
+      "id": "aurora_ragdoll",
+      "name": "Aurora",
+      "breed": "Ragdoll",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "gentle",
+      "city": "exotica",
+      "unlock_level": 92,
+      "patience": 63,
+      "base_tip": 3.52,
+      "preferred_service": "groom",
+      "colors": [
+        "eee7de",
+        "776b70",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "gaia_samoyed",
+      "name": "Gaia",
+      "breed": "Samoieda",
+      "species": "dog",
+      "rarity": "legendary",
+      "temperament": "happy",
+      "city": "exotica",
+      "unlock_level": 98,
+      "patience": 62,
+      "base_tip": 3.6,
+      "preferred_service": "groom",
+      "colors": [
+        "fffaf0",
+        "c8d0d4",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "nox_sphynx",
+      "name": "Nox",
+      "breed": "Sphynx",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "curious",
+      "city": "exotica",
+      "unlock_level": 104,
+      "patience": 50,
+      "base_tip": 3.8,
+      "preferred_service": "bath",
+      "colors": [
+        "c89d91",
+        "765e5b",
+        "e5beb0"
+      ]
+    },
+    {
+      "id": "rio_savannah",
+      "name": "Rio",
+      "breed": "Savannah",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "active",
+      "city": "exotica",
+      "unlock_level": 112,
+      "patience": 54,
+      "base_tip": 4.0,
+      "preferred_service": "groom",
+      "colors": [
+        "c59654",
+        "4d4033",
+        "e2bb7e"
+      ]
+    },
+    {
+      "id": "estrela_khao",
+      "name": "Estrela",
+      "breed": "Khao Manee",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "elegant",
+      "city": "exotica",
+      "unlock_level": 120,
+      "patience": 70,
+      "base_tip": 4.5,
+      "preferred_service": "bath",
+      "colors": [
+        "fffdf8",
+        "d5dce0",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "pipoca_corgi",
+      "name": "Pipoca",
+      "breed": "Welsh Corgi",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "playful",
+      "city": "vila_pacata",
+      "unlock_level": 9,
+      "patience": 47,
+      "base_tip": 1.26,
+      "preferred_service": "bath",
+      "colors": [
+        "d99a55",
+        "f4e0c2",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "zeca_schnauzer",
+      "name": "Zeca",
+      "breed": "Schnauzer miniatura",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "curious",
+      "city": "suburbio",
+      "unlock_level": 16,
+      "patience": 54,
+      "base_tip": 1.36,
+      "preferred_service": "groom",
+      "colors": [
+        "8f9699",
+        "4c5559",
+        "d9d9d9"
+      ]
+    },
+    {
+      "id": "belinha_maltes",
+      "name": "Belinha",
+      "breed": "Maltês",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "gentle",
+      "city": "suburbio",
+      "unlock_level": 23,
+      "patience": 42,
+      "base_tip": 1.56,
+      "preferred_service": "groom",
+      "colors": [
+        "f8f4e9",
+        "cfd8dc",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "duke_husky",
+      "name": "Duke",
+      "breed": "Husky Siberiano",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "active",
+      "city": "centro",
+      "unlock_level": 34,
+      "patience": 53,
+      "base_tip": 1.76,
+      "preferred_service": "bath",
+      "colors": [
+        "7f929e",
+        "3d4d57",
+        "f5f7f8"
+      ]
+    },
+    {
+      "id": "lola_boxer",
+      "name": "Lola",
+      "breed": "Boxer",
+      "species": "dog",
+      "rarity": "uncommon",
+      "temperament": "happy",
+      "city": "centro",
+      "unlock_level": 42,
+      "patience": 42,
+      "base_tip": 1.93,
+      "preferred_service": "bath",
+      "colors": [
+        "ba744b",
+        "573c32",
+        "efd0b7"
+      ]
+    },
+    {
+      "id": "nico_aussie",
+      "name": "Nico",
+      "breed": "Pastor Australiano",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "active",
+      "city": "metropole",
+      "unlock_level": 50,
+      "patience": 50,
+      "base_tip": 2.13,
+      "preferred_service": "groom",
+      "colors": [
+        "7c665b",
+        "344650",
+        "ead9c8"
+      ]
+    },
+    {
+      "id": "maya_akita",
+      "name": "Maya",
+      "breed": "Akita Inu",
+      "species": "dog",
+      "rarity": "rare",
+      "temperament": "calm",
+      "city": "metropole",
+      "unlock_level": 58,
+      "patience": 39,
+      "base_tip": 2.29,
+      "preferred_service": "bath",
+      "colors": [
+        "d9a665",
+        "7e563d",
+        "f7e9d1"
+      ]
+    },
+    {
+      "id": "otto_basset",
+      "name": "Otto",
+      "breed": "Basset Hound",
+      "species": "dog",
+      "rarity": "epic",
+      "temperament": "gentle",
+      "city": "litoral",
+      "unlock_level": 74,
+      "patience": 55,
+      "base_tip": 2.64,
+      "preferred_service": "bath",
+      "colors": [
+        "b87a4e",
+        "5d4037",
+        "f2dfcf"
+      ]
+    },
+    {
+      "id": "kiara_doberman",
+      "name": "Kiara",
+      "breed": "Doberman",
+      "species": "dog",
+      "rarity": "epic",
+      "temperament": "elegant",
+      "city": "serra",
+      "unlock_level": 90,
+      "patience": 52,
+      "base_tip": 3.51,
+      "preferred_service": "groom",
+      "colors": [
+        "5b4037",
+        "251f1d",
+        "b96a45"
+      ]
+    },
+    {
+      "id": "apolo_bernese",
+      "name": "Apolo",
+      "breed": "Boiadeiro Bernês",
+      "species": "dog",
+      "rarity": "legendary",
+      "temperament": "gentle",
+      "city": "amazonia",
+      "unlock_level": 108,
+      "patience": 51,
+      "base_tip": 3.81,
+      "preferred_service": "groom",
+      "colors": [
+        "292d2f",
+        "8a563d",
+        "f5f2ea"
+      ]
+    },
+    {
+      "id": "mimi_persa",
+      "name": "Mimi",
+      "breed": "Persa",
+      "species": "cat",
+      "rarity": "uncommon",
+      "temperament": "calm",
+      "city": "vila_pacata",
+      "unlock_level": 12,
+      "patience": 50,
+      "base_tip": 1.27,
+      "preferred_service": "groom",
+      "colors": [
+        "d8c4aa",
+        "8d7763",
+        "f6ead9"
+      ]
+    },
+    {
+      "id": "yuki_scottish",
+      "name": "Yuki",
+      "breed": "Scottish Fold",
+      "species": "cat",
+      "rarity": "uncommon",
+      "temperament": "gentle",
+      "city": "suburbio",
+      "unlock_level": 19,
+      "patience": 38,
+      "base_tip": 1.42,
+      "preferred_service": "bath",
+      "colors": [
+        "b9bec5",
+        "737b84",
+        "eef1f4"
+      ]
+    },
+    {
+      "id": "olivia_calico",
+      "name": "Olívia",
+      "breed": "Calico",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "playful",
+      "city": "suburbio",
+      "unlock_level": 26,
+      "patience": 45,
+      "base_tip": 1.58,
+      "preferred_service": "bath",
+      "colors": [
+        "e2a15f",
+        "59483e",
+        "fff5e8"
+      ]
+    },
+    {
+      "id": "simba_noruegues",
+      "name": "Simba",
+      "breed": "Norueguês da Floresta",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "active",
+      "city": "centro",
+      "unlock_level": 38,
+      "patience": 38,
+      "base_tip": 1.91,
+      "preferred_service": "groom",
+      "colors": [
+        "9d795e",
+        "4d4038",
+        "dfcbb7"
+      ]
+    },
+    {
+      "id": "lilo_munchkin",
+      "name": "Lilo",
+      "breed": "Munchkin",
+      "species": "cat",
+      "rarity": "rare",
+      "temperament": "curious",
+      "city": "centro",
+      "unlock_level": 46,
+      "patience": 46,
+      "base_tip": 2.11,
+      "preferred_service": "bath",
+      "colors": [
+        "d5aa76",
+        "8a6548",
+        "f4dfc3"
+      ]
+    },
+    {
+      "id": "zara_oriental",
+      "name": "Zara",
+      "breed": "Oriental Shorthair",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "elegant",
+      "city": "metropole",
+      "unlock_level": 54,
+      "patience": 54,
+      "base_tip": 2.2,
+      "preferred_service": "groom",
+      "colors": [
+        "9b8177",
+        "594945",
+        "d8bdb2"
+      ]
+    },
+    {
+      "id": "cosmo_birman",
+      "name": "Cosmo",
+      "breed": "Sagrado da Birmânia",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "gentle",
+      "city": "litoral",
+      "unlock_level": 66,
+      "patience": 47,
+      "base_tip": 2.47,
+      "preferred_service": "groom",
+      "colors": [
+        "eadfce",
+        "6a5b61",
+        "ffffff"
+      ]
+    },
+    {
+      "id": "iris_cornish",
+      "name": "Íris",
+      "breed": "Cornish Rex",
+      "species": "cat",
+      "rarity": "epic",
+      "temperament": "active",
+      "city": "serra",
+      "unlock_level": 82,
+      "patience": 44,
+      "base_tip": 2.82,
+      "preferred_service": "bath",
+      "colors": [
+        "b98578",
+        "674f50",
+        "dfb4a7"
+      ]
+    },
+    {
+      "id": "odin_nebelung",
+      "name": "Odin",
+      "breed": "Nebelung",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "calm",
+      "city": "amazonia",
+      "unlock_level": 100,
+      "patience": 43,
+      "base_tip": 3.61,
+      "preferred_service": "groom",
+      "colors": [
+        "566773",
+        "293840",
+        "93a4ad"
+      ]
+    },
+    {
+      "id": "cleo_egyptian",
+      "name": "Cléo",
+      "breed": "Mau Egípcio",
+      "species": "cat",
+      "rarity": "legendary",
+      "temperament": "elegant",
+      "city": "exotica",
+      "unlock_level": 116,
+      "patience": 40,
+      "base_tip": 4.01,
+      "preferred_service": "bath",
+      "colors": [
+        "9aa08f",
+        "4b5148",
+        "d5d7c8"
+      ]
+    }
+  ]
+}

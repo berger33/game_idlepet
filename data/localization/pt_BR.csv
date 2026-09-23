@@ -1,0 +1,596 @@
+key,pt_BR
+ACHIEVEMENT_TOAST,Conquista desbloqueada!
+ACH_COLLECT_15,Família Crescendo
+ACH_COLLECT_30,Casa Cheia
+ACH_COLLECT_5,Amigo dos Pets
+ACH_COLLECT_50,Todos os Focinhos
+ACH_COMBO_20,Lenda do Petshop
+ACH_COMBO_5,Banho Quente
+ACH_COMBO_50,Mestre do Ritmo
+ACH_COSMETICS_5,Vitrine de Estilo
+ACH_EARN_500,Pote Cheio
+ACH_FIRST_BATH,Primeiro Mergulho
+ACH_FRIEND_50,Melhor Amigo
+ACH_LEVEL_25,Profissional do Bairro
+ACH_OFFLINE_1H,O Negócio Não Para
+ACH_OFFLINE_8H,Cofre Trabalhador
+ACH_PERFECT_1,Mão de Groomer
+ACH_PERFECT_10,Espuma na Medida
+ACH_PERFECT_100,Mãos de Ouro
+ACH_PRESTIGE_1,Nova Franquia
+ACH_REVIEWS_10,Queridinho do Bairro
+ACH_REVIEWS_50,Queridinho da Vizinhança
+ACH_RICH_5000,Pote Cheio
+ACH_SERVICES_100,Bairro Atendimento
+ACH_SERVICES_1000,Lenda do Pet Shop
+ACH_SERVICES_500,Instituição do Bairro
+ACH_STAFF_2,Equipe de Verdade
+ACH_STAFF_5,Elenco Completo
+ACH_STREAK_7,Semana Perfeita
+ACH_UPGRADE_25,Estação Renomada
+ACH_UPGRADE_5,Ducha Poderosa
+ACH_UPGRADE_50,Estação dos Sonhos
+AFFECTION_TOAST,Laço de amizade! +%d Brasas
+ANALYTICS_CONSENT,Compartilhar dados de uso anônimos
+ASSIST_ACTIVE,💡 Assistência ativa: %d cliente(s) restantes
+ASSIST_TOAST,💡 Assistência: janela maior + paciência por 3 clientes!
+ASSIST_WINDOW,Assistência motora (faixa e alvos maiores)
+BACK,VOLTAR AO PETSHOP
+BIA_HIRED,Bia entrou para a equipe! Ela rende sozinha enquanto você atende.
+BUDDY_TAG,amigo
+BUDDY_VISIT,%s sentiu sua falta e veio primeiro!
+BUY,COMPRAR
+CHOOSE_CLIENT,Escolha o próximo cliente da fila
+CLAIM,COLETAR
+CLAIMED,COLETADO
+CLIENT_LEFT,%s cansou de esperar e foi embora.
+CLIENT_LEFT_COINS,💔 %s foi embora! -R$ %d
+COINS,R$
+COLLECT,COLETAR
+COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
+COLLECTION_TITLE,COLEÇÃO
+COLORBLIND_MODE,Modo daltônico (azul/laranja na faixa)
+COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
+COMBO_CHEST_TITLE,Baú do Ritmo!
+COMBO_CHEST_TOAST,Baú do combo ×%d! +R$ %d e +%d Brasas!
+COMEBACK_GIFT,+1 freeze e R$ de boas-vindas!
+COMEBACK_TITLE,BEM-VINDO DE VOLTA!
+COMEBACK_TOAST,Bem-vindo de volta! Presente de retorno resgatado.
+COSMETIC_NO_FX,Cosméticos equipados aparecem no petshop na hora
+COS_BANDANA_BLUE,Bandana Azul
+COS_BANDANA_RED,Bandana Vermelha
+COS_CROWN_BUBBLES,Coroa de Bolhas
+COS_CROWN_GOLD,Coroa Real
+COS_SCARF_CARAMEL,Cachecol Caramelo
+COS_TUB_BUBBLEGUM,Banheira Chiclete
+COS_TUB_CORAL,Banheira Coral
+COS_TUB_GALAXY,Banheira Galáxia
+COS_TUB_GOLD,Banheira Dourada
+COS_TUB_LAVENDER,Banheira Lavanda
+COS_TUB_LIME,Banheira Limão
+COS_TUB_MINT,Banheira Menta
+COS_TUB_OCEAN,Banheira Oceano
+COS_TUB_PINK,Banheira Rosa Shampoo
+COS_TUB_SKY,Banheira Céu
+COS_TUB_SNOW,Banheira Neve
+COS_TUB_SUNSET,Banheira Pôr do Sol
+COS_WALL_BEACH,Parede Praiana
+COS_WALL_CARNAVAL,Parede de Confete
+COS_WALL_GARDEN,Parede Jardim
+COS_WALL_JUNINA,Parede de Arraiá
+COS_WALL_NATAL,Parede de Luzinhas
+COS_WALL_STARS,Parede Estrelada
+DAILY_AUTO_BODY,Dia %d: R$ %d!\nSequência: %d dias + %d freezes\nDia 7 = Mel Golden lendário! Volte amanhã para 2x moedas.
+DAILY_AUTO_BONUS,🎁 Bônus Dia 7: Pet lendário!
+DAILY_AUTO_TITLE,Login Dia %d!
+DAILY_CLAIMED_TOAST,Login coletado! +R$ %d
+DAILY_LOGIN,LOGIN DIÁRIO Dia %d/7
+DAILY_SPIN_DESC,Gire 1×/dia: R$ escalados
+DAILY_SPIN_TITLE,Roleta Diária
+DRAG_TOOL_TO,Arraste %s da prateleira até %s
+ECO_MODE,Modo econômico
+EMBERS,Brasas
+EQUIP,USAR
+EQUIPPED,EM USO
+EVENTS_OFF,Sem evento hoje
+EVENT_0,Domingo da Família
+EVENT_1,Segunda do Banho
+EVENT_2,Terça da Tosa
+EVENT_3,Quarta da Secagem
+EVENT_4,Quinta do Laço
+EVENT_5,Sexta do VIP
+EVENT_6,Sábado do Combo
+EVENT_DESC_0,tudo rende +25%
+EVENT_DESC_1,banho rende ×2 e domina a fila
+EVENT_DESC_2,tosa rende ×2 e domina a fila
+EVENT_DESC_3,secagem rende ×2 e domina a fila
+EVENT_DESC_4,laço rende ×2 • pets raros aparecem mais
+EVENT_DESC_5,VIPs em dobro • perfume rende ×2
+EVENT_DESC_6,Perfect vale +50%
+EVENT_GOAL_ANY,qualquer serviço
+EVENT_GOAL_DESC,%s: %d/%d atendimentos
+EVENT_GOAL_REWARD,baú: +R$ %d e +%d Brasas
+EVENT_GOAL_TITLE,META DO DIA
+FAIL_NO_PENALTY,Sem punição — tente de novo.
+FAIL_OVERWASHED,%s demais. Solte assim que o aro entrar na faixa verde.
+FAIL_TIMEOUT,O tempo acabou. Faça o movimento com mais ritmo!
+FAIL_TOO_SOON,Leve a %s até a faixa verde antes de finalizar.
+FAVORITE_HINT,Toque para tornar seu preferido — ele visita mais
+FAVORITE_SET,Pet preferido definido!
+FILTER_ACCESSORY,LAÇOS
+FILTER_ALL,TODOS
+FILTER_ALL_COSMETICS,TUDO
+FILTER_BATH,BANHEIRAS
+FILTER_CATS,GATOS
+FILTER_DOGS,CÃES
+FILTER_LEGENDARY,LENDÁRIOS
+FILTER_WALL,PAREDES
+FINISH_BATH,FINALIZAR BANHO
+FIRST_BONUS,🎉 Primeira vez perfeita! +1 Brasa!
+FIRST_PET_READY,Caramelo está pronto! Arraste o sabonete até ele.
+FONT_SCALE,Tamanho da fonte
+FONT_SCALE_LARGE,Grande
+FONT_SCALE_NORMAL,Normal
+FONT_SCALE_SMALL,Pequena
+FRANCHISE_DESC,Tokens disponíveis: %d
+FRANCHISE_EXCHANGE,Franquia
+FREEZE_EARNED,Freeze ganho pela sequência!
+FREEZE_USED,Freeze protegeu sua sequência!
+GAME_TITLE,PetShop Tycoon: Do Banho à Rede
+GOAL_CHAPTER,capítulo %s
+GOAL_LINE,PRÓXIMO: %s no Nv.%d • nível atual %d%%
+GOAL_NEXT_LEVEL,PRÓXIMO NÍVEL LIBERA: %s • %d%%
+GOAL_PET,pet %s
+GOAL_PRESTIGE,Carreira no topo • %d token(s) de franquia disponíveis
+GOAL_SERVICE,serviço %s
+GOOD_RESULT,MUITO BOM!
+HAPTICS,Vibração
+HINT_BATH,Esfregue em círculos e solte na faixa verde
+HINT_DRY,Acompanhe o círculo com o secador até encher
+HINT_GROOM,Siga as setas: deslize na direção indicada
+HINT_PERFUME,Borrife quando o anel dourado acender (3 borrifadas)
+HINT_STYLE,Encaixe o lacinho na marca rosa e segure firme
+HIRE,CONTRATAR
+HIRED,NA EQUIPE
+IAP_MOCK_GRANTED,%s concedido (mock offline)!
+IAP_NOTE,Compras reais chegam com a integração da loja (offline: indisponível).
+LANGUAGE,Idioma
+LEFT_HANDED_MODE,Mão esquerda (prateleira à esquerda)
+LEVEL_UP_TOAST,Nível %d! +R$ %d
+LOADING,Carregando...
+LOCKED,nv. %d
+MAP_TITLE,DO BALDE AO IMPÉRIO
+MASTERY_TOAST,Maestria de %s %s!
+MISSIONS_NO_ADS,Missões nunca exigem anúncio ou compra.
+MISSIONS_TITLE,MISSÕES DO DIA
+MISSION_METRIC_combo_reached,COMBO %d/%d
+MISSION_METRIC_four_plus_reviews,AVALIAÇÕES 4★+ %d/%d
+MISSION_METRIC_perfect,PERFECTS %d/%d
+MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_services,ATENDIMENTOS %d/%d
+MISSION_METRIC_upgrades,MELHORIAS %d/%d
+MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tudo, Estilista melhora a tosa, Veterinário cura mais rápido, Massagem acalma o cliente e Perfeccionista alarga a janela do perfeito."
+MISSION_PERFECT,NA MEDIDA %d/3
+MISSION_SERVICES,BANHOS E TOSAS %d/5
+MISSION_UPGRADE,TUDO NOVINHO %d/1
+MOCK_TAG,MOCK
+MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
+MUSIC_VOLUME,Música
+NAV_COLLECTION,Pets
+NAV_LOCKED,Nv.%d
+NAV_MAP,Mapa
+NAV_MISSIONS,Missões
+NAV_SETTINGS,Ajustes
+NAV_SHOP,Loja
+NAV_STAFF,Equipe
+NEIGHBORHOOD,BAIRRO
+NEIGHBORHOOD_0,Vizinho Amigo
+NEIGHBORHOOD_1,Pet Shop Confiável
+NEIGHBORHOOD_2,Queridinho do Bairro
+NEIGHBORHOOD_3,Lenda do Bairro
+NEIGHBORHOOD_4,Mitinho Eterno
+NEW_TAG,Novo!
+NOTIFICATIONS,Lembretes de retorno
+NOTIF_ENABLED_TOAST,Notificações ativadas! 🔔
+NOTIF_OFFLINE_BODY,%s rendeu R$ %d enquanto você estava fora! Volte para coletar.
+NOTIF_OFFLINE_TITLE,O cofre está cheio!
+NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!
+NOTIF_PETS_TITLE,%s sentiu sua falta!
+NOTIF_PROMPT_BODY,"Te avisamos quando o cofre encher e quando seu pet favorito voltar. Sem spam, 2x por dia max. Ativar notificações?"
+NOTIF_PROMPT_NO,AGORA NÃO
+NOTIF_PROMPT_TITLE,Cofre cheio te avisa?
+NOTIF_PROMPT_YES,ATIVAR
+NO_TIP,sem gorjeta desta vez
+OFF,desligado
+OFFLINE_BODY,%d min fora • cofre: +R$ %d
+OFFLINE_DAILY,Login diário (dia %d) pronto para resgatar
+OFFLINE_DOUBLE_AD,DOBRAR (vídeo)
+OFFLINE_DOUBLE_EMBER,DOBRAR (1 Brasa)
+OFFLINE_STAFF,Sua equipe rendeu sozinha: +%d%% da sua renda
+OFFLINE_TITLE,Enquanto você estava fora
+OFFLINE_TODAY,Hoje: %s — %s
+ON,ligado
+OWNED,ADQUIRIDO
+PASSIVE_BATH_SPEED,banho rende mais
+PASSIVE_GROOM_QUALITY,tosa com mais qualidade
+PASSIVE_PATIENCE,clientes esperam mais
+PASSIVE_PERFECT_WINDOW,faixa Perfect maior
+PASSIVE_SPEED,+agilidade geral
+PASSIVE_VETERINARY_XP,+XP em tudo
+PASS_DESC,Complete as 3 missões do dia para avançar
+PASS_DONE,Passe completo! Obrigado pela jornada
+PASS_TITLE,PASSE 28 DIAS —
+PASS_UNLOCKED,Dia do passe destravado:
+PAYS,paga
+PERFECT,PERFEITO!
+PERFECT_RESULT,PERFEITO!
+PETTING_COUNT,carinho %d/50
+PETTING_LIMIT,%s já está banhado de carinho!
+PET_AMORA_SIAMES,Amora
+PET_APOLO_BERNESE,Apolo
+PET_AURORA_RAGDOLL,Aurora
+PET_AZUL_RUSSIAN,Azul
+PET_BELINHA_MALTES,Belinha
+PET_BENTO_BEAGLE,Bento
+PET_BOB_BULLDOG,Bob
+PET_CACAU_LABRADOR,Cacau
+PET_CAFE_BOMBAY,Café
+PET_CARAMELO,Caramelo
+PET_CLEO_EGYPTIAN,Cléo
+PET_COSMO_BIRMAN,Cosmo
+PET_DUKE_HUSKY,Duke
+PET_ESTRELA_KHAO,Estrela
+PET_FRAJOLA,Frajola
+PET_FRED_POODLE,Fred
+PET_GAIA_SAMOYED,Gaia
+PET_IRIS_CORNISH,Íris
+PET_JADE_SPITZ,Jade
+PET_KIARA_DOBERMAN,Kiara
+PET_KIKO_PUG,Kiko
+PET_LILO_MUNCHKIN,Lilo
+PET_LOLA_BOXER,Lola
+PET_LUA_MAINE_COON,Lua
+PET_LUNA_SHIH_TZU,Luna
+PET_MAYA_AKITA,Maya
+PET_MEL_GOLDEN,Mel
+PET_MIMI_PERSA,Mimi
+PET_MINGAU_SRD,Mingau
+PET_NEVE_ANGORA,Neve
+PET_NICO_AUSSIE,Nico
+PET_NINA_YORKSHIRE,Nina
+PET_NOX_SPHYNX,Nox
+PET_ODIN_NEBELUNG,Odin
+PET_OLIVIA_CALICO,Olívia
+PET_ONCA_BENGAL,Juma
+PET_OTTO_BASSET,Otto
+PET_PAÇOCA_DACHSHUND,Paçoca
+PET_PIPOCA_CORGI,Pipoca
+PET_PITANGA_ABISSINIO,Pitanga
+PET_RIO_SAVANNAH,Rio
+PET_SIMBA_NORUEGUES,Simba
+PET_SOL_BORDER,Sol
+PET_SUSHI_JAPANESE,Sushi
+PET_THOR_PINSCHER,Thor
+PET_TIGRINHO_TABBY,Tigrinho
+PET_TUPA_MANE_WOLF,Tupã
+PET_YUKI_SCOTTISH,Yuki
+PET_ZARA_ORIENTAL,Zara
+PET_ZECA_SCHNAUZER,Zeca
+PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
+PRESTIGE_DONE,Franquia nível %d! +10% de R$ por nível
+PRESTIGE_GO,PRESTIGIAR
+PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe, pesquisa e 25% da estação/ferramentas"
+PRESTIGE_LOCKED,Alcance nível 15 e acumule mais R$
+PRESTIGE_LOST,"Recomeça: R$, equipe e nível de carreira (a partir do 10)"
+PRESTIGE_PREVIEW,Herança: estação Nv.%d • recomeça no nível %d com todos os serviços
+PRESTIGE_TITLE,FRANQUIA
+PROOF_SOCIAL_LIVE,💬 %s: %s %s
+QUEUE_ARRIVING,Chegando
+QUEUE_RELOAD,A fila recarrega em %0.1fs
+QUEUE_SPEEDUP,Toque para acelerar
+QUEUE_WAITING,aguardando cliente
+RARITY_common,Comum
+RARITY_epic,Épico
+RARITY_legendary,Lendário
+RARITY_rare,Raro
+RARITY_uncommon,Incomum
+RECOMMENDED_TAG,RECOMENDADO
+REDUCED_FX,Partículas reduzidas
+REP_UP,O bairro está falando bem de você! Nova faixa de reputação
+RESEARCH_CALM_PETS,Comportamento Animal
+RESEARCH_CLEAN_WATER,Água Purificada
+RESEARCH_COST,PESQUISAR (%d)
+RESEARCH_DESC,%d/%d pesquisadas
+RESEARCH_DONE,✓ PRONTA
+RESEARCH_EFFECT_bath_income,banho rende +%d%%
+RESEARCH_EFFECT_offline_rate,cofre offline +%d%%
+RESEARCH_EFFECT_patience,paciência dos pets +%d%%
+RESEARCH_EFFECT_satisfaction,janela de Perfect +%d%%
+RESEARCH_EFFECT_service_speed,serviços %d%% mais rápidos
+RESEARCH_FAST_DRYER,Secagem Eficiente
+RESEARCH_GENTLE_FORMULA,Fórmula Suave
+RESEARCH_LOCKED,Requer: %s
+RESEARCH_MOBILE_CLINIC,Clínica Móvel
+RESEARCH_NOTE,Custo entre parênteses em tokens de franquia (ganhos ao prestigiar). Efeitos permanentes: sobrevivem ao prestígio.
+RESEARCH_TITLE,PESQUISA DA FRANQUIA
+RESEARCH_TOAST,Pesquisa concluída: %s
+RESULT_ALMOST,QUASE LÁ!
+RESULT_BUDDY,• buddy na banheira dupla: +40%
+RESULT_RHYTHM,RITMO PERFEITO ×%d
+RESULT_SPECIAL,★ pedido especial atendido!
+REVEAL_ACHIEVEMENT_TITLE,Conquista desbloqueada!
+REVEAL_CHAPTER_BODY,Estabelecimento nível %d — o bairro inteiro percebeu.
+REVEAL_CHAPTER_TITLE,Novo capítulo!
+REVEAL_COSMETIC_TITLE,Presente de temporada!
+REVEAL_OK,CONTINUAR
+REVEAL_PET_ADOPTED,Visitante adotado!
+REVEAL_PET_HINT,Toque no pet durante o atendimento para fazer carinho.
+REVEAL_PET_TITLE,Novo pet na coleção!
+REVEAL_SERVICE_TITLE,Novo serviço liberado!
+RUSH_ACTIVE,🔥 PICO ×2 — %ds
+RUSH_COOLDOWN,⏳ pico em %ds
+RUSH_TOAST,PICO DO BAIRRO! Gorjetas dobradas e fila cheia!
+SAFE_AREA_NOTICE,Área segura ajustada para notch
+SEASON_ACTIVE,TEMPORADA: %s — presente: %s
+SEASON_GIFT,Presente de temporada (%s): %s liberado!
+SEASON_NO_GIFT,em breve
+SEASON_WHEN_carnaval,fevereiro e março
+SEASON_WHEN_festa_junina,junho
+SEASON_WHEN_natal,dezembro
+SEASON_carnaval,Carnaval
+SEASON_festa_junina,Festa Junina
+SEASON_natal,Natal Tropical
+SERVE,SERVIR
+SERVICE_BATH,Banho
+SERVICE_DRY,Secagem
+SERVICE_GROOM,Tosa
+SERVICE_PERFUME,Perfume
+SERVICE_STYLE,Laço
+SETTINGS_TITLE,AJUSTES E ACESSIBILIDADE
+SFX_VOLUME,Efeitos
+SHARE_ACHIEVEMENT_BUTTON,📷 CONQUISTA
+SHARE_ACHIEVEMENT_CAPTION,Conquistei %s no PetShop Tycoon! #PetShopTycoon
+SHARE_ACHIEVEMENT_HEADLINE,conquista desbloqueada
+SHARE_AFTER,DEPOIS
+SHARE_BEFORE,ANTES
+SHARE_BUTTON,📷 ANTES/DEPOIS
+SHARE_CAPTION,Antes e depois de %s no PetShop Tycoon! %s #PetShopTycoon
+SHARE_FAILED,Sem captura ainda — termine um serviço
+SHARE_HASHTAG,#PetShopTycoon
+SHARE_HEADLINE,antes & depois no banho e tosa
+SHARE_QR_LABEL,Escaneie para jogar
+SHARE_SAVED,Foto salva em user://shares/!
+SHARE_SAVED_GALLERY,Foto salva em Imagens/PetShopTycoon • legenda copiada
+SHARE_SERVICE_BATH,saiu limpinho do banho!
+SHARE_SERVICE_DRY,ficou sequinho e fofo!
+SHARE_SERVICE_GROOM,ganhou um corte novo!
+SHARE_SERVICE_PERFUME,ficou muito cheiroso!
+SHARE_SERVICE_STYLE,amou o novo lacinho!
+SHARE_WEB,Abrindo o compartilhamento…
+SHOP_NAME,Nome do pet shop
+SHOP_NAME_HINT,ex.: Banho da Lua
+SHOP_TITLE,LOJA
+SKIP_TUTORIAL,PULAR TUTORIAL
+SOURCE_BTN_ACHIEVEMENT,CONQUISTA
+SOURCE_BTN_SEASON,TEMPORADA
+SOURCE_achievement,Conquista: combo de 20
+SPECIAL_ACCEPT,✓  ACEITAR (+40% gorjeta)
+SPECIAL_DECLINE,AGORA NÃO
+SPECIAL_ORDER_NOTE,💰 Aceitar rende gorjeta extra + combo mantido!
+SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SPIN_ACTION,GIRAR
+SPIN_DONE,FEITO
+STAFF_AUTOMATION,rende sozinha +%d%% da sua renda (em jogo e no cofre)
+STAFF_BIA,Bia
+STAFF_DRA_LUNA,Dra. Luna
+STAFF_MAYA,Maya
+STAFF_PLAYER,Você
+STAFF_SEU_ZE,Seu Zé
+STAFF_TEO,Téo
+STAFF_TITLE,EQUIPE
+STREAK_LINE,Sequência: %d dias • Freezes: %d
+STREAK_LOSS_NOTE,Se perder
+TEACH_NEW_GESTURE,Gesto novo! Experimente sem pressa:
+TEMPER_AGITATED,agitado
+TEMPER_CALM,calmo
+TEMPER_PLAYFUL,brincalhão
+TEMPER_SHY,tímido
+TIP_LINE,gorjeta +%d%%
+TOMORROW,Amanhã
+TOMORROW_CARD_BODY,Amanhã: %s\n%s\nSua sequência: %d dias. Volte para não perder o bônus de login e a roleta diária!
+TOMORROW_CARD_TITLE,Amanhã: evento + novo pet!
+TOOL_BOW,Laço
+TOOL_CLIPPER,Máquina de tosa
+TOOL_DRYER,Secador
+TOOL_PERFUME,Perfume
+TOOL_SOAP,Sabonete
+TRAINING_GHOST,Modo treino (fantasma)
+TRANSFER_COPIED,Código copiado! Cole em Ajustes no outro aparelho.
+TRANSFER_COPY,COPIAR CÓDIGO
+TRANSFER_DONE,Progresso restaurado!
+TRANSFER_EXPORT_DESC,Copia um código assinado para colar em outro aparelho
+TRANSFER_IMPORT,Restaurar progresso
+TRANSFER_IMPORT_DESC,Cola o código copiado (substitui o save atual)
+TRANSFER_INVALID,Código inválido ou corrompido.
+TRANSFER_PASTE,COLAR CÓDIGO
+TRANSFER_TITLE,Transferir progresso
+TRY_AGAIN,TENTAR NOVAMENTE
+TUT_STEP_1,Toque em um cliente da fila para atender
+TUT_STEP_2,Arraste %s até %s
+UPGRADES_LOCKED,Desbloqueia no nível %d
+UPGRADES_MAXED,MÁXIMO
+UPGRADES_MISSING,Faltam R$ %d
+UPGRADES_PER_LEVEL,por nível
+UPGRADES_REWARD,de recompensa
+UPGRADES_STATION,Estação de banho
+UPGRADES_STATION_LEVEL,Estação nível %d! Recompensa maior.
+UPGRADES_TITLE,MELHORIAS
+UPGRADES_TOOL_UP,%s melhorado! +4%% de bônus
+UPGRADES_UPGRADE,MELHORAR
+VIP_TAG,VIP
+VISITOR_PROGRESS,%s adorou a visita! (%d/%d) — mais um pouco e entra na coleção
+VISITOR_TAG,visitante ✦ %d/%d
+VOCATION_BATHER,Banhista
+VOCATION_GROOMER,Tosador
+VOCATION_MASSEUSE,Massagem
+VOCATION_PERFECTIONIST,Perfeccionista
+VOCATION_STYLIST,Estilista
+VOCATION_VETERINARY,Veterinário
+WEEKLY_CHEST_TOAST,Baú da semana! +R$ %d e +%d Brasas
+WEEKLY_FEATURED,Em destaque esta semana
+WEEKLY_FEATURED_DESC,Escolhido pela comunidade — muda toda segunda
+WEEKLY_NOTE,Reinicia na segunda-feira • recompensas maiores que as diárias
+WEEKLY_NOTE_SHORT,semanal
+WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s
+WEEKLY_RESET_DAYS,reseta em %d dias
+WEEKLY_RESET_TOMORROW,reseta amanhã
+WEEKLY_TITLE,MISSÕES DA SEMANA
+WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
+WMISSION_BATH,%d/40 banhos
+WMISSION_COMBO,Combo %d/8
+WMISSION_PERFECT,%d/15 perfeitos
+WMISSION_SPEND,%d/600 investidos
+WMISSION_STYLE,%d/12 laços
+WMISSION_TIPS,%d/10 gorjetas
+WMISSION_VIP,%d/3 clientes VIP
+RESEARCH_EFFECT_offline_cap,cap offline +%dh
+RESEARCH_EFFECT_vip_chance,chance VIP +%d%%
+RESEARCH_EFFECT_tip_bonus,gorjetas +%d%%
+RESEARCH_EFFECT_combo_protection,proteção de combo
+RESEARCH_EFFECT_mastery_bonus,bônus maestria +%d%%
+RESEARCH_EFFECT_automation,automação +%d%%
+RESEARCH_EFFECT_prestige_bonus,bônus prestígio +%d%%
+RESEARCH_QUICK_HANDS,Mãos Ágeis
+RESEARCH_TIP_TRAINING,Treino de Gorjetas
+RESEARCH_VIP_MARKETING,Marketing VIP
+RESEARCH_SECOND_BRANCH,Segunda Filial
+RESEARCH_COMBO_SHIELD,Escudo de Combo
+RESEARCH_MASTER_TOOLS,Ferramentas de Mestre
+RESEARCH_AUTO_GROOMER,Tosador Automático
+RESEARCH_FRANCHISE_NETWORK,Rede de Franquias
+RESEARCH_ELITE_CLIENTS,Clientes Elite
+RESEARCH_EMPIRE_LEGACY,Legado do Império
+GHOST_AUTO_OFF,Fantasma de treino desativado — você já é craque!
+TIP_ODDS,Gorjetas: 60% 0% • 25% +15% • 10% +30% • 5% +60% (+bairro+pesquisa)
+SECOND_BRANCH_ACTIVE,FILIAL 2 ATIVA • +15% automação • fila 2x mais rápida
+WEEKLY_LAST_DAY,⏰ ÚLTIMO DIA! %d/%d missões • %dh restantes
+DAILY_FEATURED,Destaque do Dia
+DAILY_FEATURED_DESC,Só hoje com desconto!
+ADS_REWARDED_UNAVAILABLE,Vídeo indisponível. Continue jogando normalmente.
+ADS_REWARD_TOAST,Anúncio recompensado! +R$ %d
+ROOM_BATH,BANHO & ESPUMA
+ROOM_GROOM,TOSA & APARO
+ROOM_DRY,SECAGEM ACONCHEGANTE
+ROOM_PERFUME,SPA PERFUMADO
+ROOM_STYLE,ATELIÊ DE LAÇOS
+SERVICE_VERB_BATH,ensaboar
+SERVICE_VERB_GROOM,tosar
+SERVICE_VERB_DRY,secar
+SERVICE_VERB_PERFUME,perfumar
+SERVICE_VERB_STYLE,colocar lacinho
+REACT_FEARFUL_1,Carinho ajuda!
+REACT_FEARFUL_2,Agora estou tranquilo!
+REACT_FEARFUL_3,Mais devagarzinho!
+REACT_IRRITATED_1,"Ei! ...tá, gostei."
+REACT_IRRITATED_2,Só mais um carinho!
+REACT_IRRITATED_3,Au! Que surpresa!
+REACT_CAT_1,Prrrrr...
+REACT_CAT_2,Miau! Gostei!
+REACT_CAT_3,Carinho aprovado!
+REACT_HAPPY_1,Amei o carinho!
+REACT_HAPPY_2,Au au! De novo!
+REACT_HAPPY_3,Você é meu humano favorito!
+HUD_RAPIDO,RÁPIDO!
+HUD_STATION_LEVEL,ESTAÇÃO  Nv.%d
+PARK_BUTTON,Passeio
+PARK_TITLE,🌳 Passeio no quintal — escolha a brincadeira
+PARK_BALL,Jogar bolinha
+PARK_TREAT,Esconder petisco
+PARK_PHOTO,Foto do grupo
+PARK_CLOSE,Fechar
+PARK_READY,Pronto!
+PARK_COOLDOWN,Próximo passeio em %s
+PARK_COOLDOWN_TOAST,Os pets estão descansando — próximo passeio em %s!
+PARK_CHOOSE,Escolha a brincadeira do passeio com os 3
+PARK_STREAK,🔥 %d dias seguidos de passeio
+PARK_STREAK_BONUS,🔥 %d dias seguidos!
+PARK_HINT_BALL,🎾 Arraste a bolinha até o pet do meio!
+PARK_HINT_TREAT,🦴 Toque no pote com o petisco escondido!
+PARK_HINT_PHOTO,📸 Espere o alinhamento e toque em FOTO!
+PARK_SHUTTER,FOTO!
+PARK_PERFECT,⭐ Passeio perfeito!
+PARK_SUCCESS_EXTRA,%s adoraram o quintal com você!
+PARK_PERFECT_EXTRA,Foto perfeita! As memórias vão para a coleção.
+PARK_FAIL,Quase! Tente de novo
+PARK_FAIL_HINT,Os pets se distraíram — tente outra brincadeira!
+PARK_FAIL_EXTRA,Sem penalidade na fila. Volte no próximo passeio!
+PARK_LOCKED,Libera após o 1º atendimento
+PARK_LOCKED_TOAST,Termine seu primeiro atendimento para liberar o passeio!
+NAV_ALBUM,Álbum
+ALBUM_TITLE,ÁLBUM & CONCURSO
+ALBUM_TROPHIES,Troféus: %d
+ALBUM_CONTEST_DESC,Cada passeio 🌳 rende votos para a Capa da Revista. Fotos 📸 perfeitas viram memórias aqui embaixo.
+ALBUM_EMPTY,Nenhuma foto ainda — faça um 📸 perfeito no passeio!
+ALBUM_GRID_TITLE,MEMÓRIAS DO QUINTAL
+ALBUM_SHARE,COMPARTILHAR
+ALBUM_SHARE_CAPTION,Minha foto do passeio em %s com %s! #PetShopTycoon
+ALBUM_FOOTER,"Dica: passeio perfeito vale +2 votos, foto perfeita +3 e sábado dobra tudo. A cada 8 minutos, um passeio!"
+KIDS_MODE_ACTIVE,Ativo: gestos 30% mais fáceis, tempo +35% e alvo maior. Toque para desativar.
+KIDS_MODE_ON,Modo Criança ativado! ✨ Mais fácil e divertido
+KIDS_MODE_OFF,Modo Criança desativado
+PARK_READY_TOAST,🌳 Hora do passeio! Os pets estão te esperando no quintal.
+PARK_NEXT_IN,⏳ Próximo passeio em %s
+PARK_VOTES_LINE,📰 +%d votos no concurso • %s
+PARK_CONTEST_LINE,📰 Concurso da Capa: %s • %d votos • fecha em %s
+PARK_CONTEST_LINE_EMPTY,📰 Concurso da Capa: faça um passeio para entrar! Fecha em %s
+CONTEST_TITLE,📰 CONCURSO DA CAPA
+CONTEST_DESC,"Cada passeio rende votos: bom +1, perfeito +2, foto perfeita +3. Sábado vale dobro! Domingo à noite a votação fecha e a capa sai na segunda."
+CONTEST_CLOSES_IN,⏱ Fecha em %s
+CONTEST_TIME_DAYS,%dd %dh
+CONTEST_TIME_HOURS,%dh %02dmin
+CONTEST_TIME_MIN,%d min
+CONTEST_RANK_1,1º lugar
+CONTEST_RANK_2,2º lugar
+CONTEST_RANK_3,3º lugar
+CONTEST_RANK_4,4º lugar
+CONTEST_YOUR_SHOP,Seu petshop
+CONTEST_VOTES,%d votos
+CONTEST_LEADING,Você está na frente! Segure a liderança até domingo 💪
+CONTEST_TO_FIRST,Faltam %d votos para a 1ª posição — um passeio perfeito vale até 3!
+CONTEST_NOT_ENTERED,Faça um passeio 🌳 para entrar na disputa desta semana!
+CONTEST_SATURDAY_TAG,⭐ SÁBADO DA CAPA: votos em dobro hoje!
+CONTEST_SATURDAY_TOAST,📸 Sábado da Capa! Passeios valem votos em dobro hoje.
+CONTEST_OVERTAKEN_TOAST,📰 Te passaram no concurso: agora você está em %s. Um passeio resolve!
+CONTEST_PENDING_ROW,Resultado da semana passada: %s com %d votos
+CONTEST_CLAIM,🏆 COLETAR PRÊMIO
+CONTEST_CLAIM_TOAST,Prêmio do concurso: +%d R$ e +%d brasas!
+CONTEST_RESULT_TITLE_1,📰 VOCÊ É A CAPA DA REVISTA!
+CONTEST_RESULT_TITLE_2,🥈 2º lugar no Concurso da Capa
+CONTEST_RESULT_TITLE_3,🥉 3º lugar no Concurso da Capa
+CONTEST_RESULT_TITLE_4,📰 Concurso da Capa encerrado
+CONTEST_RESULT_BODY,Semana passada: %d votos — %s.\nSeu prêmio: R$ %d%s
+CONTEST_RESULT_EMBERS, + %d brasas 🔥
+CONTEST_RESULT_HINT_WIN,O bairro inteiro viu sua foto! A nova semana já começou — defenda o título.
+CONTEST_RESULT_HINT_LOSE,A nova semana já começou — cada passeio conta. Bora pra capa?
+CONTEST_AUTO_CLAIM,Prêmio anterior entregue: %s (+%d R$)
+CONTEST_TROPHIES,🏆 Capas conquistadas: %d
+CONTEST_BEST,Melhor colocação: %s
+CONTEST_HISTORY_TITLE,ÚLTIMAS SEMANAS
+CONTEST_HISTORY_ROW,Semana de %s: %s • %d votos
+CONTEST_RULE_SHORT,Bom +1 • Perfeito +2 • Foto perfeita +3 • Sábado ×2
+GUIDE_NAME,Bia · sua vizinha
+GUIDE_GO,Vamos!
+GUIDE_OK,Entendi
+GUIDE_THANKS,Valeu!
+GUIDE_WELCOME,"Oi! Eu sou a Bia, sua vizinha 👋 Te ajudei a abrir o petshop e agora vou te mostrar como tudo funciona. O Caramelo já está na fila — vamos atender?"
+GUIDE_QUEUE,"Primeiro, toque no %s ali na fila para chamá-lo. Clientes com ⭐ são os recomendados."
+GUIDE_TOOL,Agora arraste o %s da prateleira até o %s. Segura e leva com o dedo!
+GUIDE_GESTURE,Isso! Agora é com você: %s
+GUIDE_WRONG_TOOL,"Ops, é o %s que ele precisa — está aqui!"
+GUIDE_DONE,"Arrasou no primeiro atendimento! 🎉 A fila não para: cada cliente feliz dá moedas, XP e estrelas. E quando quiser respirar, os pets adoram um passeio no quintal — eu te mostro já já."
+GUIDE_TIP_PARK,"Hora de conhecer o quintal 🌳 Toque no botão verde para levar três pets para passear: vale moedas, carinho e votos no Concurso da Capa!"
+GUIDE_TIP_PARK_CHOOSE,"Escolha a brincadeira: bolinha 🎾, petisco 🦴 ou foto 📸. Passeio perfeito vale mais votos — e foto perfeita entra no Álbum!"
+GUIDE_TIP_PARK_DONE,"Passeio feito! O próximo abre em 8 minutos — eu te aviso quando der ⏳ Enquanto isso, a fila te espera."
+GUIDE_TIP_CONTEST,Seus votos já contam no Concurso da Capa 📰 Toque no Álbum para ver o placar contra os outros petshops do bairro. A votação fecha no domingo!
+GUIDE_TIP_UPGRADE,Tem moeda sobrando! ⬆️ Toque aqui para melhorar suas ferramentas: banhos mais rápidos e gorjetas maiores.
+GUIDE_TIP_MISSIONS,Missões diárias 📋 dão prêmios extras por coisas que você já faz. Dá uma olhada quando quiser!

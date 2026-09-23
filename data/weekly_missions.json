@@ -1,0 +1,9 @@
+{"schema_version":1,"missions":[
+{"id":"weekly_bath_40","name":"Maratona do Bairro","metric":"services","target":40,"label_key":"WMISSION_BATH","reward":{"coins":400}},
+{"id":"weekly_perfect_15","name":"Semana Impecável","metric":"perfect","target":15,"label_key":"WMISSION_PERFECT","reward":{"coins":500}},
+{"id":"weekly_combo_8","name":"Ritmo da Casa","metric":"combo_max","target":8,"label_key":"WMISSION_COMBO","reward":{"coins":450}},
+{"id":"weekly_tips_10","name":"Querido da Vizinhança","metric":"tips","target":10,"label_key":"WMISSION_TIPS","reward":{"coins":450}},
+{"id":"weekly_styles_12","name":"Ateliê em Ritmo","metric":"style","target":12,"label_key":"WMISSION_STYLE","reward":{"coins":500}},
+{"id":"weekly_vip_3","name":"Ala VIP","metric":"vip","target":3,"label_key":"WMISSION_VIP","reward":{"embers":2}},
+{"id":"weekly_spend_600","name":"Investidor do Terreno","metric":"spend","target":600,"label_key":"WMISSION_SPEND","reward":{"coins":600}}
+]}

@@ -1,0 +1,67 @@
+name: Web (jogue agora)
+
+# Canal viral do plano de retenção: build Web publicável (GitHub Pages).
+# Manual (workflow_dispatch) ou por tag v*; os templates de exportação
+# (~1 GB) ficam em cache por versão do Godot.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  build:
+    name: Exportar Web Preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot headless
+        run: |
+          curl -fL -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+      - name: Cache dos export templates
+        id: templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: godot-templates-${{ env.GODOT_VERSION }}
+      - name: Baixar export templates
+        if: steps.templates.outputs.cache-hit != 'true'
+        run: |
+          curl -fL -o templates.tpz \
+            https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+      - name: Import + export
+        run: |
+          ./godot --headless --import || ./godot --headless --import
+          mkdir -p exports/web
+          ./godot --headless --export-release "Web Preview" exports/web/index.html
+          test -f exports/web/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: exports/web
+
+  deploy:
+    name: Publicar no GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
