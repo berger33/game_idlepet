@@ -427,7 +427,8 @@ func _test_regressoes_auditoria_v3() -> void:
 	_expect(mismatches == 0, "render: módulo a módulo igual à matriz (%d divergências)" % mismatches)
 	# 5) Share: o QR do cartão é desenhado 1:1 (reescalar borraria os módulos).
 	var share_src: String = FileAccess.get_file_as_string("res://autoload/ShareManager.gd")
-	_expect(share_src.count("custom_minimum_size = Vector2(qr_side") == 2,
+	_expect(share_src.count("custom_minimum_size = Vector2(qr_side, qr_side)") == 1
+		and share_src.count("custom_minimum_size = Vector2(qr_side2, qr_side2)") == 1,
 		"cartões de banho e conquista usam o lado real da imagem")
 
 
@@ -529,4 +530,7 @@ func _expect(condition: bool, message: String) -> void:
 	if condition:
 		return
 	failures += 1
+	# stdout além do push_error: o CI transforma estas linhas em annotations,
+	# então a falha fica legível no GitHub sem baixar o log.
+	print("TEST_FAIL: " + message)
 	push_error(message)

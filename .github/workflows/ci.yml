@@ -152,6 +152,9 @@ jobs:
           fi
           if ! grep -q "Godot domain tests: PASS" /tmp/domain.log; then
             echo "::error::testes de domínio não passaram"
+            grep -E "TEST_FAIL|USER ERROR|SCRIPT ERROR" /tmp/domain.log | head -30 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
             grep -iE "falha|failure|deve|must" /tmp/domain.log | head -12 | while IFS= read -r line; do
               echo "::error::${line:0:220}"
             done
