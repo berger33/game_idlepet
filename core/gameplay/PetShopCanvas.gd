@@ -322,7 +322,7 @@ func set_pet_profile(profile: Dictionary) -> void:
 		ear_color = Color(String(colors[1]))
 		muzzle_color = Color(String(colors[2]))
 	species = StringName(profile.get("species", "dog"))
-	breed_name = String(profile.get("breed", "Pet especial"))
+	breed_name = String(profile.get("breed", Loc.t("PET_SPECIAL")))
 	temperament = StringName(profile.get("temperament", "happy"))
 	rarity = StringName(profile.get("rarity", "common"))
 

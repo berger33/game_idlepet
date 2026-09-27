@@ -11,14 +11,9 @@ var unavailable_reason: String = "provider_not_installed"
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	policy = AdsPolicyScript.new()
-	# Carrega estado persistido se houver
-	if GameState.has_method("ads_policy_dict"):
-		pass # futuro: GameState conterá ads policy
 	# Session count incrementa a cada boot
 	policy.record_session_start()
-	# Escuta compras para purchased_recently
-	EventBus.currency_changed.connect(_on_currency_changed)
-	# Tenta carregar policy do save se GameState tiver campo
+	# Carrega a política persistida (cap diário, cooldown de compra).
 	if GameState.get("ads_policy") is Dictionary:
 		policy.from_dictionary(GameState.get("ads_policy"))
 
@@ -26,11 +21,6 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if policy != null:
 		policy.add_session_seconds(delta)
-
-
-func _on_currency_changed(_type: StringName, _amount: float) -> void:
-	# Heurística: se entitlements mudaram recentemente, marca purchased_recently via IAPManager
-	pass
 
 
 func is_rewarded_available() -> bool:

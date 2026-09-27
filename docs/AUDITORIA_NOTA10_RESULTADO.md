@@ -87,6 +87,12 @@ Todas as melhorias P0, P1, P2 foram implementadas. Notas anteriores 5-8.5 agora 
 - **Performance:** generate_image usa fill_rect para células pretas, não set_pixel loop O(N²)
 - **ShareManager:** qr_data agora URL curta escaneável "https://p.tycoon/p/%s?s=%d&sh=%s" (≤32 bytes v2 L) e "https://p.tycoon/a/%s" para conquistas, SHARE_URL se existir usa URL real
 - **Resultado:** QR no share card escaneável por celular, leva a link, viralidade real
+- **⚠️ Correção (auditoria universal v2, 27/09/2026):** a alegação acima era **falsa na época** — a matriz gerada
+  divergia da referência ISO/IEC 18004 em até 38% dos módulos (tabelas GF(256) com `LOG[1]=255`, zigzag fora de
+  ordem, módulos de formato liberados para dados e format info transposto) e **nenhum leitor decodificava**.
+  Os 4 defeitos foram corrigidos em `core/ui/QRCodeArt.gd` na segunda passada da auditoria, com vetor de
+  referência de 25 linhas em `tests/DomainTests.gd`; a validação "manual" registrada aqui não deve ter ocorrido.
+  Ver `AUDITORIA_UNIVERSAL_V2_2026-09-27.md` (B6).
 
 ### P2-11 Tutorial skip reposicionado
 - **Main.gd:** tutorial_skip_button (45,145)→(750,145+safe) direita, tamanho 300x68→220x56, não sobrepõe nav (30,145)

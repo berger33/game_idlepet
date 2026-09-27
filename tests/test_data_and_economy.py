@@ -1,4 +1,4 @@
-import glob, json, unittest
+import glob, json, re, unittest
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parents[1] / 'tools'))
@@ -803,6 +803,12 @@ def _loc_table(code):
         # Segunda coluna é o idioma (pt_BR, en_US, etc.)
         value_col = fieldnames[1] if len(fieldnames) > 1 else fieldnames[0]
         for row in reader:
+            # CSV com vírgula não citada: o Loc preserva o texto inteiro
+            # (join das colunas extras); sem isto o teste truncava valores.
+            extra = [str(v) for k, v in row.items() if k not in (None, 'key', value_col) and v]
+            if extra:
+                row = dict(row)
+                row[value_col] = ','.join([str(row[value_col])] + extra)
             key = row.get('key', '').strip()
             if not key:
                 continue
@@ -1463,6 +1469,178 @@ class TutorialUXTests(unittest.TestCase):
         select = main[main.index('func _can_select'):]
         select = select[:select.index('func _process_queue')]
         self.assertIn('upsell_panel.visible', select)
+
+
+# ── Formatação de localização: chaves usadas com o operador `%` ───────────────
+# Godot devolve erro quando a contagem de placeholders não bate
+# ("not all arguments converted during string formatting") ou quando existe um
+# "%" não escapado ("unsupported format character") — o texto sai quebrado na
+# UI. Auditoria 2026-09-27, 2ª passada (PRESTIGE_DONE, RESEARCH_EFFECT_combo_
+# protection). Este teste impede que a classe de bug volte.
+import re as _re
+
+_SPEC_RE = _re.compile(r'%%|%(?:[-+0]*\d*(?:\.\d+)?\*?[doxXfvsc])')
+_LOC_FORMAT_RE = _re.compile(r'Loc\.t\(\s*"([A-Z0-9_]+)"\s*\)\s*%')
+
+
+def _placeholder_count(text):
+    return sum(1 for m in _SPEC_RE.finditer(text) if m.group(0) != '%%')
+
+
+def _has_stray_percent(text):
+    return '%' in _SPEC_RE.sub('', text)
+
+
+def _count_array_args(src, start):
+    """Conta os elementos de um array literal começando em src[start] == '['."""
+    depth = 0
+    commas = 0
+    quote = ''
+    i = start
+    while i < len(src):
+        c = src[i]
+        if quote:
+            if c == quote and src[i - 1] != '\\':
+                quote = ''
+        elif c in '"\'':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+            if depth == 0:
+                inner = src[start + 1:i]
+                n = commas + 1
+                if inner.rstrip().endswith(','):
+                    n -= 1
+                return n
+        elif c == ',' and depth == 1:
+            commas += 1
+        i += 1
+    return None
+
+
+class LocalizationFormatTests(unittest.TestCase):
+    def test_loc_format_placeholders_match_arguments(self):
+        tables = {code: _loc_table(code) for code in ('pt_BR', 'en_US', 'es_ES')}
+        problems = []
+        checked = 0
+        for gd in sorted(Path('.').rglob('*.gd')):
+            if '.git' in gd.parts:
+                continue
+            src = gd.read_text(encoding='utf8')
+            for m in _LOC_FORMAT_RE.finditer(src):
+                key = m.group(1)
+                rest = src[m.end():]
+                stripped = rest.lstrip()
+                if stripped.startswith('['):
+                    args = _count_array_args(src, m.end() + (len(rest) - len(stripped)))
+                else:
+                    args = 1
+                if args is None:
+                    continue
+                checked += 1
+                for code, table in tables.items():
+                    value = table.get(key)
+                    if value is None:
+                        problems.append('%s ausente em %s (%s)' % (key, code, gd))
+                        continue
+                    specs = _placeholder_count(value)
+                    if specs != args:
+                        problems.append('%s [%s]: %d placeholder(s) x %d argumento(s) em %s'
+                                        % (key, code, specs, args, gd))
+                    if _has_stray_percent(value):
+                        problems.append('%s [%s]: "%" sem escape em %s' % (key, code, gd))
+        self.assertGreater(checked, 50, 'scanner precisa achar os sites de formato (achou %d)' % checked)
+        self.assertEqual([], problems)
+
+
+# ── Higiene de projeto e build (auditoria universal v2, 27/09/2026) ──────────
+class ProjectHygieneTests(unittest.TestCase):
+    def test_no_orphan_eventbus_signals(self):
+        """Sinal declarado sem NENHUM .connect é contrato sem dono (emitido em
+        vão). A auditoria v2 removeu 5; este teste impede que voltem sozinhos."""
+        bus = Path('autoload/EventBus.gd').read_text(encoding='utf8')
+        declared = re.findall(r'^signal\s+(\w+)', bus, flags=re.M)
+        self.assertGreaterEqual(len(declared), 5, 'EventBus deve declarar sinais')
+        sources = [p for p in Path('.').rglob('*.gd') if '.git' not in p.parts]
+        sources += [p for p in Path('.').rglob('*.tscn') if '.git' not in p.parts]
+        blob = '\n'.join(p.read_text(encoding='utf8') for p in sources)
+        orphans = [name for name in declared
+                   if f'EventBus.{name}.connect' not in blob
+                   and f'signal:{name}' not in blob]  # conns declarativas em .tscn
+        self.assertEqual([], orphans, 'sinais sem consumidor: ' + ', '.join(orphans))
+
+    def test_ui_texts_are_localized(self):
+        """Texto de UI em português direto no código vaza para EN/ES. A
+        auditoria v2 migrou os ~25 pontos para o Loc; este teste trava."""
+        pt = re.compile(
+            r'[áàâãéêíóôõúçÁÂÃÉÊÍÓÔÕÚÇ]'
+            r'|\b(não|você|Ver|Recolher|Alguém|Brasa[s]?|Moedas|Próximo|ativado'
+            r'|desativado|Volta|Amanhã|Semana|Seu|Sua|Quase|Toque|Arraste|Espere'
+            r'|Gorjetas|Recompensa|Conquista|Ajustes|história|Novo|Nova)\b'
+        )
+        patterns = [
+            r'\.text\s*=\s*"([^"\\]{2,})"',
+            r'tooltip_text\s*=\s*"([^"\\]{2,})"',
+            r'_note\(\s*"([^"\\]{2,})"',
+            r'_show_toast\(\s*"([^"\\]{2,})"',
+            r'_info_row\(\s*"([^"\\]{2,})"',
+            r'_button\(\s*"([^"\\]{2,})"',
+            r'_label_node\(\s*"([^"\\]{2,})"',
+            r'_pill\([^)]*?"([^"\\]{2,})"',
+        ]
+        offenders = []
+        for gd in sorted(Path('.').rglob('*.gd')):
+            if '.git' in gd.parts or gd.parts[0] in ('tools', 'tests'):
+                continue
+            for line_no, line in enumerate(gd.read_text(encoding='utf8').splitlines(), 1):
+                if line.strip().startswith('#') or 'Loc.t(' in line:
+                    continue
+                for pattern in patterns:
+                    match = re.search(pattern, line)
+                    if not match:
+                        continue
+                    if pt.search(match.group(1)):
+                        offenders.append(f'{gd}:{line_no}: {match.group(1)!r}')
+                    break
+        self.assertEqual([], offenders, 'texto pt-BR fora do Loc:\n' + '\n'.join(offenders))
+
+    def test_web_export_preset_matches_workflow(self):
+        """O workflow "Web (jogue agora)" exporta o preset "Web Preview" — se o
+        preset sumir do export_presets.cfg, o Pages quebra sem aviso."""
+        presets = Path('export_presets.cfg').read_text(encoding='utf8')
+        self.assertIn('name="Web Preview"', presets)
+        self.assertIn('platform="Web"', presets)
+        workflow = Path('.github/workflows/web-pages.yml').read_text(encoding='utf8')
+        self.assertIn('--export-release "Web Preview"', workflow)
+        for action in ('upload-pages-artifact@v5', 'deploy-pages@v5'):
+            self.assertIn(action, workflow)
+        self.assertNotIn('ubuntu-latest', workflow,
+                         'runner fixado: ubuntu-latest migra para Ubuntu 26 em 19/10/2026')
+
+    def test_art_import_defaults_keep_the_build_light(self):
+        """851 PNGs = ~249 MB. Sem importação Lossy (WebP) o pacote exportado
+        herda o tamanho cheio (~8x maior, medido por tools/compress_art.py)."""
+        project = Path('project.godot').read_text(encoding='utf8')
+        self.assertIn('[importer_defaults]', project)
+        self.assertIn('"compress/mode": 1', project)
+        self.assertIn('"mipmaps/generate": false', project)
+        self.assertTrue(Path('tools/compress_art.py').exists(),
+                        'ferramenta de medição do ganho de compressão')
+
+    def test_localization_values_are_well_formed_csv(self):
+        """O Loc agora parseia CSV de verdade (aspas/vírgulas); o helper dos
+        testes replica a mesma regra. Garante que texto com vírgula continue
+        chegando inteiro ao jogo (auditoria v2, KIDS_MODE_DESC)."""
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            self.assertTrue(all(v is not None for v in table.values()), code)
+            joined = Path(f'data/localization/{code}.csv').read_text(encoding='utf8')
+            for key, value in table.items():
+                if ',' in value:
+                    self.assertIn(f'"{value}"', joined.replace('\\n', '\\n'),
+                                  f'{code}:{key} com vírgula precisa estar citado')
 
 
 if __name__=='__main__': unittest.main()

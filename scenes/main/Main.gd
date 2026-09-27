@@ -263,12 +263,12 @@ func _process(delta: float) -> void:
 		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
 			if _last_instr_key != &"perfect":
 				_last_instr_key = &"perfect"
-				instruction_label.text = "✓ SOLTE PARA PERFEITO!"
+				instruction_label.text = Loc.t("RELEASE_PERFECT")
 				instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"perfect"] as StyleBoxFlat)
 		elif bath.progress > bath.target_maximum:
 			if _last_instr_key != &"over":
 				_last_instr_key = &"over"
-				instruction_label.text = "⚠ PASSOU! SOLTE E TENTE DE NOVO"
+				instruction_label.text = Loc.t("RELEASE_OVER")
 				instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"over"] as StyleBoxFlat)
 		elif bath.progress > 0.05 and bath.progress < bath.target_minimum:
 			if _last_instr_key != &"hint":
@@ -437,7 +437,6 @@ func _rub(point: Vector2) -> void:
 	if bubble_sound_gate <= 0.0:
 		AudioManager.play_gesture(current_service, bath)
 		bubble_sound_gate = 0.16
-	EventBus.service_progress.emit(bath.progress)
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
@@ -562,7 +561,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality)
 	var aff: int = int(GameState.pet_affection.get(current_pet_id, 0))
 	var mem: String = PetStories.affection_memory(current_pet_id, aff)
-	var proof: String = "💬 %s acabou de avaliar: %s" % [current_pet_name, stars_text]
+	var proof: String = Loc.t("REVIEW_PROOF") % [current_pet_name, stars_text]
 	if not mem.is_empty():
 		proof += "\n%s" % mem
 	if GameState.services_completed == 0 and quality == &"perfect":
@@ -586,7 +585,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 			result_detail_extra.visible = false
 			result_expanded = false
 			if is_instance_valid(result_expand_btn):
-				result_expand_btn.text = "ⓘ  Ver história"
+				result_expand_btn.text = Loc.t("VIEW_STORY")
 				result_expand_btn.visible = true
 		else:
 			result_detail_extra.text = ""
@@ -681,7 +680,7 @@ func _fail(reason: StringName) -> void:
 			result_detail_extra.visible = false
 			result_expanded = false
 			if is_instance_valid(result_expand_btn):
-				result_expand_btn.text = "ⓘ  Ver dica"
+				result_expand_btn.text = Loc.t("VIEW_HINT")
 				result_expand_btn.visible = true
 		else:
 			result_detail_extra.text = ""
@@ -840,7 +839,6 @@ func _on_queue_pressed(slot: int) -> void:
 			"rarity": profile.get("rarity", "common"),
 		}
 	)
-	EventBus.pet_arrived.emit(StringName(current_pet_id))
 	if tutorial.step == TutorialFlow.STEP_QUEUE:
 		tutorial.advance()
 func _can_select(slot: int) -> bool:
@@ -890,7 +888,7 @@ func _process_queue(delta: float) -> void:
 func _client_left(slot: int) -> void:
 	var client: Dictionary = queue[slot]
 	var leaver_id: String = String(client["pet"])
-	var leaver_name: String = ContentDB.pet_name(leaver_id) if ContentDB.has_pet(leaver_id) else String(ContentDB.pet(leaver_id).get("name", "Alguém"))
+	var leaver_name: String = ContentDB.pet_name(leaver_id) if ContentDB.has_pet(leaver_id) else String(ContentDB.pet(leaver_id).get("name", Loc.t("ANON_NAME")))
 	var profile: Dictionary = ContentDB.pet(leaver_id) if ContentDB.has_pet(leaver_id) else {}
 	var base: float = SalonTuning.base_reward(StringName(client.get("service", &"bath")))
 	var lost: int = int(base * float(profile.get("base_tip", 1.0)) * 1.2)
@@ -1012,7 +1010,7 @@ func _toggle_result_detail() -> void:
 		result_detail_extra.visible = result_expanded
 		# quando expandido muda texto do botão para recolher
 		if is_instance_valid(result_expand_btn):
-			result_expand_btn.text = "▴  Recolher" if result_expanded else "ⓘ  Ver história"
+			result_expand_btn.text = Loc.t("COLLAPSE") if result_expanded else Loc.t("VIEW_STORY")
 			result_expand_btn.visible = true
 		result_detail_extra.modulate.a = 0.0 if result_expanded else 1.0
 		if result_expanded:
@@ -1024,7 +1022,7 @@ func _toggle_result_detail() -> void:
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%s %d" % [Loc.t("COINS"), int(GameState.coins)]
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
-	combo_label.text = "NV.%d %d%% ×%d" % [GameState.player_level, xp_percent, maxi(1, GameState.combo)]
+	combo_label.text = "%s%d %d%% ×%d" % [Loc.t("HUD_LEVEL_ABBR"), GameState.player_level, xp_percent, maxi(1, GameState.combo)]
 	if GameState.reviews_total == 0:
 		review_label.text = "★ %s" % Loc.t("NEW_TAG") if Loc.t("NEW_TAG") != "NEW_TAG" else "★ Novo!"
 	else:
@@ -1070,7 +1068,7 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 			if is_instance_valid(goal_expand_btn):
 				goal_expand_btn.visible = true
 				goal_expand_btn.text = "ⓘ" if goal_collapsed else "▴"
-				goal_expand_btn.tooltip_text = "Ver detalhes" if goal_collapsed else "Recolher"
+				goal_expand_btn.tooltip_text = Loc.t("VIEW_DETAILS") if goal_collapsed else Loc.t("COLLAPSE")
 		else:
 			goal_label.text = goal_full_text
 			goal_label.tooltip_text = ""
@@ -1125,11 +1123,11 @@ func _build_interface() -> void:
 	coin_label = _pill(top_bar_hbox, "%s 0" % Loc.t("COINS"), Color("ffd54f"), 210)
 	coin_label.tooltip_text = Loc.t("COINS")
 	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 175)
-	review_label.tooltip_text = "Reputação do bairro"
+	review_label.tooltip_text = Loc.t("HUD_TOOLTIP_REVIEW")
 	combo_label = _pill(top_bar_hbox, "×1", GREEN, 185)
-	combo_label.tooltip_text = "Combo e nível"
+	combo_label.tooltip_text = Loc.t("HUD_TOOLTIP_COMBO")
 	rush_label = _pill(top_bar_hbox, "", Color("ff8f00"), 165)
-	rush_label.tooltip_text = "Evento rush"
+	rush_label.tooltip_text = Loc.t("HUD_TOOLTIP_RUSH")
 	rush_bar = ProgressBar.new()
 	rush_bar.custom_minimum_size = Vector2(165, 14)
 	rush_bar.max_value = 100.0
@@ -1139,7 +1137,7 @@ func _build_interface() -> void:
 	rush_bar.add_theme_stylebox_override("fill", _style(Color("ffd54f"), 7, 0))
 	top_bar_hbox.add_child(rush_bar)
 	proof_label = _pill(top_bar_hbox, "", Color("4fc3f7"), 210)
-	proof_label.tooltip_text = "Prova social do bairro"
+	proof_label.tooltip_text = Loc.t("HUD_TOOLTIP_PROOF")
 	proof_label.add_theme_font_size_override("font_size", 18)
 	var goal_row: HBoxContainer = HBoxContainer.new()
 	goal_row.position = Vector2(30, 505 + safe_top)
@@ -1151,7 +1149,7 @@ func _build_interface() -> void:
 	goal_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	goal_label.tooltip_text = ""
 	goal_expand_btn = _button("ⓘ", Color("f3e5f5"), 52, 52)
-	goal_expand_btn.tooltip_text = "Ver meta completa"
+	goal_expand_btn.tooltip_text = Loc.t("HUD_GOAL_FULL")
 	goal_expand_btn.add_theme_font_size_override("font_size", 20)
 	goal_expand_btn.add_theme_color_override("font_color", Color("6a1b9a"))
 	goal_expand_btn.add_theme_stylebox_override("normal", _style(Color("f3e5f5"), 26, 6))

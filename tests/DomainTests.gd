@@ -20,6 +20,10 @@ func _ready() -> void:
 	_test_contest()
 	_test_tutorial_ux()
 	_test_regressoes_auditoria_2026_09_27()
+	_test_regressoes_auditoria_2026_09_27_v2()
+	_test_regressoes_auditoria_v3()
+	_test_save_transfer_code()
+	_test_park_activities()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -311,8 +315,231 @@ func _test_regressoes_auditoria_2026_09_27() -> void:
 	_expect(purchased_recently, "compra recente deve persistir na política de ads")
 
 
+## Regressões da 2ª passada da auditoria universal (2026-09-27): QR quebrado e
+## strings de localização formatadas com `%` inválido.
+func _test_regressoes_auditoria_2026_09_27_v2() -> void:
+	# 1) QR: o vetor abaixo é a matriz de referência (v2, ECC L, máscara 0) para
+	#    o payload abaixo, idêntica à do gerador de referência ISO/IEC 18004
+	#    (qrcode/Nayuki). Antes das correções desta auditoria a matriz divergia
+	#    em ~184/625 módulos e NENHUM leitor decodificava (GF(256) com LOG[1]
+	#    errado, zigzag em ordem trocada, módulos de formato liberados e
+	#    format info transposto).
+	var payload: String = "https://p.tycoon/a/first_bath"
+	var matrix: Array = QRCodeArt.generate_matrix(payload)
+	_expect(matrix.size() == 25, "QR v2 deve ter 25 módulos de lado")
+	var reference_rows: PackedStringArray = [
+		"1111111001101011001111111",
+		"1000001000110101101000001",
+		"1011101011101001001011101",
+		"1011101001100000001011101",
+		"1011101000110111101011101",
+		"1000001001010011001000001",
+		"1111111010101010101111111",
+		"0000000011111110100000000",
+		"1110111110100101111000100",
+		"1011000010101100111100001",
+		"0110101111000100010010111",
+		"1101010100010100111100010",
+		"0010001100001101111101011",
+		"0011010110001000101001001",
+		"1010101011101010011100111",
+		"0100010000000110110010010",
+		"1001111010101101111111000",
+		"0000000011101111100011011",
+		"1111111010000111101011011",
+		"1000001011101100100011000",
+		"1011101011110100111111010",
+		"1011101000111110100111100",
+		"1011101011101110110010001",
+		"1000001010111111111011010",
+		"1111111010100101111100011",
+	]
+	if matrix.size() == 25:
+		for y: int in 25:
+			var row: String = ""
+			for x: int in 25:
+				row += str(int(matrix[y][x]))
+			_expect(row == reference_rows[y], "QR linha %d divergiu da referência" % y)
+	# 2) PRESTIGE_DONE tinha "%" literal sem escape e o operador % do Godot
+	#    devolve erro ("unsupported format character") → toast de prestígio
+	#    quebrado nos 3 idiomas.
+	var prestige_txt = Loc.t("PRESTIGE_DONE") % 1
+	_expect(prestige_txt is String and String(prestige_txt).contains("%"), "PRESTIGE_DONE precisa formatar com o % escapado")
+	# 3) Nó de pesquisa com efeito sem placeholder ("proteção de combo") não
+	#    pode passar pelo operador % (erro "not all arguments converted").
+	var combo_text: String = Research.effect_text("combo_shield")
+	_expect(not combo_text.is_empty() and combo_text.to_lower().contains("combo"), "effect_text do Escudo de Combo deve render")
+
+
+## Regressões da 3ª passada (i18n, boot do idioma, parser CSV).
+func _test_regressoes_auditoria_v3() -> void:
+	# 1) Parser CSV do Loc: vírgula citada, aspas escapadas, \n e header.
+	var sample: String = "key,pt_BR\nA,\"olá, mundo\"\nB,simples\nC,\"l1\\nl2\"\nD,\"aspas \"\"internas\"\"\"\nE,\n"
+	var table: Dictionary = Loc.parse_csv(sample)
+	_expect(String(table.get("A", "")) == "olá, mundo", "CSV: vírgula entre aspas deve sobreviver")
+	_expect(String(table.get("B", "")) == "simples", "CSV: valor simples")
+	_expect(String(table.get("C", "")) == "l1\nl2", "CSV: \\n vira quebra de linha real")
+	_expect(String(table.get("D", "")) == "aspas \"internas\"", "CSV: aspas duplas escapadas")
+	_expect(table.has("E") and String(table["E"]) == "", "CSV: valor vazio é válido")
+	_expect(not table.has("key"), "CSV: header não entra na tabela")
+	# 2) As 3 tabelas carregam com o mesmo número de chaves (paridade real).
+	var sizes: Array[int] = []
+	for code: String in Loc.LANGS:
+		sizes.append((Loc.tables.get(code, {}) as Dictionary).size())
+	_expect(sizes.size() == 3 and sizes[0] > 600, "tabelas de idioma carregadas")
+	_expect(sizes[0] == sizes[1] and sizes[1] == sizes[2], "paridade de chaves entre idiomas: " + str(sizes))
+	# 3) Idioma salvo é aplicado ao carregar o save (antes só valia depois de
+	#    abrir Ajustes, porque o Loc lê o idioma antes do SaveManager).
+	Loc.lang = "pt_BR"
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "settings": {"language": "en_US"}})
+	_expect(Loc.lang == "en_US", "load do save deve aplicar o idioma salvo")
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "settings": {"language": "pt_BR"}})
+	_expect(Loc.lang == "pt_BR", "troca de volta do idioma")
+	# Chave inexistente cai no pt_BR e não devolve o identificador cru quando
+	# existir em qualquer outro idioma.
+	_expect(Loc.t("COINS") != "COINS", "chave conhecida resolve")
+	_expect(Loc.t("CHAVE_QUE_NAO_EXISTE_XYZ") == "CHAVE_QUE_NAO_EXISTE_XYZ", "chave desconhecida volta crua")
+
+
+	# 4) RENDER do QR (B6.5): zona de silêncio de 4 módulos, célula inteira e
+	#    cada módulo desenhado no lugar certo. O desenho antigo começava no
+	#    pixel 0 (sem margem) e o OpenCV não decodificava a imagem final.
+	var reference: Array = QRCodeArt.generate_matrix("https://p.tycoon/a/first_bath")
+	_expect(reference.size() == 25, "render: matriz v2 de referência")
+	var img: Image = QRCodeArt.generate_image("https://p.tycoon/a/first_bath", 220)
+	var side: int = img.get_width()
+	_expect(img.get_height() == side, "render: imagem quadrada")
+	_expect(side % 33 == 0, "render: (25 módulos + 8 de silêncio) * célula inteira")
+	var cell: int = side / 33
+	_expect(cell >= 5, "render: célula de pelo menos 5 px")
+	var border_white: bool = true
+	for i: int in range(4 * cell):
+		if img.get_pixel(i, 0) != Color.WHITE or img.get_pixel(0, i) != Color.WHITE:
+			border_white = false
+	_expect(border_white, "render: 4 módulos de zona de silêncio no topo/esquerda")
+	var mismatches: int = 0
+	for y: int in reference.size():
+		for x: int in reference.size():
+			var px: Color = img.get_pixel((x + 4) * cell + cell / 2, (y + 4) * cell + cell / 2)
+			var expected: Color = Color.BLACK if int(reference[y][x]) == 1 else Color.WHITE
+			if px != expected:
+				mismatches += 1
+	_expect(mismatches == 0, "render: módulo a módulo igual à matriz (%d divergências)" % mismatches)
+	# 5) Share: o QR do cartão é desenhado 1:1 (reescalar borraria os módulos).
+	var share_src: String = FileAccess.get_file_as_string("res://autoload/ShareManager.gd")
+	_expect(share_src.count("custom_minimum_size = Vector2(qr_side, qr_side)") == 1
+		and share_src.count("custom_minimum_size = Vector2(qr_side2, qr_side2)") == 1,
+		"cartões de banho e conquista usam o lado real da imagem")
+
+
+## Código de transferência (export/import): sem cloud save, é o único caminho de
+## migrar progresso entre aparelhos — precisa restaurar e recusar adulteração.
+func _test_save_transfer_code() -> void:
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION})
+	GameState.coins = 1234.0
+	GameState.player_level = 7
+	GameState.pet_affection["caramelo"] = 4
+	var code: String = SaveManager.export_code()
+	_expect(code.length() > 40, "código de transferência gerado")
+	GameState.coins = 0.0
+	GameState.player_level = 1
+	GameState.pet_affection["caramelo"] = 0
+	_expect(SaveManager.import_code(code), "import do próprio código funciona")
+	# O load reavalia conquistas e as de limiar PAGAM moedas (earn_500 = +50),
+	# então o valor restaurado é >= o exportado — comportamento correto.
+	var restored: float = GameState.coins
+	_expect(restored >= 1234.0, "moedas restauradas pelo código (conquistas podem somar)")
+	_expect(GameState.player_level == 7, "nível restaurado pelo código")
+	_expect(int(GameState.pet_affection.get("caramelo", 0)) == 4, "afeto restaurado pelo código")
+	_expect(not SaveManager.import_code("isso-nao-e-um-save"), "código inválido é recusado")
+	# Segunda volta: com as conquistas já desbloqueadas o valor é exato — prova
+	# que o envelope carrega as moedas sem perda.
+	var code2: String = SaveManager.export_code()
+	GameState.coins = 0.0
+	_expect(SaveManager.import_code(code2), "segundo import funciona")
+	_expect(is_equal_approx(GameState.coins, restored), "round-trip exato (sem prêmio novo)")
+	# Adulteração: o envelope é XOR + base64, então mexe no meio da string.
+	var index: int = code2.length() / 3
+	var original: String = code2.substr(index, 1)
+	_expect(not original.is_empty(), "código tem conteúdo")
+	var tampered: String = code2.substr(0, index) + ("A" if original != "A" else "B") + code2.substr(index + 1)
+	_expect(not SaveManager.import_code(tampered), "código adulterado é recusado")
+
+
+## Parquinho: as 3 atividades decidem recompensa por conta própria — o resultado
+## (perfect/good/fail) é contrato de economia e precisa de teste determinístico.
+func _test_park_activities() -> void:
+	# Bola: arrastar até o pet acumula progresso e fetch; 60 arrastos = perfect.
+	var park: ParkService = ParkService.new()
+	park.configure(&"ball")
+	_expect(park.activity == ParkService.Activity.BALL, "configure reconhece a atividade")
+	park.start()
+	var pet_focus: Vector2 = Vector2(540, 1050)
+	for i: int in 60:
+		park.drag_ball(pet_focus + Vector2(float(i % 5) * 4.0, 0.0), pet_focus)
+	_expect(park.progress > 0.95 and park.fetch_count >= 3, "bola: progresso e fetches acumulados")
+	_expect(park.finish() == &"perfect", "bola: 60 arrastos rende perfect")
+	# Longe do pet não acumula: o progresso cai.
+	park = ParkService.new()
+	park.configure(&"ball")
+	park.start()
+	park.drag_ball(Vector2(50, 50), pet_focus)
+	_expect(park.progress < 0.02, "bola: arrasto longe do pet não pontua")
+	# Tempo esgotado falha a atividade (sem punir a fila — estado próprio).
+	park = ParkService.new()
+	park.configure(&"ball")
+	park.start()
+	_expect(park.tick(park.duration + 1.0) and park.state == ParkService.State.FAILED,
+		"atividade expira em FAILED")
+	_expect(park.finish() == &"fail", "finish depois do tempo devolve fail")
+	# Petisco: acertar o pote escondido é perfect; errar rende good.
+	park = ParkService.new()
+	park.configure(&"treat")
+	park.start()
+	park.treat_hidden_slot = 2
+	park.treat_slots = [0, 0, 1]
+	park.pick_treat(2)
+	_expect(park.treat_revealed and park.score == 1, "petisco: pote certo pontua")
+	_expect(park.finish() == &"perfect", "petisco: acerto é perfect")
+	park = ParkService.new()
+	park.configure(&"treat")
+	park.start()
+	park.treat_hidden_slot = 0
+	park.treat_slots = [1, 0, 0]
+	park.pick_treat(1)
+	_expect(park.score == 0, "petisco: pote errado não pontua")
+	_expect(park.finish() == &"good", "petisco: erro rende good (não pune)")
+	# Foto: clique alinhado pontua; desalinhado desconta e não pontua.
+	park = ParkService.new()
+	park.configure(&"photo")
+	park.start()
+	park.photo_align = 0.95
+	_expect(park.try_photo(), "foto: clique alinhado é aceito")
+	park.photo_align = 0.95
+	park.try_photo()
+	park.photo_align = 0.95
+	park.try_photo()
+	_expect(park.perfect and park.score >= 2, "foto: sequência alinhada é perfect")
+	_expect(park.finish() == &"perfect", "foto: resultado perfect")
+	park = ParkService.new()
+	park.configure(&"photo")
+	park.start()
+	park.photo_align = 0.1
+	var before: float = park.progress
+	_expect(not park.try_photo() and park.progress <= before, "foto: clique desalinhado desconta")
+	# Dicas localizadas em vez de português fixo.
+	for activity_id: StringName in [&"ball", &"treat", &"photo"]:
+		park = ParkService.new()
+		park.configure(activity_id)
+		var hint: String = park.quick_hint()
+		_expect(not hint.is_empty() and not hint.begins_with("PARK_HINT"), "dica localizada: " + String(activity_id))
+
+
 func _expect(condition: bool, message: String) -> void:
 	if condition:
 		return
 	failures += 1
+	# stdout além do push_error: o CI transforma estas linhas em annotations,
+	# então a falha fica legível no GitHub sem baixar o log.
+	print("TEST_FAIL: " + message)
 	push_error(message)

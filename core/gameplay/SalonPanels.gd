@@ -55,7 +55,7 @@ static func build_result_panel(
 	column.add_child(detail_extra)
 	var expand_btn: Button = Button.new()
 	expand_btn.name = "ExpandBtn"
-	expand_btn.text = "ⓘ  Ver história"
+	expand_btn.text = Loc.t("VIEW_STORY")
 	expand_btn.custom_minimum_size = Vector2(340, 56)
 	expand_btn.add_theme_font_size_override("font_size", 22)
 	expand_btn.add_theme_color_override("font_color", Color("b2ebf2"))

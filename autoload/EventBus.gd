@@ -5,16 +5,14 @@ extends Node
 ## a própria classe — é suprimido na região de declaração abaixo.
 
 @warning_ignore_start("unused_signal")
+## Higiene (auditoria v2): sinais sem NENHUM consumidor foram removidos —
+## emitidos em vão eram contrato sem dono. Se um consumidor aparecer, o sinal
+## volta aqui; tests/test_data_and_economy.py falha se ficar órfão de novo.
 signal currency_changed(currency: StringName, amount: float)
 signal service_started(service_id: StringName)
-signal service_progress(value: float)
 signal service_completed(service_id: StringName, quality: StringName, reward: float)
 signal service_failed(service_id: StringName, reason: StringName)
-signal pet_arrived(pet_id: StringName)
-signal review_received(stars: int)
 signal combo_changed(value: int)
-signal upgrade_purchased(upgrade_id: StringName, level: int)
-signal save_completed
 signal toast_requested(message: String, color: Color)
 ## Momento de revelação (cartão modal, ver RevealCard): "pet" | "chapter" |
 ## "achievement" | "service" | "cosmetic"; payload depende do tipo.

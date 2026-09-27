@@ -12,15 +12,15 @@ concurrency:
 jobs:
   static:
     name: Lint + testes de dados/economia
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Cache pip
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}-gdtoolkit-pillow-numpy
@@ -51,13 +51,13 @@ jobs:
 
   runtime:
     name: Godot headless (import + smoke test)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Godot binary
         id: godot-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-binary-4.7.2-stable-linux
@@ -74,7 +74,7 @@ jobs:
         run: chmod +x godot
       - name: Cache export templates
         id: templates
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/godot/export_templates/4.7.2.stable
           key: godot-templates-4.7.2
@@ -100,6 +100,31 @@ jobs:
               exit 1
             fi
           fi
+      - name: Export Web (preset "Web Preview") — valida o canal "jogue agora"
+        run: |
+          mkdir -p exports/web
+          ./godot --headless --export-release "Web Preview" exports/web/index.html 2>&1 | tee /tmp/export.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ] || [ ! -f exports/web/index.html ]; then
+            echo "::error::export Web falhou (preset \"Web Preview\")"
+            grep -iE "error|failed|missing|no export template" /tmp/export.log | head -20 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            exit 1
+          fi
+          if grep -q "SCRIPT ERROR" /tmp/export.log; then
+            echo "::error::erro(s) de script durante o export Web"
+            exit 1
+          fi
+          echo "build web: $(du -sh exports/web | cut -f1)"
+          ls -la exports/web
+      - name: Upload do build Web (jogue agora)
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-build
+          path: exports/web
+          retention-days: 14
+          if-no-files-found: error
       - name: Smoke test — 120 frames da cena principal
         run: |
           ./godot --headless --quit-after 120 2>&1 | tee /tmp/smoke.log
@@ -127,6 +152,9 @@ jobs:
           fi
           if ! grep -q "Godot domain tests: PASS" /tmp/domain.log; then
             echo "::error::testes de domínio não passaram"
+            grep -E "TEST_FAIL|USER ERROR|SCRIPT ERROR" /tmp/domain.log | head -30 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
             grep -iE "falha|failure|deve|must" /tmp/domain.log | head -12 | while IFS= read -r line; do
               echo "::error::${line:0:220}"
             done

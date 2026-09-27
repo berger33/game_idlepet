@@ -109,6 +109,9 @@ func _ready() -> void:
 	EventBus.service_failed.connect(
 		func(_s: StringName, _r: StringName) -> void: set_energy(false)
 	)
+	# Ajustes (sliders, import de código, load do save) reaplicam os volumes.
+	EventBus.settings_changed.connect(apply_volumes)
+	apply_volumes()
 
 
 func _build_sfx_cache() -> void:
@@ -333,30 +336,25 @@ func _build_voice_cache() -> bool:
 	return not voice_cache.is_empty()
 
 func _load_voice(id: StringName) -> AudioStream:
+	# Caminho normal: recurso importado (os 6 VO versionados são .mp3).
 	var base: String = VO_DIR + String(id)
-	for ext: String in [".mp3", ".ogg", ".wav"]:
+	for ext: String in [".mp3", ".wav"]:
 		var path: String = base + ext
 		if ResourceLoader.exists(path):
 			var loaded: Resource = load(path)
 			if loaded is AudioStream:
 				return loaded as AudioStream
-		# fallback sem import: carrega bytes direto (mp3 gerado em runtime)
-		if FileAccess.file_exists(path):
-			var bytes: PackedByteArray = FileAccess.get_file_as_bytes(path)
-			if bytes.is_empty():
-				continue
-			if ext == ".mp3":
-				var mp3: AudioStreamMP3 = AudioStreamMP3.new()
-				mp3.data = bytes
-				return mp3
-			elif ext == ".ogg":
-				var ogg: AudioStreamOggVorbis = AudioStreamOggVorbis.new()
-				# Godot 4 usa _load_ogg? fallback: tenta WAV
-				continue
-			elif ext == ".wav":
-				var wav: AudioStreamWAV = AudioStreamWAV.new()
-				wav.data = bytes
-				return wav
+	# Fallback sem import (arquivo gerado em runtime e ainda não importado):
+	# SÓ o MP3 aceita bytes crus via AudioStreamMP3.data. OGG não tem API de
+	# carga por bytes e WAV exigiria decodificar o cabeçalho RIFF — despejar os
+	# bytes em AudioStreamWAV.data produziria ruído (auditoria v2).
+	var mp3_path: String = base + ".mp3"
+	if FileAccess.file_exists(mp3_path):
+		var bytes: PackedByteArray = FileAccess.get_file_as_bytes(mp3_path)
+		if not bytes.is_empty():
+			var mp3: AudioStreamMP3 = AudioStreamMP3.new()
+			mp3.data = bytes
+			return mp3
 	return null
 
 

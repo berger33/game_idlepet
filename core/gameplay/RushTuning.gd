@@ -25,8 +25,14 @@ static func update_rush_labels(rush_active: bool, rush_left: float, rush_cooldow
 static func proof_text() -> String:
 	var names: Array[String] = ["Ana", "Carlos", "Bia", "Rafa", "Luna", "Maya", "Zé", "Téo", "Duda", "Leo"]
 	var pets: Array[String] = ["Caramelo", "Mimi", "Thor", "Luna", "Bob", "Mel", "Nina", "Pipoca"]
-	var msgs: Array[String] = ["amou o banho!", "★★★★★", "voltará!", "cheiroso!", "perfeito!", "obrigada!"]
-	return "💬 %s: %s %s" % [names[randi() % names.size()], pets[randi() % pets.size()], msgs[randi() % msgs.size()]]
+	# Frases no CSV (PROOF_PHRASES, separadas por "|") — o formato vem de
+	# PROOF_SOCIAL_LIVE, que já existia localizado e era ignorado (auditoria v2).
+	var msgs: Array[String] = []
+	for phrase: String in Loc.t("PROOF_PHRASES").split("|"):
+		msgs.append(phrase)
+	if msgs.is_empty():
+		msgs = ["★★★★★"]
+	return Loc.t("PROOF_SOCIAL_LIVE") % [names[randi() % names.size()], pets[randi() % pets.size()], msgs[randi() % msgs.size()]]
 
 static func patience_factor(base: float, assistance: int) -> float:
 	return base * 1.15 if assistance > 0 else base
