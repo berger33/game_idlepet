@@ -153,6 +153,7 @@ HINT_STYLE,Fit the bow on the pink mark and hold tight
 HIRE,HIRE
 HIRED,ON THE TEAM
 IAP_MOCK_GRANTED,%s granted (offline mock)!
+IAP_STORE_UNAVAILABLE,Store unavailable right now. Please try again later.
 IAP_NOTE,Real purchases arrive with store integration (offline: unavailable).
 LANGUAGE,Language
 LEFT_HANDED_MODE,Left-handed (shelf on left)

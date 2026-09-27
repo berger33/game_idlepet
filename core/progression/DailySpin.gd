@@ -56,7 +56,7 @@ static func _apply(reward: Dictionary) -> void:
 		GameState.add_coins(float(amount), &"daily_spin")
 	elif type == "embers":
 		GameState.embers += int(reward.get("amount", 1))
-		EventBus.currency_changed.emit(&"coins", GameState.coins)
+		EventBus.currency_changed.emit(&"embers", float(GameState.embers))
 	elif type == "freeze":
 		GameState.streak_freezes += int(reward.get("amount", 1))
 	Analytics.track(&"daily_spin", {"type": type})

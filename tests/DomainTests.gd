@@ -19,6 +19,7 @@ func _ready() -> void:
 	_test_discovery()
 	_test_contest()
 	_test_tutorial_ux()
+	_test_regressoes_auditoria_2026_09_27()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -273,6 +274,51 @@ func _test_tutorial_ux() -> void:
 	_expect(guide_at > 0 and save_at > guide_at, "services_taught gravado após exibir a fala")
 	_expect(TutorialFlow.STEP_COUNT == 4, "tutorial segue 4 passos")
 	Loc.lang = lang_before
+
+
+## Regressões da auditoria universal de 2026-09-27.
+func _test_regressoes_auditoria_2026_09_27() -> void:
+	# 1) active_cosmetics: o save escreve, o load TEM que restaurar (antes
+	#    apply_dictionary ignorava a chave e o pet voltava sem acessórios).
+	GameState.apply_dictionary(
+		{
+			"version": GameState.SAVE_VERSION,
+			"unlocked_cosmetics": ["tub_pink", "crown_bubbles"],
+			"active_cosmetics": {"bath": "tub_pink", "pet_accessory": "crown_bubbles", "wall": "nao_possuido"},
+		}
+	)
+	_expect(
+		String(GameState.active_cosmetics.get("bath", "")) == "tub_pink",
+		"load deve restaurar cosmético equipado"
+	)
+	_expect(
+		String(GameState.active_cosmetics.get("pet_accessory", "")) == "crown_bubbles",
+		"load deve restaurar acessório do pet"
+	)
+	_expect(
+		not GameState.active_cosmetics.has("wall"),
+		"cosmético não possuído não pode sobreviver ao load"
+	)
+	# round-trip completo: to_dictionary -> apply_dictionary preserva o equipado
+	var snapshot: Dictionary = GameState.to_dictionary()
+	GameState.active_cosmetics = {}
+	GameState.apply_dictionary(snapshot)
+	_expect(
+		String(GameState.active_cosmetics.get("bath", "")) == "tub_pink",
+		"round-trip do save preserva active_cosmetics"
+	)
+	# 2) AdsPolicy: cap/cooldown precisam voltar persistidos (antes a política
+	#    era carregada mas nunca escrita de volta em GameState.ads_policy).
+	AdsManager.on_rewarded_completed(&"audit_test")
+	_expect(
+		int(GameState.ads_policy.get("rewarded_today", 0)) >= 1,
+		"rewarded deve persistir a política de ads no estado"
+	)
+	AdsManager.record_purchase_for_policy()
+	_expect(
+		bool(GameState.ads_policy.get("purchased_recently", false)),
+		"compra recente deve persistir na política de ads"
+	)
 
 
 func _expect(condition: bool, message: String) -> void:
