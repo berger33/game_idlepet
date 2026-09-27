@@ -108,6 +108,8 @@ Ainda assim, esta auditoria encontrou **5 bugs reais** (1 de perda de progresso,
 | `data/localization/*.csv` (3) | B4 `IAP_STORE_UNAVAILABLE`; B5 linha 536 quotada |
 | `tests/DomainTests.gd` | testes de regressão B1/B2 |
 
-**Validação pós-fix:** `gdparse` ✅ · `gdlint` ✅ · `gd_static_check` ✅ (59 arq.) · `validate_project` ✅ (0E/0W) · `unittest` ✅ (68/68). O job runtime da CI revalida no Godot 4.7.2 a cada push.
+**Validação pós-fix:** `gdparse` ✅ · `gdlint` ✅ · `gd_static_check` ✅ (59 arq.) · `validate_project` ✅ (0E/0W) · `unittest` ✅ (68/68).
+
+**Validação runtime (CI, commit `5488456`, PR #9):** job `Godot headless` ✅ — import de assets, smoke de 120 frames da cena principal, `domain_tests.tscn` (**incluindo as regressões novas, "Godot domain tests: PASS"**), `smoke_interact.gd` e análise estática de todos os scripts no parser real do Godot 4.7.2. Job `Lint + testes de dados/economia` ✅. Ambos os checks do PR passam; mergeable.
 
 *Auditoria sem wipe e sem bump de `SAVE_VERSION`: todos os fixes são compatíveis com saves v14 existentes.*
