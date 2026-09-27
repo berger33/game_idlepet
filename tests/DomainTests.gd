@@ -445,15 +445,24 @@ func _test_save_transfer_code() -> void:
 	GameState.player_level = 1
 	GameState.pet_affection["caramelo"] = 0
 	_expect(SaveManager.import_code(code), "import do próprio código funciona")
-	_expect(is_equal_approx(GameState.coins, 1234.0), "moedas restauradas pelo código")
+	# O load reavalia conquistas e as de limiar PAGAM moedas (earn_500 = +50),
+	# então o valor restaurado é >= o exportado — comportamento correto.
+	var restored: float = GameState.coins
+	_expect(restored >= 1234.0, "moedas restauradas pelo código (conquistas podem somar)")
 	_expect(GameState.player_level == 7, "nível restaurado pelo código")
 	_expect(int(GameState.pet_affection.get("caramelo", 0)) == 4, "afeto restaurado pelo código")
 	_expect(not SaveManager.import_code("isso-nao-e-um-save"), "código inválido é recusado")
-	# Adulteração: troca o primeiro caractere do JSON em base64 ({" -> eyJ).
-	var index: int = code.find("eyJ")
-	_expect(index >= 0, "envelope em base64 começa com o JSON")
-	var original: String = code.substr(index, 1)
-	var tampered: String = code.substr(0, index) + ("A" if original != "A" else "B") + code.substr(index + 1)
+	# Segunda volta: com as conquistas já desbloqueadas o valor é exato — prova
+	# que o envelope carrega as moedas sem perda.
+	var code2: String = SaveManager.export_code()
+	GameState.coins = 0.0
+	_expect(SaveManager.import_code(code2), "segundo import funciona")
+	_expect(is_equal_approx(GameState.coins, restored), "round-trip exato (sem prêmio novo)")
+	# Adulteração: o envelope é XOR + base64, então mexe no meio da string.
+	var index: int = code2.length() / 3
+	var original: String = code2.substr(index, 1)
+	_expect(not original.is_empty(), "código tem conteúdo")
+	var tampered: String = code2.substr(0, index) + ("A" if original != "A" else "B") + code2.substr(index + 1)
 	_expect(not SaveManager.import_code(tampered), "código adulterado é recusado")
 
 
