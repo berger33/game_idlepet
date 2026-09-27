@@ -369,21 +369,28 @@ static func generate_matrix(data: String) -> Array:
 	return matrix
 
 static func generate_image(data: String, pixel_size: int = 200) -> Image:
-	# Nota10: otimizado com fill_rect, não set_pixel loop
+	# Nota10: otimizado com fill_rect, não set_pixel loop.
+	# B6.5 (auditoria v2, 2ª medição): a matriz certa NÃO basta — o desenho
+	# precisa de ZONA DE SILÊNCIO de 4 módulos e de célula de tamanho INTEIRO.
+	# A versão anterior começava no pixel 0 e terminava antes da borda; o
+	# OpenCV não decodificava a imagem final do cartão (testado módulo a módulo
+	# contra o render antigo). O tamanho final é (lado + 8) * célula.
 	var matrix: Array = generate_matrix(data)
 	var size: int = matrix.size()
 	if size == 0:
 		size = 21
-	var img: Image = Image.create(pixel_size, pixel_size, false, Image.FORMAT_RGBA8)
+	var quiet: int = 4
+	var cell: int = maxi(2, pixel_size / (size + quiet * 2))
+	var side: int = (size + quiet * 2) * cell
+	var img: Image = Image.create(side, side, false, Image.FORMAT_RGBA8)
 	img.fill(Color.WHITE)
-	var cell: int = pixel_size / size
 	var black: Color = Color.BLACK
 	# Desenha só células pretas com fill_rect para performance
 	for y in size:
 		for x in size:
 			if int(matrix[y][x]) == 1:
-				var rx: int = x * cell
-				var ry: int = y * cell
+				var rx: int = (x + quiet) * cell
+				var ry: int = (y + quiet) * cell
 				img.fill_rect(Rect2i(rx, ry, cell, cell), black)
 	return img
 

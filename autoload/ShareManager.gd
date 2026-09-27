@@ -232,20 +232,23 @@ func _render_card(
 	qr_style.set_corner_radius_all(18)
 	qr_style.set_content_margin_all(10)
 	qr_frame.add_theme_stylebox_override("panel", qr_style)
-	qr_frame.position = Vector2(430, 1320)
-	qr_frame.size = Vector2(220, 260)
+	# 1:1 com o desenho: reescalar o QR (220 -> 200) borra os módulos e atrapalha
+	# a leitura — o tamanho do quadro vem da imagem + margem/rótulo (B6.5).
+	var qr_side: float = float(qr_img.get_width())
+	qr_frame.position = Vector2(430.0 + (220.0 - qr_side) * 0.5, 1320.0)
+	qr_frame.size = Vector2(qr_side + 20.0, qr_side + 64.0)
 	var qr_box: VBoxContainer = VBoxContainer.new()
 	qr_box.add_theme_constant_override("separation", 4)
 	qr_frame.add_child(qr_box)
 	var qr_pic: TextureRect = TextureRect.new()
 	qr_pic.texture = qr_tex
-	qr_pic.custom_minimum_size = Vector2(200, 200)
+	qr_pic.custom_minimum_size = Vector2(qr_side, qr_side)
 	qr_pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	qr_box.add_child(qr_pic)
 	var qr_label: Label = Label.new()
 	qr_label.text = Loc.t("SHARE_QR_LABEL")
 	qr_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	qr_label.custom_minimum_size = Vector2(200, 40)
+	qr_label.custom_minimum_size = Vector2(qr_side, 40)
 	qr_label.add_theme_font_override("font", BODY_FONT)
 	qr_label.add_theme_font_size_override("font_size", 22)
 	qr_label.add_theme_color_override("font_color", Color("263238"))
@@ -323,20 +326,22 @@ func _render_achievement_card(achievement_id: String) -> Image:
 	qr_style2.set_corner_radius_all(18)
 	qr_style2.set_content_margin_all(10)
 	qr_frame2.add_theme_stylebox_override("panel", qr_style2)
-	qr_frame2.position = Vector2(430, 1080)
-	qr_frame2.size = Vector2(220, 260)
+	# Mesmo critério do cartão de banho: 1:1, sem reescalar (B6.5).
+	var qr_side2: float = float(qr_img2.get_width())
+	qr_frame2.position = Vector2(430.0 + (220.0 - qr_side2) * 0.5, 1080.0)
+	qr_frame2.size = Vector2(qr_side2 + 20.0, qr_side2 + 64.0)
 	var qr_box2: VBoxContainer = VBoxContainer.new()
 	qr_box2.add_theme_constant_override("separation", 4)
 	qr_frame2.add_child(qr_box2)
 	var qr_pic2: TextureRect = TextureRect.new()
 	qr_pic2.texture = qr_tex2
-	qr_pic2.custom_minimum_size = Vector2(200, 200)
+	qr_pic2.custom_minimum_size = Vector2(qr_side2, qr_side2)
 	qr_pic2.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	qr_box2.add_child(qr_pic2)
 	var qr_label2: Label = Label.new()
 	qr_label2.text = Loc.t("SHARE_QR_LABEL")
 	qr_label2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	qr_label2.custom_minimum_size = Vector2(200, 40)
+	qr_label2.custom_minimum_size = Vector2(qr_side2, 40)
 	qr_label2.add_theme_font_override("font", BODY_FONT)
 	qr_label2.add_theme_font_size_override("font_size", 22)
 	qr_label2.add_theme_color_override("font_color", Color("263238"))

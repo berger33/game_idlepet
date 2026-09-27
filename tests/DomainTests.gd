@@ -22,6 +22,8 @@ func _ready() -> void:
 	_test_regressoes_auditoria_2026_09_27()
 	_test_regressoes_auditoria_2026_09_27_v2()
 	_test_regressoes_auditoria_v3()
+	_test_save_transfer_code()
+	_test_park_activities()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -397,6 +399,130 @@ func _test_regressoes_auditoria_v3() -> void:
 	# existir em qualquer outro idioma.
 	_expect(Loc.t("COINS") != "COINS", "chave conhecida resolve")
 	_expect(Loc.t("CHAVE_QUE_NAO_EXISTE_XYZ") == "CHAVE_QUE_NAO_EXISTE_XYZ", "chave desconhecida volta crua")
+
+
+	# 4) RENDER do QR (B6.5): zona de silêncio de 4 módulos, célula inteira e
+	#    cada módulo desenhado no lugar certo. O desenho antigo começava no
+	#    pixel 0 (sem margem) e o OpenCV não decodificava a imagem final.
+	var reference: Array = QRCodeArt.generate_matrix("https://p.tycoon/a/first_bath")
+	_expect(reference.size() == 25, "render: matriz v2 de referência")
+	var img: Image = QRCodeArt.generate_image("https://p.tycoon/a/first_bath", 220)
+	var side: int = img.get_width()
+	_expect(img.get_height() == side, "render: imagem quadrada")
+	_expect(side % 33 == 0, "render: (25 módulos + 8 de silêncio) * célula inteira")
+	var cell: int = side / 33
+	_expect(cell >= 5, "render: célula de pelo menos 5 px")
+	var border_white: bool = true
+	for i: int in range(4 * cell):
+		if img.get_pixel(i, 0) != Color.WHITE or img.get_pixel(0, i) != Color.WHITE:
+			border_white = false
+	_expect(border_white, "render: 4 módulos de zona de silêncio no topo/esquerda")
+	var mismatches: int = 0
+	for y: int in reference.size():
+		for x: int in reference.size():
+			var px: Color = img.get_pixel((x + 4) * cell + cell / 2, (y + 4) * cell + cell / 2)
+			var expected: Color = Color.BLACK if int(reference[y][x]) == 1 else Color.WHITE
+			if px != expected:
+				mismatches += 1
+	_expect(mismatches == 0, "render: módulo a módulo igual à matriz (%d divergências)" % mismatches)
+	# 5) Share: o QR do cartão é desenhado 1:1 (reescalar borraria os módulos).
+	var share_src: String = FileAccess.get_file_as_string("res://autoload/ShareManager.gd")
+	_expect(share_src.count("custom_minimum_size = Vector2(qr_side") == 2,
+		"cartões de banho e conquista usam o lado real da imagem")
+
+
+## Código de transferência (export/import): sem cloud save, é o único caminho de
+## migrar progresso entre aparelhos — precisa restaurar e recusar adulteração.
+func _test_save_transfer_code() -> void:
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION})
+	GameState.coins = 1234.0
+	GameState.player_level = 7
+	GameState.pet_affection["caramelo"] = 4
+	var code: String = SaveManager.export_code()
+	_expect(code.length() > 40, "código de transferência gerado")
+	GameState.coins = 0.0
+	GameState.player_level = 1
+	GameState.pet_affection["caramelo"] = 0
+	_expect(SaveManager.import_code(code), "import do próprio código funciona")
+	_expect(is_equal_approx(GameState.coins, 1234.0), "moedas restauradas pelo código")
+	_expect(GameState.player_level == 7, "nível restaurado pelo código")
+	_expect(int(GameState.pet_affection.get("caramelo", 0)) == 4, "afeto restaurado pelo código")
+	_expect(not SaveManager.import_code("isso-nao-e-um-save"), "código inválido é recusado")
+	# Adulteração: troca o primeiro caractere do JSON em base64 ({" -> eyJ).
+	var index: int = code.find("eyJ")
+	_expect(index >= 0, "envelope em base64 começa com o JSON")
+	var original: String = code.substr(index, 1)
+	var tampered: String = code.substr(0, index) + ("A" if original != "A" else "B") + code.substr(index + 1)
+	_expect(not SaveManager.import_code(tampered), "código adulterado é recusado")
+
+
+## Parquinho: as 3 atividades decidem recompensa por conta própria — o resultado
+## (perfect/good/fail) é contrato de economia e precisa de teste determinístico.
+func _test_park_activities() -> void:
+	# Bola: arrastar até o pet acumula progresso e fetch; 60 arrastos = perfect.
+	var park: ParkService = ParkService.new()
+	park.configure(&"ball")
+	_expect(park.activity == ParkService.Activity.BALL, "configure reconhece a atividade")
+	park.start()
+	var pet_focus: Vector2 = Vector2(540, 1050)
+	for i: int in 60:
+		park.drag_ball(pet_focus + Vector2(float(i % 5) * 4.0, 0.0), pet_focus)
+	_expect(park.progress > 0.95 and park.fetch_count >= 3, "bola: progresso e fetches acumulados")
+	_expect(park.finish() == &"perfect", "bola: 60 arrastos rende perfect")
+	# Longe do pet não acumula: o progresso cai.
+	park = ParkService.new()
+	park.configure(&"ball")
+	park.start()
+	park.drag_ball(Vector2(50, 50), pet_focus)
+	_expect(park.progress < 0.02, "bola: arrasto longe do pet não pontua")
+	# Tempo esgotado falha a atividade (sem punir a fila — estado próprio).
+	park = ParkService.new()
+	park.configure(&"ball")
+	park.start()
+	_expect(park.tick(park.duration + 1.0) and park.state == ParkService.State.FAILED,
+		"atividade expira em FAILED")
+	_expect(park.finish() == &"fail", "finish depois do tempo devolve fail")
+	# Petisco: acertar o pote escondido é perfect; errar rende good.
+	park = ParkService.new()
+	park.configure(&"treat")
+	park.start()
+	park.treat_hidden_slot = 2
+	park.treat_slots = [0, 0, 1]
+	park.pick_treat(2)
+	_expect(park.treat_revealed and park.score == 1, "petisco: pote certo pontua")
+	_expect(park.finish() == &"perfect", "petisco: acerto é perfect")
+	park = ParkService.new()
+	park.configure(&"treat")
+	park.start()
+	park.treat_hidden_slot = 0
+	park.treat_slots = [1, 0, 0]
+	park.pick_treat(1)
+	_expect(park.score == 0, "petisco: pote errado não pontua")
+	_expect(park.finish() == &"good", "petisco: erro rende good (não pune)")
+	# Foto: clique alinhado pontua; desalinhado desconta e não pontua.
+	park = ParkService.new()
+	park.configure(&"photo")
+	park.start()
+	park.photo_align = 0.95
+	_expect(park.try_photo(), "foto: clique alinhado é aceito")
+	park.photo_align = 0.95
+	park.try_photo()
+	park.photo_align = 0.95
+	park.try_photo()
+	_expect(park.perfect and park.score >= 2, "foto: sequência alinhada é perfect")
+	_expect(park.finish() == &"perfect", "foto: resultado perfect")
+	park = ParkService.new()
+	park.configure(&"photo")
+	park.start()
+	park.photo_align = 0.1
+	var before: float = park.progress
+	_expect(not park.try_photo() and park.progress <= before, "foto: clique desalinhado desconta")
+	# Dicas localizadas em vez de português fixo.
+	for activity_id: StringName in [&"ball", &"treat", &"photo"]:
+		park = ParkService.new()
+		park.configure(activity_id)
+		var hint: String = park.quick_hint()
+		_expect(not hint.is_empty() and not hint.begins_with("PARK_HINT"), "dica localizada: " + String(activity_id))
 
 
 func _expect(condition: bool, message: String) -> void:
