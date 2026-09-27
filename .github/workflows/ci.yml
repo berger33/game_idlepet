@@ -100,6 +100,31 @@ jobs:
               exit 1
             fi
           fi
+      - name: Export Web (preset "Web Preview") — valida o canal "jogue agora"
+        run: |
+          mkdir -p exports/web
+          ./godot --headless --export-release "Web Preview" exports/web/index.html 2>&1 | tee /tmp/export.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ] || [ ! -f exports/web/index.html ]; then
+            echo "::error::export Web falhou (preset \"Web Preview\")"
+            grep -iE "error|failed|missing|no export template" /tmp/export.log | head -20 | while IFS= read -r line; do
+              echo "::error::${line:0:220}"
+            done
+            exit 1
+          fi
+          if grep -q "SCRIPT ERROR" /tmp/export.log; then
+            echo "::error::erro(s) de script durante o export Web"
+            exit 1
+          fi
+          echo "build web: $(du -sh exports/web | cut -f1)"
+          ls -la exports/web
+      - name: Upload do build Web (jogue agora)
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-build
+          path: exports/web
+          retention-days: 14
+          if-no-files-found: error
       - name: Smoke test — 120 frames da cena principal
         run: |
           ./godot --headless --quit-after 120 2>&1 | tee /tmp/smoke.log
