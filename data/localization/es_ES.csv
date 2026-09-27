@@ -153,6 +153,7 @@ HINT_STYLE,Encaja el lacito en la marca rosa y aguanta firme
 HIRE,CONTRATAR
 HIRED,EN EL EQUIPO
 IAP_MOCK_GRANTED,¡%s otorgado (mock offline)!
+IAP_STORE_UNAVAILABLE,Tienda no disponible en este momento. Intentalo de nuevo mas tarde.
 IAP_NOTE,Las compras reales llegan con la integración (offline: no disponible).
 LANGUAGE,Idioma
 LEFT_HANDED_MODE,Zurdo (estante a la izquierda)

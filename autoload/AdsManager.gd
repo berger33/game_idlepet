@@ -61,6 +61,14 @@ func on_rewarded_completed(offer_type: StringName) -> void:
 	if policy != null:
 		policy.record_rewarded()
 	Analytics.track(&"rewarded_complete", {"type": String(offer_type)})
+	_persist_policy()
+
+
+func _persist_policy() -> void:
+	# Regressão corrigida (auditoria 2026-09-27): a política era lida do save,
+	# mas nunca escrita de volta — caps/cooldowns zeravam a cada boot.
+	if policy != null:
+		GameState.ads_policy = policy.to_dictionary()
 	SaveManager.request_save()
 
 
@@ -76,8 +84,10 @@ func on_interstitial_shown() -> void:
 	if policy != null:
 		policy.record_interstitial()
 	Analytics.track(&"interstitial_shown", {})
+	_persist_policy()
 
 
 func record_purchase_for_policy() -> void:
 	if policy != null:
 		policy.record_purchase()
+	_persist_policy()

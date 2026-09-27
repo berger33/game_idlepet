@@ -790,7 +790,7 @@ func _build_shop() -> void:
 
 func _grant_ember() -> void:
 	GameState.embers += 1
-	EventBus.currency_changed.emit(&"coins", GameState.coins)
+	EventBus.currency_changed.emit(&"embers", float(GameState.embers))
 	SaveManager.request_save()
 	AudioManager.play(&"coin")
 	_rebuild(&"shop")

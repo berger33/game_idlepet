@@ -288,7 +288,7 @@ func buy_cosmetic(cosmetic_id: String) -> bool:
 		_spend_coins(float(coin_price), &"cosmetic")
 	if ember_price > 0:
 		embers -= ember_price
-		EventBus.currency_changed.emit(&"coins", coins)
+		EventBus.currency_changed.emit(&"embers", float(embers))
 	unlocked_cosmetics.append(cosmetic_id)
 	Analytics.track(&"cosmetic_bought", {"id": cosmetic_id})
 	SaveManager.request_save()
@@ -490,6 +490,16 @@ func apply_dictionary(data: Dictionary) -> void:
 		hired_staff.push_front("player")
 	achievement_ids = _safe_string_array(data.get("achievement_ids", []))
 	unlocked_cosmetics = _safe_string_array(data.get("unlocked_cosmetics", []))
+	# Regressão corrigida (auditoria 2026-09-27): o save escrevia active_cosmetics,
+	# mas o load nunca restaurava — pet voltava "nu" a cada reinício.
+	var saved_cosmetics: Variant = data.get("active_cosmetics", {})
+	var restored_cosmetics: Dictionary = {}
+	if saved_cosmetics is Dictionary:
+		for slot: String in saved_cosmetics:
+			var cid: String = String(saved_cosmetics[slot])
+			if unlocked_cosmetics.has(cid):
+				restored_cosmetics[slot] = cid
+	active_cosmetics = restored_cosmetics
 	mission_progress = _safe_dictionary(data.get("mission_progress", {}), {})
 	for metric: String in Missions.PROGRESS_KEYS:
 		mission_progress[metric] = maxi(0, int(mission_progress.get(metric, 0)))
@@ -944,7 +954,7 @@ func claim_pass_day() -> bool:
 		add_coins(float(Rewards.pass_day_coins(pass_day_claimed)), &"pass")
 	if reward.has("embers"):
 		embers += int(reward["embers"])
-		EventBus.currency_changed.emit(&"coins", coins)
+		EventBus.currency_changed.emit(&"embers", float(embers))
 	if reward.has("freeze"):
 		streak_freezes += int(reward["freeze"])
 	Analytics.track(&"pass_claim", {"day": pass_day_claimed})
@@ -1009,7 +1019,7 @@ func _on_service_completed(service_id: StringName, quality: StringName, reward: 
 		add_coins(float(chest_coins), &"combo_chest")
 		if chest_embers > 0:
 			embers += chest_embers
-			EventBus.currency_changed.emit(&"coins", coins)
+			EventBus.currency_changed.emit(&"embers", float(embers))
 		EventBus.toast_requested.emit(Loc.t("COMBO_CHEST_TOAST") % [combo, chest_coins, chest_embers], Color("ffd54f"))
 		EventBus.reveal_requested.emit(&"combo_chest", {"combo": combo, "coins": chest_coins, "embers": chest_embers})
 		Analytics.track(&"combo_chest", {"combo": combo, "coins": chest_coins, "embers": chest_embers})

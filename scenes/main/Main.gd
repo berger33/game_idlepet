@@ -567,7 +567,7 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 		proof += "\n%s" % mem
 	if GameState.services_completed == 0 and quality == &"perfect":
 		GameState.embers += 1
-		EventBus.currency_changed.emit(&"coins", GameState.coins)
+		EventBus.currency_changed.emit(&"embers", float(GameState.embers))
 		extra_line += "\n" + Loc.t("FIRST_BONUS")
 		_show_toast(Loc.t("FIRST_BONUS"), Color("ffd54f"))
 		world.celebration = 3.2
