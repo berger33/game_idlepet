@@ -190,7 +190,6 @@ func buy_bath_upgrade() -> bool:
 	bath_upgrade_level += 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
 	_register_weekly_spend(int(cost))
-	EventBus.upgrade_purchased.emit(&"bath", bath_upgrade_level)
 	Analytics.track(&"establishment_upgrade", {"id": "bath", "level": bath_upgrade_level})
 	_check_achievements()
 	SaveManager.request_save()
@@ -215,7 +214,6 @@ func buy_tool_upgrade(tool_id: StringName) -> bool:
 	tool_upgrade_levels[key] = level + 1
 	mission_progress["upgrades"] = int(mission_progress.get("upgrades", 0)) + 1
 	_register_weekly_spend(int(cost))
-	EventBus.upgrade_purchased.emit(tool_id, level + 1)
 	Analytics.track(&"tool_upgrade", {"id": key, "level": level + 1})
 	_check_achievements()
 	SaveManager.request_save()
@@ -364,7 +362,6 @@ func register_review(stars: int) -> void:
 	if safe_stars >= 4:
 		_refresh_daily_missions()
 		mission_progress["four_plus_reviews"] = int(mission_progress.get("four_plus_reviews", 0)) + 1
-	EventBus.review_received.emit(safe_stars)
 
 
 func review_average() -> float:
@@ -570,6 +567,9 @@ func apply_dictionary(data: Dictionary) -> void:
 	if saved_settings is Dictionary:
 		settings.merge(saved_settings, true)
 	_sanitize_settings()
+	# Avisa quem depende de settings que agora chegaram do save (idioma do Loc,
+	# volumes do Audio) — o load acontece DEPOIS dos autoloads de UI/serviço.
+	EventBus.settings_changed.emit()
 	_check_achievements()
 	EventBus.currency_changed.emit(&"coins", coins)
 
@@ -906,7 +906,7 @@ func convert_franchise_token() -> bool:
 	franchise_tokens -= 1
 	embers += 5
 	EventBus.currency_changed.emit(&"embers", float(embers))
-	EventBus.toast_requested.emit("Token de franquia convertido: +5 Brasas", Color("ffd54f"))
+	EventBus.toast_requested.emit(Loc.t("FRANCHISE_DONE"), Color("ffd54f"))
 	Analytics.track(&"currency_spent", {"currency": "franchise_tokens", "amount": 1})
 	SaveManager.request_save()
 	return true

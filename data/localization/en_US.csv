@@ -605,3 +605,41 @@ REPLAY_TUTORIAL_DESC,Watch Bia's step-by-step guide again whenever you want
 REPLAY_TUTORIAL_GO,REPLAY
 TUTORIAL_REPLAYED,Tutorial restarted! Bia will show you everything again.
 WRONG_TOOL_TOAST,Use %s for this order
+VIEW_STORY,ⓘ  View story
+VIEW_HINT,ⓘ  View tip
+VIEW_SHORT,ⓘ  See
+VIEW_DETAILS,View details
+COLLAPSE,Collapse
+HUD_TOOLTIP_REVIEW,Neighborhood rating
+HUD_TOOLTIP_COMBO,Combo and level
+HUD_TOOLTIP_RUSH,Rush event
+HUD_TOOLTIP_PROOF,Neighborhood social proof
+HUD_GOAL_FULL,See full goal
+HUD_LEVEL_ABBR,Lv.
+LOADING_ALBUM,Loading album...
+PREMIUM_BUNDLE,Premium bundle — removes ads + embers
+PREMIUM_MOCK_ROW,+%d %s (offline mock)
+RELEASE_PERFECT,✓ RELEASE FOR PERFECT!
+RELEASE_OVER,⚠ TOO FAR! RELEASE AND RETRY
+REVIEW_PROOF,💬 %s just rated: %s
+ANON_NAME,Someone
+FRANCHISE_DONE,Franchise token converted: +5 Embers
+PROOF_PHRASES,loved the bath!|★★★★★|will be back!|so clean!|perfect!|thank you!
+SPIN_COINS,Coins
+SPIN_COINS_DOUBLE,Double coins!
+SPIN_SUPER,Super prize!
+SPIN_EMBER_1,1 Ember!
+SPIN_EMBER_2,2 rare Embers!
+SPIN_FREEZE,Streak freeze!
+SPIN_ROW_COINS,%s +%d (%s)
+SPIN_ROW_EMBERS,🔥 +%d %s (%s)
+SPIN_ROW_FREEZE,❄️ +%d Streak freeze! (%s)
+GOAL_NEXT_KIDS,⭐ NEXT: %s
+KIDS_MODE_TITLE,🧒 KIDS MODE
+KIDS_MODE_TITLE_ON,🧒 KIDS MODE — ON ✨
+KIDS_MODE_DESC,"Bigger taps, easier gestures and short texts (age 7)"
+LANG_PT,🇧🇷 Português
+LANG_EN,🇺🇸 English
+LANG_ES,🇪🇸 Español
+PET_SPECIAL,Special pet
+COIN_FLY,%s +%d

@@ -5,12 +5,12 @@ extends RefCounted
 ## com pesos que garantem dopamina.
 
 const REWARDS: Array[Dictionary] = [
-	{"type": "coins", "mult": 0.8, "weight": 30, "label": "Moedas"},
-	{"type": "coins", "mult": 1.5, "weight": 25, "label": "Moedas em dobro!"},
-	{"type": "coins", "mult": 2.5, "weight": 12, "label": "Super prêmio!"},
-	{"type": "embers", "amount": 1, "weight": 20, "label": "1 Brasa!"},
-	{"type": "embers", "amount": 2, "weight": 8, "label": "2 Brasas raras!"},
-	{"type": "freeze", "amount": 1, "weight": 5, "label": "Freeze de streak!"},
+	{"type": "coins", "mult": 0.8, "weight": 30, "label": "SPIN_COINS"},
+	{"type": "coins", "mult": 1.5, "weight": 25, "label": "SPIN_COINS_DOUBLE"},
+	{"type": "coins", "mult": 2.5, "weight": 12, "label": "SPIN_SUPER"},
+	{"type": "embers", "amount": 1, "weight": 20, "label": "SPIN_EMBER_1"},
+	{"type": "embers", "amount": 2, "weight": 8, "label": "SPIN_EMBER_2"},
+	{"type": "freeze", "amount": 1, "weight": 5, "label": "SPIN_FREEZE"},
 ]
 
 static func can_spin() -> bool:
@@ -63,11 +63,13 @@ static func _apply(reward: Dictionary) -> void:
 
 static func label_for(reward: Dictionary) -> String:
 	var type: String = String(reward.get("type", "coins"))
+	# "label" guarda a CHAVE de localização (i18n), não o texto final.
+	var label: String = Loc.t(String(reward.get("label", "")))
 	if type == "coins":
 		var mult: float = float(reward.get("mult", 1.0))
 		var amount: int = Rewards.scaled(Rewards.SECONDS[&"daily_mission"] * mult, int(50 * mult))
-		return "%s +%d (%s)" % [Loc.t("COINS"), amount, String(reward.get("label", ""))]
+		return Loc.t("SPIN_ROW_COINS") % [Loc.t("COINS"), amount, label]
 	elif type == "embers":
-		return "🔥 +%d %s (%s)" % [int(reward.get("amount", 1)), Loc.t("EMBERS"), String(reward.get("label", ""))]
+		return Loc.t("SPIN_ROW_EMBERS") % [int(reward.get("amount", 1)), Loc.t("EMBERS"), label]
 	else:
-		return "❄️ +%d Freeze! (%s)" % [int(reward.get("amount", 1)), String(reward.get("label", ""))]
+		return Loc.t("SPIN_ROW_FREEZE") % [int(reward.get("amount", 1)), label]

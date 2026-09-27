@@ -414,9 +414,11 @@ static func draw_pet(unlocked: Array[String], bias: float) -> String:
 	return unlocked[unlocked.size() - 1]
 
 
-## Texto de odds de gorjeta para HUD (P2-14 transparência)
+## Texto de odds de gorjeta para HUD (P2-14 transparência).
+## Usa a chave localizada TIP_ODDS (paridade nos 3 idiomas); o texto tem sinais
+## de % literais e NÃO passa pelo operador de formatação.
 static func tip_odds_text() -> String:
-	return "Gorjetas: 60% 0%% • 25% +15%% • 10% +30%% • 5% +60%% (+bairro+pesquisa)"
+	return Loc.t("TIP_ODDS")
 
 ## Bônus de maestria no pagamento (C2): +2% por selo (até +6%).
 static func mastery_bonus(uses: int) -> float:

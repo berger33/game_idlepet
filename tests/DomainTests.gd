@@ -21,6 +21,7 @@ func _ready() -> void:
 	_test_tutorial_ux()
 	_test_regressoes_auditoria_2026_09_27()
 	_test_regressoes_auditoria_2026_09_27_v2()
+	_test_regressoes_auditoria_v3()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -366,6 +367,36 @@ func _test_regressoes_auditoria_2026_09_27_v2() -> void:
 	#    pode passar pelo operador % (erro "not all arguments converted").
 	var combo_text: String = Research.effect_text("combo_shield")
 	_expect(not combo_text.is_empty() and combo_text.to_lower().contains("combo"), "effect_text do Escudo de Combo deve render")
+
+
+## Regressões da 3ª passada (i18n, boot do idioma, parser CSV).
+func _test_regressoes_auditoria_v3() -> void:
+	# 1) Parser CSV do Loc: vírgula citada, aspas escapadas, \n e header.
+	var sample: String = "key,pt_BR\nA,\"olá, mundo\"\nB,simples\nC,\"l1\\nl2\"\nD,\"aspas \"\"internas\"\"\"\nE,\n"
+	var table: Dictionary = Loc.parse_csv(sample)
+	_expect(String(table.get("A", "")) == "olá, mundo", "CSV: vírgula entre aspas deve sobreviver")
+	_expect(String(table.get("B", "")) == "simples", "CSV: valor simples")
+	_expect(String(table.get("C", "")) == "l1\nl2", "CSV: \\n vira quebra de linha real")
+	_expect(String(table.get("D", "")) == "aspas \"internas\"", "CSV: aspas duplas escapadas")
+	_expect(table.has("E") and String(table["E"]) == "", "CSV: valor vazio é válido")
+	_expect(not table.has("key"), "CSV: header não entra na tabela")
+	# 2) As 3 tabelas carregam com o mesmo número de chaves (paridade real).
+	var sizes: Array[int] = []
+	for code: String in Loc.LANGS:
+		sizes.append((Loc.tables.get(code, {}) as Dictionary).size())
+	_expect(sizes.size() == 3 and sizes[0] > 600, "tabelas de idioma carregadas")
+	_expect(sizes[0] == sizes[1] and sizes[1] == sizes[2], "paridade de chaves entre idiomas: " + str(sizes))
+	# 3) Idioma salvo é aplicado ao carregar o save (antes só valia depois de
+	#    abrir Ajustes, porque o Loc lê o idioma antes do SaveManager).
+	Loc.lang = "pt_BR"
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "settings": {"language": "en_US"}})
+	_expect(Loc.lang == "en_US", "load do save deve aplicar o idioma salvo")
+	GameState.apply_dictionary({"version": GameState.SAVE_VERSION, "settings": {"language": "pt_BR"}})
+	_expect(Loc.lang == "pt_BR", "troca de volta do idioma")
+	# Chave inexistente cai no pt_BR e não devolve o identificador cru quando
+	# existir em qualquer outro idioma.
+	_expect(Loc.t("COINS") != "COINS", "chave conhecida resolve")
+	_expect(Loc.t("CHAVE_QUE_NAO_EXISTE_XYZ") == "CHAVE_QUE_NAO_EXISTE_XYZ", "chave desconhecida volta crua")
 
 
 func _expect(condition: bool, message: String) -> void:

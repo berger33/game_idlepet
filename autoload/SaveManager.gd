@@ -45,7 +45,6 @@ func save_game() -> bool:
 		return false
 	elapsed = 0.0
 	save_requested = false
-	EventBus.save_completed.emit()
 	return true
 
 

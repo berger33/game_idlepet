@@ -23,9 +23,9 @@ env:
 jobs:
   build:
     name: Exportar Web Preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Godot headless
         run: |
           curl -fL -o godot.zip \
@@ -33,7 +33,7 @@ jobs:
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
       - name: Cache dos export templates
         id: templates
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: godot-templates-${{ env.GODOT_VERSION }}
@@ -51,17 +51,17 @@ jobs:
           mkdir -p exports/web
           ./godot --headless --export-release "Web Preview" exports/web/index.html
           test -f exports/web/index.html
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: exports/web
 
   deploy:
     name: Publicar no GitHub Pages
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

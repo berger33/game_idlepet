@@ -53,7 +53,7 @@ static func hud_line() -> String:
 			base = "⭐ " + Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()
 		else:
 			# kids: só nome + emoji, sem % nem Nv.XX — menos número abstrato
-			base = "⭐ PRÓXIMO: " + String(goal["text"])
+			base = Loc.t("GOAL_NEXT_KIDS") % String(goal["text"])
 		return base
 	if goal.is_empty():
 		base = Loc.t("GOAL_PRESTIGE") % GameState.prestige_tokens_available()

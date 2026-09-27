@@ -53,5 +53,16 @@ theme/default_font_multichannel_signed_distance_field=true
 [physics]
 common/physics_ticks_per_second=60
 
+[importer_defaults]
+; Build leve (auditoria universal v2, P1): os 851 PNGs de arte somam 261 MB.
+; Com Lossy (WebP, q=0.85) a importação cai ~10x no pacote exportado/Web sem
+; diferença visível em tela; mipmaps desligados economizam ~25% de memória.
+; Nenhum .import é versionado — estes defaults valem para toda a arte.
+texture={
+"compress/mode": 1,
+"compress/lossy_quality": 0.85,
+"mipmaps/generate": false
+}
+
 [application_run]
 disable_stdout=false

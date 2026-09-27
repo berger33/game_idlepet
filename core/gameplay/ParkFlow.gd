@@ -305,18 +305,16 @@ static func start_activity(main: Control, id: StringName) -> void:
 static func instruction(main: Control) -> String:
 	if main.park_service == null:
 		return ""
-	var hints: Dictionary = { ParkService.Activity.BALL: ["PARK_HINT_BALL", "🎾 Arraste a bolinha até o pet do meio!"],
-		ParkService.Activity.TREAT: ["PARK_HINT_TREAT", "🦴 Toque no pote com o petisco escondido!"],
-		ParkService.Activity.PHOTO: ["PARK_HINT_PHOTO", "📸 Espere o alinhamento e toque em FOTO!"],
+	# Só chaves localizadas: o fallback pt-BR antigo (pair[1]) nunca era
+	# necessário e vazava português no EN/ES (auditoria universal v2).
+	var hint_keys: Dictionary = {
+		ParkService.Activity.BALL: "PARK_HINT_BALL",
+		ParkService.Activity.TREAT: "PARK_HINT_TREAT",
+		ParkService.Activity.PHOTO: "PARK_HINT_PHOTO",
 	}
-	if not hints.has(main.park_service.activity):
+	if not hint_keys.has(main.park_service.activity):
 		return ""
-	var pair: Array = hints[main.park_service.activity]
-	if Loc != null and Loc.has_method("t"):
-		var translated: String = Loc.t(pair[0])
-		if translated != pair[0]:
-			return translated
-	return String(pair[1])
+	return Loc.t(String(hint_keys[main.park_service.activity]))
 
 static func begin_pointer(main: Control, pos: Vector2) -> void:
 	if main.park_service == null or main.park_service.state != ParkService.State.ACTIVE or not is_instance_valid(main.park_canvas) or not main.is_inside_tree():
@@ -480,7 +478,7 @@ static func show_success(main: Control, quality: StringName, reward: Dictionary)
 		main.result_detail_extra.visible = false
 		main.result_expanded = false
 		if is_instance_valid(main.result_expand_btn):
-			main.result_expand_btn.text = "ⓘ  Ver"
+			main.result_expand_btn.text = Loc.t("VIEW_SHORT")
 			main.result_expand_btn.visible = true
 	if is_instance_valid(main.share_button):
 		main.share_button.visible = false
@@ -512,7 +510,7 @@ static func show_fail(main: Control) -> void:
 		main.result_expanded = false
 		if is_instance_valid(main.result_expand_btn):
 			main.result_expand_btn.visible = true
-			main.result_expand_btn.text = "ⓘ  Dica"
+			main.result_expand_btn.text = Loc.t("VIEW_HINT")
 	if is_instance_valid(main.share_button):
 		main.share_button.visible = false
 	if is_instance_valid(main.result_panel):

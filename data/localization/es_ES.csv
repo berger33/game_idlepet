@@ -605,3 +605,41 @@ REPLAY_TUTORIAL_DESC,Vuelve a ver la guía paso a paso de Bia cuando quieras
 REPLAY_TUTORIAL_GO,REVER
 TUTORIAL_REPLAYED,¡Tutorial reiniciado! Bia te mostrará todo de nuevo.
 WRONG_TOOL_TOAST,Usa %s en este pedido
+VIEW_STORY,ⓘ  Ver historia
+VIEW_HINT,ⓘ  Ver consejo
+VIEW_SHORT,ⓘ  Ver
+VIEW_DETAILS,Ver detalles
+COLLAPSE,Ocultar
+HUD_TOOLTIP_REVIEW,Reputación del barrio
+HUD_TOOLTIP_COMBO,Combo y nivel
+HUD_TOOLTIP_RUSH,Evento rush
+HUD_TOOLTIP_PROOF,Prueba social del barrio
+HUD_GOAL_FULL,Ver meta completa
+HUD_LEVEL_ABBR,Nv.
+LOADING_ALBUM,Cargando álbum...
+PREMIUM_BUNDLE,Paquete premium — quita anuncios + brasas
+PREMIUM_MOCK_ROW,+%d %s (mock sin conexión)
+RELEASE_PERFECT,¡✓ SUELTA PARA PERFECTO!
+RELEASE_OVER,¡⚠ TE PASASTE! SUELTA E INTENTA OTRA VEZ
+REVIEW_PROOF,💬 %s acaba de valorar: %s
+ANON_NAME,Alguien
+FRANCHISE_DONE,Token de franquicia convertido: +5 Brasas
+PROOF_PHRASES,¡amó el baño!|★★★★★|¡volverá!|¡limpio!|¡perfecto!|¡gracias!
+SPIN_COINS,Monedas
+SPIN_COINS_DOUBLE,¡Monedas dobles!
+SPIN_SUPER,¡Súper premio!
+SPIN_EMBER_1,¡1 Brasa!
+SPIN_EMBER_2,¡2 Brasas raras!
+SPIN_FREEZE,¡Freeze de racha!
+SPIN_ROW_COINS,%s +%d (%s)
+SPIN_ROW_EMBERS,🔥 +%d %s (%s)
+SPIN_ROW_FREEZE,❄️ +%d ¡Freeze de racha! (%s)
+GOAL_NEXT_KIDS,⭐ PRÓXIMO: %s
+KIDS_MODE_TITLE,🧒 MODO NIÑOS
+KIDS_MODE_TITLE_ON,🧒 MODO NIÑOS — ACTIVO ✨
+KIDS_MODE_DESC,"Toques más grandes, gestos más fáciles y textos cortos (7 años)"
+LANG_PT,🇧🇷 Português
+LANG_EN,🇺🇸 English
+LANG_ES,🇪🇸 Español
+PET_SPECIAL,Mascota especial
+COIN_FLY,%s +%d

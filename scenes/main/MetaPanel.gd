@@ -390,7 +390,7 @@ func _build_collection() -> void:
 func _build_album() -> void:
 	# harden: GameState/Loc podem não estar prontos no editor headless ou primeiro frame
 	if GameState == null or not is_instance_valid(screen) or screen.content_box == null:
-		_note("Carregando álbum...", 22, Color("90a4ae"))
+		_note(Loc.t("LOADING_ALBUM"), 22, Color("90a4ae"))
 		return
 	_build_contest()
 	# Grid de fotos
@@ -775,7 +775,7 @@ func _build_shop() -> void:
 		var rew: Dictionary = IAPManager.MOCK_REWARDS.get(StringName(sku), {})
 		var em: int = int(rew.get("embers", 0))
 		var ent: String = String(rew.get("entitlement", ""))
-		var desc: String = "Pacote premium — remove anúncios + brasas" if sku in ["starter_pack","no_ads"] else "+%d %s (mock offline)" % [em, Loc.t("EMBERS")] if em>0 else "Pacote premium"
+		var desc: String = Loc.t("PREMIUM_BUNDLE") if sku in ["starter_pack","no_ads"] else Loc.t("PREMIUM_MOCK_ROW") % [em, Loc.t("EMBERS")] if em>0 else Loc.t("PREMIUM_BUNDLE")
 		if not ent.is_empty():
 			desc += " • %s" % ent
 		var has_ent: bool = IAPManager.has_entitlement(StringName(ent)) if not ent.is_empty() else false
@@ -943,8 +943,8 @@ func _build_settings() -> void:
 	_add_toggle(Loc.t("TRAINING_GHOST"), "training_ghost", false)
 	# Modo criança: uma chave só deixa tudo largo, lento e com HUD simplificado (7 anos).
 	var kids_on: bool = bool(GameState.settings.get("kids_mode", false))
-	var kids_title: String = "🧒 MODO CRIANÇA" if not kids_on else "🧒 MODO CRIANÇA — ATIVO ✨"
-	var kids_desc: String = "Toques maiores, gestos mais fáceis e textos curtos (7 anos)" if not kids_on else Loc.t("KIDS_MODE_ACTIVE") if Loc.has_method("t") and Loc.t("KIDS_MODE_ACTIVE") != "KIDS_MODE_ACTIVE" else "Ativo: gestos 30% mais fáceis, tempo +35% e alvo maior"
+	var kids_title: String = Loc.t("KIDS_MODE_TITLE") if not kids_on else Loc.t("KIDS_MODE_TITLE_ON")
+	var kids_desc: String = Loc.t("KIDS_MODE_DESC") if not kids_on else Loc.t("KIDS_MODE_ACTIVE") if Loc.has_method("t") and Loc.t("KIDS_MODE_ACTIVE") != "KIDS_MODE_ACTIVE" else "Ativo: gestos 30% mais fáceis, tempo +35% e alvo maior"
 	_info_row(kids_title, kids_desc, Loc.t("ON") if kids_on else Loc.t("OFF"), GREEN if kids_on else Color("b0bec5"), true, func() -> void:
 		GameState.settings["kids_mode"] = not bool(GameState.settings.get("kids_mode", false))
 		SaveManager.request_save()
@@ -991,7 +991,7 @@ func _build_settings() -> void:
 	screen.content_box.add_child(lang_row)
 	var caption: Label = _label_node(Loc.t("LANGUAGE") + ":", 28, CHARCOAL)
 	lang_row.add_child(caption)
-	var lang_names: Dictionary = {"pt_BR": "🇧🇷 Português", "en_US": "🇺🇸 English", "es_ES": "🇪🇸 Español"}
+	var lang_names: Dictionary = {"pt_BR": Loc.t("LANG_PT"), "en_US": Loc.t("LANG_EN"), "es_ES": Loc.t("LANG_ES")}
 	for code: String in Loc.LANGS:
 		var lang_button: Button = Button.new()
 		_style_button(lang_button, BLUE if code == Loc.lang else Color("b0bec5"))
@@ -1122,7 +1122,7 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 		expand_btn = Button.new()
 		expand_btn.text = "ⓘ"
 		expand_btn.custom_minimum_size = Vector2(56, 56)
-		expand_btn.tooltip_text = "Ver detalhes"
+		expand_btn.tooltip_text = Loc.t("VIEW_DETAILS")
 		# estilo compacto, circular
 		expand_btn.add_theme_font_size_override("font_size", 22)
 		expand_btn.add_theme_color_override("font_color", Color("546e7a"))
@@ -1142,7 +1142,7 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 			if expanded:
 				desc_label.text = desc_text
 				expand_btn.text = "▴"
-				expand_btn.tooltip_text = "Recolher"
+				expand_btn.tooltip_text = Loc.t("COLLAPSE")
 				# feedback suave
 				desc_label.modulate.a = 0.0
 				var t: Tween = desc_label.create_tween()
@@ -1151,7 +1151,7 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 			else:
 				desc_label.text = preview_text
 				expand_btn.text = "ⓘ"
-				expand_btn.tooltip_text = "Ver detalhes"
+				expand_btn.tooltip_text = Loc.t("VIEW_DETAILS")
 				AudioManager.play(&"tap")
 		)
 		# toque longo na linha toda também expande

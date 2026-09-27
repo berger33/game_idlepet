@@ -605,3 +605,41 @@ REPLAY_TUTORIAL_DESC,Assista de novo ao passo a passo da Bia quando quiser
 REPLAY_TUTORIAL_GO,REVER
 TUTORIAL_REPLAYED,Tutorial reiniciado! Bia vai te mostrar tudo de novo.
 WRONG_TOOL_TOAST,Use %s neste pedido
+VIEW_STORY,ⓘ  Ver história
+VIEW_HINT,ⓘ  Ver dica
+VIEW_SHORT,ⓘ  Ver
+VIEW_DETAILS,Ver detalhes
+COLLAPSE,Recolher
+HUD_TOOLTIP_REVIEW,Reputação do bairro
+HUD_TOOLTIP_COMBO,Combo e nível
+HUD_TOOLTIP_RUSH,Evento rush
+HUD_TOOLTIP_PROOF,Prova social do bairro
+HUD_GOAL_FULL,Ver meta completa
+HUD_LEVEL_ABBR,NV.
+LOADING_ALBUM,Carregando álbum...
+PREMIUM_BUNDLE,Pacote premium — remove anúncios + brasas
+PREMIUM_MOCK_ROW,+%d %s (mock offline)
+RELEASE_PERFECT,✓ SOLTE PARA PERFEITO!
+RELEASE_OVER,⚠ PASSOU! SOLTE E TENTE DE NOVO
+REVIEW_PROOF,💬 %s acabou de avaliar: %s
+ANON_NAME,Alguém
+FRANCHISE_DONE,Token de franquia convertido: +5 Brasas
+PROOF_PHRASES,amou o banho!|★★★★★|voltará!|cheiroso!|perfeito!|obrigada!
+SPIN_COINS,Moedas
+SPIN_COINS_DOUBLE,Moedas em dobro!
+SPIN_SUPER,Super prêmio!
+SPIN_EMBER_1,1 Brasa!
+SPIN_EMBER_2,2 Brasas raras!
+SPIN_FREEZE,Freeze de streak!
+SPIN_ROW_COINS,%s +%d (%s)
+SPIN_ROW_EMBERS,🔥 +%d %s (%s)
+SPIN_ROW_FREEZE,❄️ +%d Freeze! (%s)
+GOAL_NEXT_KIDS,⭐ PRÓXIMO: %s
+KIDS_MODE_TITLE,🧒 MODO CRIANÇA
+KIDS_MODE_TITLE_ON,🧒 MODO CRIANÇA — ATIVO ✨
+KIDS_MODE_DESC,"Toques maiores, gestos mais fáceis e textos curtos (7 anos)"
+LANG_PT,🇧🇷 Português
+LANG_EN,🇺🇸 English
+LANG_ES,🇪🇸 Español
+PET_SPECIAL,Pet especial
+COIN_FLY,%s +%d
