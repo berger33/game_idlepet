@@ -278,7 +278,7 @@ PET_YUKI_SCOTTISH,Yuki
 PET_ZARA_ORIENTAL,Zara
 PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestige available: %d token(s) • current bonus +%.0f%% per service
-PRESTIGE_DONE,Franchise level %d! +10% $ per level
+PRESTIGE_DONE,Franchise level %d! +10%% $ per level
 PRESTIGE_GO,PRESTIGE
 PRESTIGE_KEEP,"Keeps: embers, pets, cosmetics, achievements, streak, pass, research and 25% of station/tools"
 PRESTIGE_LOCKED,Reach level 15 and save up more $

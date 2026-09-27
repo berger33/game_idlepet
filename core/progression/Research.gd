@@ -94,5 +94,8 @@ static func effect_text(node_id: String) -> String:
 	var effects: Dictionary = ContentDB.research(node_id).get("effect", {})
 	for key: String in effects:
 		var percent: int = int(roundf(float(effects[key]) * 100.0))
-		parts.append(Loc.t("RESEARCH_EFFECT_" + key) % percent)
+		var text: String = Loc.t("RESEARCH_EFFECT_" + key)
+		# Só formata quem tem placeholder: "proteção de combo" não tem %d e o
+		# operador % do Godot devolve erro ("not all arguments converted").
+		parts.append(text % percent if text.contains("%") else text)
 	return " • ".join(parts)

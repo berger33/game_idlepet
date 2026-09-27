@@ -1465,4 +1465,88 @@ class TutorialUXTests(unittest.TestCase):
         self.assertIn('upsell_panel.visible', select)
 
 
+# ── Formatação de localização: chaves usadas com o operador `%` ───────────────
+# Godot devolve erro quando a contagem de placeholders não bate
+# ("not all arguments converted during string formatting") ou quando existe um
+# "%" não escapado ("unsupported format character") — o texto sai quebrado na
+# UI. Auditoria 2026-09-27, 2ª passada (PRESTIGE_DONE, RESEARCH_EFFECT_combo_
+# protection). Este teste impede que a classe de bug volte.
+import re as _re
+
+_SPEC_RE = _re.compile(r'%%|%(?:[-+0]*\d*(?:\.\d+)?\*?[doxXfvsc])')
+_LOC_FORMAT_RE = _re.compile(r'Loc\.t\(\s*"([A-Z0-9_]+)"\s*\)\s*%')
+
+
+def _placeholder_count(text):
+    return sum(1 for m in _SPEC_RE.finditer(text) if m.group(0) != '%%')
+
+
+def _has_stray_percent(text):
+    return '%' in _SPEC_RE.sub('', text)
+
+
+def _count_array_args(src, start):
+    """Conta os elementos de um array literal começando em src[start] == '['."""
+    depth = 0
+    commas = 0
+    quote = ''
+    i = start
+    while i < len(src):
+        c = src[i]
+        if quote:
+            if c == quote and src[i - 1] != '\\':
+                quote = ''
+        elif c in '"\'':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+            if depth == 0:
+                inner = src[start + 1:i]
+                n = commas + 1
+                if inner.rstrip().endswith(','):
+                    n -= 1
+                return n
+        elif c == ',' and depth == 1:
+            commas += 1
+        i += 1
+    return None
+
+
+class LocalizationFormatTests(unittest.TestCase):
+    def test_loc_format_placeholders_match_arguments(self):
+        tables = {code: _loc_table(code) for code in ('pt_BR', 'en_US', 'es_ES')}
+        problems = []
+        checked = 0
+        for gd in sorted(Path('.').rglob('*.gd')):
+            if '.git' in gd.parts:
+                continue
+            src = gd.read_text(encoding='utf8')
+            for m in _LOC_FORMAT_RE.finditer(src):
+                key = m.group(1)
+                rest = src[m.end():]
+                stripped = rest.lstrip()
+                if stripped.startswith('['):
+                    args = _count_array_args(src, m.end() + (len(rest) - len(stripped)))
+                else:
+                    args = 1
+                if args is None:
+                    continue
+                checked += 1
+                for code, table in tables.items():
+                    value = table.get(key)
+                    if value is None:
+                        problems.append('%s ausente em %s (%s)' % (key, code, gd))
+                        continue
+                    specs = _placeholder_count(value)
+                    if specs != args:
+                        problems.append('%s [%s]: %d placeholder(s) x %d argumento(s) em %s'
+                                        % (key, code, specs, args, gd))
+                    if _has_stray_percent(value):
+                        problems.append('%s [%s]: "%" sem escape em %s' % (key, code, gd))
+        self.assertGreater(checked, 50, 'scanner precisa achar os sites de formato (achou %d)' % checked)
+        self.assertEqual([], problems)
+
+
 if __name__=='__main__': unittest.main()

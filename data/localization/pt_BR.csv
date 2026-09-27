@@ -278,7 +278,7 @@ PET_YUKI_SCOTTISH,Yuki
 PET_ZARA_ORIENTAL,Zara
 PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
-PRESTIGE_DONE,Franquia nível %d! +10% de R$ por nível
+PRESTIGE_DONE,Franquia nível %d! +10%% de R$ por nível
 PRESTIGE_GO,PRESTIGIAR
 PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe, pesquisa e 25% da estação/ferramentas"
 PRESTIGE_LOCKED,Alcance nível 15 e acumule mais R$

@@ -20,6 +20,7 @@ func _ready() -> void:
 	_test_contest()
 	_test_tutorial_ux()
 	_test_regressoes_auditoria_2026_09_27()
+	_test_regressoes_auditoria_2026_09_27_v2()
 	if failures == 0:
 		print("Godot domain tests: PASS")
 	else:
@@ -309,6 +310,62 @@ func _test_regressoes_auditoria_2026_09_27() -> void:
 	AdsManager.record_purchase_for_policy()
 	var purchased_recently: bool = bool(GameState.ads_policy.get("purchased_recently", false))
 	_expect(purchased_recently, "compra recente deve persistir na política de ads")
+
+
+## Regressões da 2ª passada da auditoria universal (2026-09-27): QR quebrado e
+## strings de localização formatadas com `%` inválido.
+func _test_regressoes_auditoria_2026_09_27_v2() -> void:
+	# 1) QR: o vetor abaixo é a matriz de referência (v2, ECC L, máscara 0) para
+	#    o payload abaixo, idêntica à do gerador de referência ISO/IEC 18004
+	#    (qrcode/Nayuki). Antes das correções desta auditoria a matriz divergia
+	#    em ~184/625 módulos e NENHUM leitor decodificava (GF(256) com LOG[1]
+	#    errado, zigzag em ordem trocada, módulos de formato liberados e
+	#    format info transposto).
+	var payload: String = "https://p.tycoon/a/first_bath"
+	var matrix: Array = QRCodeArt.generate_matrix(payload)
+	_expect(matrix.size() == 25, "QR v2 deve ter 25 módulos de lado")
+	var reference_rows: PackedStringArray = [
+		"1111111001101011001111111",
+		"1000001000110101101000001",
+		"1011101011101001001011101",
+		"1011101001100000001011101",
+		"1011101000110111101011101",
+		"1000001001010011001000001",
+		"1111111010101010101111111",
+		"0000000011111110100000000",
+		"1110111110100101111000100",
+		"1011000010101100111100001",
+		"0110101111000100010010111",
+		"1101010100010100111100010",
+		"0010001100001101111101011",
+		"0011010110001000101001001",
+		"1010101011101010011100111",
+		"0100010000000110110010010",
+		"1001111010101101111111000",
+		"0000000011101111100011011",
+		"1111111010000111101011011",
+		"1000001011101100100011000",
+		"1011101011110100111111010",
+		"1011101000111110100111100",
+		"1011101011101110110010001",
+		"1000001010111111111011010",
+		"1111111010100101111100011",
+	]
+	if matrix.size() == 25:
+		for y: int in 25:
+			var row: String = ""
+			for x: int in 25:
+				row += str(int(matrix[y][x]))
+			_expect(row == reference_rows[y], "QR linha %d divergiu da referência" % y)
+	# 2) PRESTIGE_DONE tinha "%" literal sem escape e o operador % do Godot
+	#    devolve erro ("unsupported format character") → toast de prestígio
+	#    quebrado nos 3 idiomas.
+	var prestige_txt = Loc.t("PRESTIGE_DONE") % 1
+	_expect(prestige_txt is String and String(prestige_txt).contains("%"), "PRESTIGE_DONE precisa formatar com o % escapado")
+	# 3) Nó de pesquisa com efeito sem placeholder ("proteção de combo") não
+	#    pode passar pelo operador % (erro "not all arguments converted").
+	var combo_text: String = Research.effect_text("combo_shield")
+	_expect(not combo_text.is_empty() and combo_text.to_lower().contains("combo"), "effect_text do Escudo de Combo deve render")
 
 
 func _expect(condition: bool, message: String) -> void:

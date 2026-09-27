@@ -26,14 +26,16 @@ static func _ensure_gf() -> void:
 	_gf_exp.resize(512)
 	_gf_log.resize(256)
 	var x: int = 1
-	for i in range(256):
+	# Log tem só 255 posições úteis (α^0..α^254): a 256ª iteração gravava
+	# _gf_log[1] = 255 (α^255 = 1) e corrompia TODO o Reed-Solomon — era o
+	# primeiro dos 4 defeitos do QR (auditoria 2026-09-27, 2ª passada).
+	for i in range(512):
 		_gf_exp[i] = x
-		_gf_log[x] = i
+		if i < 255:
+			_gf_log[x] = i
 		x <<= 1
 		if x & 0x100:
 			x ^= 0x11D
-	for i in range(256, 512):
-		_gf_exp[i] = _gf_exp[i - 256]
 	_gf_ready = true
 
 static func _gf_mul(a: int, b: int) -> int:
@@ -245,71 +247,20 @@ static func _generate_real_matrix(data: String) -> Array:
 			matrix[8][size - 8 + i] = -2
 		if matrix[size - 8 + i][8] == -1:
 			matrix[size - 8 + i][8] = -2
-	# Data placement zigzag
+	# Data placement zigzag (ISO/IEC 18004 §7.7.3): por par de colunas, a linha
+	# percorre a matriz e, dentro dela, as duas colunas do par. Manter os
+	# módulos de formato/versão marcados como reservados (-2) é essencial:
+	# eles NÃO recebem bits de dados e são escritos depois pelo format info.
 	var bit_idx: int = 0
 	var x: int = size - 1
-	var y: int = size - 1
 	var going_up: bool = true
 	while x > 0:
 		if x == 6:
 			x -= 1
-		for _col in range(2):
-			var xx: int = x - _col
-			if xx < 0:
-				continue
-			# Two rows per step
-			var yy: int = y
-			while true:
-				if yy < 0 or yy >= size:
-					break
-				if matrix[yy][xx] == -1:
-					var bit: int = 0
-					if bit_idx < bits.size():
-						bit = bits[bit_idx]
-						bit_idx += 1
-					# Mask 0: (x+y)%2==0 invert
-					if (xx + yy) % 2 == 0:
-						bit = 1 - bit
-					matrix[yy][xx] = bit
-				if going_up:
-					yy -= 1
-					if yy < 0:
-						break
-				else:
-					yy += 1
-					if yy >= size:
-						break
-		x -= 2
-		going_up = not going_up
-		y = size - 1 if not going_up else 0
-		# Adjust y after direction change
-		if going_up:
-			y = size - 1
-		else:
-			y = 0
-		# Actually need to continue from last position - this simplified zigzag may have gaps
-		# We'll implement proper loop below instead
-		break
-
-	# Re-implement proper zigzag placement (correção do loop acima)
-	# Reset matrix data area to -1 for data
-	for yy in size:
-		for xx in size:
-			if matrix[yy][xx] == -1 or matrix[yy][xx] == -2:
-				# Keep function, but data area -1 -> will be filled
-				if matrix[yy][xx] == -2:
-					matrix[yy][xx] = -1
-	# Proper placement
-	bit_idx = 0
-	x = size - 1
-	going_up = true
-	while x > 0:
-		if x == 6:
-			x -= 1
-		for dx in [0,1]:
-			var xx: int = x - dx
-			for _i in size:
-				var yy: int = (size - 1 - _i) if going_up else _i
+		for _i in size:
+			var yy: int = (size - 1 - _i) if going_up else _i
+			for dx in [0, 1]:
+				var xx: int = x - dx
 				if matrix[yy][xx] != -1:
 					continue
 				var bit: int = 0
@@ -323,24 +274,26 @@ static func _generate_real_matrix(data: String) -> Array:
 		going_up = not going_up
 
 	# Format info — ECC L = 01, mask 0 = 000 => 01 000 = 0x08, BCH + mask 0x5412
+	# Coordenadas conforme a convenção do padrão (bit 0 = LSB):
+	#   cópia 1 (coluna 8 / linha 8, topo-esquerda) e cópia 2 (cantos opostos).
 	var format_bits: int = _format_info_bits(1, 0) # L=01 (1), mask 0
 	for i in range(15):
 		var bit: int = (format_bits >> i) & 1
-		# Placement top-left
+		# Cópia 1 — vertical/horizontal trocadas no código antigo (bits ilegíveis)
 		if i < 6:
-			matrix[8][i] = bit
+			matrix[i][8] = bit
 		elif i < 8:
-			matrix[8][i + 1] = bit
+			matrix[i + 1][8] = bit
 		elif i < 9:
-			matrix[7][8] = bit
+			matrix[8][7] = bit
 		else:
-			matrix[14 - i][8] = bit
-		# Bottom-right / top-right
+			matrix[8][14 - i] = bit
+		# Cópia 2 — canto oposto
 		if i < 8:
-			matrix[size - 1 - i][8] = bit
+			matrix[8][size - 1 - i] = bit
 		else:
-			matrix[8][size - 15 + i] = bit
-	# Dark module already set, but format may have overwritten — restore
+			matrix[size - 15 + i][8] = bit
+	# Dark module
 	matrix[4 * version + 9][8] = 1
 
 	# Fill remaining -1 with 0 (white)

@@ -1089,6 +1089,7 @@ func register_pet_interaction(pet_id: String) -> int:
 	if reached_new_milestone and touches in [5, 20, 50]:
 		var ember_reward: int = 1 if touches == 5 else (2 if touches == 20 else 3)
 		embers += ember_reward
+		EventBus.currency_changed.emit(&"embers", float(embers))
 		EventBus.toast_requested.emit(Loc.t("AFFECTION_TOAST") % ember_reward, Color("ff8fb1"))
 	SaveManager.request_save()
 	return touches
@@ -1180,6 +1181,7 @@ func park_complete(activity: String, success: bool, perfect: bool) -> Dictionary
 			pet_affection[pid] = clampi(prev + affection_gain, 0, 50)
 			if prev < 5 and int(pet_affection[pid]) >= 5:
 				embers += 1
+				EventBus.currency_changed.emit(&"embers", float(embers))
 				EventBus.toast_requested.emit(Loc.t("AFFECTION_TOAST") % 1, Color("ff8fb1"))
 		# missão semanal: parquinho conta como "perfect" e "services"
 		weekly_progress["perfect"] = int(weekly_progress.get("perfect", 0)) + (1 if perfect else 0)
@@ -1323,6 +1325,7 @@ func _unlock_achievement(id: String, coins_reward: int = 0, embers_reward: int =
 		add_coins(scaled_coins, &"achievement")
 	if embers_reward > 0:
 		embers += embers_reward
+		EventBus.currency_changed.emit(&"embers", float(embers))
 	Analytics.track(&"collection_unlock", {"id": id, "category": "achievement"})
 	EventBus.reveal_requested.emit(
 		&"achievement", {"id": id, "coins": scaled_coins, "embers": embers_reward}

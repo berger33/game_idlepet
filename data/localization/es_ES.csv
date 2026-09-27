@@ -278,7 +278,7 @@ PET_YUKI_SCOTTISH,Yuki
 PET_ZARA_ORIENTAL,Zara
 PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestigio disponible: %d ficha(s) • bono actual +%.0f%% por servicio
-PRESTIGE_DONE,¡Franquicia nivel %d! +10% de $ por nivel
+PRESTIGE_DONE,¡Franquicia nivel %d! +10%% de $ por nivel
 PRESTIGE_GO,PRESTIGIAR
 PRESTIGE_KEEP,"Mantiene: brasas, mascotas, cosméticos, logros, racha, pase, investigación y 25% de estación/herramientas"
 PRESTIGE_LOCKED,Llega al nivel 15 y junta más monedas

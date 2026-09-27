@@ -765,7 +765,10 @@ func _build_shop() -> void:
 				_rebuild(&"shop")
 	)
 	# Rewarded honesto: explica benefício + limite, com fallback brasa.
-	_info_row( "+1 %s" % Loc.t("EMBERS"), "🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa", "▶ ASSISTIR", BLUE, true, func() -> void:
+	# Sem adapter/provider o botão fica desabilitado (antes parecia clicável e
+	# só devolvia o toast de indisponível — auditoria 2026-09-27, 2ª passada).
+	var rewarded_ready: bool = AdsManager.is_rewarded_available()
+	_info_row( "+1 %s" % Loc.t("EMBERS"), "🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa", "▶ ASSISTIR", BLUE, rewarded_ready, func() -> void:
 			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
 	)
 	for sku: String in IAPManager.PRODUCTS:
