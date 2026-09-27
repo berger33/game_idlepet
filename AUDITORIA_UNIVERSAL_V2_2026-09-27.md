@@ -205,3 +205,93 @@ aconteceu, e nenhuma checagem de CI olha para a matriz gerada.
 **Validação de runtime:** delegada ao job `runtime` da CI (Godot 4.7.2 headless), que passa a cobrir o QR.
 
 *Auditoria sem bump de `SAVE_VERSION` e sem mudança de formato de save: compatível com saves v14 existentes.*
+
+---
+
+# Execução dos passos pendentes (mesma data, PR #10)
+
+Depois do relatório acima, os itens acionáveis foram **executados** nesta branch. A execução revelou mais 2 bugs
+reais (B10 e B11) — ambos corrigidos e cobertos por teste.
+
+## 8) Bugs novos revelados pela execução
+
+### B10 — 🟠 Idioma salvo nunca era aplicado no boot
+- **Onde:** `autoload/Loc.gd` + ordem dos autoloads do `project.godot`.
+- **Causa:** o `Loc` lê `GameState.settings["language"]` no próprio `_ready`, mas o `SaveManager` (que carrega o
+  save e faz `settings.merge(...)`) roda **depois**. Resultado: quem salvava EN/ES voltava a jogar em pt-BR até
+  abrir Ajustes e trocar de idioma de novo — bug silencioso de retenção para público não-BR.
+- **Fix:** `GameState.apply_dictionary` emite `settings_changed` depois de sanitizar os settings e o `Loc`
+  sincroniza o idioma nesse gancho (validando contra `LANGS`, para não aceitar lixo de save editado).
+- **Regressão:** `DomainTests::_test_regressoes_auditoria_v3` (load com `language=en_US` → `Loc.lang == "en_US"`).
+
+### B11 — 🔴 QR: 5º defeito — o **desenho** não tinha zona de silêncio
+- **Achado:** a matriz corrigida (B6) ainda não bastava. O teste de **decodificação da imagem final**
+  (`QRCodeArt.generate_image`) mostrou que o desenho começava no pixel 0, **sem os 4 módulos de zona de
+  silêncio** exigidos pelo padrão, e usava `pixel_size / size` sem considerar a margem. Com o OpenCV:
+  `atual (220 px, sem margem) → não decodifica`; `com 4 módulos de margem → decodifica` (3 payloads, com a URL
+  lida correta). Além disso o cartão encolhia 220 → 200 no `TextureRect` (fator 0,909 não inteiro): isso borra
+  os módulos e é o pior caso para leitor de celular.
+- **Fix:** `generate_image` desenha `(lado + 8) * célula` com margem de 4 módulos e célula inteira; os dois
+  cartões do `ShareManager` passaram a dimensionar o quadro e o `TextureRect` a partir do lado real da imagem
+  (1:1, sem reescalar).
+- **Regressão:** `DomainTests::_test_regressoes_auditoria_v3` — 4 módulos de margem branca, célula ≥ 5 px,
+  comparação **módulo a módulo** contra a matriz e verificação de que os dois cartões usam o lado real.
+
+> Lição registrada: validar só a matriz não provava nada sobre o que o jogador vê. A regra desta auditoria é
+> **decodificar a imagem final**, não o modelo intermediário.
+
+## 9) Itens executados
+
+| Item do checklist | Status | Evidência |
+|---|---|---|
+| Rodar a CI da branch | ✅ | 2 jobs verdes; artefato `web-build` (45,07 MB) em cada push |
+| Compressão da arte (P1-1) | ✅ | `[importer_defaults]` Lossy WebP q=0,85 + sem mipmaps; `tools/compress_art.py` mede 248,8 MB → 30,2 MB (8,2×) |
+| Mutirão de i18n (P1-2) | ✅ | 38 chaves novas ×3 idiomas (paridade 644/644) e ~25 literais pt-BR migrados (HUD, história, kids, roleta, loja, parque) |
+| Sinais/código mortos (P1-3/4) | ✅ | 5 sinais sem consumidor removidos; `AdsManager._on_currency_changed` e o ramo OGG/WAV cru do `AudioManager` limpos; volumes reaplicados em `settings_changed` |
+| Parser de localização (P2-7) | ✅ | `Loc.parse_csv` RFC 4180 com teste de vírgula entre aspas, aspas escapadas e `\n`; equivalência comprovada nas 644 chaves |
+| Testes de runtime faltantes (P2-8) | ✅ | `SaveManager` (código de transferência, incl. adulteração) e `ParkService` (bola/petisco/foto, expiração, dicas) |
+| GitHub Pages (P1/P3-10) | ⛔ **bloqueado** | Token do sandbox sem permissão de admin (HTTP 403 no dispatch e na API de Pages) — ver §10 |
+| Validação em aparelho real (P2-5/6) | ⛔ humano | Frame time/memória/haptics, deep link e notificações exigem aparelho |
+| Export Android (P3-9) | ⛔ humano | Precisa do SDK/keystore e da conta Play |
+| Jurídico e playtest (P3) | ⛔ humano | Revisão de privacidade/termos e ≥5 playtests |
+| Higiene de CI (P3-11) | ✅ | `checkout@v7`, `cache@v6`, `setup-python@v7`, `upload/deploy-pages@v5`, runner fixado em `ubuntu-24.04` — 0 annotations (antes: avisos de Node 20 e de migração para Ubuntu 26) |
+| Docs otimistas (P3-12) | ✅ | correção no `AUDITORIA_NOTA10_RESULTADO.md` + este relatório |
+
+### 9.1 O canal "jogue agora" agora é verificado a cada push
+O workflow `web-pages.yml` existia mas nunca rodou e dependia de clique manual. O job `runtime` da CI passou a
+**exportar o preset "Web Preview"** com os templates em cache, falhar se o `index.html` não sair, e publicar o
+build como artefato baixável (`web-build`, 14 dias). Ou seja: o export deixou de ser uma promessa e virou fato
+verificado — o que falta é apenas a publicação (que exige admin do repositório).
+
+### 9.2 Travas novas contra regressão (todas rodando na CI)
+- **QR:** vetor de referência 25×25 (matriz ISO/IEC 18004) **e** render (margem, célula inteira, módulo a módulo).
+- **Localização:** placeholders × argumentos nos 102 sites `Loc.t("chave") % …` e `%` sem escape.
+- **i18n:** scanner que falha se voltar texto pt-BR direto em chamada de UI.
+- **Arquitetura:** scanner que falha se um sinal do `EventBus` ficar sem consumidor.
+- **Entrega:** preset "Web Preview" amarrado ao workflow + runner fixado + defaults de importação de arte.
+
+## 10) Pendências que dependem de você (com o passo exato)
+
+1. **Publicar o GitHub Pages** (única pendência técnica restante do roadmap de entrega):
+   `Settings → Pages → Source: GitHub Actions` e depois `Actions → "Web (jogue agora)" → Run workflow`
+   (a tag `v*` também dispara). Enquanto isso não acontece, baixe o jogo já exportado em
+   `Actions → CI → último run → Artifacts → web-build` (basta servir a pasta com um servidor estático).
+2. **QA em aparelho real** (frame time, memória, haptics, deep link `--section=`, notificações locais).
+3. **Playtest com ≥5 pessoas** — segue sendo o gate para escalar conteúdo.
+4. **Android**: validar o export com `docs/export_presets.android.template.cfg` (SDK + keystore fora do Git).
+5. **Jurídico**: revisar `PRIVACY_POLICY.md`/`TERMS_OF_SERVICE.md` e o texto de consentimento de analytics.
+
+## 11) Estado final da branch
+
+| Commit | Conteúdo |
+|---|---|
+| `9112171` | Auditoria v2: 4 defeitos do QR (matriz), `PRESTIGE_DONE`, `Research.effect_text`, brasas, rewarded, docs |
+| `459f1fa` | Execução dos pendentes: idioma no boot, parser CSV, i18n (38 chaves ×3), sinais/código mortos, `[importer_defaults]`, `tools/compress_art.py`, actions v7/v6/v7/v5 + runner fixo |
+| `194fe5c` | CI exporta o build Web e publica artefato a cada push |
+| `5d643d9` | QR 5º defeito (render/zona de silêncio) + testes de save/park/render |
+| `c8c12d0` | Annotations de falha nos testes de domínio |
+| `ea3fe96` | Correção das expectativas do teste de transferência |
+
+**Validação final:** `unittest` 74/74 ✅ · `gdlint` ✅ · `gd_static_check` ✅ · `validate_project` 0E/0W ✅ ·
+QA de assets ✅ · **CI: 2 jobs verdes, 0 annotations** · artefato `web-build` de 45,07 MB gerado.
+Sem bump de `SAVE_VERSION` (compatível com saves v14).

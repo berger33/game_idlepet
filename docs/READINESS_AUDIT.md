@@ -1,5 +1,10 @@
 # Auditoria de Prontidão Completa — 17/09/2026
 
+> **Atualização 27/09/2026 (auditoria universal v2):** o canal Web está exportável e verificado a cada push
+> (artefato `web-build` na CI, preset "Web Preview"); falta apenas habilitar o GitHub Pages
+> (`Settings → Pages → Source: GitHub Actions`) e rodar o workflow "Web (jogue agora)" — a publicação exige
+> permissão de admin do repositório. Detalhes em `AUDITORIA_UNIVERSAL_V2_2026-09-27.md`, §10.
+
 ## Resumo honesto
 
 O repositório agora contém um **jogo offline jogável em formato de early vertical slice**, não um produto mundial pronto para loja. “Completo” na especificação representa anos de conteúdo, integrações com contas externas, validação em aparelhos, operação e métricas reais. Esses itens não podem ser fabricados ou marcados como concluídos sem credenciais, identidade publicadora, arte/áudio licenciados, aparelhos e soft launch. A lista abaixo evita redução silenciosa.
