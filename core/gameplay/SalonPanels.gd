@@ -74,6 +74,11 @@ static func build_result_panel(
 	var primary: Button = button.call("✓  " + Loc.t("REVEAL_OK"), GREEN, 0, 96)
 	primary.pressed.connect(on_primary)
 	actions.add_child(primary)
+	# "Desistir" só aparece no estado de falha do salão: o pet vai embora sem
+	# recompensa; o retry (primário) custa um vídeo recompensado.
+	var secondary: Button = button.call(Loc.t("GIVE_UP"), Color("546e7a"), 0, 64)
+	secondary.visible = false
+	actions.add_child(secondary)
 	var share: Button = button.call("📤 " + Loc.t("SHARE_BUTTON"), Color("90a4ae"), 0, 64)
 	share.pressed.connect(on_share)
 	actions.add_child(share)
@@ -81,7 +86,7 @@ static func build_result_panel(
 	return {
 		"panel": panel, "title": title, "detail": detail,
 		"detail_extra": detail_extra, "expand_btn": expand_btn,
-		"primary": primary, "share": share, "xp_bar": xp_bar,
+		"primary": primary, "secondary": secondary, "share": share, "xp_bar": xp_bar,
 	}
 
 

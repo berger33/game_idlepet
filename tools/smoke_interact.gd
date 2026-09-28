@@ -203,6 +203,74 @@ func _run() -> void:
 	gesture_bath.tick(1.0)
 	if gesture_bath.progress > drop_progress:
 		_fail("drop: longe da marca o progresso subiu")
+	print("INTERACT: step7 falha oferece retry com vídeo + desistir")
+	# O slot 0 foi selecionado no step3 e não foi finalizado: falhar agora deve
+	# abrir o painel com "Desistir" visível e o primário oferecendo o vídeo.
+	main._fail(&"timeout")
+	await process_frame
+	if not main.result_panel.visible:
+		_fail("painel de resultado não abriu na falha")
+	if not is_instance_valid(main.giveup_button) or not main.giveup_button.visible:
+		_fail("botão Desistir ausente/invisível na falha do salão")
+	# Autoloads não viram identificadores no modo --script: acesso dinâmico.
+	var loc: Node = main.get_node("/root/Loc")
+	var expected_retry: String = String(loc.call("t", "RETRY_WITH_AD"))
+	if main.primary_button.text.find(expected_retry) == -1:
+		_fail("primário da falha não oferece o vídeo: '%s'" % main.primary_button.text)
+	var gs: Node = main.get_node("/root/GameState")
+	var coins_before: float = float(gs.get("coins"))
+	main._on_giveup_pressed()
+	await process_frame
+	if main.selected_slot != -1:
+		_fail("desistir não liberou o slot da fila")
+	if main.result_panel.visible:
+		_fail("desistir não fechou o painel de resultado")
+	if float(gs.get("coins")) != coins_before:
+		_fail("desistir mudou as moedas (o pet deve sair sem ganhar nada)")
+
+	print("INTERACT: step7b retry após o vídeo simulado")
+	# Seleciona de novo, falha de novo e paga o retry: o ad simulado abre,
+	# fecha sozinho após o countdown e o serviço recomeça sem painel.
+	main._on_queue_pressed(1)
+	await process_frame
+	main._fail(&"timeout")
+	await process_frame
+	main._request_retry_with_ad()
+	await process_frame
+	var ads: Node = main.get_node("/root/AdsManager")
+	var sim: Node = ads.get("_sim_layer")
+	if sim == null or not sim.visible:
+		_fail("ad simulado não abriu ao pagar o retry")
+	else:
+		await create_timer(4.0).timeout
+		if sim.visible:
+			_fail("ad simulado não fechou sozinho após o countdown")
+		if int(main.bath.state) != 0:
+			_fail("retry após o vídeo não reiniciou o serviço (state=%d)" % int(main.bath.state))
+		if main.result_panel.visible:
+			_fail("retry após o vídeo deixou o painel de resultado aberto")
+
+	print("INTERACT: step8 PULAR vive no cartão da Bia")
+	if main.tutorial_skip_button.get_parent() != main.tutorial_overlay.card_column:
+		_fail("skip do tutorial não está ancorado no cartão da Bia")
+
+	print("INTERACT: step9 salão=relax original, passeio=WAV por tier")
+	var am: Node = main.get_node("/root/AudioManager")
+	if String(am.get("current_bgm")) != "ambient_relax":
+		_fail("salão sem a trilha relax original: %s" % String(am.get("current_bgm")))
+	var pf: GDScript = load("res://core/gameplay/ParkFlow.gd")
+	var park: RefCounted = pf.new()
+	park.call("open_choose", main)
+	await process_frame
+	if not main.park_active:
+		_fail("open_choose não ligou o park_active")
+	if String(am.get("current_bgm")) == "ambient_relax":
+		_fail("passeio não trocou para a trilha WAV por tier")
+	park.call("close", main)
+	await process_frame
+	if String(am.get("current_bgm")) != "ambient_relax":
+		_fail("fechar o passeio não voltou para o relax do salão")
+
 	print("INTERACT: fim, failures=%d" % failures)
 	_finish()
 

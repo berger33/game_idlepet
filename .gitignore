@@ -7,6 +7,12 @@ exports/
 crash_logs/
 analytics_queue.jsonl
 .DS_Store
+# Gerados pela importação do Godot (README: nenhum .import é versionado) e
+# pelos simuladores — manter fora do git para o status não virar ruído.
+*.import
+*.uid
+data/localization/*.translation
+docs/*.translation
 
 .venv/
 __pycache__/

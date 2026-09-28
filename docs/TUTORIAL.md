@@ -19,7 +19,8 @@
 | `STEP_QUEUE` (spot na fila, mão `tap`) | `_on_queue_pressed` | `GUIDE_QUEUE` |
 | `STEP_TOOL` (spot na prateleira, mão `drag` até o pet) | `_start_bath` | `GUIDE_TOOL` |
 | `STEP_GESTURE` (spot no pet) | resultado do serviço | `GUIDE_GESTURE` + `SalonTuning.hint` |
-- `PULAR TUTORIAL` continua disponível (`tutorial_skip_button`, 64 px). **Confirmação em 2 toques** (T-02): o 1º toque arma (`SKIP_CONFIRM_TAP`, janela 3.5 s), o 2º pula — evita skip acidental. **Ajustes → 🎓 Rever tutorial** reinicia o roteiro sem wipe (`TutorialFlow.replay`). Jogador adiantado (tocou a fila antes da fala) pula o passo já feito (`advance()`).
+- `PULAR TUTORIAL` continua disponível (`tutorial_skip_button`, 64 px) — ancorado **dentro do cartão da Bia** (`TutorialOverlay.card_column`), para nunca colidir com nav/top bar (a antiga posição flutuante 750,145 sobrepunha o pill de evento e, no modo canhoto, o botão de melhorias). **Confirmação em 2 toques** (T-02): o 1º toque arma (`SKIP_CONFIRM_TAP`, janela 3.5 s), o 2º pula — evita skip acidental. **Ajustes → 🎓 Rever tutorial** reinicia o roteiro sem wipe (`TutorialFlow.replay`). Jogador adiantado (tocou a fila antes da fala) pula o passo já feito (`advance()`).
+- **Falha durante o tutorial:** o resultado de falha oferece "Tentar de novo • ver vídeo" (retry custa um rewarded; sem SDK o `AdsManager` simula 3 s) e "Desistir" (o pet vai embora sem recompensa).
 - **Funil (T-03):** cada transição emite `tutorial_step{step, action}` com `step ∈ welcome|queue|tool|gesture` e `action ∈ show|next|skip_attempt|skip|complete`.
 - **Gênero (T-01):** textos neutros de pet + artigo variável da ferramenta (`SalonTuning.tool_with_article`). Em `kids_mode`, `guide_text()` usa as variantes `GUIDE_*_KIDS` mais curtas.
 - **Fonte (T-04):** o cartão aplica `SalonTuning.font_scale()` (22/26/30 × fs).

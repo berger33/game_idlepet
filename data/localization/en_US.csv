@@ -664,3 +664,9 @@ LANG_EN,🇺🇸 English
 LANG_ES,🇪🇸 Español
 PET_SPECIAL,Special pet
 COIN_FLY,%s +%d
+RETRY_WITH_AD,Try again • watch video
+GIVE_UP,Give up
+FAIL_RETRY_COST,Trying again costs a short video; giving up has no penalty.
+RETRY_FREE_FALLBACK,No video right now — retry unlocked!
+AD_SIM_TITLE,Ad (simulated)
+AD_SIM_NOTE,Build without an ads SDK: 3 s test video.

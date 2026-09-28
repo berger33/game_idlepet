@@ -24,8 +24,8 @@ extends Node
 ##     uma oitava abaixo (aviso de perda);
 ##   * "window" — harpa de vidro ao entrar na faixa do perfect: dá para dosar
 ##     o momento de soltar de ouvido;
-##   * a música (ambiente + camada de energia) segue sintetizada neste arquivo
-##     e não foi tocada — apenas os efeitos mudaram de fonte.
+##   * a música do SALÃO (loop relax + camada de energia) segue sintetizada
+##     neste arquivo; os WAVs por tier (gen_bgm.py) são a trilha do PASSEIO.
 
 const SAMPLE_RATE: int = 44100
 ## WAVs de SFX versionados (gerados por tools/gen_sfx.py).
@@ -85,12 +85,15 @@ func _ready() -> void:
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = &"Music"
 	add_child(music_player)
-	play_bgm_for_tier(GameState.establishment_tier)
-	# Novo capítulo = nova trilha (crossfade curto), sem tocar no Main.
+	# Salão = a música original do jogo (loop procedural relaxante). Os WAVs
+	# por capítulo (play_bgm_for_tier) viraram a trilha do passeio/parquinho.
+	play_salon_bgm()
+	# Novo capítulo = nova trilha do passeio (crossfade curto), sem tocar no Main.
 	EventBus.reveal_requested.connect(
 		func(kind: StringName, payload: Dictionary) -> void:
 			if kind == &"chapter":
-				play_bgm_for_tier(int(payload.get("tier", 1)))
+				if current_bgm in BGM_BY_TIER:
+					play_bgm_for_tier(int(payload.get("tier", 1)))
 	)
 	# Camada de energia: percussão entra durante o serviço e sai suave no fim.
 	energy_player = AudioStreamPlayer.new()
@@ -358,35 +361,34 @@ func _load_voice(id: StringName) -> AudioStream:
 	return null
 
 
-## Trilha por tier: tenta WAV por capítulo, fallback para ambient relax procedural.
-## Mantém relax como padrão se WAVs não existirem, mas agora usa BGM_BY_TIER.
+## Trilha do PASSEIO por tier: WAVs gerados por tools/gen_bgm.py
+## (quintal 1-3, clínica 4-6, império 7+). Sem WAV, cai no relax do salão.
 func play_bgm_for_tier(tier: int) -> void:
-	var desired: StringName = &"ambient_relax"
-	# Tier mapping: 1-3 quintal, 4-6 clinica, 7+ imperio (se WAVs existirem)
+	var desired: StringName = BGM_BY_TIER[0]
 	if tier >= 7 and BGM_BY_TIER.size() > 2:
 		desired = BGM_BY_TIER[2]
 	elif tier >= 4 and BGM_BY_TIER.size() > 1:
 		desired = BGM_BY_TIER[1]
-	elif tier >= 1 and BGM_BY_TIER.size() > 0:
-		desired = BGM_BY_TIER[0]
-	# Se WAV existe, usa; senão fallback relax procedural (mantém relax pedido usuário)
-	var wav_path: String = BGM_DIR + String(desired) + ".wav"
-	var stream: AudioStreamWAV = null
-	if ResourceLoader.exists(wav_path):
-		stream = _load_bgm(desired)
-		if stream != null:
-			desired = desired
-		else:
-			stream = _get_ambient_loop_cached()
-			desired = &"ambient_relax"
-	else:
-		# Sem WAV, usa procedural relax
-		stream = _get_ambient_loop_cached()
-		desired = &"ambient_relax"
-
-	if desired == current_bgm and music_player.playing:
+	var stream: AudioStreamWAV = _load_bgm(desired)
+	if stream == null:
+		play_salon_bgm()
 		return
-	current_bgm = desired
+	_start_bgm(desired, stream)
+
+
+## Trilha do SALÃO: o loop procedural relaxante — a música original do jogo,
+## pedida de volta pelo usuário quando os WAVs por tier entraram no lugar dela.
+func play_salon_bgm() -> void:
+	_start_bgm(&"ambient_relax", _get_ambient_loop_cached())
+
+
+## Crossfade curto entre trilhas (mesma cadência do antigo play_bgm_for_tier).
+func _start_bgm(id: StringName, stream: AudioStreamWAV) -> void:
+	if stream == null or not is_instance_valid(music_player):
+		return
+	if id == current_bgm and music_player.playing:
+		return
+	current_bgm = id
 	if music_player.playing:
 		var fade: Tween = create_tween()
 		fade.tween_property(music_player, "volume_db", -40.0, 0.6)
