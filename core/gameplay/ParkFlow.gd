@@ -230,6 +230,9 @@ static func open_choose(main: Control) -> void:
 	if not main.is_inside_tree() or not is_instance_valid(main.park_choose_panel) or not is_instance_valid(main.park_canvas):
 		return
 	main.park_active = true
+	# Passeio tem trilha própria (WAVs por capítulo); o salão fica com o relax.
+	if AudioManager != null and AudioManager.has_method("play_bgm_for_tier"):
+		AudioManager.play_bgm_for_tier(GameState.establishment_tier if GameState != null else 1)
 	if GameState != null:
 		GameState.park_ensure_pets()
 	var ids: Array[String] = GameState.park_pets if GameState != null else ["caramelo", "caramelo", "caramelo"]
@@ -416,6 +419,8 @@ static func finish(main: Control, timeout: bool) -> void:
 		reward = GameState.park_complete(activity_str, success, perfect)
 	main.park_active = false
 	main.park_dragging_ball = false
+	if AudioManager != null and AudioManager.has_method("play_salon_bgm"):
+		AudioManager.play_salon_bgm()
 	if is_instance_valid(main.park_canvas):
 		main.park_canvas.visible = false
 	if is_instance_valid(main.world):
@@ -530,6 +535,8 @@ static func close(main: Control) -> void:
 		return
 	main.park_active = false
 	main.park_dragging_ball = false
+	if AudioManager != null and AudioManager.has_method("play_salon_bgm"):
+		AudioManager.play_salon_bgm()
 	main.tutorial.dismiss_tip()
 	if is_instance_valid(main.park_canvas):
 		main.park_canvas.visible = false

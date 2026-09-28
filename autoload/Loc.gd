@@ -1,7 +1,8 @@
 extends Node
 ## Localização runtime: parseia data/localization/*.csv em memória (sem
-## depender de .import/TranslationServer para funcionar em qualquer build).
-## A chave é o texto pt_BR; idiomas trocáveis em Ajustes.
+## depender do TranslationServer). Em build exportado o CSV some do pacote — o
+## importador de tradução deixa só o .translation — e a busca passa a ser feita
+## nesse recurso. Idiomas trocáveis em Ajustes.
 
 const LANGS: Array[String] = ["pt_BR", "en_US", "es_ES"]
 
@@ -9,6 +10,10 @@ signal language_changed(code: String)
 
 var lang: String = "pt_BR"
 var tables: Dictionary = {}
+## Build exportado não tem o CSV bruto: guarda o Translation importado por
+## idioma e consulta com get_message() (OptimizedTranslation não expõe a
+## lista de chaves, só a busca direta).
+var translations: Dictionary = {}
 
 
 func _ready() -> void:
@@ -35,11 +40,24 @@ func _apply_language(code: String) -> void:
 
 
 func t(key: String) -> String:
-	var current: Dictionary = tables.get(lang, {})
-	if current.has(key):
-		return String(current[key])
-	var fallback: Dictionary = tables.get("pt_BR", {})
-	return String(fallback.get(key, key))
+	var text: String = _lookup(lang, key)
+	if not text.is_empty():
+		return text
+	if lang != "pt_BR":
+		text = _lookup("pt_BR", key)
+		if not text.is_empty():
+			return text
+	return key
+
+
+func _lookup(code: String, key: String) -> String:
+	var table: Dictionary = tables.get(code, {})
+	if table.has(key):
+		return String(table[key])
+	var translation: Translation = translations.get(code)
+	if translation != null:
+		return translation.get_message(key)
+	return ""
 
 
 func set_language(code: String) -> void:
@@ -52,10 +70,18 @@ func set_language(code: String) -> void:
 
 func _load_csv(code: String) -> void:
 	var path: String = "res://data/localization/%s.csv" % code
-	if not FileAccess.file_exists(path):
-		push_error("Localização ausente: " + path)
+	if FileAccess.file_exists(path):
+		tables[code] = parse_csv(FileAccess.get_file_as_string(path))
 		return
-	tables[code] = parse_csv(FileAccess.get_file_as_string(path))
+	# Em build exportado o CSV não sobrevive: o importador de tradução substitui
+	# a fonte pelo .translation correspondente (o .pck traz só *.translation e
+	# *.csv.import). Sem este caminho a UI inteira caía para chaves cruas e os
+	# textos com %d/%s geravam "String formatting error" no runtime.
+	var tres_path: String = "res://data/localization/%s.%s.translation" % [code, code]
+	if ResourceLoader.exists(tres_path):
+		translations[code] = load(tres_path)
+		return
+	push_error("Localização ausente: " + path)
 
 
 ## Parser CSV mínimo (RFC 4180) — campos entre aspas podem conter VÍRGULA,

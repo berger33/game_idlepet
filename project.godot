@@ -43,8 +43,12 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/default_filters/use_nearest_mipmap_filter=false
 
-audio/driver/enable_input=false
-audio/buses/default_bus_layout="res://audio/default_bus_layout.tres"
+; Estavam soltas sob [rendering] e viravam "rendering/audio/..." — a seção
+; [audio] nunca existiu, então o default_bus_layout (Master/SFX/Music) não
+; carregava e o driver Web lançava 'invalid bus index "-1"' no primeiro mix.
+[audio]
+driver/enable_input=false
+buses/default_bus_layout="res://audio/default_bus_layout.tres"
 
 [gui]
 theme/custom_font="res://art/fonts/DejaVuSans.ttf"

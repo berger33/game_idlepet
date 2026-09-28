@@ -74,6 +74,11 @@ static func build_result_panel(
 	var primary: Button = button.call("✓  " + Loc.t("REVEAL_OK"), GREEN, 0, 96)
 	primary.pressed.connect(on_primary)
 	actions.add_child(primary)
+	# "Desistir" só aparece no estado de falha do salão: o pet vai embora sem
+	# recompensa; o retry (primário) custa um vídeo recompensado.
+	var secondary: Button = button.call(Loc.t("GIVE_UP"), Color("546e7a"), 0, 64)
+	secondary.visible = false
+	actions.add_child(secondary)
 	var share: Button = button.call("📤 " + Loc.t("SHARE_BUTTON"), Color("90a4ae"), 0, 64)
 	share.pressed.connect(on_share)
 	actions.add_child(share)
@@ -81,7 +86,7 @@ static func build_result_panel(
 	return {
 		"panel": panel, "title": title, "detail": detail,
 		"detail_extra": detail_extra, "expand_btn": expand_btn,
-		"primary": primary, "share": share, "xp_bar": xp_bar,
+		"primary": primary, "secondary": secondary, "share": share, "xp_bar": xp_bar,
 	}
 
 
@@ -132,6 +137,39 @@ static func build_upsell_panel(
 	actions.add_child(decline)
 	panel.hide()
 	return {"panel": panel, "title": title, "body": body, "note": note, "accept": accept, "decline": decline}
+
+
+## Chips de nível/XP/combo da top bar: número + barrinha de progresso real +
+## badge de combo que só aparece quando o combo está ativo (×2 em diante).
+static func build_hud_chips(style: Callable, font_scale: float, accent: Color) -> Dictionary:
+	var chip: PanelContainer = PanelContainer.new()
+	chip.add_theme_stylebox_override(
+		"panel", style.call(Color.WHITE.lerp(accent, 0.15), 20, 12, Color(accent, 0.85), 2)
+	)
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	chip.add_child(row)
+	var level: Label = Label.new()
+	level.add_theme_font_size_override("font_size", int(26 * font_scale))
+	level.add_theme_color_override("font_color", CHARCOAL)
+	row.add_child(level)
+	var xp_bar: ProgressBar = ProgressBar.new()
+	xp_bar.custom_minimum_size = Vector2(110, 12)
+	xp_bar.max_value = 100.0
+	xp_bar.show_percentage = false
+	xp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xp_bar.add_theme_stylebox_override("background", style.call(Color("263238", 0.18), 6, 0))
+	xp_bar.add_theme_stylebox_override("fill", style.call(accent, 6, 0))
+	row.add_child(xp_bar)
+	var combo: Label = Label.new()
+	combo.add_theme_font_size_override("font_size", int(24 * font_scale))
+	combo.add_theme_color_override("font_color", Color.WHITE)
+	combo.add_theme_stylebox_override("normal", style.call(Color("ff8f00"), 14, 8))
+	combo.visible = false
+	row.add_child(combo)
+	return {"chip": chip, "level": level, "xp_bar": xp_bar, "combo": combo}
 
 
 ## Cartão da fila: nome, pedido, trade-offs com $ + barra 14px — dinâmico 1 linha + ⓘ

@@ -46,6 +46,7 @@ var result_title: Label
 var result_detail: Label
 var result_detail_extra: Label
 var result_expand_btn: Button
+var giveup_button: Button
 var result_expanded: bool = false
 var last_result_quality: StringName = &"good"
 var last_result_reward: float = 0.0
@@ -93,6 +94,9 @@ var rush_active: bool = false
 var rush_label: Label
 var rush_bar: ProgressBar
 var proof_label: Label
+var level_label: Label
+var level_chip: PanelContainer
+var top_xp_bar: ProgressBar
 var proof_timer: float = 0.0
 var top_bar_scroll: ScrollContainer
 var top_bar_hbox: HBoxContainer
@@ -189,56 +193,9 @@ func _process(delta: float) -> void:
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
 	upgrades_pulse_time += delta
-	if is_instance_valid(upgrades_button):
-		var affordable_count: int = 0 if not GameState.tutorial_complete else SalonTuning.affordable_upgrades_count()
-		if affordable_count > 0:
-			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.2)
-			upgrades_button.modulate = Color.WHITE.lerp(Color("d7ffb8"), pulse * 0.6)
-			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
-			if badge == null:
-				badge = Label.new()
-				badge.name = "Badge"
-				badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				badge.add_theme_font_size_override("font_size", 28)
-				badge.add_theme_color_override("font_color", Color.WHITE)
-				badge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 20, 6))
-				badge.custom_minimum_size = Vector2(44, 44)
-				badge.position = Vector2(52, -12)
-				upgrades_button.add_child(badge)
-			badge.text = str(affordable_count)
-			badge.visible = true
-		else:
-			upgrades_button.modulate = Color.WHITE
-			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
-			if is_instance_valid(badge):
-				badge.visible = false
-		D1Retention.update_missions_badge(self, upgrades_pulse_time)
-	# Álbum badge: 🏆 prêmio do concurso a coletar / 📰 rival ultrapassou
-	if is_instance_valid(album_button) and not album_button.disabled:
-		var contest_badge: String = Contest.badge_text()
-		if not contest_badge.is_empty():
-			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.0)
-			album_button.modulate = Color.WHITE.lerp(Color("ffd54f"), pulse * 0.45)
-			var abadge: Label = album_button.get_node_or_null("Badge") as Label
-			if abadge == null:
-				abadge = Label.new()
-				abadge.name = "Badge"
-				abadge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				abadge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				abadge.add_theme_font_size_override("font_size", 26)
-				abadge.add_theme_color_override("font_color", Color.WHITE)
-				abadge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 18, 6))
-				abadge.custom_minimum_size = Vector2(38, 38)
-				abadge.position = Vector2(44, -10)
-				album_button.add_child(abadge)
-			abadge.text = contest_badge
-			abadge.visible = true
-		else:
-			album_button.modulate = Color.WHITE
-			var abadge: Label = album_button.get_node_or_null("Badge") as Label
-			if is_instance_valid(abadge):
-				abadge.visible = false
+	# Badges pulsantes (melhorias compráveis + prêmios do álbum) em HudBadges
+	# para manter o hub sob o teto de linhas do gdlint.
+	HudBadges.update(self, upgrades_pulse_time)
 	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 	# left_handed intencional: só espelha prateleira de utensílios (170↔910) e botões flutuantes;
 	# fila/top bar permanecem centrados para preservar hierarquia de leitura
@@ -246,8 +203,6 @@ func _process(delta: float) -> void:
 	if is_instance_valid(park_button):
 		park_button.position = Vector2(952, 250) if not left_handed else Vector2(120, 250)
 		ParkFlow.update_button(self)
-	if is_instance_valid(tutorial_skip_button):
-		tutorial_skip_button.position = Vector2(30, 145 + SalonTuning.safe_area_top()) if left_handed else Vector2(750, 145 + SalonTuning.safe_area_top())
 	# ── Parquinho tick ──
 	if park_active and park_service != null and park_service.state == ParkService.State.ACTIVE:
 		if park_service.tick(delta):
@@ -472,7 +427,7 @@ func _on_primary_pressed() -> void:
 	if bath.state == BathService.State.COMPLETE:
 		_dismiss_result()
 	elif bath.state == BathService.State.FAILED and is_instance_valid(result_panel) and result_panel.visible:
-		_retry_service()
+		_request_retry_with_ad()
 	elif is_instance_valid(result_panel) and result_panel.visible:
 		# Passeio também usa o mesmo painel de resultado.
 		result_panel.hide()
@@ -680,6 +635,8 @@ func _refresh_success_result_copy() -> void:
 	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
 	primary_button.disabled = false
 	primary_button.show()
+	if is_instance_valid(giveup_button):
+		giveup_button.visible = false
 	if is_instance_valid(share_button):
 		share_button.text = "📤 " + Loc.t("SHARE_BUTTON")
 
@@ -699,7 +656,7 @@ func _refresh_failure_result_copy() -> void:
 		hint = Loc.t("FAIL_TOO_SOON") % service_name
 	result_detail.text = "★★☆☆☆\n%s" % hint
 	result_detail.tooltip_text = hint
-	var fail_extra: String = Loc.t("FAIL_NO_PENALTY")
+	var fail_extra: String = Loc.t("FAIL_RETRY_COST") + "\n" + Loc.t("FAIL_NO_PENALTY")
 	if last_failure_reason == &"overwashed":
 		fail_extra += "\n" + Loc.t("FAIL_NEXT_NARROWER")
 	if assistance_clients > 0:
@@ -713,9 +670,13 @@ func _refresh_failure_result_copy() -> void:
 	if is_instance_valid(result_expand_btn):
 		result_expand_btn.text = Loc.t("COLLAPSE") if result_expanded else Loc.t("VIEW_HINT")
 		result_expand_btn.visible = not fail_extra.is_empty()
-	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
+	# Retry custa um vídeo recompensado; "Desistir" libera o pet sem recompensa.
+	primary_button.text = "▶  " + Loc.t("RETRY_WITH_AD")
 	primary_button.disabled = false
 	primary_button.show()
+	if is_instance_valid(giveup_button):
+		giveup_button.text = Loc.t("GIVE_UP")
+		giveup_button.visible = true
 	share_button.visible = false
 	share_button.disabled = true
 func _fail(reason: StringName) -> void:
@@ -799,6 +760,16 @@ func _retry_service() -> void:
 	_refresh_instruction_copy()
 	_refresh_economy()
 	_update_queue_ui()
+# Política de retry/desistência vive em FailureFlow (mantém o Main sob o teto
+# de linhas do gdlint; o harness chama estes wrappers).
+func _request_retry_with_ad() -> void:
+	FailureFlow.request_retry_with_ad(self)
+
+
+func _on_giveup_pressed() -> void:
+	FailureFlow.giveup(self)
+
+
 func _dismiss_result() -> void:
 	result_panel.hide()
 	world.reset_pet()
@@ -1135,7 +1106,14 @@ func _toggle_result_detail() -> void:
 func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) -> void:
 	coin_label.text = "%s %d" % [Loc.t("COINS"), int(GameState.coins)]
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
-	combo_label.text = "%s%d %d%% ×%d" % [Loc.t("HUD_LEVEL_ABBR"), GameState.player_level, xp_percent, maxi(1, GameState.combo)]
+	if is_instance_valid(level_label):
+		level_label.text = "%s%d" % [Loc.t("HUD_LEVEL_ABBR"), GameState.player_level]
+	if is_instance_valid(top_xp_bar):
+		top_xp_bar.value = xp_percent
+	# Combo vira badge: só ocupa espaço quando existe (×2 em diante).
+	if is_instance_valid(combo_label):
+		combo_label.text = "×%d" % maxi(1, GameState.combo)
+		combo_label.visible = GameState.combo > 1
 	if GameState.reviews_total == 0:
 		review_label.text = "★ %s" % Loc.t("NEW_TAG")
 	else:
@@ -1358,12 +1336,21 @@ func _build_interface() -> void:
 	top_bar_hbox.custom_minimum_size = Vector2(1020, 96)
 	top_bar_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_bar_scroll.add_child(top_bar_hbox)
-	coin_label = _pill(top_bar_hbox, "%s 0" % Loc.t("COINS"), Color("ffd54f"), 210)
+	# Chips de status: fundo tingido pelo acento, borda fina e largura por
+	# conteúdo — hierarquia sem as caixas brutas de borda grossa do HUD antigo.
+	coin_label = _pill(top_bar_hbox, "%s 0" % Loc.t("COINS"), Color("ffd54f"), 0)
 	coin_label.tooltip_text = Loc.t("COINS")
-	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 175)
+	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 0)
 	review_label.tooltip_text = Loc.t("HUD_TOOLTIP_REVIEW")
-	combo_label = _pill(top_bar_hbox, "×1", GREEN, 185)
-	combo_label.tooltip_text = Loc.t("HUD_TOOLTIP_COMBO")
+	# Nível + XP num chip só com barra de progresso real; combo vira badge ×N
+	# que só aparece quando ativo (construção em SalonPanels, como o restante).
+	var hud_chips: Dictionary = SalonPanels.build_hud_chips(_style, SalonTuning.font_scale(), GREEN)
+	level_chip = hud_chips["chip"]
+	level_label = hud_chips["level"]
+	top_xp_bar = hud_chips["xp_bar"]
+	combo_label = hud_chips["combo"]
+	top_bar_hbox.add_child(level_chip)
+	level_chip.tooltip_text = Loc.t("HUD_TOOLTIP_COMBO")
 	rush_label = _pill(top_bar_hbox, "", Color("ff8f00"), 165)
 	rush_label.tooltip_text = Loc.t("HUD_TOOLTIP_RUSH")
 	rush_bar = ProgressBar.new()
@@ -1491,6 +1478,9 @@ func _build_interface() -> void:
 		result_expand_btn.pressed.connect(_toggle_result_detail)
 	primary_button = result_ui["primary"]
 	share_button = result_ui["share"]
+	giveup_button = result_ui.get("secondary", null)
+	if is_instance_valid(giveup_button):
+		giveup_button.pressed.connect(_on_giveup_pressed)
 	if result_ui.has("xp_bar"):
 		result_panel.set_meta("xp_bar", result_ui["xp_bar"])
 	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel( self, _style, _button, _on_upsell_accept, _on_upsell_decline
@@ -1512,12 +1502,15 @@ func _build_interface() -> void:
 	add_child(tutorial_overlay)
 	# T-04: altura 64 px (padrão do projeto; _button também garante o piso).
 	tutorial_skip_button = _button(Loc.t("SKIP_TUTORIAL"), Color("263238", 0.88), 220, 64)
-	tutorial_skip_button.position = Vector2(750, 145 + safe_top) # Nota10: reposicionado direita para não sobrepor nav (30,145)
 	tutorial_skip_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88), 34, 12, Color("ffffff", 0.6), 2))
 	# T-02: 1º toque arma a confirmação, 2º toque pula.
 	tutorial_skip_button.pressed.connect(tutorial.on_skip_pressed)
 	tutorial_skip_button.visible = false
-	add_child(tutorial_skip_button)
+	# Morava flutuando em (750,145) — por cima do pill de evento da nav e, no
+	# modo canhoto, por cima do botão de melhorias. Dentro do cartão da Bia ele
+	# aparece junto da fala e nunca colide com o HUD.
+	tutorial_skip_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	tutorial_overlay.card_column.add_child(tutorial_skip_button)
 func _pop_panel(panel: Control) -> void:
 	panel.show()
 	panel.pivot_offset = panel.size * 0.5
@@ -1537,9 +1530,11 @@ func _pill(parent: Container, text: String, color: Color, width: float) -> Label
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.clip_text = false
 	var fs: float = SalonTuning.font_scale()
-	label.add_theme_font_size_override("font_size", int(28 * fs))
+	label.add_theme_font_size_override("font_size", int(26 * fs))
 	label.add_theme_color_override("font_color", CHARCOAL)
-	label.add_theme_stylebox_override( "normal", _style(Color("ffffff", 0.97), 32, 12, color, 4)
+	# Acabamento: fundo tingido pelo próprio acento + borda fina (2 px) no lugar
+	# da caixa branca de borda grossa — os chips ficam leves e consistentes.
+	label.add_theme_stylebox_override( "normal", _style(Color.WHITE.lerp(color, 0.16), 20, 12, Color(color, 0.85), 2)
 	)
 	parent.add_child(label)
 	return label

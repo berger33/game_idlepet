@@ -664,3 +664,9 @@ LANG_EN,🇺🇸 English
 LANG_ES,🇪🇸 Español
 PET_SPECIAL,Mascota especial
 COIN_FLY,%s +%d
+RETRY_WITH_AD,Reintentar • ver vídeo
+GIVE_UP,Desistir
+FAIL_RETRY_COST,Reintentar cuesta un vídeo corto; desistir no tiene penalización.
+RETRY_FREE_FALLBACK,Sin vídeo ahora — ¡reintento libre!
+AD_SIM_TITLE,Anuncio (simulado)
+AD_SIM_NOTE,Build sin SDK de anuncios: vídeo de prueba de 3 s.

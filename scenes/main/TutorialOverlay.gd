@@ -35,6 +35,9 @@ var hand_mode: StringName = &"" # "" | tap | drag
 var on_action: Callable = Callable()
 
 var card: PanelContainer
+## Coluna de texto/ações do cartão — o Main ancora aqui o botão de PULAR,
+## para ele viver dentro da fala da Bia em vez de flutuar sobre o HUD.
+var card_column: VBoxContainer
 var portrait: TextureRect
 var portrait_bg: Panel
 var name_label: Label
@@ -71,6 +74,7 @@ func _ready() -> void:
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	avatar.add_child(portrait)
 	var column: VBoxContainer = VBoxContainer.new()
+	card_column = column
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 10)
 	row.add_child(column)
