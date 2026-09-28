@@ -49,11 +49,14 @@ COINS,$
 COLLECT,RECOGER
 COLLECTION_SUMMARY,MASCOTAS %d/%d • LOGROS %d/%d • COSMÉTICOS %d
 COLLECTION_TITLE,COLECCIÓN
+COLLECTION_STAT_PETS,Mascotas
+COLLECTION_STAT_ACHIEVEMENTS,Logros
+COLLECTION_STAT_COSMETICS,Cosméticos
 COLORBLIND_MODE,Modo daltónico (franja azul/naranja)
 COMBO_CHEST_BODY,¡Mantuviste ritmo perfecto! El barrio está impresionado.
 COMBO_CHEST_TITLE,¡Cofre de Ritmo!
 COMBO_CHEST_TOAST,¡Cofre combo ×%d! +$%d y +%d Brasas!
-COMEBACK_GIFT,¡+1 congelador y monedas de bienvenida!
+COMEBACK_GIFT,¡+1 protección de racha y monedas de bienvenida!
 COMEBACK_TITLE,¡BIENVENIDO DE NUEVO!
 COMEBACK_TOAST,¡Bienvenido de vuelta! Regalo de regreso reclamado.
 COSMETIC_NO_FX,Los cosméticos equipados aparecen en tu petshop al instante
@@ -80,7 +83,7 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
-DAILY_AUTO_BODY,Día %d: ¡$%d!\nRacha: %d días + %d freezes\n¡Día 7 = Mel Golden legendario! Vuelve mañana por 2x.
+DAILY_AUTO_BODY,Día %d: ¡$%d!\nRacha: %d días + %d protecciones\n¡Día 7 = Mel Golden legendario! Vuelve mañana por 2x.
 DAILY_AUTO_BONUS,🎁 ¡Bono Día 7: Pet legendario!
 DAILY_AUTO_TITLE,¡Login Día %d!
 DAILY_CLAIMED_TOAST,¡Login reclamado! +$%d
@@ -92,6 +95,8 @@ ECO_MODE,Modo eco
 EMBERS,Ascuas
 EQUIP,USAR
 EQUIPPED,EN USO
+UNEQUIP,QUITAR
+COSMETIC_UNEQUIPPED,Retirado: %s
 EVENTS_OFF,Sin evento hoy
 EVENT_0,Domingo de Familia
 EVENT_1,Lunes de Baño
@@ -111,7 +116,8 @@ EVENT_GOAL_ANY,cualquier servicio
 EVENT_GOAL_DESC,%s: %d/%d atenciones
 EVENT_GOAL_REWARD,cofre: +$%d y +%d Brasas
 EVENT_GOAL_TITLE,META DEL DÍA
-FAIL_NO_PENALTY,Sin castigo — inténtalo de nuevo.
+FAIL_NO_PENALTY,No perdiste monedas — inténtalo de nuevo.
+FAIL_NEXT_NARROWER,Si te pasas, la próxima zona será un poco más estrecha.
 FAIL_OVERWASHED,%s de más. Suelta en cuanto el aro entre en la franja verde.
 FAIL_TIMEOUT,Se acabó el tiempo. ¡Mueve con más ritmo!
 FAIL_TOO_SOON,Lleva el %s hasta la franja verde antes de terminar.
@@ -134,8 +140,8 @@ FONT_SCALE_NORMAL,Normal
 FONT_SCALE_SMALL,Pequeño
 FRANCHISE_DESC,Tokens disponibles: %d
 FRANCHISE_EXCHANGE,Franquicia
-FREEZE_EARNED,¡Congelador de racha ganado!
-FREEZE_USED,¡Un congelador protegió tu racha!
+FREEZE_EARNED,¡Protección de racha obtenida!
+FREEZE_USED,¡Una protección mantuvo tu racha!
 GAME_TITLE,PetShop Tycoon: Del Baño al Imperio
 GOAL_CHAPTER,capítulo %s
 GOAL_LINE,PRÓXIMO: %s en Nv.%d • nivel actual %d%%
@@ -163,11 +169,13 @@ LOCKED,nv. %d
 MAP_TITLE,DEL BALDE AL IMPERIO
 MASTERY_TOAST,¡Maestría de %s %s!
 MISSIONS_NO_ADS,Las misiones nunca exigen anuncio ni compra.
-MISSIONS_TITLE,MISIONES DEL DÍA
+MISSIONS_TITLE,MISIONES
+MISSIONS_TAB_WEEKLY,Esta semana
+MISSIONS_TAB_TODAY,Hoy
 MISSION_METRIC_combo_reached,COMBO %d/%d
 MISSION_METRIC_four_plus_reviews,RESEÑAS 4★+ %d/%d
-MISSION_METRIC_perfect,PERFECTS %d/%d
-MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_perfect,PERFECTOS %d/%d
+MISSION_METRIC_perfect_services,PERFECTOS %d/%d
 MISSION_METRIC_services,ATENCIONES %d/%d
 MISSION_METRIC_upgrades,MEJORAS %d/%d
 MISSION_NOTE,"Vocaciones del equipo: Bañador acelera el baño, Peluquero acelera todo, Estilista mejora el arreglo, Veterinario calma más rápido, Masaje tranquiliza al cliente y Perfeccionista ensancha la ventana perfecta."
@@ -379,6 +387,12 @@ SPECIAL_ACCEPT,✓  ACEPTAR (+40% propina)
 SPECIAL_DECLINE,AHORA NO
 SPECIAL_ORDER_NOTE,💰 ¡Aceptar da propina extra + mantiene combo!
 SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SERVICE_NAME_STYLE,lazo
+SERVICE_NAME_PERFUME,perfume
+SERVICE_NAME_DRY,secado
+SERVICE_NAME_GROOM,corte
+SERVICE_NAME_BATH,baño
+SPECIAL_REQUEST_BODY,%s quiere una sesión extra de %s. ¿Aceptar?
 SPIN_ACTION,GIRAR
 SPIN_DONE,HECHO
 STAFF_AUTOMATION,rinde sola +%d%% de tus ingresos (en juego y en la caja)
@@ -389,7 +403,8 @@ STAFF_PLAYER,Você
 STAFF_SEU_ZE,Seu Zé
 STAFF_TEO,Téo
 STAFF_TITLE,EQUIPO
-STREAK_LINE,Racha: %d días • Congeladores: %d
+STREAK_LINE,Racha: %d días • Protecciones: %d
+STREAK_SECTION,RACHA DIARIA
 STREAK_LOSS_NOTE,Si fallas
 TEACH_NEW_GESTURE,¡Gesto nuevo! Pruébalo con calma:
 TEMPER_AGITATED,inquieto
@@ -444,7 +459,7 @@ WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Cofre: %d/7 • %s
 WEEKLY_RESET_DAYS,reinicia en %d días
 WEEKLY_RESET_TOMORROW,reinicia mañana
 WEEKLY_TITLE,MISIONES DE LA SEMANA
-WELCOME_BONUS,🎁 Bono bienvenida: +1 freeze!
+WELCOME_BONUS,🎁 Bono de bienvenida: +1 protección.
 WMISSION_BATH,%d/40 baños
 WMISSION_COMBO,Combo %d/8
 WMISSION_PERFECT,%d/15 perfectos
@@ -477,6 +492,12 @@ DAILY_FEATURED,Destacado del Día
 DAILY_FEATURED_DESC,¡Solo hoy con descuento!
 ADS_REWARDED_UNAVAILABLE,Video no disponible. Sigue jugando con normalidad.
 ADS_REWARD_TOAST,¡Anuncio recompensado! +$%d
+REWARDED_EMBER_TITLE,+1 ascua
+REWARDED_EMBER_DESC,🎬 Mira un video al día para ganar 1 ascua.
+REWARDED_EMBER_ACTION,▶ VER
+ALBUM_PHOTO_FALLBACK,Foto
+ALBUM_BADGE_PERFECT,⭐ PERFECTA
+ALBUM_BADGE_GOOD,Buena
 ROOM_BATH,BAÑO & ESPUMA
 ROOM_GROOM,CORTE & ARREGLO
 ROOM_DRY,SECADO ACOGEDOR
@@ -630,10 +651,10 @@ SPIN_COINS_DOUBLE,¡Monedas dobles!
 SPIN_SUPER,¡Súper premio!
 SPIN_EMBER_1,¡1 Brasa!
 SPIN_EMBER_2,¡2 Brasas raras!
-SPIN_FREEZE,¡Freeze de racha!
+SPIN_FREEZE,¡Protección de racha!
 SPIN_ROW_COINS,%s +%d (%s)
 SPIN_ROW_EMBERS,🔥 +%d %s (%s)
-SPIN_ROW_FREEZE,❄️ +%d ¡Freeze de racha! (%s)
+SPIN_ROW_FREEZE,❄️ +%d protección de racha (%s)
 GOAL_NEXT_KIDS,⭐ PRÓXIMO: %s
 KIDS_MODE_TITLE,🧒 MODO NIÑOS
 KIDS_MODE_TITLE_ON,🧒 MODO NIÑOS — ACTIVO ✨

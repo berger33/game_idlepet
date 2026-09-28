@@ -6,6 +6,14 @@
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="Icon" type="TextureRect" parent="Box"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+visible = false
+
 [node name="Info" type="VBoxContainer" parent="Box"]
 layout_mode = 2
 size_flags_horizontal = 3

@@ -133,7 +133,8 @@ class FoundationTests(unittest.TestCase):
         self.assertIn('buddy_spawned', salon)
         panel = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
         self.assertIn('FAVORITE_SET', panel)
-        self.assertIn('MISSION_NOTE', panel)
+        self.assertIn('GameState.staff_vocation', panel)
+        self.assertIn('STAFF_AUTOMATION', panel)
         content = Path('autoload/ContentDB.gd').read_text(encoding='utf8')
         self.assertIn('func staff(', content)
 
@@ -1553,6 +1554,87 @@ class LocalizationFormatTests(unittest.TestCase):
                         problems.append('%s [%s]: "%" sem escape em %s' % (key, code, gd))
         self.assertGreater(checked, 50, 'scanner precisa achar os sites de formato (achou %d)' % checked)
         self.assertEqual([], problems)
+
+    def test_live_language_change_refreshes_visible_screens(self):
+        loc = Path('autoload/Loc.gd').read_text(encoding='utf8')
+        state = Path('autoload/GameState.gd').read_text(encoding='utf8')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        meta = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        tutorial = Path('scenes/main/TutorialFlow.gd').read_text(encoding='utf8')
+        self.assertIn('signal language_changed(code: String)', loc)
+        self.assertIn('language_changed.emit(code)', loc)
+        self.assertIn('"language": "pt_BR"', state)
+        self.assertIn('settings["language"] = language if language in ["pt_BR", "en_US", "es_ES"] else "pt_BR"', state)
+        self.assertIn('Loc.language_changed.connect(_on_language_changed)', main)
+        self.assertIn('Loc.language_changed.connect(_on_language_changed)', meta)
+        self.assertIn('current_pet_name = ContentDB.pet_name(current_pet_id)', main)
+        self.assertIn('tutorial.refresh_language()', main)
+        self.assertIn('apply(false)', tutorial, 'refresh não deve registrar novamente a etapa')
+        self.assertIn('_show_tip(tip_id, false)', tutorial)
+
+    def test_special_request_copy_is_localized_and_complete(self):
+        salon = Path('core/gameplay/SalonPanels.gd').read_text(encoding='utf8')
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        self.assertIn('"title": title', salon)
+        self.assertIn('"note": note', salon)
+        self.assertIn('SPECIAL_REQUEST_BODY', main)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            self.assertEqual(2, _placeholder_count(table['SPECIAL_REQUEST_BODY']), code)
+            for service in ('BATH', 'GROOM', 'DRY', 'PERFUME', 'STYLE'):
+                self.assertIn('SERVICE_NAME_' + service, table)
+        pt_values = '\n'.join(_loc_table('pt_BR').values())
+        self.assertIsNone(re.search(r'\b(streak|freeze|freezes|perfects|groomer|mock)\b', pt_values, re.I))
+
+    def test_mission_cards_use_visual_progress_and_mouse_favorites(self):
+        meta = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        card = Path('scenes/ui/mission_card.tscn').read_text(encoding='utf8')
+        self.assertIn('MISSION_CARD.instantiate()', meta)
+        self.assertIn('_add_collection_stat_strip()', meta)
+        self.assertIn('InputEventMouseButton', meta)
+        self.assertIn('MOUSE_BUTTON_LEFT', meta)
+        for node in ('Icon', 'Title', 'Progress', 'Reward', 'Action'):
+            self.assertIn(f'name="{node}"', card)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            for key in ('COLLECTION_STAT_PETS', 'COLLECTION_STAT_ACHIEVEMENTS',
+                        'COLLECTION_STAT_COSMETICS', 'ALBUM_PHOTO_FALLBACK',
+                        'ALBUM_BADGE_PERFECT', 'ALBUM_BADGE_GOOD',
+                        'REWARDED_EMBER_TITLE', 'REWARDED_EMBER_DESC',
+                        'REWARDED_EMBER_ACTION'):
+                self.assertIn(key, table, f'{code}:{key}')
+
+    def test_cosmetic_unequip_feedback_matches_state(self):
+        meta = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('func _apply_cosmetic_action', meta)
+        self.assertIn('var was_active:', meta)
+        self.assertIn('Loc.t("UNEQUIP")', meta)
+        self.assertIn('Loc.t("COSMETIC_UNEQUIPPED")', meta)
+        for code in ('pt_BR', 'en_US', 'es_ES'):
+            table = _loc_table(code)
+            self.assertIn('UNEQUIP', table, code)
+            self.assertEqual(1, _placeholder_count(table['COSMETIC_UNEQUIPPED']), code)
+
+    def test_menus_use_icons_tabs_and_nonduplicated_streak_copy(self):
+        main = Path('scenes/main/Main.gd').read_text(encoding='utf8')
+        meta = Path('scenes/main/MetaPanel.gd').read_text(encoding='utf8')
+        self.assertIn('NAV_ICONS', main)
+        for icon in ('missions', 'collection', 'album', 'staff', 'shop', 'map', 'settings'):
+            self.assertTrue(Path(f'art/ui/icons/{icon}.png').is_file(), icon)
+        self.assertIn('func _build_weekly_missions', meta)
+        self.assertIn('MISSIONS_TAB_TODAY', meta)
+        self.assertIn('MISSIONS_TAB_WEEKLY', meta)
+        self.assertIn('func _info_row_with_icon', meta)
+        self.assertIn('func _cosmetic_icon_path', meta)
+        cosmetics = json.loads(Path('data/cosmetics.json').read_text(encoding='utf8'))['cosmetics']
+        for cosmetic in cosmetics:
+            icon = Path('art/cosmetics', str(cosmetic['id']) + '.png')
+            fallback = (Path('art/stations/station_bathtub_rustic.png')
+                        if cosmetic.get('slot') == 'bath' else Path('art/ui/icons/shop.png'))
+            self.assertTrue(icon.is_file() or fallback.is_file(), str(cosmetic['id']))
+        self.assertIn('Loc.t("STREAK_SECTION")', meta)
+        self.assertEqual(1, meta.count('Loc.t("STREAK_LINE")'))
+        self.assertNotIn('& STREAK', meta)
 
 
 # ── Higiene de projeto e build (auditoria universal v2, 27/09/2026) ──────────

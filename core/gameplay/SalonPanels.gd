@@ -131,7 +131,7 @@ static func build_upsell_panel(
 	decline.pressed.connect(on_decline)
 	actions.add_child(decline)
 	panel.hide()
-	return {"panel": panel, "body": body, "accept": accept, "decline": decline}
+	return {"panel": panel, "title": title, "body": body, "note": note, "accept": accept, "decline": decline}
 
 
 ## Cartão da fila: nome, pedido, trade-offs com $ + barra 14px — dinâmico 1 linha + ⓘ

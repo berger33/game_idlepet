@@ -19,6 +19,11 @@ const SERVICE_UNLOCK_LEVELS: Dictionary = { &"bath": 1, &"groom": 3, &"dry": 5, 
 const SERVICE_LABELS: Dictionary = { &"bath": "SERVICE_VERB_BATH", &"groom": "SERVICE_VERB_GROOM", &"dry": "SERVICE_VERB_DRY",
 	&"perfume": "SERVICE_VERB_PERFUME", &"style": "SERVICE_VERB_STYLE"
 }
+const NAV_UNLOCKS: Dictionary = { &"missions": 1, &"collection": 1, &"album": 2, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1 }
+const NAV_TIP_KEYS: Dictionary = {
+	&"missions": "NAV_MISSIONS", &"collection": "NAV_COLLECTION", &"album": "NAV_ALBUM",
+	&"staff": "NAV_STAFF", &"shop": "NAV_SHOP", &"map": "NAV_MAP", &"settings": "NAV_SETTINGS"
+}
 func _service_verb(service: StringName) -> String:
 	return Loc.t(String(SERVICE_LABELS.get(service, "SERVICE_VERB_BATH")))
 
@@ -42,6 +47,14 @@ var result_detail: Label
 var result_detail_extra: Label
 var result_expand_btn: Button
 var result_expanded: bool = false
+var last_result_quality: StringName = &"good"
+var last_result_reward: float = 0.0
+var last_result_stars: int = 4
+var last_result_first_bonus: bool = false
+var last_failure_reason: StringName = &""
+var first_perfect_bonus_pending: bool = false
+var xp_progress_before_service: float = 0.0
+var xp_progress_after_service: float = 0.0
 var dragging: bool = false
 var bubble_sound_gate: float = 0.0
 var toast_layer: Control
@@ -83,6 +96,9 @@ var proof_label: Label
 var proof_timer: float = 0.0
 var top_bar_scroll: ScrollContainer
 var top_bar_hbox: HBoxContainer
+var event_pill: Label
+var nav_buttons: Dictionary = {}
+var nav_labels: Dictionary = {}
 var goal_collapsed: bool = true
 var goal_expand_btn: Button
 var goal_full_text: String = ""
@@ -91,7 +107,9 @@ var pending_special: StringName = &""
 var special_active: bool = false
 var special_multiplier: float = 1.0
 var upsell_panel: PanelContainer
+var upsell_title: Label
 var upsell_label: Label
+var upsell_note: Label
 var upsell_accept: Button
 var upsell_decline: Button
 var petting_count: int = 0
@@ -145,7 +163,7 @@ func _ready() -> void:
 	NotificationManager.permission_granted = bool(GameState.settings.get("notifications", false))
 	NotificationManager.schedule_return_reminders(GameState.last_seen_unix)
 	if GameState.tutorial_complete and GameState.unlocked_pets.has(GameState.favorite_pet):
-		var buddy_name: String = String(ContentDB.pet(GameState.favorite_pet).get("name", "Pet"))
+		var buddy_name: String = ContentDB.pet_name(GameState.favorite_pet) if ContentDB.has_pet(GameState.favorite_pet) else Loc.t("ANON_NAME")
 		_show_toast(Loc.t("BUDDY_VISIT") % buddy_name, PINK)
 	if GameState.tutorial_complete:
 		var deep_section: StringName = NotificationManager.deep_link_section()
@@ -446,12 +464,17 @@ func _notification(what: int) -> void:
 	if meta.is_open():
 		meta.close()
 	elif is_instance_valid(result_panel) and result_panel.visible:
-		_on_primary_pressed()
+		if bath.state == BathService.State.FAILED:
+			_dismiss_result()
+		else:
+			_on_primary_pressed()
 func _on_primary_pressed() -> void:
-	if bath.state == BathService.State.COMPLETE or bath.state == BathService.State.FAILED:
+	if bath.state == BathService.State.COMPLETE:
 		_dismiss_result()
+	elif bath.state == BathService.State.FAILED and is_instance_valid(result_panel) and result_panel.visible:
+		_retry_service()
 	elif is_instance_valid(result_panel) and result_panel.visible:
-		# Passeio também usa o mesmo painel de resultado
+		# Passeio também usa o mesmo painel de resultado.
 		result_panel.hide()
 		primary_button.hide()
 		world.visible = true
@@ -476,6 +499,7 @@ func _start_bath() -> void:
 		tutorial.advance()
 func _finish_bath() -> void:
 	var quality: StringName = bath.finish()
+	var first_perfect_award: bool = quality == &"perfect" and GameState.total_perfect_services == 0
 	if quality == &"perfect" or quality == &"good":
 		world.complete_service()
 		var used_tool: StringName = StringName(SERVICE_TOOLS[current_service])
@@ -509,7 +533,25 @@ func _finish_bath() -> void:
 			GameState.register_weekly_event(&"style")
 		if current_visitor:
 			Discovery.register_service(current_pet_id)
+		var level_before_service: int = GameState.player_level
+		var xp_before_service: int = GameState.player_xp
+		var xp_threshold_before_service: int = GameState.xp_to_next_level()
 		EventBus.service_completed.emit(current_service, quality, reward)
+		xp_progress_before_service = (
+			0.0 if GameState.player_level != level_before_service
+			else clampf(float(xp_before_service) / maxf(1.0, float(xp_threshold_before_service)), 0.0, 1.0)
+		)
+		xp_progress_after_service = clampf(
+			float(GameState.player_xp) / maxf(1.0, float(GameState.xp_to_next_level())), 0.0, 1.0
+		)
+		if first_perfect_award:
+			GameState.embers += 1
+			first_perfect_bonus_pending = true
+			EventBus.currency_changed.emit(&"embers", float(GameState.embers))
+			_show_toast(Loc.t("FIRST_BONUS"), Color("ffd54f"))
+			world.celebration = 3.2
+			world.special_reward_active = true
+			_animate_first_confetti()
 		Analytics.track( &"service_complete", {"type": String(current_service), "quality": String(quality), "reward": reward}
 		)
 		if quality == &"perfect":
@@ -534,73 +576,25 @@ func _finish_bath() -> void:
 	else:
 		_fail(quality)
 func _show_success(quality: StringName, reward: float, stars: int) -> void:
+	last_result_quality = quality
+	last_result_reward = reward
+	last_result_stars = clampi(stars, 0, 5)
+	last_result_first_bonus = first_perfect_bonus_pending
+	first_perfect_bonus_pending = false
 	world.celebrate(quality == &"perfect" or GameState.combo >= 5)
 	AudioManager.play(&"perfect" if quality == &"perfect" else &"coin")
 	HapticsManager.success()
-	result_title.text = Loc.t("PERFECT_RESULT") if quality == &"perfect" else Loc.t("GOOD_RESULT")
-	if current_vip:
-		result_title.text = "👑 " + Loc.t("VIP_TAG") + "! " + result_title.text
 	if tutorial.step == TutorialFlow.STEP_GESTURE:
 		tutorial.advance()
 	if GameState.combo >= 5:
-		result_title.text = Loc.t("RESULT_RHYTHM") % GameState.combo
 		Analytics.track(&"combo_reached", {"level": GameState.combo})
-	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
-	var xp_reward: int = 15 if quality == &"perfect" else 10
-	xp_reward = int(xp_reward * (1.0 + GameState.staff_bonus(&"veterinary_xp")))
-	var tip_line: String = Loc.t("TIP_LINE") % last_tip_percent if last_tip_percent > 0 else Loc.t("NO_TIP")
-	if current_vip:
-		tip_line = "👑 " + Loc.t("VIP_TAG") + " ×2 · " + tip_line
-	var extra_line: String = ""
-	if special_active:
-		extra_line += "\n⭐ " + Loc.t("RESULT_SPECIAL")
-	if world.buddy_active:
-		extra_line += "\n🐾 " + Loc.t("RESULT_BUDDY")
-	var coins_word: String = Loc.t("COINS") # agora "R$" / "$"
-	var stars_text: String = "★".repeat(stars) + "☆".repeat(5 - stars)
-	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality)
-	var aff: int = int(GameState.pet_affection.get(current_pet_id, 0))
-	var mem: String = PetStories.affection_memory(current_pet_id, aff)
-	var proof: String = Loc.t("REVIEW_PROOF") % [current_pet_name, stars_text]
-	if not mem.is_empty():
-		proof += "\n%s" % mem
-	if GameState.services_completed == 0 and quality == &"perfect":
-		GameState.embers += 1
-		EventBus.currency_changed.emit(&"embers", float(GameState.embers))
-		extra_line += "\n" + Loc.t("FIRST_BONUS")
-		_show_toast(Loc.t("FIRST_BONUS"), Color("ffd54f"))
-		world.celebration = 3.2
-		world.special_reward_active = true
-		_animate_first_confetti()
-	# ── Resultado dinâmico: resumo sempre visível, história colapsável em ⓘ ──
-	# Economia realista: exibe como R$ 88 (antes 🪙 12 Moedas)
-	result_detail.text = "%s\n%s +%d  •  ✨ +%d XP\n%s" % [stars_text, coins_word, int(reward), xp_reward, tip_line]
-	result_detail.tooltip_text = ""
-	var extra_text: String = "%s\n%s%s" % [thanks, proof, extra_line]
-	extra_text = extra_text.strip_edges()
-	if is_instance_valid(result_detail_extra):
-		if not extra_text.is_empty():
-			result_detail_extra.text = extra_text
-			result_detail_extra.tooltip_text = extra_text
-			result_detail_extra.visible = false
-			result_expanded = false
-			if is_instance_valid(result_expand_btn):
-				result_expand_btn.text = Loc.t("VIEW_STORY")
-				result_expand_btn.visible = true
-		else:
-			result_detail_extra.text = ""
-			result_detail_extra.visible = false
-			if is_instance_valid(result_expand_btn):
-				result_expand_btn.visible = false
-				result_expanded = false
+	result_expanded = false
 	consecutive_fails = 0
 	assistance_clients = 0
+	_refresh_success_result_copy()
 	if result_panel.has_meta("xp_bar"):
 		var xp_bar: ColorRect = result_panel.get_meta("xp_bar") as ColorRect
 		if is_instance_valid(xp_bar):
-			var before_ratio: float = clampf(float(GameState.player_xp) / maxf(1.0, GameState.xp_to_next_level()), 0.0, 1.0)
-			var after_xp: int = GameState.player_xp + xp_reward
-			var after_ratio: float = clampf(float(after_xp) / maxf(1.0, GameState.xp_to_next_level()), 0.0, 1.0)
 			xp_bar.color = Color("263238", 0.35)
 			var fill: ColorRect = xp_bar.get_node_or_null("Fill") as ColorRect
 			if fill == null:
@@ -609,28 +603,125 @@ func _show_success(quality: StringName, reward: float, stars: int) -> void:
 				fill.color = Color("4fc3f7")
 				fill.custom_minimum_size = Vector2(0, 14)
 				xp_bar.add_child(fill)
-			fill.custom_minimum_size.x = xp_bar.custom_minimum_size.x * before_ratio
+			fill.custom_minimum_size.x = xp_bar.custom_minimum_size.x * xp_progress_before_service
 			var tween: Tween = xp_bar.create_tween()
-			tween.tween_property(fill, "custom_minimum_size:x", xp_bar.custom_minimum_size.x * after_ratio, 0.6).set_trans(Tween.TRANS_QUAD)
-	# Nota10 P2-12: share race fix — botão disabled até path pronto, await snapshot
+			tween.tween_property(
+				fill, "custom_minimum_size:x", xp_bar.custom_minimum_size.x * xp_progress_after_service, 0.6
+			).set_trans(Tween.TRANS_QUAD)
 	share_button.visible = false
 	share_button.disabled = true
 	_pop_panel(result_panel)
-	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
 	primary_button.disabled = false
 	primary_button.show()
 	_animate_coin_fly(int(reward))
 	_refresh_economy()
-	# Aguarda snapshot assíncrono (frame_post_draw) e só então habilita share
-	var saved_path: String = await ShareManager.finish_snapshot(get_viewport(), String(current_service), {"pet_id": current_pet_id, "stars": stars})
-	if not saved_path.is_empty() and is_instance_valid(share_button):
+	# O snapshot pode terminar depois de o jogador fechar o resultado ou reiniciar.
+	var snapshot_service: String = String(current_service)
+	var snapshot_meta: Dictionary = {"pet_id": current_pet_id, "stars": stars}
+	var saved_path: String = await ShareManager.finish_snapshot(get_viewport(), snapshot_service, snapshot_meta)
+	if not is_instance_valid(result_panel) or not result_panel.visible or bath.state != BathService.State.COMPLETE:
+		return
+	if not is_instance_valid(share_button):
+		return
+	if not saved_path.is_empty():
 		share_button.visible = true
 		share_button.disabled = false
 	else:
-		if is_instance_valid(share_button):
-			share_button.visible = false
+		share_button.visible = false
+
+
+func _xp_reward_for_quality(quality: StringName) -> int:
+	var base_xp: int = 15 if quality == &"perfect" else 10
+	return int(base_xp * (1.0 + GameState.staff_bonus(&"veterinary_xp")))
+
+
+func _refresh_success_result_copy() -> void:
+	var quality: StringName = last_result_quality
+	var result_title_text: String = Loc.t("PERFECT_RESULT") if quality == &"perfect" else Loc.t("GOOD_RESULT")
+	if current_vip:
+		result_title_text = "👑 " + Loc.t("VIP_TAG") + "! " + result_title_text
+	if GameState.combo >= 5:
+		var rhythm_title: String = Loc.t("RESULT_RHYTHM") % GameState.combo
+		result_title_text = ("👑 " + Loc.t("VIP_TAG") + "! " if current_vip else "") + rhythm_title
+	result_title.text = result_title_text
+	result_title.modulate = Color("ffd54f") if quality == &"perfect" else GREEN
+
+	var xp_reward: int = _xp_reward_for_quality(quality)
+	var tip_line: String = Loc.t("TIP_LINE") % last_tip_percent if last_tip_percent > 0 else Loc.t("NO_TIP")
+	if current_vip:
+		tip_line = "👑 " + Loc.t("VIP_TAG") + " ×2 · " + tip_line
+	var stars: int = clampi(last_result_stars, 0, 5)
+	var stars_text: String = "★".repeat(stars) + "☆".repeat(5 - stars)
+	result_detail.text = "%s\n%s +%d  •  ✨ +%d XP\n%s" % [stars_text, Loc.t("COINS"), int(last_result_reward), xp_reward, tip_line]
+	result_detail.tooltip_text = ""
+
+	var extra_line: String = ""
+	if special_active:
+		extra_line += "\n⭐ " + Loc.t("RESULT_SPECIAL")
+	if world.buddy_active:
+		extra_line += "\n🐾 " + Loc.t("RESULT_BUDDY")
+	if last_result_first_bonus:
+		extra_line += "\n" + Loc.t("FIRST_BONUS")
+	var thanks: String = PetStories.result_thanks(ContentDB.pet(current_pet_id), quality)
+	var proof: String = Loc.t("REVIEW_PROOF") % [current_pet_name, stars_text]
+	var affection: int = int(GameState.pet_affection.get(current_pet_id, 0))
+	var memory: String = PetStories.affection_memory(current_pet_id, affection)
+	if not memory.is_empty():
+		proof += "\n%s" % memory
+	var extra_text: String = ("%s\n%s%s" % [thanks, proof, extra_line]).strip_edges()
+	if is_instance_valid(result_detail_extra):
+		result_detail_extra.text = extra_text
+		result_detail_extra.tooltip_text = extra_text
+		result_detail_extra.visible = result_expanded and not extra_text.is_empty()
+		result_detail_extra.modulate.a = 1.0
+	if is_instance_valid(result_expand_btn):
+		result_expand_btn.text = Loc.t("COLLAPSE") if result_expanded else Loc.t("VIEW_STORY")
+		result_expand_btn.visible = not extra_text.is_empty()
+	primary_button.text = "✓  " + Loc.t("REVEAL_OK")
+	primary_button.disabled = false
+	primary_button.show()
+	if is_instance_valid(share_button):
+		share_button.text = "📤 " + Loc.t("SHARE_BUTTON")
+
+
+func _refresh_failure_result_copy() -> void:
+	result_title.text = Loc.t("RESULT_ALMOST")
+	result_title.modulate = Color("ef5350")
+	instruction_label.text = "💔 " + Loc.t("RESULT_ALMOST")
+	instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.9), 34, 14, Color.WHITE, 4))
+	var service_name: String = _service_verb(current_service)
+	var hint: String
+	if last_failure_reason == &"timeout":
+		hint = Loc.t("FAIL_TIMEOUT")
+	elif last_failure_reason == &"overwashed":
+		hint = Loc.t("FAIL_OVERWASHED") % service_name.capitalize()
+	else:
+		hint = Loc.t("FAIL_TOO_SOON") % service_name
+	result_detail.text = "★★☆☆☆\n%s" % hint
+	result_detail.tooltip_text = hint
+	var fail_extra: String = Loc.t("FAIL_NO_PENALTY")
+	if last_failure_reason == &"overwashed":
+		fail_extra += "\n" + Loc.t("FAIL_NEXT_NARROWER")
+	if assistance_clients > 0:
+		fail_extra += "\n" + (Loc.t("ASSIST_ACTIVE") % assistance_clients)
+	fail_extra = fail_extra.strip_edges()
+	if is_instance_valid(result_detail_extra):
+		result_detail_extra.text = fail_extra
+		result_detail_extra.tooltip_text = fail_extra
+		result_detail_extra.visible = result_expanded
+		result_detail_extra.modulate.a = 1.0
+	if is_instance_valid(result_expand_btn):
+		result_expand_btn.text = Loc.t("COLLAPSE") if result_expanded else Loc.t("VIEW_HINT")
+		result_expand_btn.visible = not fail_extra.is_empty()
+	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
+	primary_button.disabled = false
+	primary_button.show()
+	share_button.visible = false
+	share_button.disabled = true
 func _fail(reason: StringName) -> void:
 	bath.state = BathService.State.FAILED
+	last_failure_reason = reason
+	first_perfect_bonus_pending = false
 	dragging = false
 	dragged_tool = &""
 	world.gesture_ui = {}
@@ -644,57 +735,70 @@ func _fail(reason: StringName) -> void:
 		world.forced_state_time = 2.5
 	consecutive_perfects = 0
 	consecutive_fails += 1
+	var failure_streak: int = consecutive_fails
 	if consecutive_fails >= 3:
 		assistance_clients = 3
 		_show_toast(Loc.t("ASSIST_TOAST"), BLUE)
 		consecutive_fails = 0
 	EventBus.service_failed.emit(current_service, reason)
-	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason), "streak": consecutive_fails})
+	Analytics.track(&"service_fail", {"type": String(current_service), "reason": String(reason), "streak": failure_streak})
 	world.react_to_failure()
 	AudioManager.play(&"error_soft" if reason == &"timeout" else &"error")
 	HapticsManager.light()
-	instruction_label.text = "💔 " + Loc.t("RESULT_ALMOST")
-	instruction_label.add_theme_stylebox_override("normal", _style(Color("ef5350", 0.9), 34, 14, Color.WHITE, 4))
-	result_title.text = Loc.t("RESULT_ALMOST")
-	result_title.modulate = Color("ef5350")
-	var action_name: String = _service_verb(current_service)
-	var hint: String
-	if reason == &"timeout":
-		hint = Loc.t("FAIL_TIMEOUT")
-	elif reason == &"overwashed":
-		hint = Loc.t("FAIL_OVERWASHED") % action_name.capitalize()
-	else:
-		hint = Loc.t("FAIL_TOO_SOON") % action_name
-	var assistance_line: String = ""
-	if assistance_clients > 0:
-		assistance_line = "\n" + Loc.t("ASSIST_ACTIVE") % assistance_clients
-	# ── Fail dinâmico: dica curta + detalhe colapsável ──
-	result_detail.text = "★★☆☆☆\n%s" % hint
-	result_detail.tooltip_text = hint
-	var fail_extra: String = "%s%s" % [Loc.t("FAIL_NO_PENALTY"), assistance_line]
-	fail_extra = fail_extra.strip_edges()
-	if is_instance_valid(result_detail_extra):
-		if not fail_extra.is_empty():
-			result_detail_extra.text = fail_extra
-			result_detail_extra.tooltip_text = fail_extra
-			result_detail_extra.visible = false
-			result_expanded = false
-			if is_instance_valid(result_expand_btn):
-				result_expand_btn.text = Loc.t("VIEW_HINT")
-				result_expand_btn.visible = true
-		else:
-			result_detail_extra.text = ""
-			result_detail_extra.visible = false
-			if is_instance_valid(result_expand_btn):
-				result_expand_btn.visible = false
-				result_expanded = false
-	share_button.visible = false
+	result_expanded = false
+	_refresh_failure_result_copy()
 	_pop_panel(result_panel)
-	primary_button.text = "↻  " + Loc.t("TRY_AGAIN")
-	primary_button.disabled = false
-	primary_button.show()
 	if tutorial.step == TutorialFlow.STEP_GESTURE:
 		tutorial.advance()
+
+
+func _retry_service() -> void:
+	if selected_slot < 0 or selected_slot >= queue.size() or queue[selected_slot].is_empty():
+		_dismiss_result()
+		return
+	AudioManager.play(&"tap")
+	HapticsManager.light()
+	Analytics.track(&"service_retry", {"type": String(current_service), "reason": String(last_failure_reason)})
+	result_panel.hide()
+	primary_button.hide()
+	share_button.hide()
+	share_button.disabled = true
+	if is_instance_valid(result_detail_extra):
+		result_detail_extra.hide()
+	if is_instance_valid(result_expand_btn):
+		result_expand_btn.hide()
+	result_expanded = false
+	last_failure_reason = &""
+	last_result_first_bonus = false
+	first_perfect_bonus_pending = false
+	world.visible = true
+	queue_row.visible = true
+	park_canvas.visible = false
+	world.reset_pet()
+	world.set_service_layout(current_service)
+	world.set_pet_profile(ContentDB.pet(current_pet_id))
+	world.affection_level = int(GameState.pet_affection.get(current_pet_id, 0))
+	world.buddy_active = (
+		GameState.bath_upgrade_level >= 30
+		and GameState.favorite_pet != current_pet_id
+		and GameState.unlocked_pets.has(GameState.favorite_pet)
+	)
+	world.buddy_pet_id = GameState.favorite_pet
+	world.vip_active = current_vip
+	world.progress = 0.0
+	world.gesture_ui = {}
+	world.playful_hop = false
+	world.forced_state = &""
+	world.forced_state_time = 0.0
+	world.set_tool_contact(false)
+	world.release_tool()
+	world.arrive()
+	bath = BathServiceScript.new()
+	_configure_current_service()
+	_last_instr_key = &""
+	_refresh_instruction_copy()
+	_refresh_economy()
+	_update_queue_ui()
 func _dismiss_result() -> void:
 	result_panel.hide()
 	world.reset_pet()
@@ -706,12 +810,15 @@ func _dismiss_result() -> void:
 	if selected_slot >= 0:
 		queue[selected_slot] = {}
 		refill_timers[selected_slot] = _refill_delay()
-	selected_slot = -1
+		selected_slot = -1
 	current_vip = false
 	special_active = false
 	pending_special = &""
 	pending_special_result = {}
 	special_multiplier = 1.0
+	first_perfect_bonus_pending = false
+	last_result_first_bonus = false
+	last_failure_reason = &""
 	mood_buff_clients = maxi(0, mood_buff_clients - 1)
 	if assistance_clients > 0: assistance_clients -= 1
 	instruction_label.text = Loc.t("CHOOSE_CLIENT")
@@ -719,6 +826,12 @@ func _dismiss_result() -> void:
 		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
 	_last_instr_key = &""
 	primary_button.hide()
+	share_button.hide()
+	share_button.disabled = true
+	if is_instance_valid(result_detail_extra):
+		result_detail_extra.hide()
+	if is_instance_valid(result_expand_btn):
+		result_expand_btn.hide()
 	_update_queue_ui()
 	tutorial.notify(&"result_dismissed")
 	if GameState.services_completed == 1: D1Retention.show_daily_login(self)
@@ -770,9 +883,7 @@ func _offer_special( offered: StringName, quality: StringName, reward: float, st
 ) -> void:
 	pending_special = offered
 	pending_special_result = {"quality": quality, "reward": reward, "stars": stars}
-	var service_name: String = _service_verb(offered).capitalize()
-	upsell_label.text = ( "%s adoraria também um %s!\nAceitar o pedido?" % [current_pet_name, service_name]
-	)
+	_refresh_upsell_copy()
 	world.forced_state = &"happy_squash"
 	world.forced_state_time = 1.6
 	Analytics.track(&"upsell_offered", {"service": String(offered)})
@@ -785,6 +896,7 @@ func _on_upsell_accept() -> void:
 	bath = BathServiceScript.new()
 	world.progress = 0.0
 	world.forced_state = &""
+	world.forced_state_time = 0.0
 	_configure_current_service()
 	instruction_label.text = SalonTuning.hint(current_service)
 	Analytics.track(&"upsell_accepted", {"service": String(current_service)})
@@ -984,6 +1096,7 @@ func _configure_current_service() -> void:
 	var gesture: Dictionary = SalonTuning.GESTURES.get(current_service, SalonTuning.GESTURES[&"bath"])
 	bath.configure_gesture(gesture["axis"], gesture["mode"], gesture["cap"], gesture["rate"])
 	SalonTuning.apply(bath, current_service, ContentDB.pet(current_pet_id), GameState.tool_upgrade_levels, recovery_penalty, world.pet_focus() if is_instance_valid(world) else Vector2(540, 990))
+	recovery_penalty = false
 	if is_instance_valid(world):
 		world.set_service_layout(current_service)
 		world.player_level = GameState.player_level
@@ -1024,7 +1137,7 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 	var xp_percent: int = int(100.0 * GameState.player_xp / GameState.xp_to_next_level())
 	combo_label.text = "%s%d %d%% ×%d" % [Loc.t("HUD_LEVEL_ABBR"), GameState.player_level, xp_percent, maxi(1, GameState.combo)]
 	if GameState.reviews_total == 0:
-		review_label.text = "★ %s" % Loc.t("NEW_TAG") if Loc.t("NEW_TAG") != "NEW_TAG" else "★ Novo!"
+		review_label.text = "★ %s" % Loc.t("NEW_TAG")
 	else:
 		review_label.text = "★ %.1f" % GameState.review_average()
 	# ── Top bar dinâmico: esconde pílulas secundárias quando vazias ──
@@ -1080,6 +1193,8 @@ func _refresh_economy(_currency: StringName = &"coins", _amount: float = 0.0) ->
 		world.set_cosmetics(GameState.active_cosmetics)
 	if is_instance_valid(world) and world.service_active:
 		world.service_time_ratio = bath.time_left / bath.duration_seconds if bath.duration_seconds > 0.0 else 0.0
+	if not nav_buttons.is_empty():
+		_refresh_navigation()
 func _refresh_proof_social() -> void:
 	if not is_instance_valid(proof_label): return
 	proof_label.text = RushTuning.proof_text()
@@ -1100,6 +1215,129 @@ func _connect_events() -> void:
 	EventBus.reveal_requested.connect( func(kind: StringName, payload: Dictionary) -> void:
 			RevealCard.enqueue_kind(self, kind, payload)
 	)
+	if not Loc.language_changed.is_connected(_on_language_changed):
+		Loc.language_changed.connect(_on_language_changed)
+
+
+func _on_language_changed(_code: String) -> void:
+	if ContentDB.has_pet(current_pet_id):
+		current_pet_name = ContentDB.pet_name(current_pet_id)
+	_refresh_economy()
+	_update_queue_ui()
+	_refresh_proof_social()
+	if is_instance_valid(event_pill):
+		event_pill.text = LiveOps.current_event_name()
+	if is_instance_valid(upgrades_button):
+		upgrades_button.tooltip_text = Loc.t("UPGRADES_TITLE")
+	if is_instance_valid(park_button):
+		ParkFlow.update_button(self)
+	if is_instance_valid(upsell_panel) and upsell_panel.visible:
+		_refresh_upsell_copy()
+	if is_instance_valid(result_panel) and result_panel.visible:
+		if bath.state == BathService.State.FAILED:
+			_refresh_failure_result_copy()
+		elif bath.state == BathService.State.COMPLETE:
+			_refresh_success_result_copy()
+	elif not (is_instance_valid(upsell_panel) and upsell_panel.visible):
+		_refresh_instruction_copy()
+	tutorial.refresh_language()
+
+
+func _on_navigation_pressed(section: StringName, origin: Button) -> void:
+	var unlock_level: int = int(NAV_UNLOCKS.get(section, 1))
+	if GameState.player_level < unlock_level and not GameState.tutorial_complete:
+		_show_toast(Loc.t("UPGRADES_LOCKED") % unlock_level, Color("b0bec5"))
+		return
+	SessionFeedback.open_meta(self, section, origin)
+
+
+func _refresh_navigation() -> void:
+	if nav_buttons.is_empty():
+		return
+	for section_key: Variant in nav_buttons.keys():
+		var section: StringName = StringName(section_key)
+		var nav_button: Button = nav_buttons[section] as Button
+		var nav_label: Label = nav_labels.get(section) as Label
+		if not is_instance_valid(nav_button) or not is_instance_valid(nav_label):
+			continue
+		var unlock_level: int = int(NAV_UNLOCKS.get(section, 1))
+		var locked: bool = GameState.player_level < unlock_level and not GameState.tutorial_complete
+		var label_text: String = Loc.t(String(NAV_TIP_KEYS.get(section, "")))
+		nav_button.disabled = locked
+		nav_button.text = "🔒" if locked else ""
+		nav_button.icon = null if locked else (NAV_ICONS.get(section) as Texture2D)
+		nav_button.tooltip_text = label_text if not locked else "%s • %s" % [label_text, Loc.t("NAV_LOCKED") % unlock_level]
+		nav_button.add_theme_stylebox_override(
+			"normal", _style(Color("90a4ae", 0.88) if locked else Color("263238", 0.88), 36, 6, Color("ffffff", 0.72), 3)
+		)
+		nav_button.add_theme_stylebox_override("hover", _style(PINK, 36, 6, Color.WHITE, 3))
+		nav_button.add_theme_stylebox_override("pressed", _style(PINK.darkened(0.12), 36, 6, Color.WHITE, 3))
+		nav_label.text = label_text
+		nav_label.add_theme_color_override("font_color", Color("90a4ae") if locked else Color("263238", 0.85))
+	if is_instance_valid(missions_button):
+		D1Retention.ensure_missions_badge(self)
+
+
+func _refresh_instruction_copy() -> void:
+	if not is_instance_valid(instruction_label):
+		return
+	if park_active:
+		instruction_label.text = ParkFlow.instruction(self)
+		return
+	if is_instance_valid(upsell_panel) and upsell_panel.visible:
+		return
+	if is_instance_valid(result_panel) and result_panel.visible:
+		if bath.state == BathService.State.FAILED:
+			_refresh_failure_result_copy()
+		elif bath.state == BathService.State.COMPLETE:
+			_refresh_success_result_copy()
+		return
+	if bath.state == BathService.State.ACTIVE:
+		var style_key: StringName = &"hint"
+		if bath.progress >= bath.target_minimum and bath.progress <= bath.target_maximum:
+			style_key = &"perfect"
+			instruction_label.text = Loc.t("RELEASE_PERFECT")
+		elif bath.progress > bath.target_maximum:
+			style_key = &"over"
+			instruction_label.text = Loc.t("RELEASE_OVER")
+		else:
+			instruction_label.text = SalonTuning.hint(current_service)
+		if _instr_styles.has(style_key):
+			instruction_label.add_theme_stylebox_override("normal", _instr_styles[style_key] as StyleBoxFlat)
+		else:
+			var color: Color = GREEN if style_key == &"perfect" else (Color("ef5350", 0.88) if style_key == &"over" else Color("263238", 0.82))
+			instruction_label.add_theme_stylebox_override("normal", _style(color, 34, 14, Color.WHITE, 3))
+		_last_instr_key = style_key
+		return
+	if selected_slot >= 0:
+		if special_active:
+			instruction_label.text = SalonTuning.hint(current_service)
+		elif GameState.services_completed == 0 and petting_count >= 3 and int(GameState.pet_affection.get(current_pet_id, 0)) >= 3:
+			instruction_label.text = Loc.t("FIRST_PET_READY")
+		else:
+			var tool: StringName = StringName(SERVICE_TOOLS.get(current_service, &"soap"))
+			instruction_label.text = Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_with_article(tool), current_pet_name]
+	else:
+		instruction_label.text = Loc.t("CHOOSE_CLIENT")
+	if _instr_styles.has(&"hint"):
+		instruction_label.add_theme_stylebox_override("normal", _instr_styles[&"hint"] as StyleBoxFlat)
+	_last_instr_key = &""
+
+
+func _refresh_upsell_copy() -> void:
+	if not is_instance_valid(upsell_label):
+		return
+	var service_name_key: String = "SERVICE_NAME_%s" % String(pending_special).to_upper()
+	var service_name: String = Loc.t(service_name_key)
+	upsell_label.text = Loc.t("SPECIAL_REQUEST_BODY") % [current_pet_name, service_name]
+	if is_instance_valid(upsell_title):
+		upsell_title.text = Loc.t("SPECIAL_ORDER_TITLE")
+	if is_instance_valid(upsell_note):
+		upsell_note.text = Loc.t("SPECIAL_ORDER_NOTE")
+	if is_instance_valid(upsell_accept):
+		upsell_accept.text = Loc.t("SPECIAL_ACCEPT")
+	if is_instance_valid(upsell_decline):
+		upsell_decline.text = Loc.t("SPECIAL_DECLINE")
 func _build_interface() -> void:
 	world = PetShopCanvasScript.new()
 	world.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1178,47 +1416,34 @@ func _build_interface() -> void:
 	nav.position = Vector2(30, 145 + safe_top)
 	nav.add_theme_constant_override("separation", 10)
 	add_child(nav)
-	# Progressive disclosure P1: reduz sobrecarga D0, libera gradualmente
-	var nav_unlocks: Dictionary = {&"missions": 1, &"collection": 1, &"album": 2, &"staff": 2, &"shop": 2, &"map": 3, &"settings": 1}
+	# Progressive disclosure: ícones compactos; rótulos e bloqueios reagem ao idioma/progresso.
+	nav_buttons.clear()
+	nav_labels.clear()
 	for item: Dictionary in [ {"id": "missions", "tip_key": "NAV_MISSIONS"}, {"id": "collection", "tip_key": "NAV_COLLECTION"},
 		{"id": "album", "tip_key": "NAV_ALBUM"}, {"id": "staff", "tip_key": "NAV_STAFF"},
 		{"id": "shop", "tip_key": "NAV_SHOP"}, {"id": "map", "tip_key": "NAV_MAP"}, {"id": "settings", "tip_key": "NAV_SETTINGS"}
 	]:
 		var sid: StringName = StringName(item["id"])
-		var tip: String = Loc.t(String(item["tip_key"]))
-		var unlock_lv: int = int(nav_unlocks.get(sid, 1))
-		var locked: bool = GameState.player_level < unlock_lv and not GameState.tutorial_complete
 		var col: VBoxContainer = VBoxContainer.new()
 		col.alignment = BoxContainer.ALIGNMENT_CENTER
 		col.add_theme_constant_override("separation", 2)
 		nav.add_child(col)
-		var nav_button: Button = _button("🔒" if locked else "", CHARCOAL if not locked else Color("90a4ae"), 72, 72)
+		var nav_button: Button = _button("", CHARCOAL, 72, 72)
 		nav_button.name = "Nav_%s" % String(sid)
+		nav_button.pressed.connect(_on_navigation_pressed.bind(sid, nav_button))
+		col.add_child(nav_button)
+		nav_buttons[sid] = nav_button
 		if sid == &"missions":
 			missions_button = nav_button
 		if sid == &"album":
 			album_button = nav_button
-		if not locked:
-			nav_button.icon = NAV_ICONS[sid]
-		nav_button.tooltip_text = tip if not locked else "%s • %s" % [tip, Loc.t("NAV_LOCKED") % unlock_lv]
-		nav_button.disabled = locked
-		nav_button.add_theme_stylebox_override("normal", _style(Color("263238", 0.88) if not locked else Color("90a4ae", 0.88), 36, 6, Color("ffffff", 0.72), 3))
-		nav_button.add_theme_stylebox_override("hover", _style(PINK, 36, 6, Color.WHITE, 3))
-		if not locked:
-			nav_button.pressed.connect(SessionFeedback.open_meta.bind(self, sid, nav_button))
-		else:
-			nav_button.pressed.connect(func(): _show_toast(Loc.t("UPGRADES_LOCKED") % unlock_lv, Color("b0bec5")))
-		col.add_child(nav_button)
-		if sid == &"missions" and not locked:
-			D1Retention.ensure_missions_badge(self)
 		var nav_label: Label = Label.new()
-		nav_label.text = tip if not locked else "🔒 %s" % tip
 		nav_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		nav_label.add_theme_font_size_override("font_size", int(16 * font_scale))
-		nav_label.add_theme_color_override("font_color", Color("263238", 0.85) if not locked else Color("90a4ae"))
 		nav_label.add_theme_stylebox_override("normal", _style(Color("ffffff", 0.82), 12, 4))
 		col.add_child(nav_label)
-	var event_pill: Label = _pill(nav, LiveOps.current_event_name(), Color("4fc3f7"), 210)
+		nav_labels[sid] = nav_label
+	event_pill = _pill(nav, LiveOps.current_event_name(), Color("4fc3f7"), 210)
 	event_pill.add_theme_font_size_override("font_size", 20)
 	event_pill.custom_minimum_size = Vector2(210, 56)
 	var action_hud: VBoxContainer = VBoxContainer.new()
@@ -1227,8 +1452,7 @@ func _build_interface() -> void:
 	action_hud.add_theme_constant_override("separation", 16)
 	add_child(action_hud)
 	instruction_label = Label.new()
-	instruction_label.text = ( Loc.t("DRAG_TOOL_TO") % [SalonTuning.tool_with_article(&"soap"), "Caramelo"]
-	)
+	instruction_label.text = Loc.t("CHOOSE_CLIENT")
 	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	instruction_label.add_theme_font_size_override("font_size", 33)
@@ -1272,7 +1496,9 @@ func _build_interface() -> void:
 	var upsell_ui: Dictionary = SalonPanels.build_upsell_panel( self, _style, _button, _on_upsell_accept, _on_upsell_decline
 	)
 	upsell_panel = upsell_ui["panel"]
+	upsell_title = upsell_ui["title"]
 	upsell_label = upsell_ui["body"]
+	upsell_note = upsell_ui["note"]
 	upsell_accept = upsell_ui["accept"]
 	upsell_decline = upsell_ui["decline"]
 	toast_layer = Control.new()

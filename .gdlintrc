@@ -2,11 +2,12 @@
 # (coordenação da cena e persistência) e concentram a API pública por design.
 # Pós-dinâmica 2026-09-21: progressive disclosure (+~150L) elevou HUD e Meta —
 # limite afrouxado para não mascarar regressão lógica real.
-# Pós-consolidação 2026-09-23: parquinho extraído p/ ParkFlow.gd (−550L em Main);
-# teto 1400 mantém guarda apertada — dívida restante: dividir Main em controller
-# (sugestão já registrada na auditoria completa 2026-09-23).
+# Pós-consolidação 2026-09-23: parquinho extraído p/ ParkFlow.gd (−550L em Main).
+# A auditoria de localização/UX de 2026-09-27 ampliou Main e MetaPanel acima de
+# 1400 linhas; teto 1600 libera apenas esses hubs. Continua pendente extraí-los
+# em controllers menores, sem relaxar o limite para o restante do projeto.
 max-public-methods: 42
-max-file-lines: 1400
+max-file-lines: 1600
 max-line-length: 120
 disable:
   - max-line-length

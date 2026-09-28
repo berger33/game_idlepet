@@ -50,7 +50,7 @@ func setup() -> void:
 	welcome_pending = true
 
 
-func apply() -> void:
+func apply(track_event: bool = true) -> void:
 	main.tutorial_overlay.locked = true
 	var is_kids: bool = bool(GameState.settings.get("kids_mode", false))
 	match step:
@@ -74,7 +74,23 @@ func apply() -> void:
 			var focus: Vector2 = main.world.pet_focus()
 			var rect: Rect2 = Rect2(focus - Vector2(300, 330), Vector2(600, 680)) if is_kids else Rect2(focus - Vector2(250, 250), Vector2(500, 560))
 			main.tutorial_overlay.show_guide(guide_text("GUIDE_GESTURE") % SalonTuning.hint(main.current_service), &"cheer", rect)
-	_track_step("show")
+	if track_event:
+		_track_step("show")
+
+
+func refresh_language() -> void:
+	if not is_instance_valid(main):
+		return
+	if is_instance_valid(main.tutorial_skip_button) and step >= 0:
+		main.tutorial_skip_button.text = Loc.t("SKIP_CONFIRM_TAP") if skip_armed else Loc.t("SKIP_TUTORIAL")
+	if welcome_pending:
+		return
+	if step >= 0:
+		apply(false)
+	elif teaching:
+		_show_teaching(main.current_service)
+	elif not tip_id.is_empty():
+		_show_tip(tip_id, false)
 
 
 func advance() -> void:
@@ -99,6 +115,7 @@ func finish() -> void:
 	main.tutorial_overlay.finish()
 	main.tutorial_skip_button.visible = false
 	GameState.tutorial_complete = true
+	main._refresh_navigation()
 
 
 ## T-02: 1º toque arma a confirmação (botão muda + some sozinho em 3.5s);
@@ -194,18 +211,22 @@ func teach_service(service: StringName) -> void:
 		return
 	dismiss_tip()
 	teaching = true
+	_show_teaching(service)
+	Analytics.track(&"gesture_taught", {"service": String(service)})
+	# _show_teaching(service) chama show_guide com SalonTuning.hint(service);
+	# só depois da exibição marcamos como ensinado (evita gastar a fala).
+	taught.append(String(service))
+	GameState.settings["services_taught"] = taught
+	SaveManager.request_save()
+
+
+func _show_teaching(service: StringName) -> void:
 	var is_kids_teach: bool = bool(GameState.settings.get("kids_mode", false))
 	var focus: Vector2 = main.world.pet_focus()
 	var teach_rect: Rect2 = Rect2(focus - Vector2(300, 330), Vector2(600, 680)) if is_kids_teach else Rect2(focus - Vector2(250, 250), Vector2(500, 560))
 	main.tutorial_overlay.show_guide(
 		"%s\n%s" % [Loc.t("TEACH_NEW_GESTURE"), SalonTuning.hint(service)], &"think", teach_rect
 	)
-	Analytics.track(&"gesture_taught", {"service": String(service)})
-	# P2: só marca como ensinado depois de exibir — evita "1× por serviço"
-	# gasto sem a fala ter aparecido.
-	taught.append(String(service))
-	GameState.settings["services_taught"] = taught
-	SaveManager.request_save()
 
 
 ## Encerra o mini-tutorial de gesto (primeiro arrasto ou fim do serviço).
@@ -282,11 +303,12 @@ func _tip_ready(id: String) -> bool:
 	return bool(ready.get(id, false))
 
 
-func _show_tip(id: String) -> void:
+func _show_tip(id: String, record: bool = true) -> void:
 	tip_id = id
-	GameState.guide_steps_done.append(id)
-	SaveManager.request_save()
-	Analytics.track(&"guide_tip", {"id": id})
+	if record:
+		GameState.guide_steps_done.append(id)
+		SaveManager.request_save()
+		Analytics.track(&"guide_tip", {"id": id})
 	var overlay: Control = main.tutorial_overlay
 	var ok: String = Loc.t("GUIDE_OK")
 	match id:
