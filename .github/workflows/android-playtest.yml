@@ -130,14 +130,27 @@ jobs:
 
       - name: Exportar APK
         run: |
-          set -e
-          mkdir -p exports/android
+          mkdir -p exports/android build/logs
           GODOT="./Godot_v${GODOT_VERSION}-stable_linux.x86_64"
-          if ! $GODOT --headless --path . --export-release "Android Playtest" "exports/android/${APK_NAME}"; then
+          $GODOT --headless --verbose --path . --export-release "Android Playtest" "exports/android/${APK_NAME}" > build/logs/export.log 2>&1
+          echo "release exit=$?"
+          if [ ! -s "exports/android/${APK_NAME}" ]; then
             echo "release falhou; tentando export-debug"
-            $GODOT --headless --path . --export-debug "Android Playtest" "exports/android/${APK_NAME}"
+            $GODOT --headless --verbose --path . --export-debug "Android Playtest" "exports/android/${APK_NAME}" >> build/logs/export.log 2>&1
+            echo "debug exit=$?"
           fi
+          test -s "exports/android/${APK_NAME}"
           ls -la exports/android
+
+      - name: Diagnosticar falha (sobe log na branch)
+        if: failure()
+        run: |
+          tail -c 300000 build/logs/export.log > build/logs/export-tail.log
+          git config user.name "arena-bot"
+          git config user.email "arena-bot@users.noreply.github.com"
+          git add -f build/logs/export-tail.log
+          git commit -m "diagnostico: log do export android [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
 
       - name: Verificar APK (dex + assinatura v2)
         run: |
