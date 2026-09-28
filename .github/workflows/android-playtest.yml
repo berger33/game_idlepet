@@ -70,7 +70,7 @@ jobs:
 
       - name: Preset Android (somente no runner, nao commitado)
         run: |
-          cat >> export_presets.cfg <<'PSET'
+          cat >> export_presets.cfg <<PSET
 
           [preset.1]
 
@@ -100,6 +100,12 @@ jobs:
           package/unique_name="com.arena.petshoptycoon.playtest"
           package/name="PetShop Tycoon (playtest)"
           package/signed=true
+          keystore/debug="${PWD}/debug.keystore"
+          keystore/debug_user="androiddebugkey"
+          keystore/debug_password="android"
+          keystore/release="${PWD}/debug.keystore"
+          keystore/release_user="androiddebugkey"
+          keystore/release_password="android"
           package/app_category=2
           package/retain_data_on_uninstall=false
           package/exclude_from_recents=false
@@ -131,6 +137,7 @@ jobs:
 
       - name: Exportar APK
         run: |
+          set +e  # a chamada do godot nao pode abortar o step antes do fallback
           mkdir -p exports/android build/logs
           GODOT="./Godot_v${GODOT_VERSION}-stable_linux.x86_64"
           $GODOT --headless --verbose --path . --export-release "Android Playtest" "exports/android/${APK_NAME}" > build/logs/export.log 2>&1
