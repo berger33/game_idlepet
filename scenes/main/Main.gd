@@ -193,56 +193,9 @@ func _process(delta: float) -> void:
 	pet_touch_gate = maxf(0.0, pet_touch_gate - delta)
 	wrong_tool_gate = maxf(0.0, wrong_tool_gate - delta)
 	upgrades_pulse_time += delta
-	if is_instance_valid(upgrades_button):
-		var affordable_count: int = 0 if not GameState.tutorial_complete else SalonTuning.affordable_upgrades_count()
-		if affordable_count > 0:
-			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.2)
-			upgrades_button.modulate = Color.WHITE.lerp(Color("d7ffb8"), pulse * 0.6)
-			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
-			if badge == null:
-				badge = Label.new()
-				badge.name = "Badge"
-				badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				badge.add_theme_font_size_override("font_size", 28)
-				badge.add_theme_color_override("font_color", Color.WHITE)
-				badge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 20, 6))
-				badge.custom_minimum_size = Vector2(44, 44)
-				badge.position = Vector2(52, -12)
-				upgrades_button.add_child(badge)
-			badge.text = str(affordable_count)
-			badge.visible = true
-		else:
-			upgrades_button.modulate = Color.WHITE
-			var badge: Label = upgrades_button.get_node_or_null("Badge") as Label
-			if is_instance_valid(badge):
-				badge.visible = false
-		D1Retention.update_missions_badge(self, upgrades_pulse_time)
-	# Álbum badge: 🏆 prêmio do concurso a coletar / 📰 rival ultrapassou
-	if is_instance_valid(album_button) and not album_button.disabled:
-		var contest_badge: String = Contest.badge_text()
-		if not contest_badge.is_empty():
-			var pulse: float = 0.5 + 0.5 * sin(upgrades_pulse_time * 3.0)
-			album_button.modulate = Color.WHITE.lerp(Color("ffd54f"), pulse * 0.45)
-			var abadge: Label = album_button.get_node_or_null("Badge") as Label
-			if abadge == null:
-				abadge = Label.new()
-				abadge.name = "Badge"
-				abadge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				abadge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				abadge.add_theme_font_size_override("font_size", 26)
-				abadge.add_theme_color_override("font_color", Color.WHITE)
-				abadge.add_theme_stylebox_override("normal", _style(Color("ef5350"), 18, 6))
-				abadge.custom_minimum_size = Vector2(38, 38)
-				abadge.position = Vector2(44, -10)
-				album_button.add_child(abadge)
-			abadge.text = contest_badge
-			abadge.visible = true
-		else:
-			album_button.modulate = Color.WHITE
-			var abadge: Label = album_button.get_node_or_null("Badge") as Label
-			if is_instance_valid(abadge):
-				abadge.visible = false
+	# Badges pulsantes (melhorias compráveis + prêmios do álbum) em HudBadges
+	# para manter o hub sob o teto de linhas do gdlint.
+	HudBadges.update(self, upgrades_pulse_time)
 	var left_handed: bool = bool(GameState.settings.get("left_handed", false))
 	# left_handed intencional: só espelha prateleira de utensílios (170↔910) e botões flutuantes;
 	# fila/top bar permanecem centrados para preservar hierarquia de leitura
@@ -807,28 +760,14 @@ func _retry_service() -> void:
 	_refresh_instruction_copy()
 	_refresh_economy()
 	_update_queue_ui()
+# Política de retry/desistência vive em FailureFlow (mantém o Main sob o teto
+# de linhas do gdlint; o harness chama estes wrappers).
 func _request_retry_with_ad() -> void:
-	AudioManager.play(&"tap")
-	HapticsManager.light()
-	Analytics.track(&"retry_requested", {"type": String(current_service), "reason": String(last_failure_reason)})
-	if AdsManager.request_rewarded(&"retry", _on_retry_rewarded):
-		return
-	# Sem vídeo disponível (cap diário/cooldown da política): não deixa o
-	# jogador travado na tela de falha — libera a tentativa com aviso.
-	# "Desistir" continua sempre disponível ao lado.
-	_show_toast(Loc.t("RETRY_FREE_FALLBACK"), BLUE)
-	_on_retry_rewarded()
-
-
-func _on_retry_rewarded() -> void:
-	_retry_service()
+	FailureFlow.request_retry_with_ad(self)
 
 
 func _on_giveup_pressed() -> void:
-	AudioManager.play(&"tap")
-	HapticsManager.light()
-	Analytics.track(&"service_giveup", {"type": String(current_service), "reason": String(last_failure_reason)})
-	_dismiss_result()
+	FailureFlow.giveup(self)
 
 
 func _dismiss_result() -> void:
@@ -1403,34 +1342,14 @@ func _build_interface() -> void:
 	coin_label.tooltip_text = Loc.t("COINS")
 	review_label = _pill(top_bar_hbox, "★ 5.0", PINK, 0)
 	review_label.tooltip_text = Loc.t("HUD_TOOLTIP_REVIEW")
-	# Nível + XP viram um chip só: número, barrinha de progresso e badge de
-	# combo que só aparece quando o combo está ativo (×2 em diante).
-	level_chip = PanelContainer.new()
-	level_chip.add_theme_stylebox_override("panel", _style(Color.WHITE.lerp(GREEN, 0.15), 20, 12, Color(GREEN, 0.85), 2))
-	level_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Nível + XP num chip só com barra de progresso real; combo vira badge ×N
+	# que só aparece quando ativo (construção em SalonPanels, como o restante).
+	var hud_chips: Dictionary = SalonPanels.build_hud_chips(_style, SalonTuning.font_scale(), GREEN)
+	level_chip = hud_chips["chip"]
+	level_label = hud_chips["level"]
+	top_xp_bar = hud_chips["xp_bar"]
+	combo_label = hud_chips["combo"]
 	top_bar_hbox.add_child(level_chip)
-	var level_row: HBoxContainer = HBoxContainer.new()
-	level_row.add_theme_constant_override("separation", 10)
-	level_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	level_chip.add_child(level_row)
-	level_label = Label.new()
-	level_label.add_theme_font_size_override("font_size", int(26 * SalonTuning.font_scale()))
-	level_label.add_theme_color_override("font_color", CHARCOAL)
-	level_row.add_child(level_label)
-	top_xp_bar = ProgressBar.new()
-	top_xp_bar.custom_minimum_size = Vector2(110, 12)
-	top_xp_bar.max_value = 100.0
-	top_xp_bar.show_percentage = false
-	top_xp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	top_xp_bar.add_theme_stylebox_override("background", _style(Color("263238", 0.18), 6, 0))
-	top_xp_bar.add_theme_stylebox_override("fill", _style(GREEN, 6, 0))
-	level_row.add_child(top_xp_bar)
-	combo_label = Label.new()
-	combo_label.add_theme_font_size_override("font_size", int(24 * SalonTuning.font_scale()))
-	combo_label.add_theme_color_override("font_color", Color.WHITE)
-	combo_label.add_theme_stylebox_override("normal", _style(Color("ff8f00"), 14, 8))
-	combo_label.visible = false
-	level_row.add_child(combo_label)
 	level_chip.tooltip_text = Loc.t("HUD_TOOLTIP_COMBO")
 	rush_label = _pill(top_bar_hbox, "", Color("ff8f00"), 165)
 	rush_label.tooltip_text = Loc.t("HUD_TOOLTIP_RUSH")
