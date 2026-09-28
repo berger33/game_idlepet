@@ -118,6 +118,7 @@ var purchased_entitlements: Dictionary = {"no_ads": false, "bath_pass": false}
 var purchase_ledger: Dictionary = {}
 var ads_policy: Dictionary = {}
 var settings: Dictionary = {
+	"language": "pt_BR",
 	"music": 0.7,
 	"sfx": 0.9,
 	"haptics": true,
@@ -714,6 +715,8 @@ func _sanitize_affection() -> void:
 
 
 func _sanitize_settings() -> void:
+	var language: String = String(settings.get("language", "pt_BR"))
+	settings["language"] = language if language in ["pt_BR", "en_US", "es_ES"] else "pt_BR"
 	settings["music"] = clampf(float(settings.get("music", 0.7)), 0.0, 1.0)
 	settings["sfx"] = clampf(float(settings.get("sfx", 0.9)), 0.0, 1.0)
 	settings["haptics"] = bool(settings.get("haptics", true))

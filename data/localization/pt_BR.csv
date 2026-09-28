@@ -14,7 +14,7 @@ ACH_FRIEND_50,Melhor Amigo
 ACH_LEVEL_25,Profissional do Bairro
 ACH_OFFLINE_1H,O Negócio Não Para
 ACH_OFFLINE_8H,Cofre Trabalhador
-ACH_PERFECT_1,Mão de Groomer
+ACH_PERFECT_1,Mão de Tosador
 ACH_PERFECT_10,Espuma na Medida
 ACH_PERFECT_100,Mãos de Ouro
 ACH_PRESTIGE_1,Nova Franquia
@@ -49,11 +49,14 @@ COINS,R$
 COLLECT,COLETAR
 COLLECTION_SUMMARY,PETS %d/%d • CONQUISTAS %d/%d • COSMÉTICOS %d
 COLLECTION_TITLE,COLEÇÃO
+COLLECTION_STAT_PETS,Pets
+COLLECTION_STAT_ACHIEVEMENTS,Conquistas
+COLLECTION_STAT_COSMETICS,Cosméticos
 COLORBLIND_MODE,Modo daltônico (azul/laranja na faixa)
 COMBO_CHEST_BODY,Você manteve o ritmo perfeito! O bairro está impressionado.
 COMBO_CHEST_TITLE,Baú do Ritmo!
 COMBO_CHEST_TOAST,Baú do combo ×%d! +R$ %d e +%d Brasas!
-COMEBACK_GIFT,+1 freeze e R$ de boas-vindas!
+COMEBACK_GIFT,+1 proteção de sequência e moedas de boas-vindas!
 COMEBACK_TITLE,BEM-VINDO DE VOLTA!
 COMEBACK_TOAST,Bem-vindo de volta! Presente de retorno resgatado.
 COSMETIC_NO_FX,Cosméticos equipados aparecem no petshop na hora
@@ -80,7 +83,7 @@ COS_WALL_GARDEN,Parede Jardim
 COS_WALL_JUNINA,Parede de Arraiá
 COS_WALL_NATAL,Parede de Luzinhas
 COS_WALL_STARS,Parede Estrelada
-DAILY_AUTO_BODY,Dia %d: R$ %d!\nSequência: %d dias + %d freezes\nDia 7 = Mel Golden lendário! Volte amanhã para 2x moedas.
+DAILY_AUTO_BODY,Dia %d: R$ %d!\nSequência: %d dias + %d proteções\nDia 7 = Mel Golden lendário! Volte amanhã para 2x moedas.
 DAILY_AUTO_BONUS,🎁 Bônus Dia 7: Pet lendário!
 DAILY_AUTO_TITLE,Login Dia %d!
 DAILY_CLAIMED_TOAST,Login coletado! +R$ %d
@@ -92,6 +95,8 @@ ECO_MODE,Modo econômico
 EMBERS,Brasas
 EQUIP,USAR
 EQUIPPED,EM USO
+UNEQUIP,REMOVER
+COSMETIC_UNEQUIPPED,Removido: %s
 EVENTS_OFF,Sem evento hoje
 EVENT_0,Domingo da Família
 EVENT_1,Segunda do Banho
@@ -106,12 +111,13 @@ EVENT_DESC_2,tosa rende ×2 e domina a fila
 EVENT_DESC_3,secagem rende ×2 e domina a fila
 EVENT_DESC_4,laço rende ×2 • pets raros aparecem mais
 EVENT_DESC_5,VIPs em dobro • perfume rende ×2
-EVENT_DESC_6,Perfect vale +50%
+EVENT_DESC_6,Perfeito vale +50%
 EVENT_GOAL_ANY,qualquer serviço
 EVENT_GOAL_DESC,%s: %d/%d atendimentos
 EVENT_GOAL_REWARD,baú: +R$ %d e +%d Brasas
 EVENT_GOAL_TITLE,META DO DIA
-FAIL_NO_PENALTY,Sem punição — tente de novo.
+FAIL_NO_PENALTY,Sem moedas perdidas — tente de novo.
+FAIL_NEXT_NARROWER,Ao passar do ponto, a próxima faixa fica um pouco menor.
 FAIL_OVERWASHED,%s demais. Solte assim que o aro entrar na faixa verde.
 FAIL_TIMEOUT,O tempo acabou. Faça o movimento com mais ritmo!
 FAIL_TOO_SOON,Leve a %s até a faixa verde antes de finalizar.
@@ -134,8 +140,8 @@ FONT_SCALE_NORMAL,Normal
 FONT_SCALE_SMALL,Pequena
 FRANCHISE_DESC,Tokens disponíveis: %d
 FRANCHISE_EXCHANGE,Franquia
-FREEZE_EARNED,Freeze ganho pela sequência!
-FREEZE_USED,Freeze protegeu sua sequência!
+FREEZE_EARNED,Proteção de sequência recebida!
+FREEZE_USED,Uma proteção manteve sua sequência!
 GAME_TITLE,PetShop Tycoon: Do Banho à Rede
 GOAL_CHAPTER,capítulo %s
 GOAL_LINE,PRÓXIMO: %s no Nv.%d • nível atual %d%%
@@ -152,7 +158,7 @@ HINT_PERFUME,Borrife quando o anel dourado acender (3 borrifadas)
 HINT_STYLE,Encaixe o lacinho na marca rosa e segure firme
 HIRE,CONTRATAR
 HIRED,NA EQUIPE
-IAP_MOCK_GRANTED,%s concedido (mock offline)!
+IAP_MOCK_GRANTED,%s concedido (demonstração offline)!
 IAP_STORE_UNAVAILABLE,Loja indisponível no momento. Tente novamente mais tarde.
 IAP_NOTE,Compras reais chegam com a integração da loja (offline: indisponível).
 LANGUAGE,Idioma
@@ -163,18 +169,20 @@ LOCKED,nv. %d
 MAP_TITLE,DO BALDE AO IMPÉRIO
 MASTERY_TOAST,Maestria de %s %s!
 MISSIONS_NO_ADS,Missões nunca exigem anúncio ou compra.
-MISSIONS_TITLE,MISSÕES DO DIA
+MISSIONS_TITLE,MISSÕES
+MISSIONS_TAB_WEEKLY,Esta semana
+MISSIONS_TAB_TODAY,Hoje
 MISSION_METRIC_combo_reached,COMBO %d/%d
 MISSION_METRIC_four_plus_reviews,AVALIAÇÕES 4★+ %d/%d
-MISSION_METRIC_perfect,PERFECTS %d/%d
-MISSION_METRIC_perfect_services,PERFECTS %d/%d
+MISSION_METRIC_perfect,PERFEITOS %d/%d
+MISSION_METRIC_perfect_services,PERFEITOS %d/%d
 MISSION_METRIC_services,ATENDIMENTOS %d/%d
 MISSION_METRIC_upgrades,MELHORIAS %d/%d
 MISSION_NOTE,"Vocações da equipe: Banhista acelera o banho, Tosador acelera tudo, Estilista melhora a tosa, Veterinário cura mais rápido, Massagem acalma o cliente e Perfeccionista alarga a janela do perfeito."
 MISSION_PERFECT,NA MEDIDA %d/3
 MISSION_SERVICES,BANHOS E TOSAS %d/5
 MISSION_UPGRADE,TUDO NOVINHO %d/1
-MOCK_TAG,MOCK
+MOCK_TAG,TESTE
 MOOD_BUFF_TOAST,O salão está no ritmo! Fila mais paciente.
 MUSIC_VOLUME,Música
 NAV_COLLECTION,Pets
@@ -197,7 +205,7 @@ NOTIF_OFFLINE_BODY,%s rendeu R$ %d enquanto você estava fora! Volte para coleta
 NOTIF_OFFLINE_TITLE,O cofre está cheio!
 NOTIF_PETS_BODY,%s está esperando na fila com %d amigos. Sua sequência é %d dias!
 NOTIF_PETS_TITLE,%s sentiu sua falta!
-NOTIF_PROMPT_BODY,"Te avisamos quando o cofre encher e quando seu pet favorito voltar. Sem spam, 2x por dia max. Ativar notificações?"
+NOTIF_PROMPT_BODY,"Te avisamos quando o cofre encher e quando seu pet favorito voltar. Sem spam, no máximo 2 vezes por dia. Ativar notificações?"
 NOTIF_PROMPT_NO,AGORA NÃO
 NOTIF_PROMPT_TITLE,Cofre cheio te avisa?
 NOTIF_PROMPT_YES,ATIVAR
@@ -215,7 +223,7 @@ OWNED,ADQUIRIDO
 PASSIVE_BATH_SPEED,banho rende mais
 PASSIVE_GROOM_QUALITY,tosa com mais qualidade
 PASSIVE_PATIENCE,clientes esperam mais
-PASSIVE_PERFECT_WINDOW,faixa Perfect maior
+PASSIVE_PERFECT_WINDOW,faixa perfeita maior
 PASSIVE_SPEED,+agilidade geral
 PASSIVE_VETERINARY_XP,+XP em tudo
 PASS_DESC,Complete as 3 missões do dia para avançar
@@ -280,7 +288,7 @@ PET_ZECA_SCHNAUZER,Zeca
 PRESTIGE_DESC,Prestígio disponível: %d token(s) • bônus atual +%.0f%% por atendimento
 PRESTIGE_DONE,Franquia nível %d! +10%% de R$ por nível
 PRESTIGE_GO,PRESTIGIAR
-PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, streak, passe, pesquisa e 25% da estação/ferramentas"
+PRESTIGE_KEEP,"Mantém: brasas, pets, cosméticos, conquistas, sequência diária, passe, pesquisa e 25% da estação/ferramentas"
 PRESTIGE_LOCKED,Alcance nível 15 e acumule mais R$
 PRESTIGE_LOST,"Recomeça: R$, equipe e nível de carreira (a partir do 10)"
 PRESTIGE_PREVIEW,Herança: estação Nv.%d • recomeça no nível %d com todos os serviços
@@ -306,7 +314,7 @@ RESEARCH_DONE,✓ PRONTA
 RESEARCH_EFFECT_bath_income,banho rende +%d%%
 RESEARCH_EFFECT_offline_rate,cofre offline +%d%%
 RESEARCH_EFFECT_patience,paciência dos pets +%d%%
-RESEARCH_EFFECT_satisfaction,janela de Perfect +%d%%
+RESEARCH_EFFECT_satisfaction,janela perfeita +%d%%
 RESEARCH_EFFECT_service_speed,serviços %d%% mais rápidos
 RESEARCH_FAST_DRYER,Secagem Eficiente
 RESEARCH_GENTLE_FORMULA,Fórmula Suave
@@ -379,6 +387,12 @@ SPECIAL_ACCEPT,✓  ACEITAR (+40% gorjeta)
 SPECIAL_DECLINE,AGORA NÃO
 SPECIAL_ORDER_NOTE,💰 Aceitar rende gorjeta extra + combo mantido!
 SPECIAL_ORDER_TITLE,⭐ PEDIDO ESPECIAL
+SERVICE_NAME_STYLE,laço
+SERVICE_NAME_PERFUME,perfume
+SERVICE_NAME_DRY,secagem
+SERVICE_NAME_GROOM,tosa
+SERVICE_NAME_BATH,banho
+SPECIAL_REQUEST_BODY,%s pediu uma sessão extra de %s. Aceitar?
 SPIN_ACTION,GIRAR
 SPIN_DONE,FEITO
 STAFF_AUTOMATION,rende sozinha +%d%% da sua renda (em jogo e no cofre)
@@ -389,7 +403,8 @@ STAFF_PLAYER,Você
 STAFF_SEU_ZE,Seu Zé
 STAFF_TEO,Téo
 STAFF_TITLE,EQUIPE
-STREAK_LINE,Sequência: %d dias • Freezes: %d
+STREAK_LINE,Sequência: %d dias • Proteções: %d
+STREAK_SECTION,SEQUÊNCIA DIÁRIA
 STREAK_LOSS_NOTE,Se perder
 TEACH_NEW_GESTURE,Gesto novo! Experimente sem pressa:
 TEMPER_AGITATED,agitado
@@ -411,7 +426,7 @@ TRANSFER_COPY,COPIAR CÓDIGO
 TRANSFER_DONE,Progresso restaurado!
 TRANSFER_EXPORT_DESC,Copia um código assinado para colar em outro aparelho
 TRANSFER_IMPORT,Restaurar progresso
-TRANSFER_IMPORT_DESC,Cola o código copiado (substitui o save atual)
+TRANSFER_IMPORT_DESC,Cola o código copiado (substitui o progresso atual)
 TRANSFER_INVALID,Código inválido ou corrompido.
 TRANSFER_PASTE,COLAR CÓDIGO
 TRANSFER_TITLE,Transferir progresso
@@ -444,7 +459,7 @@ WEEKLY_PROGRESS_PILL,📦 Semanal %d/%d • %d%% • Baú: %d/7 • %s
 WEEKLY_RESET_DAYS,reseta em %d dias
 WEEKLY_RESET_TOMORROW,reseta amanhã
 WEEKLY_TITLE,MISSÕES DA SEMANA
-WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 freeze!
+WELCOME_BONUS,🎁 Bônus de boas-vindas: +1 proteção!
 WMISSION_BATH,%d/40 banhos
 WMISSION_COMBO,Combo %d/8
 WMISSION_PERFECT,%d/15 perfeitos
@@ -477,6 +492,12 @@ DAILY_FEATURED,Destaque do Dia
 DAILY_FEATURED_DESC,Só hoje com desconto!
 ADS_REWARDED_UNAVAILABLE,Vídeo indisponível. Continue jogando normalmente.
 ADS_REWARD_TOAST,Anúncio recompensado! +R$ %d
+REWARDED_EMBER_TITLE,+1 brasa
+REWARDED_EMBER_DESC,🎬 Assista a um vídeo por dia para ganhar 1 brasa.
+REWARDED_EMBER_ACTION,▶ ASSISTIR
+ALBUM_PHOTO_FALLBACK,Foto
+ALBUM_BADGE_PERFECT,⭐ PERFEITA
+ALBUM_BADGE_GOOD,Boa
 ROOM_BATH,BANHO & ESPUMA
 ROOM_GROOM,TOSA & APARO
 ROOM_DRY,SECAGEM ACONCHEGANTE
@@ -618,7 +639,7 @@ HUD_GOAL_FULL,Ver meta completa
 HUD_LEVEL_ABBR,NV.
 LOADING_ALBUM,Carregando álbum...
 PREMIUM_BUNDLE,Pacote premium — remove anúncios + brasas
-PREMIUM_MOCK_ROW,+%d %s (mock offline)
+PREMIUM_MOCK_ROW,+%d %s (demonstração offline)
 RELEASE_PERFECT,✓ SOLTE PARA PERFEITO!
 RELEASE_OVER,⚠ PASSOU! SOLTE E TENTE DE NOVO
 REVIEW_PROOF,💬 %s acabou de avaliar: %s
@@ -630,10 +651,10 @@ SPIN_COINS_DOUBLE,Moedas em dobro!
 SPIN_SUPER,Super prêmio!
 SPIN_EMBER_1,1 Brasa!
 SPIN_EMBER_2,2 Brasas raras!
-SPIN_FREEZE,Freeze de streak!
+SPIN_FREEZE,Proteção da sequência!
 SPIN_ROW_COINS,%s +%d (%s)
 SPIN_ROW_EMBERS,🔥 +%d %s (%s)
-SPIN_ROW_FREEZE,❄️ +%d Freeze! (%s)
+SPIN_ROW_FREEZE,❄️ +%d proteção! (%s)
 GOAL_NEXT_KIDS,⭐ PRÓXIMO: %s
 KIDS_MODE_TITLE,🧒 MODO CRIANÇA
 KIDS_MODE_TITLE_ON,🧒 MODO CRIANÇA — ATIVO ✨

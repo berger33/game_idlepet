@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[node name="MissionCard" type="PanelContainer"]
+custom_minimum_size = Vector2(400, 164)
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="IconFrame" type="PanelContainer" parent="Row"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Row/IconFrame"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="Details" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Row/Details"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+
+[node name="Progress" type="ProgressBar" parent="Row/Details"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+show_percentage = false
+
+[node name="Footer" type="HBoxContainer" parent="Row/Details"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Reward" type="Label" parent="Row/Details/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+
+[node name="Action" type="Button" parent="Row/Details/Footer"]
+custom_minimum_size = Vector2(108, 64)
+layout_mode = 2
+text = "✓"

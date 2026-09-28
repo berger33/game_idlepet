@@ -5,6 +5,7 @@ extends Control
 var backdrop: TextureRect
 var panel: PanelContainer
 var title_label: Label
+var section_icon: TextureRect
 var close_button: Button
 var content_box: VBoxContainer
 
@@ -13,6 +14,7 @@ func _ready() -> void:
 	backdrop = get_node("Backdrop")
 	panel = get_node("Panel")
 	title_label = get_node("Panel/Column/Header/Title")
+	section_icon = get_node("Panel/Column/Header/SectionIcon")
 	close_button = get_node("Panel/Column/Header/Close")
 	content_box = get_node("Panel/Column/Scroll/Content")
 	title_label.add_theme_font_size_override("font_size", 46)

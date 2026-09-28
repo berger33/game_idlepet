@@ -5,6 +5,8 @@ extends Node
 
 const LANGS: Array[String] = ["pt_BR", "en_US", "es_ES"]
 
+signal language_changed(code: String)
+
 var lang: String = "pt_BR"
 var tables: Dictionary = {}
 
@@ -21,8 +23,15 @@ func _ready() -> void:
 
 func _sync_language() -> void:
 	# Nunca deixa o idioma num valor inválido vindo de save antigo/editado.
-	var saved: String = String(GameState.settings.get("language", ""))
-	lang = saved if LANGS.has(saved) else "pt_BR"
+	var saved: String = String(GameState.settings.get("language", "pt_BR"))
+	_apply_language(saved if LANGS.has(saved) else "pt_BR")
+
+
+func _apply_language(code: String) -> void:
+	if lang == code:
+		return
+	lang = code
+	language_changed.emit(code)
 
 
 func t(key: String) -> String:
@@ -36,8 +45,8 @@ func t(key: String) -> String:
 func set_language(code: String) -> void:
 	if not LANGS.has(code):
 		return
-	lang = code
 	GameState.settings["language"] = code
+	_apply_language(code)
 	SaveManager.request_save()
 
 

@@ -49,6 +49,9 @@ COINS,$
 COLLECT,COLLECT
 COLLECTION_SUMMARY,PETS %d/%d • ACHIEVEMENTS %d/%d • COSMETICS %d
 COLLECTION_TITLE,COLLECTION
+COLLECTION_STAT_PETS,Pets
+COLLECTION_STAT_ACHIEVEMENTS,Achievements
+COLLECTION_STAT_COSMETICS,Cosmetics
 COLORBLIND_MODE,Colorblind mode (blue/orange band)
 COMBO_CHEST_BODY,You kept perfect rhythm! The neighborhood is impressed.
 COMBO_CHEST_TITLE,Rhythm Chest!
@@ -92,6 +95,8 @@ ECO_MODE,Eco mode
 EMBERS,Embers
 EQUIP,USE
 EQUIPPED,IN USE
+UNEQUIP,UNEQUIP
+COSMETIC_UNEQUIPPED,Removed: %s
 EVENTS_OFF,No event today
 EVENT_0,Family Sunday
 EVENT_1,Bath Monday
@@ -111,7 +116,8 @@ EVENT_GOAL_ANY,any service
 EVENT_GOAL_DESC,%s: %d/%d services
 EVENT_GOAL_REWARD,chest: +$%d and +%d Embers
 EVENT_GOAL_TITLE,GOAL OF THE DAY
-FAIL_NO_PENALTY,No penalty — try again.
+FAIL_NO_PENALTY,No coins lost — try again.
+FAIL_NEXT_NARROWER,After over-scrubbing, the next target is slightly narrower.
 FAIL_OVERWASHED,Too much %s. Release as soon as the ring enters the green band.
 FAIL_TIMEOUT,Time ran out. Move with a bit more rhythm!
 FAIL_TOO_SOON,Bring the %s into the green band before finishing.
@@ -163,7 +169,9 @@ LOCKED,lv. %d
 MAP_TITLE,FROM BUCKET TO EMPIRE
 MASTERY_TOAST,%s mastery %s!
 MISSIONS_NO_ADS,Missions never require an ad or a purchase.
-MISSIONS_TITLE,DAILY MISSIONS
+MISSIONS_TITLE,MISSIONS
+MISSIONS_TAB_WEEKLY,This week
+MISSIONS_TAB_TODAY,Today
 MISSION_METRIC_combo_reached,COMBO %d/%d
 MISSION_METRIC_four_plus_reviews,4★+ REVIEWS %d/%d
 MISSION_METRIC_perfect,PERFECTS %d/%d
@@ -379,6 +387,12 @@ SPECIAL_ACCEPT,✓  ACCEPT (+40% tip)
 SPECIAL_DECLINE,NOT NOW
 SPECIAL_ORDER_NOTE,💰 Accept gives extra tip + keeps combo!
 SPECIAL_ORDER_TITLE,⭐ SPECIAL REQUEST
+SERVICE_NAME_STYLE,bow styling
+SERVICE_NAME_PERFUME,perfume
+SERVICE_NAME_DRY,drying
+SERVICE_NAME_GROOM,grooming
+SERVICE_NAME_BATH,bath
+SPECIAL_REQUEST_BODY,%s wants an extra %s session. Accept?
 SPIN_ACTION,SPIN
 SPIN_DONE,DONE
 STAFF_AUTOMATION,earns on their own +%d%% of your income (in play and in the vault)
@@ -390,6 +404,7 @@ STAFF_SEU_ZE,Seu Zé
 STAFF_TEO,Téo
 STAFF_TITLE,STAFF
 STREAK_LINE,Streak: %d days • Freezes: %d
+STREAK_SECTION,DAILY STREAK
 STREAK_LOSS_NOTE,If you miss
 TEACH_NEW_GESTURE,New gesture! Take your time:
 TEMPER_AGITATED,restless
@@ -477,6 +492,12 @@ DAILY_FEATURED,Daily Featured
 DAILY_FEATURED_DESC,Only today with discount!
 ADS_REWARDED_UNAVAILABLE,Video unavailable. Keep playing normally.
 ADS_REWARD_TOAST,Rewarded ad! +$%d
+REWARDED_EMBER_TITLE,+1 ember
+REWARDED_EMBER_DESC,🎬 Watch a video each day to earn 1 ember.
+REWARDED_EMBER_ACTION,▶ WATCH
+ALBUM_PHOTO_FALLBACK,Photo
+ALBUM_BADGE_PERFECT,⭐ PERFECT
+ALBUM_BADGE_GOOD,Good
 ROOM_BATH,BATH & FOAM
 ROOM_GROOM,GROOM & TRIM
 ROOM_DRY,COZY DRYING

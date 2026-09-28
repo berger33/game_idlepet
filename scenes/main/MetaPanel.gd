@@ -15,6 +15,7 @@ const META_SCREEN: PackedScene = preload("res://scenes/ui/meta_screen.tscn")
 const INFO_ROW: PackedScene = preload("res://scenes/ui/info_row.tscn")
 const SLIDER_ROW: PackedScene = preload("res://scenes/ui/slider_row.tscn")
 const PET_CARD: PackedScene = preload("res://scenes/ui/pet_card.tscn")
+const MISSION_CARD: PackedScene = preload("res://scenes/ui/mission_card.tscn")
 
 var screen: MetaScreen
 ## Main injeta aqui o refresh de economia (evita acoplamento direto).
@@ -34,6 +35,8 @@ func build(root: Control) -> void:
 	screen.panel.hide()
 	screen.backdrop.hide()
 	screen.close_button.pressed.connect(close)
+	if not Loc.language_changed.is_connected(_on_language_changed):
+		Loc.language_changed.connect(_on_language_changed)
 	_style_button(screen.close_button, PINK)
 	# Scrollbar visível + safe area bottom
 	var scroll: ScrollContainer = screen.get_node("Panel/Column/Scroll") as ScrollContainer
@@ -57,6 +60,11 @@ func close() -> void:
 	AudioManager.play(&"tap")
 
 
+func _on_language_changed(_code: String) -> void:
+	if is_open() and not _section.is_empty():
+		_rebuild(_section)
+
+
 ## origin = controle que abriu a tela: o painel cresce a partir dele.
 func open(section: StringName, origin: Control = null) -> void:
 	screen.backdrop.show()
@@ -76,6 +84,13 @@ func open(section: StringName, origin: Control = null) -> void:
 
 func _rebuild(section: StringName) -> void:
 	_section = section
+	var icon_path: String = "res://art/ui/icons/%s.png" % String(section)
+	if ResourceLoader.exists(icon_path):
+		screen.section_icon.texture = load(icon_path) as Texture2D
+		screen.section_icon.visible = true
+	else:
+		screen.section_icon.texture = null
+		screen.section_icon.visible = false
 	for child: Node in screen.content_box.get_children():
 		child.queue_free()
 	match section:
@@ -119,11 +134,39 @@ func _emerge() -> void:
 		tween.tween_property(child, "scale", Vector2.ONE, 0.16).set_delay(i * 0.03)
 
 
+var _mission_tab: StringName = &"daily"
+
+
 func _build_missions() -> void:
+	var tabs: HBoxContainer = HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 12)
+	screen.content_box.add_child(tabs)
+	for option: Dictionary in [
+		{"id": &"daily", "key": "MISSIONS_TAB_TODAY"},
+		{"id": &"weekly", "key": "MISSIONS_TAB_WEEKLY"},
+	]:
+		var tab_id: StringName = StringName(option["id"])
+		var tab_button: Button = Button.new()
+		tab_button.name = "MissionsTab_%s" % String(tab_id)
+		tab_button.text = Loc.t(String(option["key"]))
+		tab_button.custom_minimum_size = Vector2(300, 68)
+		_style_button(tab_button, PINK if _mission_tab == tab_id else Color("b0bec5"))
+		tab_button.set_meta("game_action_connected", true)
+		tab_button.pressed.connect(func(next_tab: StringName = tab_id) -> void:
+			_mission_tab = next_tab
+			_rebuild(&"missions")
+		)
+		tabs.add_child(tab_button)
+	if _mission_tab == &"weekly":
+		_build_weekly_missions()
+	else:
+		_build_daily_missions()
+
+
+func _build_daily_missions() -> void:
 	# ── Retenção P0: roleta diária (recompensa variável) + streak + perda ── localizados
 	var can_spin: bool = DailySpin.can_spin()
-	var spin_status: String = Loc.t("SPIN_DONE") if not can_spin else Loc.t("SPIN_ACTION")
-	_info_row( "🎡 %s • %s" % [Loc.t("DAILY_SPIN_TITLE"), spin_status], Loc.t("DAILY_SPIN_DESC"),
+	_info_row( "🎡 %s" % Loc.t("DAILY_SPIN_TITLE"), Loc.t("DAILY_SPIN_DESC"),
 		Loc.t("SPIN_ACTION") if can_spin else Loc.t("SPIN_DONE"),
 		Color("ffd54f") if can_spin else Color("b0bec5"),
 		can_spin,
@@ -133,7 +176,7 @@ func _build_missions() -> void:
 				AudioManager.play(&"coin")
 				EventBus.toast_requested.emit(DailySpin.label_for(reward), Color("ffd54f"))
 	)
-	_note("── " + Loc.t("DAILY_LOGIN").split(" ")[0] + " & STREAK ──", 26, PINK, false)
+	_note("── " + Loc.t("STREAK_SECTION") + " ──", 26, PINK, false)
 	var claimed_today: bool = GameState.is_daily_claimed_today()
 	var next_day: int = GameState.daily_streak % 7 + 1
 	var streak_coins: int = Rewards.scaled( float(Rewards.SECONDS[&"streak_day"]) * next_day, 25 * next_day
@@ -166,23 +209,26 @@ func _build_missions() -> void:
 				if GameState.claim_event_goal():
 					AudioManager.play(&"pass_claim")
 		)
-	# Diárias sorteadas do catálogo (Missions.gd): 3 regulares + épica, metas
-	# escaladas ao nível e moedas escaladas à renda.
+	# Grade visual: métrica, barra de progresso e prêmio substituem descrições repetidas.
+	var daily_grid: GridContainer = GridContainer.new()
+	daily_grid.columns = 2
+	daily_grid.add_theme_constant_override("h_separation", 12)
+	daily_grid.add_theme_constant_override("v_separation", 12)
+	screen.content_box.add_child(daily_grid)
 	for mission: Dictionary in Missions.today():
 		var mission_id: String = String(mission["id"])
 		var claimed: bool = GameState.claimed_missions.has(mission_id)
 		var ready: bool = Missions.is_ready(mission)
 		var epic: bool = Missions.is_epic(mission)
-		_info_row( ("★ " if epic else "") + Missions.label(mission), "%s • %s" % [String(mission.get("name", mission_id)), Missions.reward_text(mission)],
-			Loc.t("CLAIMED") if claimed else Loc.t("CLAIM"),
-			Color("ce93d8") if epic else GREEN,
-			ready and not claimed,
+		var target: int = Missions.target(mission)
+		var value: int = Missions.value(mission)
+		_add_mission_card(
+			daily_grid, ("★ " if epic else "") + Missions.label(mission), value, target,
+			Missions.reward_text(mission), String(mission.get("metric", "services")), ready, claimed, epic,
 			func(mid: String = mission_id) -> void:
-				GameState.claim_mission(mid)
-				AudioManager.play(&"coin")
+				if GameState.claim_mission(mid):
+					AudioManager.play(&"coin")
 		)
-	_note( Loc.t("STREAK_LINE") % [GameState.daily_streak, GameState.streak_freezes], 26, CHARCOAL
-	)
 	# Gancho de retorno: o jogador vê o amanhã (evento + streak) antes de sair.
 	var tomorrow: int = (LiveOps.weekday() + 1) % 7
 	_info_row( Loc.t("TOMORROW"), "%s — %s" % [LiveOps.event_name_for(tomorrow), LiveOps.event_description_for(tomorrow)],
@@ -206,7 +252,11 @@ func _build_missions() -> void:
 				AudioManager.play(&"coin")
 	)
 	_note(Loc.t("MISSIONS_NO_ADS"))
-	# Nota10 P1-9: urgência semanal domingo + timer horas
+
+
+
+func _build_weekly_missions() -> void:
+	# Urgência curta no último dia; o progresso abaixo substitui o parágrafo explicativo.
 	if LiveOps.weekly_is_last_day():
 		var summary: Dictionary = LiveOps.weekly_progress_summary() if LiveOps.has_method("weekly_progress_summary") else {}
 		var done_last: int = int(summary.get("done", 0))
@@ -214,17 +264,23 @@ func _build_missions() -> void:
 		var hours_left: int = int(summary.get("hours_left", 24))
 		if done_last < total_last:
 			var urgent_text: String = Loc.t("WEEKLY_LAST_DAY") % [done_last, total_last, hours_left] if not Loc.t("WEEKLY_LAST_DAY").begins_with("WEEKLY") else "⏰ ÚLTIMO DIA! %d/%d missões • %dh restantes" % [done_last, total_last, hours_left]
-			_note(urgent_text, 28, Color("ef5350"), true)
-	# Progresso dotado + escassez: pílula de progresso semanal e timer
+			_note(urgent_text, 26, Color("ef5350"), true)
+
 	var weekly_done_count: int = 0
-	for w: Dictionary in ContentDB.weekly_missions:
-		if GameState.claimed_weeklies.has(String(w.get("id", ""))):
+	for weekly_entry: Dictionary in ContentDB.weekly_missions:
+		if GameState.claimed_weeklies.has(String(weekly_entry.get("id", ""))):
 			weekly_done_count += 1
-	var weekly_total: int = ContentDB.weekly_missions.size()
-	var weekly_percent: int = int(float(weekly_done_count) / maxf(1.0, float(weekly_total)) * 100.0)
+	var weekly_total: int = maxi(1, ContentDB.weekly_missions.size())
+	var weekly_percent: int = int(float(weekly_done_count) / float(weekly_total) * 100.0)
 	var reset_in: String = LiveOps.weekly_reset_label()
-	_note(Loc.t("WEEKLY_PROGRESS_PILL") % [weekly_done_count, weekly_total, weekly_percent, weekly_done_count, reset_in], 26, Color("4fc3f7"), true)
-	_note(Loc.t("WEEKLY_TITLE"), 28, CHARCOAL, true)
+	_add_weekly_progress_card(weekly_done_count, weekly_total, weekly_percent, reset_in)
+
+	var weekly_grid: GridContainer = GridContainer.new()
+	weekly_grid.name = "WeeklyMissionGrid"
+	weekly_grid.columns = 2
+	weekly_grid.add_theme_constant_override("h_separation", 12)
+	weekly_grid.add_theme_constant_override("v_separation", 12)
+	screen.content_box.add_child(weekly_grid)
 	for weekly: Dictionary in ContentDB.weekly_missions:
 		var weekly_id: String = String(weekly["id"])
 		var target: int = int(weekly["target"])
@@ -232,24 +288,129 @@ func _build_missions() -> void:
 		var weekly_done: bool = GameState.claimed_weeklies.has(weekly_id)
 		var weekly_ready: bool = value >= target and not weekly_done
 		var reward: Dictionary = weekly.get("reward", {})
-		var reward_text: String = ( "%s %d" % [Loc.t("COINS"), Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0)))]
+		var reward_text: String = (
+			"%s %d" % [Loc.t("COINS"), Rewards.for_kind(&"weekly_mission", int(reward.get("coins", 0)))]
 			if reward.has("coins")
 			else "%d %s" % [int(reward.get("embers", 0)), Loc.t("EMBERS")]
 		)
-		var action_label: String = ( Loc.t("CLAIMED") if weekly_done else ( Loc.t("CLAIM") if weekly_ready else "%d/%d" % [value, target]
-			)
-		)
-		_info_row( Loc.t(String(weekly["label_key"])) % value, "%s • %s" % [Loc.t("WEEKLY_NOTE_SHORT"), reward_text], action_label,
-			GREEN if weekly_ready else (Color("b0bec5") if weekly_done else Color("4fc3f7")),
-			weekly_ready,
+		_add_mission_card(
+			weekly_grid, Loc.t(String(weekly["label_key"])) % value, value, target, reward_text,
+			String(weekly.get("metric", "services")), weekly_ready, weekly_done, false,
 			func(claimed_id: String = weekly_id) -> void:
 				if GameState.claim_weekly(claimed_id):
 					AudioManager.play(&"coin")
 					GameState.check_weekly_chest()
-					_rebuild(_current_section())
-	)
-	_note(Loc.t("WEEKLY_NOTE"))
-	_note(Loc.t("MISSION_NOTE"))
+		)
+
+
+func _add_weekly_progress_card(done: int, total: int, percent: int, reset_in: String) -> void:
+	var card: PanelContainer = PanelContainer.new()
+	card.name = "WeeklyProgressCard"
+	card.custom_minimum_size = Vector2(0, 104)
+	card.tooltip_text = Loc.t("WEEKLY_PROGRESS_PILL") % [done, total, percent, done, reset_in]
+	card.add_theme_stylebox_override("panel", StyleFactory.box(Color("ffffff", 0.94), 24, 16, Color("4fc3f7"), 3))
+	screen.content_box.add_child(card)
+	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	card.add_child(row)
+	var icon: TextureRect = TextureRect.new()
+	icon.custom_minimum_size = Vector2(70, 70)
+	icon.texture = load("res://art/ui/icons/missions.png") as Texture2D
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(icon)
+	var info: VBoxContainer = VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.add_theme_constant_override("separation", 6)
+	row.add_child(info)
+	var summary_row: HBoxContainer = HBoxContainer.new()
+	info.add_child(summary_row)
+	var count_label: Label = _label_node("🏆 %d/%d" % [done, total], 30, CHARCOAL)
+	count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	summary_row.add_child(count_label)
+	var timer_label: Label = _label_node("⏳ " + reset_in, 22, Color("546e7a"))
+	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	summary_row.add_child(timer_label)
+	var progress: ProgressBar = ProgressBar.new()
+	progress.custom_minimum_size = Vector2(0, 16)
+	progress.min_value = 0.0
+	progress.max_value = total
+	progress.value = done
+	progress.show_percentage = false
+	progress.add_theme_stylebox_override("background", StyleFactory.box(Color("eceff1"), 10, 0))
+	progress.add_theme_stylebox_override("fill", StyleFactory.box(Color("4fc3f7"), 10, 0))
+	info.add_child(progress)
+
+
+func _mission_icon_path(metric: String) -> String:
+	var path: String = "res://art/ui/icons/missions.png"
+	match metric:
+		"services": path = "res://art/props/tool_soap.png"
+		"style": path = "res://art/props/tool_bow.png"
+		"upgrades": path = "res://art/ui/icons/upgrades.png"
+		"four_plus_reviews", "tips": path = "res://art/ui/icons/album.png"
+		"vip": path = "res://art/ui/icons/staff.png"
+		"spend": path = "res://art/ui/icons/shop.png"
+	return path if ResourceLoader.exists(path) else "res://art/ui/icons/missions.png"
+
+
+func _add_mission_card(
+	parent: GridContainer,
+	title: String,
+	value: int,
+	target: int,
+	reward_text: String,
+	metric: String,
+	ready: bool,
+	claimed: bool,
+	epic: bool,
+	on_claim: Callable,
+) -> void:
+	var card: PanelContainer = MISSION_CARD.instantiate() as PanelContainer
+	card.name = "MissionCard_%s" % str(parent.get_child_count() + 1)
+	var accent: Color = Color("b0bec5") if claimed else (Color("ce93d8") if epic else (GREEN if ready else BLUE))
+	var surface: Color = Color("f5f5f5") if claimed else (Color("fff8ff") if epic else (Color("f1f8e9") if ready else Color("ffffff", 0.96)))
+	card.add_theme_stylebox_override("panel", StyleFactory.box(surface, 22, 12, accent, 3))
+	card.tooltip_text = "%s\n🎁 %s" % [title, reward_text]
+	parent.add_child(card)
+
+	var icon_frame: PanelContainer = card.get_node("Row/IconFrame") as PanelContainer
+	icon_frame.add_theme_stylebox_override("panel", StyleFactory.box(Color(accent, 0.14), 18, 5))
+	var icon: TextureRect = card.get_node("Row/IconFrame/Icon") as TextureRect
+	icon.texture = load(_mission_icon_path(metric)) as Texture2D
+
+	var title_label: Label = card.get_node("Row/Details/Title") as Label
+	title_label.text = title
+	title_label.add_theme_font_size_override("font_size", int(22 * float(GameState.settings.get("font_scale", 1.0))))
+	title_label.add_theme_color_override("font_color", CHARCOAL)
+	title_label.tooltip_text = title
+	var progress: ProgressBar = card.get_node("Row/Details/Progress") as ProgressBar
+	progress.min_value = 0.0
+	progress.max_value = maxi(1, target)
+	progress.value = clampi(value, 0, maxi(1, target))
+	progress.add_theme_stylebox_override("background", StyleFactory.box(Color("eceff1"), 9, 0))
+	progress.add_theme_stylebox_override("fill", StyleFactory.box(accent, 9, 0))
+	var reward: Label = card.get_node("Row/Details/Footer/Reward") as Label
+	reward.text = "🎁 " + reward_text
+	reward.add_theme_font_size_override("font_size", int(18 * float(GameState.settings.get("font_scale", 1.0))))
+	reward.add_theme_color_override("font_color", Color("546e7a"))
+	var action: Button = card.get_node("Row/Details/Footer/Action") as Button
+	action.visible = ready or claimed
+	action.text = "✓" if claimed else Loc.t("CLAIM")
+	action.disabled = claimed or not ready
+	action.custom_minimum_size = Vector2(64 if claimed else 108, 64)
+	action.set_meta("game_action_connected", ready and not claimed and on_claim.is_valid())
+	action.tooltip_text = Loc.t("CLAIMED") if claimed else (Loc.t("CLAIM") if ready else "")
+	_style_button(action, Color("b0bec5") if claimed else accent)
+	action.add_theme_font_size_override("font_size", int(18 * float(GameState.settings.get("font_scale", 1.0))))
+	if ready and not claimed and on_claim.is_valid():
+		action.pressed.connect(func() -> void:
+			on_claim.call()
+			if refresh_callback.is_valid():
+				refresh_callback.call()
+			_rebuild(_current_section())
+		)
 
 
 var _collection_filter: StringName = &"all"
@@ -266,6 +427,8 @@ func _build_collection() -> void:
 		var fid: StringName = f["id"]
 		var active: bool = _collection_filter == fid
 		var btn: Button = Button.new()
+		btn.name = "CollectionFilter_%s" % String(fid)
+		btn.set_meta("game_action_connected", true)
 		btn.text = Loc.t(String(f["label_key"]))
 		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, PINK if active else Color("b0bec5"))
@@ -275,8 +438,10 @@ func _build_collection() -> void:
 		)
 		filter_row.add_child(btn)
 
+	_add_collection_stat_strip()
+
 	var grid: GridContainer = GridContainer.new()
-	grid.columns = 4
+	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	screen.content_box.add_child(grid)
@@ -293,73 +458,74 @@ func _build_collection() -> void:
 		var pet_id: String = String(pet.get("id", ""))
 		var unlocked: bool = GameState.unlocked_pets.has(pet_id)
 		var card: PanelContainer = PET_CARD.instantiate()
-		var card_alpha: float = 0.9 if unlocked else 0.45
+		var card_alpha: float = 0.94 if unlocked else 0.74
 		var card_border: Color = PINK if unlocked else Color("90a4ae")
-		card.add_theme_stylebox_override( "panel", StyleFactory.box(Color("ffffff", card_alpha), 22, 10, card_border, 3)
-		)
+		card.add_theme_stylebox_override("panel", StyleFactory.box(Color("ffffff", card_alpha), 22, 10, card_border, 3))
 		grid.add_child(card)
-		var portrait: TextureRect = card.get_node("VBox/Portrait")
-		if unlocked:
-			var path: String = "res://art/pets/%s.png" % pet_id
-			if ResourceLoader.exists(path):
-				portrait.texture = load(path)
-		else:
-			portrait.modulate.a = 0.0
-		var name_label: Label = card.get_node("VBox/Name")
-		name_label.text = ContentDB.pet_name(pet_id) if unlocked else "???"
-		name_label.add_theme_font_size_override("font_size", 24)
+		var portrait: TextureRect = card.get_node("VBox/Portrait") as TextureRect
+		var path: String = "res://art/pets/%s.png" % pet_id
+		if ResourceLoader.exists(path):
+			portrait.texture = load(path) as Texture2D
+		portrait.modulate = Color.WHITE if unlocked else Color("455a64", 0.60)
+		var name_label: Label = card.get_node("VBox/Name") as Label
+		name_label.text = ("★ " if GameState.favorite_pet == pet_id else "") + (ContentDB.pet_name(pet_id) if unlocked else "🔒")
+		name_label.add_theme_font_size_override("font_size", 22)
 		name_label.add_theme_color_override("font_color", CHARCOAL)
-		var sub: Label = card.get_node("VBox/Sub")
+		name_label.clip_text = true
+		var sub: Label = card.get_node("VBox/Sub") as Label
 		var aff: int = int(GameState.pet_affection.get(pet_id, 0))
-		var diary: String = PetStories.diary_progress(pet_id, aff) if unlocked else ""
 		var all_mems: Array[String] = PetStories.all_memories(pet_id) if unlocked else []
-		var unlocked_mems: Array[String] = []
-		if aff >= 1 and all_mems.size() > 0: unlocked_mems.append(all_mems[0])
-		if aff >= 10 and all_mems.size() > 1: unlocked_mems.append(all_mems[1])
-		if aff >= 25 and all_mems.size() > 2: unlocked_mems.append(all_mems[2])
-		var mem_text: String = "\n".join(unlocked_mems) if not unlocked_mems.is_empty() else ""
-		sub.text = ( ( ("★ " if GameState.favorite_pet == pet_id else "")
-				+ "♥ %d/50 • %s" % [aff, diary]
-				+ ("\n%s" % mem_text if not mem_text.is_empty() else "")
-			)
-			if unlocked
-			else ( Loc.t("VISITOR_TAG") % [Discovery.progress(pet_id), Discovery.VISITS_TO_ADOPT]
-				if Discovery.progress(pet_id) > 0
-				else Loc.t("LOCKED") % int(pet.get("unlock_level", 1))
-			)
-		)
-		sub.add_theme_font_size_override("font_size", 18 if not mem_text.is_empty() else 22)
+		var memories_unlocked: int = 0
+		if aff >= 1 and all_mems.size() > 0: memories_unlocked += 1
+		if aff >= 10 and all_mems.size() > 1: memories_unlocked += 1
+		if aff >= 25 and all_mems.size() > 2: memories_unlocked += 1
+		if unlocked:
+			sub.text = "♥ %d/50  •  📖 %d/3" % [aff, memories_unlocked]
+		elif Discovery.progress(pet_id) > 0:
+			sub.text = "🐾 %d/%d" % [Discovery.progress(pet_id), Discovery.VISITS_TO_ADOPT]
+		else:
+			sub.text = "%s %d" % [Loc.t("HUD_LEVEL_ABBR"), int(pet.get("unlock_level", 1))]
+		sub.add_theme_font_size_override("font_size", 17)
 		sub.add_theme_color_override("font_color", PINK if unlocked else Color("546e7a"))
 		if unlocked:
 			var bio_text: String = PetStories.bio(pet)
-			var diary_full: String = "\n".join(all_mems) if not all_mems.is_empty() else ""
+			var visible_memories: Array[String] = []
+			if memories_unlocked > 0: visible_memories.assign(all_mems.slice(0, memories_unlocked))
+			var diary_full: String = "\n".join(visible_memories)
 			card.tooltip_text = "%s\n%s\n%s" % [Loc.t("FAVORITE_HINT"), bio_text, diary_full] if not bio_text.is_empty() else "%s\n%s" % [Loc.t("FAVORITE_HINT"), diary_full]
 			# Feedback visual P1: hover scale + pressed
 			card.pivot_offset = card.custom_minimum_size * 0.5
 			card.mouse_entered.connect(func(): card.create_tween().tween_property(card, "scale", Vector2(1.05, 1.05), 0.12))
 			card.mouse_exited.connect(func(): card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12))
-			card.gui_input.connect( func(event: InputEvent, pid: String = pet_id) -> void:
-					if event is InputEventScreenTouch:
-						if event.pressed:
-							card.create_tween().tween_property(card, "scale", Vector2(0.95, 0.95), 0.08)
-						else:
-							if GameState.set_favorite_pet(pid):
-								AudioManager.play(&"tap")
-								HapticsManager.light()
-								EventBus.toast_requested.emit(Loc.t("FAVORITE_SET"), GREEN)
-								_rebuild(&"collection")
-							else:
-								card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12)
+			card.gui_input.connect(func(event: InputEvent, pid: String = pet_id) -> void:
+				var pointer_pressed: bool = false
+				var pointer_released: bool = false
+				if event is InputEventScreenTouch:
+					pointer_pressed = event.pressed
+					pointer_released = not event.pressed
+				elif event is InputEventMouseButton:
+					if event.button_index != MOUSE_BUTTON_LEFT:
+						return
+					pointer_pressed = event.pressed
+					pointer_released = not event.pressed
+				else:
+					return
+				if pointer_pressed:
+					card.create_tween().tween_property(card, "scale", Vector2(0.95, 0.95), 0.08)
+				elif pointer_released:
+					if GameState.set_favorite_pet(pid):
+						AudioManager.play(&"tap")
+						HapticsManager.light()
+						EventBus.toast_requested.emit(Loc.t("FAVORITE_SET"), GREEN)
+						_rebuild(&"collection")
+					else:
+						card.create_tween().tween_property(card, "scale", Vector2.ONE, 0.12)
 			)
-	_note( Loc.t("COLLECTION_SUMMARY")
-		% [ GameState.unlocked_pets.size(), ContentDB.pets.size(), GameState.achievement_ids.size(), ContentDB.achievements.size(),
-			GameState.unlocked_cosmetics.size(),
-		]
-	)
+
 	# Conquistas com card compartilhável (viralização de progresso)
 	var ach_count: String = "(%d/%d)" % [ GameState.achievement_ids.size(), ContentDB.achievements.size()
 	]
-	_note(Loc.t("REVEAL_ACHIEVEMENT_TITLE") + " " + ach_count, 26, CHARCOAL)
+	_note(Loc.t("COLLECTION_STAT_ACHIEVEMENTS") + " " + ach_count, 26, CHARCOAL)
 	for achievement: Dictionary in ContentDB.achievements:
 		var aid: String = String(achievement.get("id", ""))
 		var unlocked: bool = GameState.achievement_ids.has(aid)
@@ -385,6 +551,46 @@ func _build_collection() -> void:
 					else:
 						EventBus.toast_requested.emit(Loc.t("SHARE_SAVED_GALLERY"), BLUE)
 		)
+
+
+func _add_collection_stat_strip() -> void:
+	var pets_count: String = "%d/%d" % [GameState.unlocked_pets.size(), ContentDB.pets.size()]
+	var achievements_count: String = "%d/%d" % [GameState.achievement_ids.size(), ContentDB.achievements.size()]
+	var cosmetics_count: String = "%d/%d" % [GameState.unlocked_cosmetics.size(), ContentDB.cosmetics.size()]
+	var summary_text: String = Loc.t("COLLECTION_SUMMARY") % [
+		GameState.unlocked_pets.size(), ContentDB.pets.size(), GameState.achievement_ids.size(),
+		ContentDB.achievements.size(), GameState.unlocked_cosmetics.size(),
+	]
+	var stats: Array[Dictionary] = [
+		{"icon": "collection", "value": pets_count, "hint": Loc.t("COLLECTION_STAT_PETS")},
+		{"icon": "missions", "value": achievements_count, "hint": Loc.t("COLLECTION_STAT_ACHIEVEMENTS")},
+		{"icon": "shop", "value": cosmetics_count, "hint": Loc.t("COLLECTION_STAT_COSMETICS")},
+	]
+	var strip: HBoxContainer = HBoxContainer.new()
+	strip.name = "CollectionStatStrip"
+	strip.add_theme_constant_override("separation", 10)
+	screen.content_box.add_child(strip)
+	for stat: Dictionary in stats:
+		var tile: PanelContainer = PanelContainer.new()
+		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tile.custom_minimum_size = Vector2(0, 76)
+		tile.tooltip_text = "%s\n%s" % [String(stat["hint"]), summary_text]
+		tile.add_theme_stylebox_override("panel", StyleFactory.box(Color("ffffff", 0.94), 20, 8, Color("ff8fb1"), 2))
+		strip.add_child(tile)
+		var row: HBoxContainer = HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 8)
+		tile.add_child(row)
+		var icon: TextureRect = TextureRect.new()
+		icon.custom_minimum_size = Vector2(42, 42)
+		icon.texture = load("res://art/ui/icons/%s.png" % String(stat["icon"])) as Texture2D
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(icon)
+		var count: Label = _label_node(String(stat["value"]), 22, CHARCOAL)
+		count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		row.add_child(count)
 
 
 func _build_album() -> void:
@@ -448,13 +654,13 @@ func _build_album() -> void:
 		thumb.modulate = Color.WHITE if perfect else Color("ffffff", 0.96)
 		thumb_wrap.add_child(thumb)
 		var nlabel: Label = Label.new()
-		nlabel.text = names_text if not names_text.is_empty() else "Foto"
+		nlabel.text = names_text if not names_text.is_empty() else Loc.t("ALBUM_PHOTO_FALLBACK")
 		nlabel.add_theme_font_size_override("font_size", 18)
 		nlabel.add_theme_color_override("font_color", CHARCOAL)
 		nlabel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(nlabel)
 		var dlabel: Label = Label.new()
-		dlabel.text = "%s • %s" % [date, "⭐ PERFEITA" if perfect else "boa"]
+		dlabel.text = "%s • %s" % [date, Loc.t("ALBUM_BADGE_PERFECT") if perfect else Loc.t("ALBUM_BADGE_GOOD")]
 		dlabel.add_theme_font_size_override("font_size", 16)
 		dlabel.add_theme_color_override("font_color", PINK if perfect else Color("90a4ae"))
 		vbox.add_child(dlabel)
@@ -560,30 +766,32 @@ func _build_contest() -> void:
 func _build_upgrades() -> void:
 	_note("%s: %d" % [Loc.t("COINS"), int(GameState.coins)], 30, CHARCOAL)
 	var station_level: int = GameState.bath_upgrade_level
+	var station_icon: String = "res://art/props/tool_soap.png"
 	if station_level >= GameState.MAX_CAREER_LEVEL:
 		var bonus: float = (Economy.income_multiplier(station_level) - 1.0) * 100.0
-		_info_row( Loc.t("UPGRADES_STATION"), "Nv.%d  •  +%.0f%% %s" % [station_level, bonus, Loc.t("UPGRADES_REWARD")], Loc.t("UPGRADES_MAXED"),
-			Color("b0bec5"),
-			false,
-			Callable()
+		_info_row_with_icon(
+			Loc.t("UPGRADES_STATION"),
+			"Nv.%d  •  +%.0f%% %s" % [station_level, bonus, Loc.t("UPGRADES_REWARD")],
+			Loc.t("UPGRADES_MAXED"), Color("b0bec5"), false, station_icon, Callable()
 		)
 	else:
 		var cost: float = Economy.upgrade_cost(station_level)
-		_info_row( Loc.t("UPGRADES_STATION"), "Nv.%d  •  +7,5%% %s  •  %s %d"
-			% [station_level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(cost)],
-			Loc.t("UPGRADES_UPGRADE"),
-			GREEN,
-			cost <= GameState.coins,
+		_info_row_with_icon(
+			Loc.t("UPGRADES_STATION"),
+			"Nv.%d  •  +7,5%% %s  •  %s %d" % [station_level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(cost)],
+			Loc.t("UPGRADES_UPGRADE"), GREEN, cost <= GameState.coins, station_icon,
 			func() -> void:
 				if GameState.buy_bath_upgrade():
 					AudioManager.play(&"upgrade")
 					HapticsManager.success()
-					EventBus.toast_requested.emit( Loc.t("UPGRADES_STATION_LEVEL") % GameState.bath_upgrade_level, GREEN
-					)
+					EventBus.toast_requested.emit(Loc.t("UPGRADES_STATION_LEVEL") % GameState.bath_upgrade_level, GREEN)
 				else:
 					_upgrades_missing_toast(cost)
 		)
-	var tools: Array = [ {"id": &"soap", "key": "TOOL_SOAP", "level": 1}, {"id": &"clipper", "key": "TOOL_CLIPPER", "level": 3},
+
+	var tools: Array = [
+		{"id": &"soap", "key": "TOOL_SOAP", "level": 1},
+		{"id": &"clipper", "key": "TOOL_CLIPPER", "level": 3},
 		{"id": &"dryer", "key": "TOOL_DRYER", "level": 5},
 		{"id": &"perfume", "key": "TOOL_PERFUME", "level": 7},
 		{"id": &"bow", "key": "TOOL_BOW", "level": 10},
@@ -593,24 +801,27 @@ func _build_upgrades() -> void:
 		var level: int = int(GameState.tool_upgrade_levels.get(String(tool_id), 0))
 		var locked: bool = GameState.player_level < int(tool["level"])
 		var tool_cost: float = GameState.tool_upgrade_cost(tool_id)
+		var tool_icon_path: String = "res://art/props/tool_%s.png" % String(tool_id)
 		if locked:
-			_info_row( Loc.t(String(tool["key"])), Loc.t("UPGRADES_LOCKED") % int(tool["level"]), "", Color("b0bec5"), false, Callable()
+			_info_row_with_icon(
+				Loc.t(String(tool["key"])), Loc.t("UPGRADES_LOCKED") % int(tool["level"]), "",
+				Color("b0bec5"), false, tool_icon_path, Callable()
 			)
 		elif level >= 30:
-			_info_row( Loc.t(String(tool["key"])), "Nv.%d/30  •  +%d%%" % [level, level * 4], Loc.t("UPGRADES_MAXED"), Color("b0bec5"), false, Callable()
+			_info_row_with_icon(
+				Loc.t(String(tool["key"])), "Nv.%d/30  •  +%d%%" % [level, level * 4],
+				Loc.t("UPGRADES_MAXED"), Color("b0bec5"), false, tool_icon_path, Callable()
 			)
 		else:
-			_info_row( Loc.t(String(tool["key"])), "Nv.%d/30  •  +4%% %s  •  %s %d"
-				% [level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(tool_cost)],
-				Loc.t("UPGRADES_UPGRADE"),
-				BLUE,
-				tool_cost <= GameState.coins,
+			_info_row_with_icon(
+				Loc.t(String(tool["key"])),
+				"Nv.%d/30  •  +4%% %s  •  %s %d" % [level, Loc.t("UPGRADES_PER_LEVEL"), Loc.t("COINS"), int(tool_cost)],
+				Loc.t("UPGRADES_UPGRADE"), BLUE, tool_cost <= GameState.coins, tool_icon_path,
 				func() -> void:
 					if GameState.buy_tool_upgrade(tool_id):
 						AudioManager.play(&"upgrade")
 						HapticsManager.success()
-						EventBus.toast_requested.emit( Loc.t("UPGRADES_TOOL_UP") % Loc.t(String(tool["key"])), GREEN
-						)
+						EventBus.toast_requested.emit(Loc.t("UPGRADES_TOOL_UP") % Loc.t(String(tool["key"])), GREEN)
 					else:
 						_upgrades_missing_toast(tool_cost)
 			)
@@ -635,19 +846,50 @@ func _build_staff() -> void:
 			desc += "\n" + Loc.t("STAFF_AUTOMATION") % automation
 		if not dialogue.is_empty():
 			desc += "\n💬 %s" % dialogue
-		_info_row( ContentDB.staff_name(staff_id), desc,
+		var portrait_path: String = "res://art/characters/bia_hello.png" if staff_id == "bia" else "res://art/ui/icons/staff.png"
+		_info_row_with_icon(
+			ContentDB.staff_name(staff_id), desc,
 			Loc.t("HIRED") if (hired or staff_id == "player") else "%s • %s %d" % [Loc.t("HIRE"), Loc.t("COINS"), cost],
 			Color("b0bec5") if (hired or staff_id == "player") else BLUE,
-			not hired and staff_id != "player" and GameState.coins >= float(cost),
+			not hired and staff_id != "player" and GameState.coins >= float(cost), portrait_path,
 			func(sid: String = staff_id) -> void:
 				if GameState.hire_staff(sid):
 					AudioManager.play(&"upgrade")
-					EventBus.toast_requested.emit( "%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN
-					)
+					EventBus.toast_requested.emit("%s: %s" % [ContentDB.staff_name(sid), Loc.t("HIRED")], GREEN)
 		)
 
 
 var _shop_filter: StringName = &"all"
+
+func _cosmetic_icon_path(cosmetic_id: String) -> String:
+	var accessory_path: String = "res://art/cosmetics/%s.png" % cosmetic_id
+	if ResourceLoader.exists(accessory_path):
+		return accessory_path
+	var slot: String = String(ContentDB.cosmetic(cosmetic_id).get("slot", ""))
+	if slot == "bath":
+		return "res://art/stations/station_bathtub_rustic.png"
+	return "res://art/ui/icons/shop.png"
+
+
+func _apply_cosmetic_action(cosmetic_id: String) -> void:
+	if GameState.unlocked_cosmetics.has(cosmetic_id):
+		var slot: String = String(ContentDB.cosmetic(cosmetic_id).get("slot", ""))
+		var was_active: bool = not slot.is_empty() and GameState.active_cosmetic(slot) == cosmetic_id
+		if not GameState.equip_cosmetic(cosmetic_id):
+			AudioManager.play(&"error_soft")
+			return
+		AudioManager.play(&"equip")
+		if was_active:
+			EventBus.toast_requested.emit(Loc.t("COSMETIC_UNEQUIPPED") % ContentDB.cosmetic_name(cosmetic_id), BLUE)
+		else:
+			EventBus.toast_requested.emit("%s ✓" % ContentDB.cosmetic_name(cosmetic_id), GREEN)
+	elif GameState.buy_cosmetic(cosmetic_id):
+		if GameState.equip_cosmetic(cosmetic_id):
+			AudioManager.play(&"coin")
+			EventBus.toast_requested.emit("%s ✓" % ContentDB.cosmetic_name(cosmetic_id), GREEN)
+	else:
+		AudioManager.play(&"error_soft")
+
 
 func _build_shop() -> void:
 	# Abas: Destaque / Banheiras / Paredes / Acessórios / Tudo — agora localizadas + 64px altura mínima
@@ -661,6 +903,8 @@ func _build_shop() -> void:
 		var fid: StringName = sf["id"]
 		var active: bool = _shop_filter == fid
 		var btn: Button = Button.new()
+		btn.name = "ShopFilter_%s" % String(fid)
+		btn.set_meta("game_action_connected", true)
 		btn.text = Loc.t(String(sf["label_key"]))
 		btn.custom_minimum_size = Vector2(150, 64)
 		_style_button(btn, Color("ffd54f") if active else Color("b0bec5"))
@@ -677,41 +921,44 @@ func _build_shop() -> void:
 		var daily_feat: Dictionary = ContentDB.cosmetic(daily_id)
 		if not daily_feat.is_empty():
 			var d_price: Dictionary = daily_feat.get("price", {})
-			var d_price_text: String = "%s %d" % [Loc.t("COINS"), Rewards.cosmetic_price(daily_id)] if d_price.has("coins") else "%d %s" % [int(d_price.get("embers", 0)), Loc.t("EMBERS")]
-			_info_row(
-				"☀️ %s • %s" % [Loc.t("DAILY_FEATURED") if Loc.t("DAILY_FEATURED") != "DAILY_FEATURED" else "Destaque do Dia", ContentDB.cosmetic_name(daily_id)],
-				Loc.t("DAILY_FEATURED_DESC") if Loc.t("DAILY_FEATURED_DESC") != "DAILY_FEATURED_DESC" else "Só hoje com desconto!",
-				d_price_text,
-				Color("4fc3f7"),
-				not GameState.unlocked_cosmetics.has(daily_id),
+			var daily_coin_cost: int = Rewards.cosmetic_price(daily_id) if d_price.has("coins") else 0
+			var daily_ember_cost: int = int(d_price.get("embers", 0))
+			var d_price_text: String = "%s %d" % [Loc.t("COINS"), daily_coin_cost] if d_price.has("coins") else "%d %s" % [daily_ember_cost, Loc.t("EMBERS")]
+			var daily_owned: bool = GameState.unlocked_cosmetics.has(daily_id)
+			var daily_active: bool = GameState.active_cosmetic(String(daily_feat.get("slot", ""))) == daily_id
+			var daily_action: String = Loc.t("UNEQUIP") if daily_active else (Loc.t("EQUIP") if daily_owned else d_price_text)
+			var daily_affordable: bool = GameState.coins >= daily_coin_cost and GameState.embers >= daily_ember_cost
+			var daily_enabled: bool = daily_owned or (daily_affordable and not d_price.is_empty())
+			_info_row_with_icon(
+				"☀️ %s • %s" % [Loc.t("DAILY_FEATURED"), ContentDB.cosmetic_name(daily_id)],
+				Loc.t("DAILY_FEATURED_DESC"), daily_action,
+				Color("b0bec5") if daily_active else (PINK if daily_owned else Color("4fc3f7")),
+				daily_enabled, _cosmetic_icon_path(daily_id),
 				func(fid: String = daily_id) -> void:
-					if GameState.unlocked_cosmetics.has(fid):
-						GameState.equip_cosmetic(fid)
-					elif GameState.buy_cosmetic(fid):
-						GameState.equip_cosmetic(fid)
-						AudioManager.play(&"coin")
+					_apply_cosmetic_action(fid)
 			)
+
 	if not featured_id.is_empty():
 		var featured: Dictionary = ContentDB.cosmetic(featured_id)
 		if not featured.is_empty():
 			var feat_price: Dictionary = featured.get("price", {})
-			var feat_price_text: String = ""
-			if feat_price.has("coins"):
-				feat_price_text = "%s %d" % [ Loc.t("COINS"), Rewards.cosmetic_price(featured_id)
-				]
-			else:
-				feat_price_text = "%d %s" % [ int(feat_price.get("embers", 0)), Loc.t("EMBERS")
-				]
-			_info_row( "%s • %s" % [Loc.t("WEEKLY_FEATURED"), ContentDB.cosmetic_name(featured_id)], Loc.t("WEEKLY_FEATURED_DESC"), feat_price_text,
-				Color("ffd54f"),
-				not GameState.unlocked_cosmetics.has(featured_id),
+			var featured_coin_cost: int = Rewards.cosmetic_price(featured_id) if feat_price.has("coins") else 0
+			var featured_ember_cost: int = int(feat_price.get("embers", 0))
+			var feat_price_text: String = "%s %d" % [Loc.t("COINS"), featured_coin_cost] if feat_price.has("coins") else "%d %s" % [featured_ember_cost, Loc.t("EMBERS")]
+			var featured_owned: bool = GameState.unlocked_cosmetics.has(featured_id)
+			var featured_active: bool = GameState.active_cosmetic(String(featured.get("slot", ""))) == featured_id
+			var featured_action: String = Loc.t("UNEQUIP") if featured_active else (Loc.t("EQUIP") if featured_owned else feat_price_text)
+			var featured_affordable: bool = GameState.coins >= featured_coin_cost and GameState.embers >= featured_ember_cost
+			var featured_enabled: bool = featured_owned or (featured_affordable and not feat_price.is_empty())
+			_info_row_with_icon(
+				"%s • %s" % [Loc.t("WEEKLY_FEATURED"), ContentDB.cosmetic_name(featured_id)],
+				Loc.t("WEEKLY_FEATURED_DESC"), featured_action,
+				Color("b0bec5") if featured_active else (PINK if featured_owned else Color("ffd54f")),
+				featured_enabled, _cosmetic_icon_path(featured_id),
 				func(fid: String = featured_id) -> void:
-					if GameState.unlocked_cosmetics.has(fid):
-						GameState.equip_cosmetic(fid)
-					elif GameState.buy_cosmetic(fid):
-						GameState.equip_cosmetic(fid)
-						AudioManager.play(&"coin")
+					_apply_cosmetic_action(fid)
 			)
+
 	for look: Dictionary in ContentDB.cosmetics:
 		var slot: String = String(look.get("slot", ""))
 		if _shop_filter != &"all" and slot != String(_shop_filter):
@@ -732,28 +979,23 @@ func _build_shop() -> void:
 		var is_active: bool = GameState.active_cosmetic(String(look.get("slot", ""))) == look_id
 		var action_text: String
 		var action_color: Color = PINK
-		var enabled: bool = (not owned and not price.is_empty()) or owned
+		var coin_cost: int = Rewards.cosmetic_price(look_id) if price.has("coins") else 0
+		var ember_cost: int = int(price.get("embers", 0))
+		var can_afford: bool = GameState.coins >= coin_cost and GameState.embers >= ember_cost
+		var enabled: bool = owned or (not price.is_empty() and can_afford)
 		if owned:
-			action_text = Loc.t("EQUIPPED") if is_active else Loc.t("EQUIP")
+			action_text = Loc.t("UNEQUIP") if is_active else Loc.t("EQUIP")
 			action_color = GREEN if is_active else PINK
 		elif price.is_empty():
 			action_text = Loc.t("SOURCE_BTN_SEASON" if seasonal else "SOURCE_BTN_ACHIEVEMENT")
 			action_color = Color("b0bec5")
 		else:
 			action_text = Loc.t("BUY")
-		_info_row( ContentDB.cosmetic_name(look_id), price_text, action_text, action_color, enabled, func(lid: String = look_id) -> void:
-				if GameState.unlocked_cosmetics.has(lid):
-					if GameState.equip_cosmetic(lid):
-						AudioManager.play(&"equip")
-						EventBus.toast_requested.emit( "%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
-						)
-				elif GameState.buy_cosmetic(lid):
-					GameState.equip_cosmetic(lid)
-					AudioManager.play(&"coin")
-					EventBus.toast_requested.emit( "%s ✓" % ContentDB.cosmetic(lid).get("name", lid), GREEN
-					)
-				else:
-					AudioManager.play(&"error_soft")
+		_info_row_with_icon(
+			ContentDB.cosmetic_name(look_id), price_text, action_text, action_color, enabled,
+			_cosmetic_icon_path(look_id),
+			func(lid: String = look_id) -> void:
+					_apply_cosmetic_action(lid)
 		)
 	# Sink de prestígio: token de franquia (ganho no prestige) vira brasas.
 	_info_row( Loc.t("FRANCHISE_EXCHANGE"), Loc.t("FRANCHISE_DESC") % GameState.franchise_tokens, "1 → 5 %s" % Loc.t("EMBERS"),
@@ -768,7 +1010,7 @@ func _build_shop() -> void:
 	# Sem adapter/provider o botão fica desabilitado (antes parecia clicável e
 	# só devolvia o toast de indisponível — auditoria 2026-09-27, 2ª passada).
 	var rewarded_ready: bool = AdsManager.is_rewarded_available()
-	_info_row( "+1 %s" % Loc.t("EMBERS"), "🎬 Assistir vídeo recompensado (1/dia) — ganha 1 brasa", "▶ ASSISTIR", BLUE, rewarded_ready, func() -> void:
+	_info_row( Loc.t("REWARDED_EMBER_TITLE"), Loc.t("REWARDED_EMBER_DESC"), Loc.t("REWARDED_EMBER_ACTION"), BLUE, rewarded_ready, func() -> void:
 			AdsManager.request_rewarded(&"ember_shop", _grant_ember)
 	)
 	for sku: String in IAPManager.PRODUCTS:
@@ -909,6 +1151,8 @@ func _build_settings() -> void:
 		var current: float = float(GameState.settings.get("font_scale", 1.0))
 		var is_active: bool = is_equal_approx(current, float(option["value"]))
 		var font_btn: Button = Button.new()
+		font_btn.name = "FontScale_%s" % str(int(float(option["value"]) * 10.0))
+		font_btn.set_meta("game_action_connected", true)
 		_style_button(font_btn, GREEN if is_active else Color("b0bec5"))
 		font_btn.text = Loc.t(String(option["label"]))
 		font_btn.custom_minimum_size = Vector2(200, 60)
@@ -994,12 +1238,13 @@ func _build_settings() -> void:
 	var lang_names: Dictionary = {"pt_BR": Loc.t("LANG_PT"), "en_US": Loc.t("LANG_EN"), "es_ES": Loc.t("LANG_ES")}
 	for code: String in Loc.LANGS:
 		var lang_button: Button = Button.new()
+		lang_button.name = "Language_%s" % code
+		lang_button.set_meta("game_action_connected", true)
 		_style_button(lang_button, BLUE if code == Loc.lang else Color("b0bec5"))
 		lang_button.text = String(lang_names.get(code, code))
 		lang_button.custom_minimum_size = Vector2(180, 60)
-		lang_button.pressed.connect( func(c: String = code) -> void:
-				Loc.set_language(c)
-				_rebuild(&"settings")
+		lang_button.pressed.connect(func(c: String = code) -> void:
+			Loc.set_language(c)
 		)
 		lang_row.add_child(lang_button)
 
@@ -1044,6 +1289,7 @@ func _add_slider(caption: String, setting_key: String, default_value: float) -> 
 	else:
 		row.add_child(max_label)
 	var slider: HSlider = row.get_node("Slider")
+	slider.name = "Setting_%s" % setting_key
 	slider.tooltip_text = "0% — 100%"
 	slider.value = float(GameState.settings.get(setting_key, default_value))
 	value_label.text = "%d%%" % int(slider.value * 100.0)
@@ -1088,6 +1334,9 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 	row.add_theme_stylebox_override( "panel", StyleFactory.box(Color("ffffff", 0.9), 24, 16, PINK, 3)
 	)
 	var box: HBoxContainer = row.get_node("Box")
+	var icon: TextureRect = row.get_node("Box/Icon") as TextureRect
+	icon.texture = null
+	icon.hide()
 	var info_vbox: VBoxContainer = row.get_node("Box/Info")
 	var name_label: Label = row.get_node("Box/Info/Name")
 	name_label.text = name_text
@@ -1113,6 +1362,8 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 	else:
 		desc_label.text = desc_text
 	var button: Button = row.get_node("Box/Action")
+	button.set_meta("game_action_connected", enabled and on_action.is_valid())
+	button.set_meta("row_title", name_text)
 	_style_button(button, action_color)
 	button.text = action_text
 	button.disabled = not enabled
@@ -1167,6 +1418,23 @@ func _info_row( name_text: String, desc_text: String, action_text: String, actio
 					refresh_callback.call()
 				_rebuild(_current_section())
 		)
+
+
+func _info_row_with_icon(
+	name_text: String,
+	desc_text: String,
+	action_text: String,
+	action_color: Color,
+	enabled: bool,
+	icon_path: String,
+	on_action: Callable,
+) -> void:
+	_info_row(name_text, desc_text, action_text, action_color, enabled, on_action)
+	var row: PanelContainer = screen.content_box.get_child(screen.content_box.get_child_count() - 1) as PanelContainer
+	var icon: TextureRect = row.get_node("Box/Icon") as TextureRect
+	if ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path) as Texture2D
+		icon.show()
 
 
 func _current_section() -> StringName:
