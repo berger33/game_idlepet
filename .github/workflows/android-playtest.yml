@@ -1,0 +1,170 @@
+name: Playtest Android (APK)
+
+# Compila um APK debug/playtest assinado (chave debug gerada no runner, nunca
+# commitada) e publica numa Release de playtest para download direto no celular.
+# Nao contem segredos de producao; NAO reutilizar para builds de loja.
+
+on:
+  push:
+    branches: ["arena/*"]
+  workflow_dispatch:
+
+concurrency:
+  group: playtest-android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # necessario para publicar a Release com o APK
+
+jobs:
+  build:
+    name: Exporta APK (Godot 4.7.2) e publica Release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GODOT_VERSION: "4.7.2"
+      APK_NAME: "PetShopTycoon-playtest.apk"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Baixar Godot + export templates
+        run: |
+          set -e
+          curl -sL --retry 3 -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x "Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          curl -sL --retry 3 -o templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          unzip -q templates.tpz -d "$HOME/.local/share/godot/export_templates"
+          mv "$HOME/.local/share/godot/export_templates/templates" "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          ls "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable" | head
+          ./"Godot_v${GODOT_VERSION}-stable_linux.x86_64" --headless --version
+
+      - name: Keystore debug + editor settings
+        run: |
+          set -e
+          keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10950 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Playtest,C=BR" 2>/dev/null
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          BT=$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)
+          echo "SDK=$SDK build-tools=$BT"
+          mkdir -p "$HOME/.config/godot"
+          {
+            echo '[gd_resource type="EditorSettings" format=3]'
+            echo ''
+            echo '[resource]'
+            echo "export/android/android_sdk_path = \"$SDK\""
+            echo "export/android/apksigner = \"$BT/apksigner\""
+            echo "export/android/zipalign = \"$BT/zipalign\""
+            echo "export/android/adb = \"$SDK/platform-tools/adb\""
+            echo "export/android/debug_keystore = \"$PWD/debug.keystore\""
+            echo "export/android/debug_keystore_user = \"androiddebugkey\""
+            echo "export/android/debug_keystore_pass = \"android\""
+            echo "export/android/release_keystore = \"$PWD/debug.keystore\""
+            echo "export/android/release_keystore_user = \"androiddebugkey\""
+            echo "export/android/release_keystore_pass = \"android\""
+          } > "$HOME/.config/godot/editor_settings-4.7.tres"
+          cat "$HOME/.config/godot/editor_settings-4.7.tres"
+
+      - name: Preset Android (somente no runner, nao commitado)
+        run: |
+          cat >> export_presets.cfg <<'PSET'
+
+          [preset.1]
+
+          name="Android Playtest"
+          platform="Android"
+          runnable=false
+          advanced_options=false
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter="docs/*,tools/*,tests/*,.github/*"
+          export_path="exports/android/playtest.apk"
+          script_export_mode=2
+
+          [preset.1.options]
+
+          custom_template/debug=""
+          custom_template/release=""
+          gradle_build/use_gradle_build=false
+          gradle_build/export_format=0
+          gradle_build/min_sdk="24"
+          gradle_build/target_sdk="36"
+          architectures/armeabi-v7a=false
+          architectures/arm64-v8a=true
+          architectures/x86=false
+          architectures/x86_64=false
+          version/code=1
+          version/name="0.1.0-playtest"
+          package/unique_name="com.arena.petshoptycoon.playtest"
+          package/name="PetShop Tycoon (playtest)"
+          package/signed=true
+          package/app_category=2
+          package/retain_data_on_uninstall=false
+          package/exclude_from_recents=false
+          package/show_in_launcher=true
+          screen/immersive=true
+          screen/support_small=true
+          screen/support_medium=true
+          screen/support_large=true
+          screen/support_xlarge=true
+          permissions/internet=true
+          permissions/vibrate=true
+          launcher_icons/adaptive_background_432x432=""
+          launcher_icons/adaptive_foreground_432x432="res://art/ui/icon.png"
+          launcher_icons/adaptive_monochrome_432x432=""
+          launcher_icons/main_192x192="res://art/ui/icon.png"
+          PSET
+          tail -30 export_presets.cfg
+
+      - name: Importar recursos do projeto
+        run: |
+          set -e
+          ./"Godot_v${GODOT_VERSION}-stable_linux.x86_64" --headless --path . --import || true
+          ./"Godot_v${GODOT_VERSION}-stable_linux.x86_64" --headless --path . --import
+          ls .godot | head
+
+      - name: Exportar APK
+        run: |
+          set -e
+          mkdir -p exports/android
+          GODOT="./Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          if ! $GODOT --headless --path . --export-release "Android Playtest" "exports/android/${APK_NAME}"; then
+            echo "release falhou; tentando export-debug"
+            $GODOT --headless --path . --export-debug "Android Playtest" "exports/android/${APK_NAME}"
+          fi
+          ls -la exports/android
+
+      - name: Verificar APK (dex + assinatura v2)
+        run: |
+          set -e
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          BT=$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)
+          unzip -l "exports/android/${APK_NAME}" | grep -E "classes.dex|lib/arm64" | head -5
+          "$BT/apksigner" verify --verbose --print-certs-pem "exports/android/${APK_NAME}" | head -12
+
+      - name: Publicar Release de playtest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="playtest-r${{ github.run_number }}"
+          SIZE=$(du -h "exports/android/${APK_NAME}" | cut -f1)
+          gh release create "$TAG" "exports/android/${APK_NAME}" \
+            --title "Playtest Android ${TAG}" \
+            --prerelease \
+            --notes "Build de playtest (debug) do PetShop Tycoon — Godot ${GODOT_VERSION}, arm64-v8a, tamanho ${SIZE}.
+
+          **Como testar no celular:**
+          1. Abra esta pagina no navegador do celular.
+          2. Toque em **${APK_NAME}** na secao Assets para baixar.
+          3. Permita instalar apps de fontes desconhecidas quando o Android pedir.
+          4. Instale e abra o jogo (tela cheia, modo retrato).
+
+          Commit: ${{ github.sha }}"
+          echo "URL do APK:"
+          echo "https://github.com/${{ github.repository }}/releases/download/${TAG}/${APK_NAME}"
